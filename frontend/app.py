@@ -6,7 +6,7 @@ from .pages import usermangement
 from .pages import phef
 from .pages import sessions
 
-APP_TITLE = "My Multi-Page Shiny App"
+APP_TITLE = "Fitness Warrior"
 DEFAULT_PORT = 8000
 
 
