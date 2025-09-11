@@ -17,13 +17,15 @@ def get_ui():
                 ui.input_password("password", "Password"),
                 ui.input_action_button("login_btn", "Log in"),
                 ui.br(),
-                ui.output_text("login_status"),
+                ui.br(),
+                ui.output_ui("login_status"),
             ),
         ),
     )
 
 def server(input, output, session):
     status = reactive.Value("Please enter your credentials.")
+    is_error = reactive.Value(False)
 
     @reactive.Effect
     @reactive.event(input.login_btn)
@@ -32,10 +34,15 @@ def server(input, output, session):
         pw = (input.password() or "").strip()
         if not user or not pw:
             status.set("Please enter both username and password.")
+            is_error.set(True)
             return
         status.set(f"Welcome, {user}! You are now logged in.")
+        is_error.set(False)
 
     @output
-    @render.text
+    @render.ui
     def login_status():
-        return status.get()
+        msg = status.get()
+        if is_error.get():
+            return ui.tags.p(msg, style="color: red;")
+        return ui.tags.p(msg)

@@ -184,4 +184,4 @@ def server(input, output, session):
 
 
 def get_sessions_store():
-    return []
+    return [None]

@@ -137,7 +137,7 @@ def server(input, output, session):
         _update_session_date_text(None)
 
     def _refresh_session_choices():
-        sess = sessions_store.get()
+        sess = sessions_store[0]
         choices = {
             str(s["id"]): f'{s["id"]}: {s["type"]} ({s["date"]})'
             for s in sess

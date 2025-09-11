@@ -7,14 +7,15 @@ def get_ui():
         ui.layout_columns(
             ui.card(
                 ui.card_header("Users"),
+                ui.input_text(
+                    "um_select_serial",
+                    "Select user (by serial)",
+
+                ),
                 ui.output_ui("um_grid"),
                 ui.br(),
                 ui.layout_columns(
-                    ui.input_select(
-                        "um_select_serial",
-                        "Select user (by serial)",
-                        choices=[],
-                    ),
+
                     ui.input_action_button("um_load_btn", "Load Selected"),
                     ui.input_action_button("um_delete_btn", "Delete Selected"),
                     col_widths=(6, 3, 3),
