@@ -8,6 +8,7 @@ dependencies = [
     "asyncpg>=0.30.0",
     "bcrypt>=4.3.0",
     "black>=25.1.0",
+    "debugpy>=1.8.16",
     "fastapi>=0.116.1",
     "fastapi-cache>=0.1.0",
     "fastapi-cache2>=0.2.2",
