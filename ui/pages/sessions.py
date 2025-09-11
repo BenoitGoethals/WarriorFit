@@ -1,5 +1,7 @@
 from shiny import ui, render, reactive
+from ..services.db_service import DBService
 
+db_service = DBService("ui/config/config.yml")
 SESSION_TYPES = ["phef", "combattest", "swimtest", "functional test", "other"]
 
 def get_ui():
@@ -40,7 +42,7 @@ def get_ui():
 
 def server(input, output, session):
     # Stored as list of dicts: {id, date, type}
-    sessions = reactive.Value([])
+    sessions = reactive.Value(db_service.get_all_test_sessions())
     next_id = reactive.Value(1)
     status = reactive.Value("Ready.")
 
@@ -66,8 +68,8 @@ def server(input, output, session):
     def _clear_form():
         _write_form({"date": None, "type": ""})
 
-    def _refresh_select():
-        choices = {str(r["id"]): f'{r["id"]}: {r["type"]} ({r["date"]})' for r in sessions.get()}
+    async def _refresh_select():
+        choices = {str(r.id): f'{r.id}: {r.type_test.name} ({r.datetime_start})' for r in await db_service.get_all_test_sessions()}
         session.send_input_message("se_select_id", {"choices": choices, "selected": None})
 
     def _to_table(items):
@@ -80,9 +82,9 @@ def server(input, output, session):
         for r in items:
             rows.append(
                 ui.tags.tr(
-                    ui.tags.td(str(r["id"])),
-                    ui.tags.td(str(r["date"]) if r["date"] else ""),
-                    ui.tags.td(r["type"]),
+                    ui.tags.td(r.id),
+                    ui.tags.td(str(r.datetime_start) if r.datetime_start else ""),
+                    ui.tags.td(r.type_test.name if r.type_test else ""),
                 )
             )
         body = (
@@ -99,12 +101,12 @@ def server(input, output, session):
 
     @output
     @render.ui
-    def se_grid():
-        return _to_table(sessions.get())
+    async def se_grid():
+        return _to_table(await db_service.get_all_test_sessions())
 
     @reactive.Effect
-    def _init_select():
-        _refresh_select()
+    async def _init_select():
+       await _refresh_select()
 
     @reactive.Effect
     @reactive.event(input.se_add_btn)

@@ -11,10 +11,17 @@ from sqlalchemy.orm import selectinload, selectin_polymorphic
 
 from ui.config.appliccation_config import ApplicationConfig
 from logic.singleton import Singleton
-from data.db.db_model import AuditLog, User, TestSession, FitnessTest, PhefTest, FunctionalTest, \
-    CombatTestParatrooper, CombatSwimmingTest
+from data.db.db_model import (
+    AuditLog,
+    User,
+    TestSession,
+    FitnessTest,
+    PhefTest,
+    FunctionalTest,
+    CombatTestParatrooper,
+    CombatSwimmingTest,
+)
 from utils.Os import Os
-
 
 
 class DBService(metaclass=Singleton):
@@ -62,7 +69,7 @@ class DBService(metaclass=Singleton):
         logger = logging.getLogger()  # Root logger
         logger.setLevel(logging.INFO)  # Set global logging level
         logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
-        
+
         # Create a formatter
         formatter = logging.Formatter(
             fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -74,14 +81,14 @@ class DBService(metaclass=Singleton):
         if project_root:
             log_dir = project_root / "logs"
             log_dir.mkdir(exist_ok=True)  # Create logs directory if it doesn't exist
-            
+
             # File handler -> Logs to a file
             file_handler = logging.FileHandler(
                 log_dir / "application.log", mode="a"
             )  # Append mode
             file_handler.setLevel(logging.INFO)
             file_handler.setFormatter(formatter)
-        
+
             # Add file handler to the root logger
             if not any(isinstance(h, logging.FileHandler) for h in logger.handlers):
                 logger.addHandler(file_handler)
@@ -92,7 +99,11 @@ class DBService(metaclass=Singleton):
         console_handler.setFormatter(formatter)
 
         # Add console handler to the root logger
-        if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler) for h in logger.handlers):
+        if not any(
+            isinstance(h, logging.StreamHandler)
+            and not isinstance(h, logging.FileHandler)
+            for h in logger.handlers
+        ):
             logger.addHandler(console_handler)
 
     async def check_if_db_is_operational(self) -> bool:
@@ -147,7 +158,7 @@ class DBService(metaclass=Singleton):
         except Exception as e:
             self.__logger.error(f"Unexpected error fetching {log_entity_name}: {e}")
             return None
-        
+
     async def add_user(self, user: User) -> Optional[User]:
         try:
             async with self.SessionLocal() as session:
@@ -161,9 +172,7 @@ class DBService(metaclass=Singleton):
             )
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(
-                f"Database error adding user {user.username}: {str(e)}"
-            )
+            self.__logger.error(f"Database error adding user {user.username}: {str(e)}")
             return None
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
@@ -190,8 +199,7 @@ class DBService(metaclass=Singleton):
         results = await self.fetch_and_log(query, "users")
         return results if results else []
 
-
-    async def update_user(self,id:int, user: User) -> User | None:
+    async def update_user(self, id: int, user: User) -> User | None:
         """
         Updates an existing user in the database.
 
@@ -216,7 +224,6 @@ class DBService(metaclass=Singleton):
                     existing_user.email = user.email
                     existing_user.role = user.role
 
-
                     await session.flush()  # Ensure changes are applied
                     await session.refresh(existing_user)  # Refresh to get updated data
                     return existing_user
@@ -227,11 +234,6 @@ class DBService(metaclass=Singleton):
         except SQLAlchemyError as e:
             self.__logger.error(f"Database error updating user {id}: {str(e)}")
             return None
-
-
-
-
-
 
     # Security
 
@@ -322,7 +324,6 @@ class DBService(metaclass=Singleton):
     async def cleanup(self):
         pass
 
-
     async def add_test_session(self, test_session: TestSession) -> Optional[Any]:
         """
         Adds a test session to the database.
@@ -345,7 +346,9 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error adding test session: {str(e)}")
             return None
 
-    async def get_all_fitness_tests_from_test_session(self, test_session_id: int) -> Optional[List[FitnessTest]]:
+    async def get_all_fitness_tests_from_test_session(
+        self, test_session_id: int
+    ) -> Optional[List[FitnessTest]]:
         """
         Fetches all fitness tests associated with a specific test session.
 
@@ -393,8 +396,9 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error updating test session: {str(e)}")
             return None
 
-
-    async def add_fitness_test_to_TestSession(self, test_session_id: int, fitness_test: FitnessTest) -> Optional[TestSession]:
+    async def add_fitness_test_to_TestSession(
+        self, test_session_id: int, fitness_test: FitnessTest
+    ) -> Optional[TestSession]:
         """
         Adds a fitness test to an existing test session in the database.
 
@@ -411,25 +415,27 @@ class DBService(metaclass=Singleton):
                     # First add the fitness test
                     session.add(fitness_test)
                     await session.flush()  # Ensure fitness_test has an ID
-                    
+
                     # Then get the test session with relationships loaded
                     test_session = await session.get(
                         TestSession,
                         test_session_id,
-                        options=[joinedload(TestSession.fitness_tests)]
+                        options=[joinedload(TestSession.fitness_tests)],
                     )
-                    
+
                     if not test_session:
-                        self.__logger.error(f"Test session with ID {test_session_id} not found.")
+                        self.__logger.error(
+                            f"Test session with ID {test_session_id} not found."
+                        )
                         return None
-                    
+
                     test_session.fitness_tests.append(fitness_test)
                     await session.flush()
-                    
+
                     # Refresh inside the transaction
                     await session.refresh(test_session)
                     return test_session
-                
+
         except IntegrityError as e:
             self.__logger.error(f"Integrity error adding fitness test: {str(e)}")
             return None
@@ -437,8 +443,7 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error adding fitness test: {str(e)}")
             return None
 
-
-    async def get_all_test_sessions(self):
+    async def get_all_test_sessions(self)-> List[TestSession]:
         """
         Fetches all test sessions from the database.
 
@@ -448,9 +453,6 @@ class DBService(metaclass=Singleton):
         query = select(TestSession)
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
-
-
-
 
     async def delete_all_test_sessions(self):
         query = delete(TestSession)
@@ -465,7 +467,9 @@ class DBService(metaclass=Singleton):
         except Exception as e:
             self.__logger.error(f"Unexpected error deleting all TestSession: {e}")
 
-    async def get_all_fitness_tests_that_passed_from_year(self,year: int) -> Optional[List[FitnessTest]]:
+    async def get_all_fitness_tests_that_passed_from_year(
+        self, year: int
+    ) -> Optional[List[FitnessTest]]:
         """
         Retrieves all passed fitness tests from test sessions for a specific year.
 
@@ -476,7 +480,9 @@ class DBService(metaclass=Singleton):
         """
         return await self.get_all_fitness_tests_that_passed_or_not_from_year(year, True)
 
-    async def get_all_fitness_tests_that_not_passed_from_year(self,year: int) -> Optional[List[FitnessTest]]:
+    async def get_all_fitness_tests_that_not_passed_from_year(
+        self, year: int
+    ) -> Optional[List[FitnessTest]]:
         """
         Retrieves all not passed fitness tests from test sessions for a specific year.
 
@@ -485,9 +491,13 @@ class DBService(metaclass=Singleton):
         :return: List of not passed FitnessTest objects if found, otherwise None
         :rtype: Optional[List[FitnessTest]]
         """
-        return await self.get_all_fitness_tests_that_passed_or_not_from_year(year, False)
+        return await self.get_all_fitness_tests_that_passed_or_not_from_year(
+            year, False
+        )
 
-    async def get_all_fitness_tests_that_passed_or_not_from_year(self, year: int,passed:bool) -> Optional[List[FitnessTest]]:
+    async def get_all_fitness_tests_that_passed_or_not_from_year(
+        self, year: int, passed: bool
+    ) -> Optional[List[FitnessTest]]:
         """
         Retrieves all passed fitness tests from test sessions for a specific year.
 
@@ -503,25 +513,24 @@ class DBService(metaclass=Singleton):
                     .join(TestSession.fitness_tests)
                     .where(
                         TestSession.datetime_start.between(
-                            datetime(year, 1, 1),
-                            datetime(year, 12, 31, 23, 59, 59)
+                            datetime(year, 1, 1), datetime(year, 12, 31, 23, 59, 59)
                         ),
-                        FitnessTest.passed == passed
+                        FitnessTest.passed == passed,
                     )
                 )
                 result = await session.execute(query)
                 tests = result.scalars().all()
                 return list(tests) if tests else None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching passed fitness tests for year {year}: {str(e)}")
+            self.__logger.error(
+                f"Database error fetching passed fitness tests for year {year}: {str(e)}"
+            )
             return None
         except Exception as e:
-            self.__logger.error(f"Unexpected error fetching passed fitness tests for year {year}: {str(e)}")
+            self.__logger.error(
+                f"Unexpected error fetching passed fitness tests for year {year}: {str(e)}"
+            )
             return None
-
-
-
-
 
     async def delete_user(self, id):
         """
@@ -547,7 +556,9 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error deleting user with ID {id}: {str(e)}")
             return False
         except Exception as e:
-            self.__logger.error(f"Unexpected error deleting user with ID {id}: {str(e)}")
+            self.__logger.error(
+                f"Unexpected error deleting user with ID {id}: {str(e)}"
+            )
             return False
 
     async def get_upcoming_test_sessions(self, count: int = 5) -> List[TestSession]:
@@ -572,10 +583,14 @@ class DBService(metaclass=Singleton):
             return results if results else []
 
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching upcoming test sessions: {str(e)}")
+            self.__logger.error(
+                f"Database error fetching upcoming test sessions: {str(e)}"
+            )
             return []
         except Exception as e:
-            self.__logger.error(f"Unexpected error fetching upcoming test sessions: {str(e)}")
+            self.__logger.error(
+                f"Unexpected error fetching upcoming test sessions: {str(e)}"
+            )
             return []
 
     async def get_test_session_by_id(self, session_id: int) -> Optional[TestSession]:
@@ -595,7 +610,12 @@ class DBService(metaclass=Singleton):
                     .options(
                         # Load the collection via select-in and include subclass columns
                         selectinload(TestSession.fitness_tests).selectin_polymorphic(
-                            [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]
+                            [
+                                PhefTest,
+                                FunctionalTest,
+                                CombatTestParatrooper,
+                                CombatSwimmingTest,
+                            ]
                         )
                     )
                 )
@@ -604,7 +624,9 @@ class DBService(metaclass=Singleton):
                 test_session = result.unique().scalar_one_or_none()
                 return test_session
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error retrieving test session {session_id}: {str(e)}")
+            self.__logger.error(
+                f"Database error retrieving test session {session_id}: {str(e)}"
+            )
             return None
 
     async def delete_test_session(self, session_id: int) -> bool:
@@ -622,11 +644,15 @@ class DBService(metaclass=Singleton):
                     query = delete(TestSession).where(TestSession.id == session_id)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self.__logger.error(f"No test session found with ID {session_id}")
+                        self.__logger.error(
+                            f"No test session found with ID {session_id}"
+                        )
                         return False
                     return True
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error deleting test session {session_id}: {str(e)}")
+            self.__logger.error(
+                f"Database error deleting test session {session_id}: {str(e)}"
+            )
             return False
 
     async def get_all_fitness_tests(self) -> list[FitnessTest]:
@@ -650,24 +676,27 @@ class DBService(metaclass=Singleton):
         try:
             async with self.SessionLocal() as session:
                 # Load related sessions and ensure polymorphic subtypes are populated
-                query = (
-                    select(FitnessTest)
-                    .options(
-                        joinedload(FitnessTest.test_sessions),
-                        selectin_polymorphic(FitnessTest)
-                    )
+                query = select(FitnessTest).options(
+                    joinedload(FitnessTest.test_sessions),
+                    selectin_polymorphic(FitnessTest),
                 )
                 result = await session.execute(query)
                 tests = result.unique().scalars().all()
                 return list(tests) if tests else []
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching all fitness tests (full): {str(e)}")
+            self.__logger.error(
+                f"Database error fetching all fitness tests (full): {str(e)}"
+            )
             return []
         except Exception as e:
-            self.__logger.error(f"Unexpected error fetching all fitness tests (full): {str(e)}")
+            self.__logger.error(
+                f"Unexpected error fetching all fitness tests (full): {str(e)}"
+            )
             return []
 
-    async def delete_fitness_test_from_test_session(self, test_session_id: int, fitness_test_id: int) -> bool:
+    async def delete_fitness_test_from_test_session(
+        self, test_session_id: int, fitness_test_id: int
+    ) -> bool:
         """
         Deletes a specific FitnessTest from a TestSession by removing the association and deleting the FitnessTest.
 
@@ -682,22 +711,28 @@ class DBService(metaclass=Singleton):
                     test_session = await session.get(
                         TestSession,
                         test_session_id,
-                        options=[joinedload(TestSession.fitness_tests)]
+                        options=[joinedload(TestSession.fitness_tests)],
                     )
                     if not test_session:
-                        self.__logger.error(f"TestSession with ID {test_session_id} not found.")
+                        self.__logger.error(
+                            f"TestSession with ID {test_session_id} not found."
+                        )
                         return False
 
                     fitness_test = await session.get(FitnessTest, fitness_test_id)
                     if not fitness_test:
-                        self.__logger.error(f"FitnessTest with ID {fitness_test_id} not found.")
+                        self.__logger.error(
+                            f"FitnessTest with ID {fitness_test_id} not found."
+                        )
                         return False
 
                     if fitness_test in test_session.fitness_tests:
                         test_session.fitness_tests.remove(fitness_test)
                         await session.flush()
                     else:
-                        self.__logger.error(f"FitnessTest {fitness_test_id} not in TestSession {test_session_id}")
+                        self.__logger.error(
+                            f"FitnessTest {fitness_test_id} not in TestSession {test_session_id}"
+                        )
                         return False
 
                     # Delete the FitnessTest itself
@@ -706,16 +741,19 @@ class DBService(metaclass=Singleton):
                     await session.refresh(test_session)
                     return True
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error deleting FitnessTest {fitness_test_id} from TestSession {test_session_id}: {str(e)}")
+            self.__logger.error(
+                f"Database error deleting FitnessTest {fitness_test_id} from TestSession {test_session_id}: {str(e)}"
+            )
             return False
         except Exception as e:
-            self.__logger.error(f"Unexpected error deleting FitnessTest {fitness_test_id} from TestSession {test_session_id}: {str(e)}")
+            self.__logger.error(
+                f"Unexpected error deleting FitnessTest {fitness_test_id} from TestSession {test_session_id}: {str(e)}"
+            )
             return False
 
-
-
-    async def update_fitness_test(self, fitness_test_id: int, updated_fitness_test: FitnessTest) -> type[
-                                                                                                        FitnessTest] | None:
+    async def update_fitness_test(
+        self, fitness_test_id: int, updated_fitness_test: FitnessTest
+    ) -> type[FitnessTest] | None:
         """
         Updates an existing FitnessTest, handling polymorphic subclasses.
 
@@ -728,26 +766,38 @@ class DBService(metaclass=Singleton):
                 async with session.begin():
                     # Load with polymorphic identity (all columns)
                     fitness_test = await session.get(
-                        FitnessTest, fitness_test_id, options=[selectin_polymorphic(FitnessTest)]
+                        FitnessTest,
+                        fitness_test_id,
+                        options=[selectin_polymorphic(FitnessTest)],
                     )
                     if not fitness_test:
-                        self.__logger.error(f"FitnessTest with ID {fitness_test_id} not found.")
+                        self.__logger.error(
+                            f"FitnessTest with ID {fitness_test_id} not found."
+                        )
                         return None
 
                     # Copy all matching attributes, including polymorphic fields
                     for key in updated_fitness_test.__mapper__.columns.keys():
                         if key != "id":
-                            setattr(fitness_test, key, getattr(updated_fitness_test, key))
-                    
+                            setattr(
+                                fitness_test, key, getattr(updated_fitness_test, key)
+                            )
+
                     await session.flush()
                     await session.refresh(fitness_test)
                     return fitness_test
         except IntegrityError as e:
-            self.__logger.error(f"Integrity error updating FitnessTest {fitness_test_id}: {str(e)}")
+            self.__logger.error(
+                f"Integrity error updating FitnessTest {fitness_test_id}: {str(e)}"
+            )
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error updating FitnessTest {fitness_test_id}: {str(e)}")
+            self.__logger.error(
+                f"Database error updating FitnessTest {fitness_test_id}: {str(e)}"
+            )
             return None
         except Exception as e:
-            self.__logger.error(f"Unexpected error updating FitnessTest {fitness_test_id}: {str(e)}")
+            self.__logger.error(
+                f"Unexpected error updating FitnessTest {fitness_test_id}: {str(e)}"
+            )
             return None

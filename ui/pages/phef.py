@@ -1,6 +1,8 @@
 from shiny import ui, render, reactive
 from .sessions import get_sessions_store
+from ..services.db_service import DBService
 
+db_service = DBService("ui/config/config.yml")
 def get_ui():
     return ui.nav_panel(
         "PHEF Tests",
@@ -48,9 +50,9 @@ def get_ui():
         ),
     )
 
-def server(input, output, session):
+async def server(input, output, session):
     # Reactive list of dicts: {id, serialnr, session_id, session_date, side_bridge_s, run2400_s}
-    records = reactive.Value([])
+    records = reactive.Value(await db_service.get_all_fitness_tests_full())
     next_id = reactive.Value(1)
     status = reactive.Value("Ready.")
 
@@ -199,6 +201,7 @@ def server(input, output, session):
     @output
     @render.ui
     def ph_grid():
+
         return _to_table(records.get())
 
     @reactive.Effect

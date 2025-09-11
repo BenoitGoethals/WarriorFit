@@ -1,5 +1,9 @@
 from shiny import ui, render, reactive
 
+from ui.services.db_service import DBService
+db_service = DBService("ui/config/config.yml")
+
+
 def get_ui():
     return ui.nav_panel(
         "User Management",
@@ -50,7 +54,7 @@ def get_ui():
 
 def server(input, output, session):
     # Reactive store of users: list of dicts with required keys
-    users = reactive.Value([])
+    users = reactive.Value(db_service.get_all_users())
 
     def _key(u):
         return u.get("serialnmbr", "")
@@ -77,8 +81,8 @@ def server(input, output, session):
                 return False, f"Serial '{serial}' already exists."
         return True, "OK"
 
-    def _refresh_select_choices():
-        opts = {u["serialnmbr"]: f'{u["serialnmbr"]} — {u["forname"]} {u["name"]}' for u in users.get()}
+    async def _refresh_select_choices():
+        opts = {u.serial_number: f'{u.serial_number} — {u.username} {u.email}' for u in await db_service.get_all_users()}
         session.send_input_message(
             "um_select_serial",
             {"choices": opts, "selected": None},
@@ -88,21 +92,20 @@ def server(input, output, session):
         # Build a simple HTML table to simulate a grid
         header = ui.tags.tr(
             ui.tags.th("Serial"),
-            ui.tags.th("Forname"),
             ui.tags.th("Name"),
             ui.tags.th("Email"),
             ui.tags.th("Role"),
         )
         rows = []
         for u in users_list:
-            role = u.get("role", "")
+            role = u.role
             rows.append(
                 ui.tags.tr(
-                    ui.tags.td(u.get("serialnmbr", "")),
-                    ui.tags.td(u.get("forname", "")),
-                    ui.tags.td(u.get("name", "")),
-                    ui.tags.td(u.get("email", "")),
-                    ui.tags.td(role),
+                    ui.tags.td(u.serial_number, ""),
+                    ui.tags.td(u.username, ""),
+
+                    ui.tags.td(u.email, ""),
+                    ui.tags.td(str(role))
                 )
             )
         return ui.tags.table(
@@ -142,12 +145,12 @@ def server(input, output, session):
 
     @output
     @render.ui
-    def um_grid():
-        return _to_table(users.get())
+    async def um_grid():
+        return _to_table(await db_service.get_all_users())
 
     @reactive.Effect
-    def _init_choices():
-        _refresh_select_choices()
+    async def _init_choices():
+        await _refresh_select_choices()
 
     @reactive.Effect
     @reactive.event(input.um_create_btn)
