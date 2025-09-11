@@ -1,14 +1,11 @@
 import datetime
 import random
 from typing import Optional
-import asyncio
 
-from sqlalchemy.dialects.oracle.dictionary import all_users
-
-from backend.db.db_model import User, TestSession, PhefTest
-from backend.model.role import Role
-from backend.model.type_fitness_test import TypeFitnessTest
-from backend.services.db_service import DBService
+from data.db.db_model import User, TestSession, PhefTest
+from core.role import Role
+from core.type_fitness_test import TypeFitnessTest
+from ui.services.db_service import DBService
 
 # Constants
 DEFAULT_ROLE = Role.USER

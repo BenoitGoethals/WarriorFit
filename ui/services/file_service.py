@@ -1,4 +1,4 @@
-from backend.core.singleton import Singleton
+from logic.singleton import Singleton
 
 
 class FileService(metaclass=Singleton):

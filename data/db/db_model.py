@@ -1,8 +1,5 @@
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
 
-import enum
-from datetime import datetime
-
 from sqlalchemy import (
     Column,
     Integer,
@@ -12,12 +9,12 @@ from sqlalchemy import (
     Boolean,
     DateTime,
 )
-from sqlalchemy import Date, Float, Text, func
+from sqlalchemy import Float, Text, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from backend.model.role import Role
-from backend.model.type_fitness_test import TypeFitnessTest
+from core.role import Role
+from core.type_fitness_test import TypeFitnessTest
 
 Base = declarative_base()
 

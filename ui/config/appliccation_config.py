@@ -3,7 +3,7 @@ from typing import Any
 import asyncpg
 import yaml
 from sqlalchemy.ext.asyncio import create_async_engine
-from backend.core.singleton import Singleton
+from logic.singleton import Singleton
 
 
 class ApplicationConfig(metaclass=Singleton):

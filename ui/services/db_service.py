@@ -1,20 +1,19 @@
 import logging
-from datetime import datetime, timedelta
-from typing import List, Optional, Any, Coroutine
+from datetime import datetime
+from typing import List, Optional, Any
 
 import bcrypt
 from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-from sqlalchemy.orm import joinedload, selectin_polymorphic  # add selectin_polymorphic
+from sqlalchemy.orm import joinedload  # add selectin_polymorphic
 from sqlalchemy.orm import selectinload, selectin_polymorphic
 
-from backend.config.appliccation_config import ApplicationConfig
-from backend.config.configuration_manager import ConfigurationManager
-from backend.core.singleton import Singleton
-from backend.db.db_model import AuditLog, User, Base, TestSession, FitnessTest, PhefTest, FunctionalTest, \
+from ui.config.appliccation_config import ApplicationConfig
+from logic.singleton import Singleton
+from data.db.db_model import AuditLog, User, TestSession, FitnessTest, PhefTest, FunctionalTest, \
     CombatTestParatrooper, CombatSwimmingTest
-from backend.utils.Os import Os
+from utils.Os import Os
 
 
 

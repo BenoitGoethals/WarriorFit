@@ -4,11 +4,10 @@ import logging
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Body, Depends
 
-import backend
-from backend.api.auth_service import Auth
-from backend.api.json_shema import TestSession, TestSessionFull
-from backend.model.role import Role
-from backend.services.db_service import DBService
+from api.auth_service import Auth
+from api.json_shema import TestSession, TestSessionFull
+from core.role import Role
+from ui.services.db_service import DBService
 
 router = APIRouter(prefix="/testsessions", tags=["testsessions"])
 logger = logging.getLogger(__name__)
@@ -71,7 +70,7 @@ async def test_session_by_id_full(id: int, db_service: DBService = Depends(get_d
 @router.post("/", summary="Add a test session", response_model=TestSession)
 async def add_test_session(session: dict = Body(...), db_service: DBService = Depends(get_db)):
     try:
-        new_test_session = backend.services.db_service.TestSession(
+        new_test_session = ui.services.db_service.TestSession(
 
             serial_number_pti=session.get('serial_number_pti'),
             datetime_start=_parse_datetime(session.get('datetime_start')),
@@ -103,7 +102,7 @@ async def update_test_session(id: int, session: dict = Body(...), db_service: DB
        - Accepts user data as input.
        """
     try:
-        new_test_session = backend.services.db_service.TestSession(
+        new_test_session = ui.services.db_service.TestSession(
             id=session.get('id'),
             serial_number_pti=session.get('serial_number_pti'),
             datetime_start=_parse_datetime(session.get('datetime_start')),

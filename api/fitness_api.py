@@ -1,13 +1,12 @@
 # Security configuration
 
-from fastapi_cache.backends.memcached import MemcachedBackend
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.memcached import MemcachedBackend
 
-from backend.api import users, testsession
-from backend.api.auth_service import Auth
-from backend.model.role import Role
-from backend.services.db_service import DBService
+from api import users, testsession
+from api.auth_service import Auth
+from core.role import Role
+from ui.services.db_service import DBService
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -15,7 +14,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import FastAPI, Depends, HTTPException
@@ -36,7 +34,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 class FitnessApi:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-    db_service = DBService("../config/config.yml")
+    db_service = DBService("../ui/config/config.yml")
     def __init__(self):
         self.__logger = logging.getLogger(__name__)
         self.app = FastAPI(
@@ -94,8 +92,8 @@ class FitnessApi:
             return {"access_token": access_token, "token_type": "bearer"}
 
         # Include all routers
-        self.app.include_router(users.router,)
-        self.app.include_router(testsession.router,dependencies=[Depends(lambda: self.db_service)])
+        self.app.include_router(users.router, )
+        self.app.include_router(testsession.router, dependencies=[Depends(lambda: self.db_service)])
 
 
     @classmethod

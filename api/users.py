@@ -1,4 +1,3 @@
-import json
 import logging
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
@@ -6,14 +5,13 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.params import Body, Depends
 from datetime import datetime
 
-from fastapi_cache.decorator import cache
 from starlette.responses import RedirectResponse
 
-from backend.api.auth_service import Auth
-from backend.api.json_shema import LoginSchema
-from backend.db.db_model import User
-from backend.model.role import Role
-from backend.services.db_service import DBService
+from api.auth_service import Auth
+from api.json_shema import LoginSchema
+from data.db.db_model import User
+from core.role import Role
+from ui.services.db_service import DBService
 
 router = APIRouter(prefix="/users", tags=["users"])
 logger = logging.getLogger(__name__)

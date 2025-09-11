@@ -1,6 +1,6 @@
 import datetime
 
-from backend.model.service_men import ServiceMen
+from core.service_men import ServiceMen
 
 
 class DefenseExternalService:
