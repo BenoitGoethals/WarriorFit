@@ -4,6 +4,17 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
+    "aiomcache>=0.8.2",
+    "asyncpg>=0.30.0",
+    "bcrypt>=4.3.0",
+    "fastapi>=0.116.1",
+    "fastapi-cache>=0.1.0",
+    "fastapi-cache2>=0.2.2",
+    "memcache>=0.14.0",
+    "passlib>=1.7.4",
+    "python-jose>=3.5.0",
+    "pyyaml>=6.0.2",
     "rsconnect-python>=1.27.1",
     "shiny>=1.4.0",
+    "sqlalchemy>=2.0.43",
 ]
