@@ -836,3 +836,35 @@ class DBService(metaclass=Singleton):
         except Exception as e:
             self.__logger.error(f"Unexpected error deleting user with serial {selected_serial}: {str(e)}")
             return False
+
+    async def update_user_by_serial(self, user):
+
+        
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    existing_user = (await session.execute(
+                        select(User).where(User.serial_number == user.serial_number)
+                    )).scalar_one_or_none()
+                    if not existing_user:
+                        self.__logger.error(f"User with serial number {user.serial_number} not found.")
+                        return None
+
+                    # Update fields
+
+                    existing_user.username = user.username
+                    existing_user.password_hash = user.password_hash
+                    existing_user.email = user.email
+                    existing_user.role = user.role
+                    existing_user.serial_number = user.serial_number
+
+                    await session.flush()  # Ensure changes are applied
+                    await session.refresh(existing_user)  # Refresh to get updated data
+                    return existing_user
+
+        except IntegrityError as e:
+            self.__logger.error(f"Integrity error updating user {id}: {str(e)}")
+            return None
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error updating user {id}: {str(e)}")
+            return None
