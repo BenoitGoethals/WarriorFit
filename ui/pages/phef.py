@@ -1,54 +1,62 @@
 from shiny import ui, render, reactive
 from .sessions import get_sessions_store
-from ..services.db_service import DBService
+
+from ui.services.db_service import DBService
+from ..user_store import UserStore
 
 db_service = DBService("ui/config/config.yml")
+
+
 def get_ui():
-    return ui.nav_panel(
-        "PHEF Tests",
-        ui.h2("🧪 PHEF Tests"),
-        ui.layout_columns(
-            ui.card(
-                ui.card_header("Add / Edit PHEF Test"),
-                ui.input_text("ph_serialnr", "Serial Number"),
-                ui.input_select("ph_session_id", "Session", choices=[]),
-                ui.output_text("ph_session_date_txt"),
-                ui.input_text(
-                    "ph_side_bridge",
-                    "Side-bridge time (mm:ss or seconds)",
-                    placeholder="e.g., 2:30 or 150",
+    if UserStore.get_user() :
+        return ui.nav_panel(
+            "PHEF Tests",
+            ui.h2("🧪 PHEF Tests"),
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header("Add / Edit PHEF Test"),
+                    ui.input_text("ph_serialnr", "Serial Number"),
+                    ui.input_select("ph_session_id", "Session", choices=[]),
+                    ui.output_text("ph_session_date_txt"),
+                    ui.input_text(
+                        "ph_side_bridge",
+                        "Side-bridge time (mm:ss or seconds)",
+                        placeholder="e.g., 2:30 or 150",
+                    ),
+                    ui.input_text(
+                        "ph_run_2400",
+                        "2400m run time (mm:ss or seconds)",
+                        placeholder="e.g., 10:45 or 645",
+                    ),
+                    ui.br(),
+                    ui.layout_columns(
+                        ui.input_action_button("ph_add_btn", "Add"),
+                        ui.input_action_button("ph_update_btn", "Update"),
+                        ui.input_action_button("ph_clear_btn", "Clear Form"),
+                        col_widths=(3, 3, 3),
+                    ),
+                    ui.br(),
+                    ui.output_text("ph_status"),
+                    full_screen=False,
                 ),
-                ui.input_text(
-                    "ph_run_2400",
-                    "2400m run time (mm:ss or seconds)",
-                    placeholder="e.g., 10:45 or 645",
+                ui.card(
+                    ui.card_header("Records"),
+                    ui.output_ui("ph_grid"),
+                    ui.br(),
+                    ui.layout_columns(
+                        ui.input_select("ph_select_id", "Select record", choices=[]),
+                        ui.input_action_button("ph_load_btn", "Load Selected"),
+                        ui.input_action_button("ph_delete_btn", "Delete Selected"),
+                        col_widths=(6, 3, 3),
+                    ),
+                    full_screen=False,
                 ),
-                ui.br(),
-                ui.layout_columns(
-                    ui.input_action_button("ph_add_btn", "Add"),
-                    ui.input_action_button("ph_update_btn", "Update"),
-                    ui.input_action_button("ph_clear_btn", "Clear Form"),
-                    col_widths=(3, 3, 3),
-                ),
-                ui.br(),
-                ui.output_text("ph_status"),
-                full_screen=False,
+                col_widths=(6, 6),
             ),
-            ui.card(
-                ui.card_header("Records"),
-                ui.output_ui("ph_grid"),
-                ui.br(),
-                ui.layout_columns(
-                    ui.input_select("ph_select_id", "Select record", choices=[]),
-                    ui.input_action_button("ph_load_btn", "Load Selected"),
-                    ui.input_action_button("ph_delete_btn", "Delete Selected"),
-                    col_widths=(6, 3, 3),
-                ),
-                full_screen=False,
-            ),
-            col_widths=(6, 6),
-        ),
-    )
+        )
+
+    return None
+
 
 async def server(input, output, session):
     # Reactive list of dicts: {id, serialnr, session_id, session_date, side_bridge_s, run2400_s}
