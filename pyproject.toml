@@ -13,6 +13,8 @@ dependencies = [
     "fastapi-cache>=0.1.0",
     "fastapi-cache2>=0.2.2",
     "memcache>=0.14.0",
+    "pandas>=2.3.2",
+    "pandas-stubs==2.3.2.250827",
     "passlib>=1.7.4",
     "python-jose>=3.5.0",
     "pyyaml>=6.0.2",

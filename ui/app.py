@@ -15,8 +15,9 @@ def build_app_ui() -> ui.page_navbar:
     Construct and return the root UI for the application.
     """
     return ui.page_navbar(
-        login.get_ui(),
         usermangement.get_ui(),
+        login.get_ui(),
+
         phef.get_ui(),
         sessions.get_ui(),
         dashboard.get_ui(),
@@ -45,8 +46,9 @@ def server(input: Any, output: Any, session: Any) -> None:
 
     # Map navbar labels to their page server functions
     servers_by_tab = {
-        "Login": login.server,
         "User Management": usermangement.server,
+        "Login": login.server,
+
         "PHEF Tests": phef.server,
         "Sessions": sessions.server,
         "Dashboard": dashboard.server,

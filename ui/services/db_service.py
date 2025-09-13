@@ -160,6 +160,7 @@ class DBService(metaclass=Singleton):
             return None
 
     async def add_user(self, user: User) -> Optional[User]:
+
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
@@ -801,3 +802,37 @@ class DBService(metaclass=Singleton):
                 f"Unexpected error updating FitnessTest {fitness_test_id}: {str(e)}"
             )
             return None
+
+    async def serial_exists(self,serial:str) -> bool:
+        try:
+            async with self.SessionLocal() as session:
+                query = select(User).where(User.serial_number == serial)
+                result = await session.execute(query)
+                user = result.scalar_one_or_none()
+                if user is None:
+                    self.__logger.info(f"User '{serial}' not found.")
+                    return False
+                return True
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error in check_user: {e}")
+            return False
+        except Exception as e:
+            self.__logger.error(f"Unexpected error in check_user: {e}")
+            return False
+
+    async def delete_user_by_serial(self, selected_serial):
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    query = delete(User).where(User.serial_number == selected_serial)
+                    result = await session.execute(query)
+                    if result.rowcount == 0:
+                       self.__logger.error(f"No user found with serial {selected_serial}.")
+                       return False
+                    return True
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error deleting user with serial {selected_serial}: {str(e)}")
+            return False
+        except Exception as e:
+            self.__logger.error(f"Unexpected error deleting user with serial {selected_serial}: {str(e)}")
+            return False

@@ -1,7 +1,20 @@
 from shiny import ui, render, reactive
+import pandas as pd
 
+import data
+from data.db.db_model import User,Role
 from ui.services.db_service import DBService
 db_service = DBService("ui/config/config.yml")
+
+
+
+def _get_role_choices():
+    # Convert enum members to strings suitable for UI choices.
+    # Prefer .value when available; fallback to str(member).
+    try:
+        return [r.value for r in Role]
+    except Exception:
+        return [str(r) for r in Role]
 
 
 def get_ui():
@@ -11,31 +24,21 @@ def get_ui():
         ui.layout_columns(
             ui.card(
                 ui.card_header("Users"),
-                ui.input_text(
-                    "um_select_serial",
-                    "Select user (by serial)",
 
-                ),
-                ui.output_ui("um_grid"),
-                ui.br(),
-                ui.layout_columns(
-
-                    ui.input_action_button("um_load_btn", "Load Selected"),
+                    ui.output_data_frame("um_grid"),
                     ui.input_action_button("um_delete_btn", "Delete Selected"),
-                    col_widths=(6, 3, 3),
-                ),
                 full_screen=False,
             ),
             ui.card(
                 ui.card_header("Create / Edit User"),
                 ui.input_text("um_serial", "Serial Number"),
-                ui.input_text("um_forname", "Forname"),
-                ui.input_text("um_name", "Name"),
+                ui.input_text("um_username", "Username"),
+                ui.input_password("um_password", "Password"),
                 ui.input_text("um_email", "Email"),
                 ui.input_select(
                     "um_role",
                     "Role",
-                    choices=["Admin", "Coach", "Member"],
+                    choices= _get_role_choices()
                 ),
                 ui.br(),
                 ui.layout_columns(
@@ -46,6 +49,7 @@ def get_ui():
                 ),
                 ui.br(),
                 ui.output_text("um_status"),
+                ui.output_text("selected")            ,
                 full_screen=False,
             ),
             col_widths=(7, 5),
@@ -55,13 +59,16 @@ def get_ui():
 def server(input, output, session):
     # Reactive store of users: list of dicts with required keys
     users = reactive.Value(db_service.get_all_users())
-
+    # Add a dedicated tick to force grid refreshes
+    refresh_tick = reactive.Value(0)
+    selected_serial = None
     def _key(u):
-        return u.get("serialnmbr", "")
+        # Use the correct key name used throughout the form ("serial")
+        return u.get("serial", "")
 
-    def _validate_user(u, is_update=False, current_serial=None):
+    async def _validate_user(u, is_update=False, current_serial=None):
         # Required fields
-        required_fields = ["serialnmbr", "forname", "name", "email", "role"]
+        required_fields = ["serial", "username", "password", "email", "role"]
         for f in required_fields:
             if not (u.get(f) or "").strip():
                 return False, f"Field '{f}' is required."
@@ -70,14 +77,14 @@ def server(input, output, session):
         if "@" not in email or "." not in email.split("@")[-1]:
             return False, "Invalid email address."
         # Serial uniqueness
-        serial = u["serialnmbr"].strip()
-        existing_serials = {x["serialnmbr"] for x in users.get()}
+        serial = u["serial"].strip()
+        existing_serials = await db_service.serial_exists(serial)
         if is_update:
             # allow same serial if updating same record
-            if serial != (current_serial or "") and serial in existing_serials:
+            if serial != (current_serial or "") and existing_serials:
                 return False, f"Serial '{serial}' already exists."
         else:
-            if serial in existing_serials:
+            if existing_serials:
                 return False, f"Serial '{serial}' already exists."
         return True, "OK"
 
@@ -88,53 +95,29 @@ def server(input, output, session):
             {"choices": opts, "selected": None},
         )
 
-    def _to_table(users_list):
-        # Build a simple HTML table to simulate a grid
-        header = ui.tags.tr(
-            ui.tags.th("Serial"),
-            ui.tags.th("Name"),
-            ui.tags.th("Email"),
-            ui.tags.th("Role"),
-        )
-        rows = []
-        for u in users_list:
-            role = u.role
-            rows.append(
-                ui.tags.tr(
-                    ui.tags.td(u.serial_number, ""),
-                    ui.tags.td(u.username, ""),
 
-                    ui.tags.td(u.email, ""),
-                    ui.tags.td(str(role))
-                )
-            )
-        return ui.tags.table(
-            {"class": "table table-striped table-sm"},
-            ui.tags.thead(header),
-            ui.tags.tbody(*rows) if rows else ui.tags.tbody(
-                ui.tags.tr(ui.tags.td({"colspan": "5"}, "No users yet."))
-            ),
-        )
 
     def _read_form():
         return {
-            "serialnmbr": (input.um_serial() or "").strip(),
-            "forname": (input.um_forname() or "").strip(),
-            "name": (input.um_name() or "").strip(),
+            "serial": (input.um_serial() or "").strip(),
+            "username": (input.um_username() or "").strip(),
+            "password": (input.um_password() or "").strip(),
             "email": (input.um_email() or "").strip(),
             "role": (input.um_role() or "").strip(),
         }
 
     def _write_form(u):
         # Populate inputs with user values
-        session.send_input_message("um_serial", {"value": u.get("serialnmbr", "")})
-        session.send_input_message("um_forname", {"value": u.get("forname", "")})
-        session.send_input_message("um_name", {"value": u.get("name", "")})
+        session.send_input_message("um_serial", {"value": u.get("serial", "")})
+
+        session.send_input_message("um_username", {"value": u.get("username", "")})
+        session.send_input_message("um_password", {"value": u.get("password", "")})
+
         session.send_input_message("um_email", {"value": u.get("email", "")})
         session.send_input_message("um_role", {"value": u.get("role", "")})
 
     def _clear_form():
-        _write_form({"serialnmbr": "", "forname": "", "name": "", "email": "", "role": ""})
+        _write_form({"serial": "","username": "", "password": "",  "email": "", "role": ""})
 
     status = reactive.Value("Ready.")
 
@@ -143,10 +126,49 @@ def server(input, output, session):
     def um_status():
         return status.get()
 
+    @reactive.calc
+    async def users_list():
+        users_list_pd = pd.DataFrame([{
+            'Serial': u.serial_number,
+            'Username': u.username,
+            'Email': u.email,
+
+            'Role': str(u.role),
+            'Active': str(u.is_active),
+            'Created': str(u.created_at.date())
+        } for u in await db_service.get_all_users()])
+        _ = refresh_tick.get()
+        return users_list_pd
+
     @output
-    @render.ui
+    @render.data_frame
     async def um_grid():
-        return _to_table(await db_service.get_all_users())
+        # Create a dependency so this output re-runs when data changes
+
+
+        # Fetch the current data (await the reactive calc), then build the DataGrid
+        df = await users_list()
+        return render.DataGrid(
+            df,
+            filters=True,
+            selection_mode="rows",  # "none" | "rows" | "cells"
+
+        )
+
+    @output
+    @render.text
+    async def selected():
+        sel = input.um_grid_selected_rows()  # returns list of row indices
+        if not sel:
+            return "No row selected"
+        row_idx = sel[0]
+        df = await users_list()
+        row = df.iloc[row_idx]
+
+        selected_serial = row['Serial']
+        status.set(f"Selected user '{row['Serial']}'.")
+        return row['Serial']
+
 
     @reactive.Effect
     async def _init_choices():
@@ -154,15 +176,28 @@ def server(input, output, session):
 
     @reactive.Effect
     @reactive.event(input.um_create_btn)
-    def _on_create():
+    async def _on_create():
         new_user = _read_form()
-        ok, msg = _validate_user(new_user, is_update=False)
+        ok, msg = await _validate_user(new_user, is_update=False)
         if not ok:
             status.set(msg)
             return
-        users.set(users.get() + [new_user])
-        status.set(f"Created user '{new_user['serialnmbr']}'.")
-        _refresh_select_choices()
+        add_user = User()
+        add_user.serial_number = new_user["serial"]
+        add_user.username = new_user["username"]
+        add_user.password_hash = new_user["password"]
+        add_user.email = new_user["email"]
+        add_user.role = new_user["role"]
+        add_user.is_active = True
+        ret_user=await db_service.add_user(add_user)
+        if ret_user:
+            status.set(f"Created user '{new_user['serial']}'.")
+            # Trigger reactivity so um_grid re-renders
+            refresh_tick.set(refresh_tick.get() + 1)
+            _clear_form()
+        else:
+            status.set(f"Failed to create user '{new_user['serial']}'.")
+
 
     @reactive.Effect
     @reactive.event(input.um_update_btn)
@@ -188,19 +223,15 @@ def server(input, output, session):
 
     @reactive.Effect
     @reactive.event(input.um_delete_btn)
-    def _on_delete():
-        sel = input.um_select_serial()
-        if not sel:
+    async def _on_delete():
+        if not selected_serial:
             status.set("Select a user to delete.")
             return
-        current = users.get()
-        if not any(_key(u) == sel for u in current):
-            status.set("Selected user not found.")
-            return
-        users.set([u for u in current if _key(u) != sel])
-        status.set(f"Deleted user '{sel}'.")
-        _refresh_select_choices()
-        _clear_form()
+        deleted=await db_service.delete_user_by_serial(selected_serial)
+        if not deleted:
+            status.set(f"No user found with serial '{selected_serial}'.")
+        status.set(f"Deleted user '{selected_serial}'.")
+        refresh_tick.set(refresh_tick.get() + 1)
 
     @reactive.Effect
     @reactive.event(input.um_load_btn)

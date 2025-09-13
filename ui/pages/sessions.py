@@ -29,8 +29,8 @@ def get_ui():
                 ui.output_ui("se_grid"),
                 ui.br(),
                 ui.layout_columns(
-                    ui.input_select("se_select_id", "Select session", choices=[]),
-                    ui.input_action_button("se_load_btn", "Load Selected"),
+
+
                     ui.input_action_button("se_delete_btn", "Delete Selected"),
                     col_widths=(6, 3, 3),
                 ),
