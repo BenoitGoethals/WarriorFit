@@ -59,6 +59,7 @@ class UserManagementPage:
                     full_screen=False,
                 ),
                 col_widths=(7, 5),
+                id="user_management",
             ),
         )
 
