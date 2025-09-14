@@ -84,8 +84,8 @@ class FitnessWarriorApp:
         async def login_dialog():
             login = ui.div(
                 ui.h2("Login"),
-                ui.input_text("username", "Username"),
-                ui.input_password("password", "Password"),
+                ui.input_text("username_login", "Username"),
+                ui.input_password("password_login", "Password"),
                 ui.input_action_button("handle_login", "Login"),
                 ui.tags.span(
                     ui.output_text("status"), style="color: red; font-weight: bold;"
@@ -106,13 +106,13 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login():
-            username = input.username()
-            password = input.password()
+            username_login = input.username_login()
+            password_login = input.password_login()
             try:
-                if await db_service.check_user(username, password):
-                    user = await db_service.get_user_by_username(username)
+                if await db_service.check_user(username_login, password_login):
+                    user = await db_service.get_user_by_username(username_login)
                     UserStore.set_user(user)
-                    login_user_text.set(f"User :{username}")
+                    login_user_text.set(f"User :{username_login}")
                     status_text.set("")  # clear any previous error
                     ui.modal_remove()
 
