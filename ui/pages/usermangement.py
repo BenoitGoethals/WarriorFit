@@ -2,6 +2,7 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 import data
+from api.auth_service import Auth
 from data.db.db_model import User,Role
 from ui.services.db_service import DBService
 # ... existing code ...
@@ -181,7 +182,7 @@ class UserManagementPage:
             add_user = User()
             add_user.serial_number = new_user["serial"]
             add_user.username = new_user["username"]
-            add_user.password_hash = new_user["password"]
+            add_user.password_hash = Auth.hash_password(new_user["password"])
             add_user.email = new_user["email"]
             add_user.role = new_user["role"]
             add_user.is_active = True
@@ -206,7 +207,7 @@ class UserManagementPage:
             user.id = self.selected_id.get()
             user.serial_number = updated["serial"]
             user.username = updated["username"]
-            user.password_hash = updated["password"]
+            user.password_hash = Auth.hash_password(updated["password"])
             user.email = updated["email"]
             user.role = updated["role"]
             updated=await self.db_service.update_user(user.id,user)
