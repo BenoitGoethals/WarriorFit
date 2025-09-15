@@ -84,7 +84,7 @@ class DBService(metaclass=Singleton):
 
             # File handler -> Logs to a file
             file_handler = logging.FileHandler(
-                log_dir / "application.log", mode="a"
+                log_dir / "application_db.log", mode="a"
             )  # Append mode
             file_handler.setLevel(logging.INFO)
             file_handler.setFormatter(formatter)

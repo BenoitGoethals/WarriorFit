@@ -1,21 +1,75 @@
+import logging
 from typing import Any
 from shiny import App, ui, run_app, render
 
 from data.db.db_model import User
 from ui.user_store import UserStore
+from utils.Os import Os
 from .pages import dashboard, reports, settings, logout
 
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
 
-from data.db.db_model import User,Role
+from data.db.db_model import User, Role
+
+
 class FitnessWarriorApp:
+
     APP_TITLE = "Fitness Warrior"
     DEFAULT_PORT = 8000
 
     # Public static user store
     USER_STORE: UserStore = UserStore()
+
+    @classmethod
+    def setup_logger(cls):
+        """
+        Sets up logging by adding a console handler and file handler.
+        Both handlers will log messages at the informational level and above.
+        """
+        # Create logger
+        cls.logger = logging.getLogger()  # Root logger
+        cls.logger.setLevel(logging.INFO)  # Set global logging level
+
+
+        # Create a formatter
+        formatter = logging.Formatter(
+            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+
+        # Ensure logs directory exists
+        project_root = Os.get_project_root()
+        if project_root:
+            log_dir = project_root / "logs"
+            log_dir.mkdir(exist_ok=True)  # Create logs directory if it doesn't exist
+
+            # File handler -> Logs to a file
+            file_handler = logging.FileHandler(
+                log_dir / "application.log", mode="a"
+            )  # Append mode
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(formatter)
+
+            # Add file handler to the root logger
+            if not any(isinstance(h, logging.FileHandler) for h in cls.logger.handlers):
+                cls.logger.addHandler(file_handler)
+
+        # Console handler -> Logs to console
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(formatter)
+
+        # Add console handler to the root logger
+        if not any(
+                isinstance(h, logging.StreamHandler)
+                and not isinstance(h, logging.FileHandler)
+                for h in cls.logger.handlers
+        ):
+            cls.logger.addHandler(console_handler)
+
+
 
     @staticmethod
     def build_app_ui():
@@ -39,6 +93,7 @@ class FitnessWarriorApp:
         from shiny import reactive
         from ui.services.db_service import DBService  # ensure DB access is available here
         db_service = DBService("ui/config/config.yml")
+
 
         FitnessWarriorApp.register_pages_server(input, output, session)
 
@@ -78,11 +133,12 @@ class FitnessWarriorApp:
                     nav_items.append(ui.nav_menu("Admin", *admin_children))
 
             # Base tabs
-            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui())] if i is not None])
+            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui())] if
+                              i is not None])
 
             # Logged-in user tabs (also appear for admin if desired)
             if user is not None:
-                nav_items.extend([i for i in [ safe(sessions.get_ui())] if i is not None])
+                nav_items.extend([i for i in [safe(sessions.get_ui())] if i is not None])
 
             # Right-side controls
             nav_items.append(ui.nav_spacer())
@@ -107,7 +163,6 @@ class FitnessWarriorApp:
             # Depend on nav_version so we re-render navbar when it changes
             _ = nav_version.get()
             return build_navbar()
-
 
         @output
         @render.text
@@ -138,6 +193,7 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login():
+            logger = getattr(FitnessWarriorApp, "logger", logging.getLogger(__name__))
             username_login = input.username_login()
             password_login = input.password_login()
             try:
@@ -149,10 +205,15 @@ class FitnessWarriorApp:
                     ui.modal_remove()
                     # Trigger navbar rebuild without page reload
                     nav_version.set(nav_version.get() + 1)
+
+                    logger.info(f"User {username_login} logged in successfully")
+
                 else:
                     status_text.set("Invalid username or password.")
-            except Exception:
-                status_text.set("An error occurred while logging in. Please try again.")
+            except Exception as e:
+                logger.error(f"An error occurred while logging in. Please try again. {e}")
+                status_text.set(f"An error occurred while logging in. Please try again. {e}")
+
 
         @reactive.Effect
         def _mount_on_nav_activation():
@@ -179,7 +240,7 @@ class FitnessWarriorApp:
                 # Clear the user and re-render by navigating to a known tab and reloading
                 try:
                     UserStore.logout()
-                except Exception:
+                except Exception as e:
                     UserStore.set_user(None)
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You have been logged out.", type="message")
@@ -193,4 +254,5 @@ class FitnessWarriorApp:
 app = App(FitnessWarriorApp.build_app_ui(), FitnessWarriorApp.server)
 
 if __name__ == "__main__":
+    
     run_app(app, port=FitnessWarriorApp.DEFAULT_PORT, reload=True)
