@@ -5,7 +5,7 @@ from shiny import App, ui, run_app, render
 from data.db.db_model import User
 from ui.user_store import UserStore
 from utils.Os import Os
-from .pages import dashboard, reports, settings, logout
+from .pages import dashboard, reports, settings
 
 from .pages import usermangement
 from .pages import phef
