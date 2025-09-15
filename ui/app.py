@@ -19,24 +19,12 @@ class FitnessWarriorApp:
 
     @staticmethod
     def build_app_ui():
-        return ui.page_navbar(
-            usermangement.get_ui(),
-            # phef.get_ui(),
-            # sessions.get_ui(),
-            dashboard.get_ui(),
-            reports.get_ui(),
-            settings.get_ui(),
-            ui.nav_spacer(),
-            ui.nav_control(
-                ui.div(ui.output_text("login_user"), style="display: flex; align-items: center; height: 100%;")),
-            ui.nav_control(ui.input_action_button("logout_btn", "Logout")),
-            title=FitnessWarriorApp.APP_TITLE,
-            id="main_nav",
+        # Render the whole navbar dynamically via render.ui so it can change without reload.
+        return ui.page_fillable(
+            ui.output_ui("main_nav_container"),
         )
 
-
-
-
+    # ... existing code ...
 
     @staticmethod
     def register_pages_server(input: Any, output: Any, session: Any) -> None:
@@ -62,36 +50,90 @@ class FitnessWarriorApp:
             "Dashboard": dashboard.server,
             "Reports": reports.server,
             "Settings": settings.server,
-
+            # ... existing code ...
         }
 
         mounted = reactive.Value(set())
 
         status_text = reactive.Value("")
         login_user_text = reactive.Value("")
+        # Version bump to force navbar re-render on role/user change
+        nav_version = reactive.Value(0)
 
-        @reactive.Effect
-        async def login_dialog():
-            login = ui.div(
-                ui.h2("Login"),
-                ui.input_text("username_login", "Username"),
-                ui.input_password("password_login", "Password"),
-                ui.input_action_button("handle_login", "Login"),
-                ui.tags.span(
-                    ui.output_text("status"), style="color: red; font-weight: bold;"
-                ),
+        def build_navbar():
+            # Build role-aware navbar elements; never insert None
+            user = UserStore.get_user()
+            role = getattr(user, "role", None)
+
+            def safe(panel):
+                return panel if panel is not None else None
+
+            nav_items = []
+
+            # Admin menu
+            if role == Role.ADMIN:
+                admin_children = [safe(usermangement.get_ui())]
+                admin_children = [c for c in admin_children if c is not None]
+                if admin_children:
+                    nav_items.append(ui.nav_menu("Admin", *admin_children))
+
+            # Base tabs
+            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui())] if i is not None])
+
+            # Logged-in user tabs (also appear for admin if desired)
+            if user is not None:
+                nav_items.extend([i for i in [ safe(sessions.get_ui())] if i is not None])
+
+            # Right-side controls
+            nav_items.append(ui.nav_spacer())
+            nav_items.append(
+                ui.nav_control(
+                    ui.div(ui.output_text("login_user"), style="display: flex; align-items: center; height: 100%;")
+                )
             )
-            ui.modal_show(ui.modal(login, easy_close=False, size="m", footer=None))
+            nav_items.append(ui.nav_control(ui.input_action_button("logout_btn", "Logout")))
+
+            nav_items = [i for i in nav_items if i is not None]
+
+            return ui.page_navbar(
+                *nav_items,
+                title=FitnessWarriorApp.APP_TITLE,
+                id="main_nav",
+            )
+
+        @output
+        @render.ui
+        def main_nav_container():
+            # Depend on nav_version so we re-render navbar when it changes
+            _ = nav_version.get()
+            return build_navbar()
+
 
         @output
         @render.text
-        def status():
+        def login_status():
             return status_text()
 
         @output
         @render.text
         def login_user():
             return login_user_text()
+
+        @reactive.Effect
+        async def login_dialog():
+            status_text.set("")
+
+            login = ui.div(
+                ui.h2("Login"),
+                ui.input_text("username_login", "Username"),
+                ui.input_password("password_login", "Password"),
+                ui.input_action_button("handle_login", "Login"),
+                ui.div(
+                    ui.output_text("login_status", inline=True),
+                    style="color: red; font-weight: bold;"
+                ),
+            )
+            ui.modal_show(ui.modal(login, easy_close=False, size="m", footer=None))
 
         @reactive.Effect
         @reactive.event(input.handle_login)
@@ -105,15 +147,21 @@ class FitnessWarriorApp:
                     login_user_text.set(f"User :{username_login} Role: {user.role}")
                     status_text.set("")
                     ui.modal_remove()
+                    # Trigger navbar rebuild without page reload
+                    nav_version.set(nav_version.get() + 1)
                 else:
                     status_text.set("Invalid username or password.")
-            except Exception as e:
-
+            except Exception:
                 status_text.set("An error occurred while logging in. Please try again.")
 
         @reactive.Effect
         def _mount_on_nav_activation():
-            active = input.main_nav()
+            # This will work as long as the current navbar has id="main_nav"
+            try:
+                active = input.main_nav()
+            except Exception:
+                # main_nav not yet mounted
+                return
             if not active:
                 return
             already = mounted.get()
@@ -128,15 +176,14 @@ class FitnessWarriorApp:
             except Exception:
                 return
             if clicks and clicks > 0:
-                # Clear the user and re-render by navigating to Login and reloading
+                # Clear the user and re-render by navigating to a known tab and reloading
                 try:
                     UserStore.logout()
                 except Exception:
-                    # Fallback to explicit None if logout() not available
                     UserStore.set_user(None)
-                ui.update_navs("main_nav", selected="Login")
+                ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You have been logged out.", type="message")
-                # Hard reload to rebuild UI based on logged-out state
+                # Rebuild UI (hide/unhide pages) after role change
                 ui.insert_ui(
                     selector="body",
                     ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
