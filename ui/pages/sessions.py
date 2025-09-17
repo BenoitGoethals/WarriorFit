@@ -2,9 +2,13 @@ from typing import List, Optional, Dict, Any
 
 from shiny import ui, render, reactive
 
+from api.users import add_user
+from data.db.db_model import TestSession
 from ..services.db_service import DBService
 import datetime
 import pandas as pd
+
+from core.type_fitness_test import TypeFitnessTest
 
 
 class SessionsPage:
@@ -13,6 +17,7 @@ class SessionsPage:
     def __init__(self, db_service: Optional[DBService] = None, config_path: str = "ui/config/config.yml") -> None:
         # Allow DI for testing; default to app config path
         self.db_service = db_service or DBService(config_path)
+        self.refresh_tick = reactive.Value(0)
 
     # ---------- UI ----------
     def get_ui(self):
@@ -24,7 +29,7 @@ class SessionsPage:
                     ui.card_header("Create / Edit Session"),
                     ui.input_select("se_serial", "Serial Number PTI", choices=[]),
                     ui.input_date("se_date", "Date"),
-                    ui.input_text("se_time", "Time (HH:MM)", placeholder="HH:MM"),
+                    ui.input_text("se_time", "Time (HH:MM)", placeholder="HH:MM", value="09:00"),
                     ui.input_select("se_type", "Type", choices=self.SESSION_TYPES),
                     ui.input_checkbox("se_executed", "Executed", value=False),
                     ui.input_text_area("se_description", "Description", rows=3, width="400px"),
@@ -65,13 +70,18 @@ class SessionsPage:
             return [p.serial_number + "   " + p.username for p in pts]
 
         # Populate the Serial Number select once the page/server mounts
-        @reactive.Effect
         async def _populate_pti_choices():
+            # Plain async function that can be awaited from anywhere
             try:
                 choices = await all_pti()
-                ui.update_select("se_serial", choices=choices)
+                ui.update_select("se_serial", choices=choices, selected=None)
             except Exception:
-                ui.update_select("se_serial", choices=[])
+                ui.update_select("se_serial", choices=[], selected=None)
+
+        @reactive.Effect
+        async def _populate_pti_choices_effect():
+            # Effect to populate choices on startup
+            await _populate_pti_choices()
 
         async def _load_initial():
             items = await self.db_service.get_all_test_sessions()
@@ -139,16 +149,14 @@ class SessionsPage:
             session.send_input_message("se_executed", {"value": bool(rec.get("executed", False))})
             session.send_input_message("se_description", {"value": rec.get("description", "") or ""})
 
-        def _clear_form():
-            _write_form(
-                {
-                    "serial_number_pti": None,
-                    "datetime_start": None,
-                    "executed": False,
-                    "description": None,
-                    "type_test": "",
-                }
-            )
+        async def _clear_form():
+            # Refresh PTI choices and reset the form fields
+            await _populate_pti_choices()
+            ui.update_date("se_date", label="Date", value=None)
+            ui.update_text("se_time",   value="09:00")
+            ui.update_select("se_type", choices=self.SESSION_TYPES)
+            ui.update_checkbox("se_executed",value=False)
+            ui.update_text_area("se_description", value="")
 
         async def _refresh_select():
             items = sessions.get() or []
@@ -172,11 +180,11 @@ class SessionsPage:
                 [
                     {
                         "ID": r.get("id", ""),
-                        "Serial PTI": r.get("serial_number_pti", "") or "",
-                        "Start": str(r.get("datetime_start", "") or ""),
-                        "Executed": "Yes" if r.get("executed", False) else "No",
                         "Type": r.get("type_test", "") or "",
+                        "Start": str(r.get("datetime_start", "") or ""),
                         "Description": r.get("description", "") or "",
+                        "Serial PTI": r.get("serial_number_pti", "") or "",
+                        "Executed": "Yes" if r.get("executed", False) else "No",
                     }
                     for r in items
                 ]
@@ -186,6 +194,7 @@ class SessionsPage:
                 df,
                 filters=True,
                 selection_mode="rows",
+                width="100%",
             )
 
         @reactive.Effect
@@ -201,20 +210,32 @@ class SessionsPage:
             if not ok:
                 status.set(msg)
                 return
-            new_id = next_id.get()
-            next_id.set(new_id + 1)
-            record = {
-                "id": new_id,
-                "serial_number_pti": data["serial_number_pti"],
-                "datetime_start": data["datetime_start"],
-                "executed": data["executed"],
-                "description": data["description"],
-                "type_test": data["type_test"],
-            }
-            sessions.set((sessions.get() or []) + [record])
-            status.set(f"Added session #{new_id}.")
+            test_session = TestSession()
+            # Map type string to Enum; fallback to default if unknown
+            try:
+                enum_type = getattr(TypeFitnessTest, str(data["type_test"]).upper())
+            except Exception:
+                enum_type = TypeFitnessTest.PHEF
+
+            test_session.serial_number_pti = data["serial_number_pti"]
+            test_session.datetime_start = data["datetime_start"]
+            test_session.executed = bool(data["executed"])
+            test_session.description = data["description"]
+            test_session.type_test = enum_type
+
+            try:
+                added = await self.db_service.add_test_session(test_session)
+                if not added:
+                    status.set("Failed to add session.")
+                    return
+                self.refresh_tick.set(self.refresh_tick.get() + 1)
+                status.set("Session added successfully.")
+            except Exception as e:
+                status.set(f"Error adding session: {str(e)}")
+                return
+
             await _refresh_select()
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.se_load_btn)
@@ -279,8 +300,8 @@ class SessionsPage:
 
         @reactive.Effect
         @reactive.event(input.se_clear_btn)
-        def _on_clear():
-            _clear_form()
+        async def _on_clear():
+            await _clear_form()
             status.set("Form cleared.")
 
 

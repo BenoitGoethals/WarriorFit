@@ -144,7 +144,7 @@ class TestSession(Base):
     __tablename__ = "test_sessions"
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    serial_number_pti = Column(String(50), unique=True, nullable=True)
+    serial_number_pti = Column(String(50), unique=False, nullable=True)
     datetime_start = Column(TIMESTAMP, nullable=False)
     executed = Column(Boolean, default=False, nullable=False)
     description = Column(String(255), nullable=True)
