@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
     "aiomcache>=0.8.2",
+    "alembic>=1.16.5",
     "asyncpg>=0.30.0",
     "bcrypt>=4.3.0",
     "black>=25.1.0",
@@ -13,9 +14,12 @@ dependencies = [
     "fastapi-cache>=0.1.0",
     "fastapi-cache2>=0.2.2",
     "memcache>=0.14.0",
+    "notebook>=7.4.5",
     "pandas>=2.3.2",
     "pandas-stubs==2.3.2.250827",
     "passlib>=1.7.4",
+    "psycopg2-binary>=2.9.10",
+    "psycopg[binary]>=3.2.10",
     "python-jose>=3.5.0",
     "pyyaml>=6.0.2",
     "rsconnect-python>=1.27.1",

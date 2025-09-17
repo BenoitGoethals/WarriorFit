@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from typing import List, Optional, Any
-
+from data.db.db_model import User,Role
 import bcrypt
 from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -868,3 +868,9 @@ class DBService(metaclass=Singleton):
         except SQLAlchemyError as e:
             self.__logger.error(f"Database error updating user {id}: {str(e)}")
             return None
+
+    async def get_all_pti(self)->list[User]:
+        query = select(User).where(User.role ==Role.PTI)
+        results = await self.fetch_and_log(query, "users")
+        return results if results else []
+

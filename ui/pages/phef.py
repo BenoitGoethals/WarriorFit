@@ -1,5 +1,5 @@
 from shiny import ui, render, reactive
-from .sessions import get_sessions_store
+
 
 from ui.services.db_service import DBService
 from ..user_store import UserStore
@@ -64,7 +64,7 @@ async def server(input, output, session):
     next_id = reactive.Value(1)
     status = reactive.Value("Ready.")
 
-    sessions_store = get_sessions_store()
+    sessions_store = None
 
     def _parse_time_to_seconds(val: str):
         """

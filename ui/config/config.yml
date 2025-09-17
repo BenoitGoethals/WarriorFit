@@ -1,7 +1,7 @@
 db:
   host: "192.168.0.30"
   port: 5432
-  database : "fitnesstests"
+  database : "warriorfit"
   username : "benoi"
   password : "ranger14"
 path:
