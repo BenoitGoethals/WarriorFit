@@ -13,11 +13,42 @@ from core.type_fitness_test import TypeFitnessTest
 
 class SessionsPage:
     SESSION_TYPES = ["phef", "combattest", "swimtest", "functional test", "other"]
+    NO_SELECTION_MESSAGE = "No row selected"
 
     def __init__(self, db_service: Optional[DBService] = None, config_path: str = "ui/config/config.yml") -> None:
         # Allow DI for testing; default to app config path
         self.db_service = db_service or DBService(config_path)
         self.refresh_tick = reactive.Value(0)
+        self.selected_id = reactive.Value(None)
+        # Hold the currently selected row (as a dict) for reuse by update/delete
+        self.selected_row: Optional[Dict[str, Any]] = None
+
+    def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
+        # Ensure required fields and valid type
+        if not data["datetime_start"]:
+            return False, "Date and time are required."
+        if not (data["type_test"] or "").strip():
+            return False, "Type is required."
+        if data["type_test"] not in self.SESSION_TYPES:
+            return False, "Invalid session type."
+        return True, "OK"
+
+    def _set_selected(self, row: Dict[str, Any]) -> None:
+        """
+        Track the selected grid row.
+        - row: a dictionary with keys like ID, Type, Start, Serial PTI, Executed, Description
+        """
+        # Keep both an ID and the full row payload for later use
+        self.selected_row = {
+            "ID": row.get("ID"),
+            "Type": row.get("Type"),
+            "Start": row.get("Start"),
+            "Serial PTI": row.get("Serial PTI"),
+            "Executed": row.get("Executed"),
+            "Description": row.get("Description"),
+        }
+        # Sync the reactive ID for any reactive dependencies
+        self.selected_id.set(self.selected_row["ID"])
 
     # ---------- UI ----------
     def get_ui(self):
@@ -42,6 +73,7 @@ class SessionsPage:
                     ),
                     ui.br(),
                     ui.output_text("se_status"),
+                    ui.output_text("selected"),
                     full_screen=False,
                 ),
                 ui.card(
@@ -103,15 +135,19 @@ class SessionsPage:
             except ValueError:
                 max_id = 0
             next_id.set(max_id + 1)
-
-        def _validate(data: Dict[str, Any]):
-            if not data["datetime_start"]:
-                return False, "Date and time are required."
-            if not (data["type_test"] or "").strip():
-                return False, "Type is required."
-            if data["type_test"] not in self.SESSION_TYPES:
-                return False, "Invalid session type."
-            return True, "OK"
+            return pd.DataFrame(
+                [
+                    {
+                        "ID": r.get("id", ""),
+                        "Type": r.get("type_test", "") or "",
+                        "Start": r.get("datetime_start", "") or "",
+                        "Description": r.get("description", "") or "",
+                        "Serial PTI": r.get("serial_number_pti", "") or "",
+                        "Executed": "Yes" if r.get("executed", False) else "No",
+                    }
+                    for r in converted
+                ]
+            )
 
         def _read_form() -> Dict[str, Any]:
             # Combine date + time into a single datetime
@@ -149,14 +185,19 @@ class SessionsPage:
             session.send_input_message("se_executed", {"value": bool(rec.get("executed", False))})
             session.send_input_message("se_description", {"value": rec.get("description", "") or ""})
 
+
+
         async def _clear_form():
             # Refresh PTI choices and reset the form fields
             await _populate_pti_choices()
             ui.update_date("se_date", label="Date", value=None)
-            ui.update_text("se_time",   value="09:00")
+            ui.update_text("se_time", value="09:00")
             ui.update_select("se_type", choices=self.SESSION_TYPES)
-            ui.update_checkbox("se_executed",value=False)
+            ui.update_checkbox("se_executed", value=False)
             ui.update_text_area("se_description", value="")
+            # Reset tracked selection
+            self.selected_row = None
+            self.selected_id.set(None)
 
         async def _refresh_select():
             items = sessions.get() or []
@@ -172,23 +213,28 @@ class SessionsPage:
         def se_status():
             return status.get()
 
-        @output
-        @render.data_frame
-        async def se_grid():
-            items = sessions.get() or []
+        @reactive.calc
+        async def session_list():
+            items = await self.db_service.get_all_test_sessions()
             df = pd.DataFrame(
                 [
                     {
-                        "ID": r.get("id", ""),
-                        "Type": r.get("type_test", "") or "",
-                        "Start": str(r.get("datetime_start", "") or ""),
-                        "Description": r.get("description", "") or "",
-                        "Serial PTI": r.get("serial_number_pti", "") or "",
-                        "Executed": "Yes" if r.get("executed", False) else "No",
+                        "ID": r.id,
+                        "Type": str(r.type_test.name),
+                        "Start": str(r.datetime_start),
+                        "Description": r.description,
+                        "Serial PTI": r.serial_number_pti,
+                        "Executed": "Yes" if r.executed else "No",
                     }
                     for r in items
                 ]
             )
+            return df
+
+        @output
+        @render.data_frame
+        async def se_grid():
+            df = await session_list()
             df = df.drop(columns=["ID"])
             return render.DataGrid(
                 df,
@@ -196,6 +242,49 @@ class SessionsPage:
                 selection_mode="rows",
                 width="100%",
             )
+
+        @output
+        @render.text
+        async def selected():
+            sel = input.se_grid_selected_rows()  # list of row indices
+            if not sel:
+                return self.NO_SELECTION_MESSAGE
+            row_idx = sel[0]
+            df = await _load_initial()
+            if row_idx < 0 or row_idx >= len(df):
+                return self.NO_SELECTION_MESSAGE
+            row = df.iloc[row_idx]
+            row_dict = row.to_dict()
+
+            # Track selection centrally for reuse by update/delete
+            self._set_selected(row_dict)
+
+            # Build choices and compute the exact display value to select (choices are "serial   username")
+            choices = await all_pti()
+            serial = str(row_dict["Serial PTI"]).strip()
+            selected_option = next(
+                (opt for opt in choices if opt.startswith(serial + " ") or opt == serial),
+                None,
+            )
+            ui.update_select("se_serial", choices=choices, selected=selected_option)
+            # Ensure we pass a date to input_date and set time properly
+            start_dt = row_dict["Start"]
+            try:
+                date_value = start_dt.date()
+            except Exception:
+                date_value = None
+            ui.update_date("se_date", label="Date", value=date_value)
+            ui.update_text("se_time",
+                           value=start_dt.strftime("%H:%M") if getattr(start_dt, "strftime", None) else "09:00")
+            # Normalize enum name to match choices (lowercase, underscores -> spaces)
+            type_raw = str(row_dict["Type"]).strip()
+            type_norm = type_raw.replace("_", " ").lower()
+            selected_type = next((t for t in self.SESSION_TYPES if t.lower() == type_norm), None)
+            ui.update_select("se_type", choices=self.SESSION_TYPES, selected=selected_type)
+            # "Executed" is "Yes"/"No" in the DataFrame; convert to bool properly
+            ui.update_checkbox("se_executed", value=(str(row_dict["Executed"]).strip().lower() == "yes"))
+            ui.update_text_area("se_description", value=str(row_dict["Description"]))
+            return f"Selected session ID: {row_dict['ID']}"
 
         @reactive.Effect
         async def _init_select():
@@ -206,7 +295,7 @@ class SessionsPage:
         @reactive.event(input.se_add_btn)
         async def _on_add():
             data = _read_form()
-            ok, msg = _validate(data)
+            ok, msg = self._validate(data)
             if not ok:
                 status.set(msg)
                 return
@@ -255,48 +344,35 @@ class SessionsPage:
         @reactive.Effect
         @reactive.event(input.se_update_btn)
         async def _on_update():
-            sel = input.se_select_id()
-            if not sel:
+            # Use the tracked selected row stored by selected()
+            sel_row = self.selected_row
+            if not sel_row or not sel_row.get("ID"):
                 status.set("Select a session to update.")
                 return
-            sel_id = int(sel)
+            sel_id = int(sel_row["ID"])
             data = _read_form()
-            ok, msg = _validate(data)
+            ok, msg = self._validate(data)
             if not ok:
                 status.set(msg)
                 return
-            current = sessions.get() or []
-            idx = next((i for i, r in enumerate(current) if r.get("id") == sel_id), None)
-            if idx is None:
-                status.set("Selected session not found.")
-                return
-            current[idx] = {
-                "id": sel_id,
-                "serial_number_pti": data["serial_number_pti"],
-                "datetime_start": data["datetime_start"],
-                "executed": data["executed"],
-                "description": data["description"],
-                "type_test": data["type_test"],
-            }
-            sessions.set(current[:])
+
             status.set(f"Updated session #{sel_id}.")
-            await _refresh_select()
 
         @reactive.Effect
         @reactive.event(input.se_delete_btn)
         async def _on_delete():
-            sel = input.se_select_id()
-            if not sel:
+            # Use the tracked selected row stored by selected()
+            sel_row = self.selected_row
+            if not sel_row or not sel_row.get("ID"):
                 status.set("Select a session to delete.")
                 return
-            sel_id = int(sel)
+            sel_id = int(sel_row["ID"])
             current = sessions.get() or []
             if not any((r.get("id") == sel_id) for r in current):
                 status.set("Selected session not found.")
                 return
             sessions.set([r for r in current if r.get("id") != sel_id])
             status.set(f"Deleted session #{sel_id}.")
-            await _refresh_select()
 
         @reactive.Effect
         @reactive.event(input.se_clear_btn)
