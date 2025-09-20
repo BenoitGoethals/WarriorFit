@@ -56,7 +56,8 @@ class UserManagementPage:
                     ),
                     ui.br(),
                     ui.output_text("um_status"),
-                    ui.output_text("selected"),
+
+                    ui.output_text("selected_user"),
                     full_screen=False,
                 ),
                 col_widths=(7, 5),
@@ -139,10 +140,8 @@ class UserManagementPage:
         @output
         @render.data_frame
         async def um_grid():
-            df = await users_list()
-            # Drop the Password column before displaying
+            df = await users_list()          
             df = df.drop(columns=['Password','id'])
-
             return render.DataGrid(
                 df,
                 filters=True,
@@ -151,7 +150,7 @@ class UserManagementPage:
 
         @output
         @render.text
-        async def selected():
+        async def selected_user():
             sel = input.um_grid_selected_rows()  # list of row indices
             if not sel:
                 return self.NO_SELECTION_MESSAGE

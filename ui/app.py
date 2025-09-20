@@ -194,7 +194,7 @@ class FitnessWarriorApp:
         @reactive.event(input.handle_login)
         async def handle_login():
             logger = getattr(FitnessWarriorApp, "logger", logging.getLogger(__name__))
-            username_login = input.username_login()
+            username_login = input.username_login().lower()
             password_login = input.password_login()
             try:
                 if await db_service.check_user(username_login, password_login):
