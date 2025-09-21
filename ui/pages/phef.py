@@ -2,14 +2,16 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 from core.type_fitness_test import TypeFitnessTest
+from data.db.db_model import PhefTest
 from ui.services.db_service import DBService
 from ..user_store import UserStore
 
 class PhefPage:
     def __init__(self, db: DBService):
         self.db = db
+        self.refresh_tick = reactive.Value(0)
 
-
+    NO_SELECTION_MESSAGE = "No row selected"
     def get_ui(self):
         if UserStore.get_user():
             return ui.nav_panel(
@@ -48,13 +50,14 @@ class PhefPage:
                                 ui.input_action_button("ph_clear_btn", "Clear Form"),
                                 col_widths=(4,),
                             ),
+                            ui.output_text("ph_status", ),
                             ui.br(),
                         #    ui.output_text("ph_status"),
                             full_screen=False,
                         ),
                     ),
                     ui.card(
-                        ui.card_header("Records"),
+                        ui.card_header("Phef Tests"),
                         ui.output_data_frame("ph_grid"),
                         ui.br(),
                         ui.layout_columns(
@@ -104,8 +107,8 @@ class PhefPage:
         def _validate(data):
             if not (data["serialnr"] or "").strip():
                 return False, "Serial number is required."
-            if not (data["session_id"] or "").strip():
-                return False, "Session selection is required."
+            #if not (data["session_id"] or "").strip():
+            #    return False, "Session selection is required."
 
             ok_sbr, sbr = _parse_time_to_seconds(data["side_bridge_r"])
             if not ok_sbr:
@@ -117,7 +120,7 @@ class PhefPage:
             if not ok_run:
                 return False, f"2400m run: {run}"
             return True, {
-                "session_id_int": int(data["session_id"]),
+             #   "session_id_int": int(data["session_id"]),
                 "side_bridge_r_s": sbr,
                 "side_bridge_l_s": sbl,
                 "run2400_s": run,
@@ -157,11 +160,13 @@ class PhefPage:
         # Populate sessions into the select input, preserving current selection when possible
         async def _refresh_session_choices():
             test_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF)
-            items = [
-                s.datetime_start.strftime("%Y-%m-%d %H:%M")+" "+s.type_test.name
-                for s in test_sessions
-            ]
-            ui.update_select("ph_session_id", choices=items, )
+            items = {  # key must be a string; label a human-readable string
+                str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
+                for s in (test_sessions or [])
+            }
+            current = (input.ph_session_id() or "").strip()
+            selected = current if current in items else None
+            ui.update_select("ph_session_id", choices=items, selected=selected)
 
         def _refresh_record_select():
             # No UI select exists for records; keep for future use if needed.
@@ -174,16 +179,42 @@ class PhefPage:
 
         @reactive.calc
         async def sessions_phef__data():
+            _ = self.refresh_tick.get()
             return pd.DataFrame([
                 {
                     "ID": r.id,
                     "Serial": r.serial_number,
                     "runningTime": r.running_time,
-                    "SidebridgeR": r.sideBridge_r,
-                    "SidebridgeL": r.sideBridge_l,
+                    "Running score" : None,
+                    "Sidebridge R ": r.sideBridge_r,
+                    "Sidebridge R score": None,
+                    "Sidebridge L": r.sideBridge_l,
+                    "Sidebridge L score": None,
+                    "Totale Score" : None
+
                 }
                 for r in await self.db.get_all_phef()
             ])
+
+        @output
+        @render.text
+        async def selected_phef():
+            # Ensure we call the reactive input accessor
+            sel = input.ph_grid_selected_rows()
+            if not sel:
+                return self.NO_SELECTION_MESSAGE
+            row_idx = sel[0]
+            df = await sessions_phef__data()
+            if row_idx < 0 or row_idx >= len(df):
+                return self.NO_SELECTION_MESSAGE
+            row = df.iloc[row_idx]
+
+            # Update inputs with proper API and column names, formatting to mm:ss
+            ui.update_text("ph_serialnr", value=str(row["Serial"]))
+            ui.update_text("ph_side_bridge_l", value=_format_seconds(int(row["Sidebridge L"])))
+            ui.update_text("ph_side_bridge_r", value=_format_seconds(int(row["Sidebridge R "])))
+            ui.update_text("ph_run_2400", value=_format_seconds(int(row["runningTime"])))
+            return f"Selected: {row['Serial']}"
 
         @output
         @render.data_frame
@@ -191,9 +222,10 @@ class PhefPage:
             df = await sessions_phef__data()
             return render.DataGrid(
                 df,
-                filters=True,
+                filters=False,
                 selection_mode="rows",
             )
+
 
         # Single async initializer to avoid resetting choices
         @reactive.Effect
@@ -208,8 +240,46 @@ class PhefPage:
             selected_session_id.set(val)
 
         @reactive.Effect
+        @reactive.event(input.ph_grid_selected_rows)
+        async def _on_ph_row_selected():
+            try:
+                sel = input.ph_grid_selected_rows()
+                if not sel:
+                    status.set(self.NO_SELECTION_MESSAGE)
+                    return
+                row_idx = sel[0]
+                df = await sessions_phef__data()
+                if row_idx < 0 or row_idx >= len(df):
+                    status.set(self.NO_SELECTION_MESSAGE)
+                    return
+                row = df.iloc[row_idx]
+
+                # Extract fields safely (note: "Sidebridge R " has a trailing space in the DataFrame)
+                serial = str(row.get("Serial", "") or "")
+
+                side_l = row.get("Sidebridge L", None)
+                side_r = row.get("Sidebridge R ", row.get("Sidebridge R", None))
+                run_t = row.get("runningTime", None)
+
+                # Format to mm:ss where possible
+                def fmt(x):
+                    try:
+                        return _format_seconds(int(x))
+                    except Exception:
+                        return ""
+
+                ui.update_text("ph_serialnr", value=serial)
+                ui.update_text("ph_side_bridge_l", value=fmt(side_l))
+                ui.update_text("ph_side_bridge_r", value=fmt(side_r))
+                ui.update_text("ph_run_2400", value=fmt(run_t))
+
+                status.set(f"Selected PHEF: {serial}")
+            except Exception as e:
+                status.set(f"Selection error: {e}")
+
+        @reactive.Effect
         @reactive.event(input.ph_add_btn)
-        def _on_add():
+        async def _on_add():
             data = _read_form()
             ok, res = _validate(data)
             if not ok:
@@ -219,15 +289,34 @@ class PhefPage:
             # Placeholder: local-only add (no DB persistence implemented here)
             new_id = max([r["id"] for r in records.get()] + [0]) + 1
             record = {
-                "id": new_id,
+                "id": data["session_id"],
                 "serialnr": data["serialnr"],
-                "session_id": res["session_id_int"],
+
                 "side_bridge_r_s": res["side_bridge_r_s"],
                 "side_bridge_l_s": res["side_bridge_l_s"],
                 "run2400_s": res["run2400_s"],
             }
+            phef= PhefTest()
+            phef.test_session_id=int(record["id"])
+            phef.serial_number=record["serialnr"]
+            phef.running_time=record["run2400_s"]
+            phef.sideBridge_r=record["side_bridge_r_s"]
+            phef.sideBridge_l=record["side_bridge_l_s"]
+            phef.pointBridge_r=0
+            phef.pointBridge_l=0
+            phef.pointsRunning=0
+
+
+
+            added_phef= await self.db.add_fitness_test_to_TestSession(int(record["id"]), phef)
+            if not added_phef:
+                status.set(f"Failed to add PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
+                return
+
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])
-            status.set(f"Added PHEF test #{new_id} for {record['serialnr']} in session {record['session_id']}.")
+
+            status.set(f"Added PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
             _clear_form()
 
         @reactive.Effect

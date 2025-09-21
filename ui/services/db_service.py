@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Coroutine
 
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import User,Role
+from data.db.db_model import User, Role, TestSession
 import bcrypt
 from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -401,7 +401,7 @@ class DBService(metaclass=Singleton):
 
     async def add_fitness_test_to_TestSession(
         self, test_session_id: int, fitness_test: FitnessTest
-    ) -> Optional[TestSession]:
+    ) -> type[TestSession] | None:
         """
         Adds a fitness test to an existing test session in the database.
 

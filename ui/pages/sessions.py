@@ -75,13 +75,14 @@ class SessionsPage:
                     ),
                     ui.br(),
                     ui.output_text("se_status"),
+                    ui.output_text("selected_session"),
 
                     full_screen=False,
                 ),
                 ui.card(
                     ui.card_header("Sessions"),
                     ui.output_data_frame("se_grid"),
-                    ui.output_text("selected_session"),
+
                     ui.layout_columns(
                         ui.input_action_button("se_delete_btn", "Delete Selected"),
                         col_widths=(6, 3, 3),
@@ -250,7 +251,6 @@ class SessionsPage:
 
         @output
         @render.text
-
         async def selected_session():
             sel = input.se_grid_selected_rows()  # list of row indices
             if not sel:
@@ -320,7 +320,7 @@ class SessionsPage:
                 if not added:
                     status.set("Failed to add session.")
                     return
-                self.refresh_tick.set(self.refresh_tick.get() + 1)
+                self.refresh_tick = reactive.Value(0)
                 #render.DataGrid(await session_list(),selection_mode="rows")
                 next_id.set(next_id.get() + 1)
                 sessions.set(
