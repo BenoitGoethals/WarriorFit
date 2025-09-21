@@ -1,3 +1,4 @@
+from numpy import integer
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
 
 from sqlalchemy import (
@@ -66,7 +67,7 @@ class FitnessTest(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     serial_number = Column(String(50), unique=True, nullable=True)
-    passed = Column(Boolean, default=False, nullable=False)
+
 
 
     # Add discriminator column for inheritance
@@ -78,25 +79,28 @@ class FitnessTest(Base):
     }
 
     def __repr__(self):
-        return f"<FitnessTest(id={self.id}, serial_number={self.serial_number}, passed={self.passed})>"
+        return f"<FitnessTest(id={self.id}, serial_number={self.serial_number}, )>"
 
     def __str__(self):
-        return f"FitnessTest(id={self.id}, serial_number={self.serial_number}, passed={self.passed})"
+        return f"FitnessTest(id={self.id}, serial_number={self.serial_number}, )"
 
 class PhefTest(FitnessTest):
     __tablename__ = "phef_tests"
     id = Column(Integer, ForeignKey('fitness_tests.id'), primary_key=True)
     running_time = Column(Float, nullable=False)
-    planking_time = Column(Float, nullable=False)
+    sideBridge_r = Column(Float, nullable=False)
+    sideBridge_l = Column(Float, nullable=False)
+    pointBridge_r = Column(Integer, nullable=False)
+    pointBridge_l = Column(Integer, nullable=False)
+    pointsRunning = Column(Integer, nullable=False)
     __mapper_args__ = {
         'polymorphic_identity': 'phef_test'
     }
 
     def __repr__(self):
-        return f"<PhefTest(id={self.id}, running_time={self.running_time}, planking_time={self.planking_time})>"
+        return f"<PhefTest(id={self.id}, running_time={self.running_time}, sideBridge_r={self.sideBridge_r}, sideBridge_l={self.sideBridge_l})>"
     def __str__(self):
-        return f"PhefTest(id={self.id}, running_time={self.running_time}, planking_time={self.planking_time})"
-
+        return f"PhefTest(id={self.id}, running_time={self.running_time}, sideBridge_r={self.sideBridge_r}, sideBridge_l={self.sideBridge_l})"
 
 class FunctionalTest(FitnessTest):
     __tablename__ = "functional_tests"

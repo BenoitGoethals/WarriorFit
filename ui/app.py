@@ -133,7 +133,7 @@ class FitnessWarriorApp:
                     nav_items.append(ui.nav_menu("Admin", *admin_children))
 
             # Base tabs
-            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui())] if
+            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui()),safe(phef.get_ui())] if
                               i is not None])
 
             # Logged-in user tabs (also appear for admin if desired)

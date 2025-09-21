@@ -75,7 +75,7 @@ class SessionsPage:
                     ),
                     ui.br(),
                     ui.output_text("se_status"),
-                  
+
                     full_screen=False,
                 ),
                 ui.card(
@@ -321,6 +321,19 @@ class SessionsPage:
                     status.set("Failed to add session.")
                     return
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
+                #render.DataGrid(await session_list(),selection_mode="rows")
+                next_id.set(next_id.get() + 1)
+                sessions.set(
+                    sessions.get() + [
+                        {
+                            "id": added.id,
+                            "serial_number_pti": added.serial_number_pti,
+                            "datetime_start": added.datetime_start,
+                            "executed": added.executed,
+                            "description": added.description,
+                        }
+                    ]
+                )
                 status.set("Session added successfully.")
             except Exception as e:
                 status.set(f"Error adding session: {str(e)}")

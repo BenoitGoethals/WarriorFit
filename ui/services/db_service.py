@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 from typing import List, Optional, Any
+
+from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import User,Role
 import bcrypt
 from sqlalchemy import select, delete
@@ -455,6 +457,17 @@ class DBService(metaclass=Singleton):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
+    async def get_all_test_sessions_type_fitnessTest(self,typetest:TypeFitnessTest) -> List[TestSession]:
+        """
+        Fetches all test sessions from the database.
+
+        :return: A list of test session objects.
+        :rtype: List[Any]
+        """
+        query = select(TestSession).where(TestSession.type_test==typetest)
+        results = await self.fetch_and_log(query, "test sessions")
+        return results if results else []
+
     async def delete_all_test_sessions(self):
         query = delete(TestSession)
         try:
@@ -694,6 +707,14 @@ class DBService(metaclass=Singleton):
                 f"Unexpected error fetching all fitness tests (full): {str(e)}"
             )
             return []
+        
+    async def get_all_phef(self) -> List[PhefTest]:
+        """
+        Fetch all PhefTest entities with their related TestSession objects.
+        """
+        query = select(PhefTest)
+        results = await self.fetch_and_log(query, "phef tests")
+        return results if results else []
 
     async def delete_fitness_test_from_test_session(
         self, test_session_id: int, fitness_test_id: int
