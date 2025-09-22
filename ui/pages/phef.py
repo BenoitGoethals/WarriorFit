@@ -11,6 +11,7 @@ class PhefPage:
         self.db = db
         self.refresh_tick = reactive.Value(0)
 
+
     NO_SELECTION_MESSAGE = "No row selected"
     def get_ui(self):
         if UserStore.get_user():
@@ -22,12 +23,13 @@ class PhefPage:
                         ui.card(
                             ui.card_header("Session"),
                             ui.input_select("ph_session_id", "Session", choices=[]),
+                            ui.input_action_button("ph_lock", "Lock"),
 
                             full_screen=False,
                         ),
                         ui.card(
                             ui.card_header("Add / Edit PHEF Test"),
-                            ui.input_text("ph_serialnr", "Serial Number"),
+                            ui.input_text("ph_serialnr", "Serial Number" ),
                             ui.input_text(
                                 "ph_side_bridge_r",
                                 "Side-bridge Right time (mm:ss)",
@@ -75,9 +77,39 @@ class PhefPage:
         # Reactive state
         records = reactive.Value([])
 
+        locked = reactive.Value(False)
+
+        @reactive.Effect
+        @reactive.event(input.ph_lock)
+        def _on_lock():
+            if locked.get():
+                return
+            locked.set(True)
+
+            # Disable the session selector and the Lock button
+            session.set_input_props("ph_session_id", disabled=True)
+            session.set_input_props("ph_lock", disabled=True)
+
+            try:
+                status.set("Session selection locked.")
+            except Exception:
+                pass
+
+        # If you also want to prevent any code reacting to changes while locked:
+        @reactive.Effect
+        @reactive.event(input.ph_session_id)
+        def _guard_session_change_when_locked():
+            if locked.get():
+                # Re-apply the current value (optional safeguard)
+                session.set_input_props("ph_session_id", disabled=True)
+                try:
+                    status.set("Session is locked. Change ignored.")
+                except Exception:
+                    pass
+
         status = reactive.Value("Ready.")
         selected_session_id = reactive.Value("")  # track current selection
-
+        selected_phef_id= reactive.Value("")
         def _parse_time_to_seconds(val: str):
             txt = (val or "").strip()
             if not txt:
@@ -197,24 +229,7 @@ class PhefPage:
             ])
 
         @output
-        @render.text
-        async def selected_phef():
-            # Ensure we call the reactive input accessor
-            sel = input.ph_grid_selected_rows()
-            if not sel:
-                return self.NO_SELECTION_MESSAGE
-            row_idx = sel[0]
-            df = await sessions_phef__data()
-            if row_idx < 0 or row_idx >= len(df):
-                return self.NO_SELECTION_MESSAGE
-            row = df.iloc[row_idx]
 
-            # Update inputs with proper API and column names, formatting to mm:ss
-            ui.update_text("ph_serialnr", value=str(row["Serial"]))
-            ui.update_text("ph_side_bridge_l", value=_format_seconds(int(row["Sidebridge L"])))
-            ui.update_text("ph_side_bridge_r", value=_format_seconds(int(row["Sidebridge R "])))
-            ui.update_text("ph_run_2400", value=_format_seconds(int(row["runningTime"])))
-            return f"Selected: {row['Serial']}"
 
         @output
         @render.data_frame
@@ -253,7 +268,8 @@ class PhefPage:
                     status.set(self.NO_SELECTION_MESSAGE)
                     return
                 row = df.iloc[row_idx]
-
+                selected_phef_id.set(row["ID"] or "")
+                selected_session_id.set(row["ID"] or "")
                 # Extract fields safely (note: "Sidebridge R " has a trailing space in the DataFrame)
                 serial = str(row.get("Serial", "") or "")
 
@@ -305,9 +321,6 @@ class PhefPage:
             phef.pointBridge_r=0
             phef.pointBridge_l=0
             phef.pointsRunning=0
-
-
-
             added_phef= await self.db.add_fitness_test_to_TestSession(int(record["id"]), phef)
             if not added_phef:
                 status.set(f"Failed to add PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
@@ -319,25 +332,63 @@ class PhefPage:
             status.set(f"Added PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
             _clear_form()
 
+        # Helper to build a PhefTest from merged, validated input
+        def _build_phef_from_form(payload: dict) -> PhefTest:
+            phef = PhefTest()
+            phef.id = selected_phef_id.get()
+            phef.test_session_id = int(payload["session_id"])
+            phef.serial_number = payload["serialnr"]
+            phef.running_time = payload["run2400_s"]
+            phef.sideBridge_r = payload["side_bridge_r_s"]
+            phef.sideBridge_l = payload["side_bridge_l_s"]
+            phef.pointBridge_r = 0
+            phef.pointBridge_l = 0
+            phef.pointsRunning = 0
+            return phef
+
         @reactive.Effect
         @reactive.event(input.ph_update_btn)
-        def _on_update():
-            # Without a record selection UI, this is a placeholder
-            status.set("Update not implemented without a record selection. Use grid selection + edit flow if added.")
+        async def _on_update():
+            data = _read_form()
+            ok, res = _validate(data)
+            if not ok:
+                status.set(res)
+                return
+
+            # Merge raw data (for ids/text) with validated/normalized values
+            payload = {**data, **res}
+            phef = _build_phef_from_form(payload)
+
+            updated_phef = await self.db.update_fitness_test(int(phef.id), phef)
+            if not updated_phef:
+                status.set(
+                    f"Failed to update PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}."
+                )
+                return
+
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+            status.set(
+                f"Updated PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}."
+            )
+            _clear_form()
 
         @reactive.Effect
         @reactive.event(input.ph_delete_btn)
         async def _on_delete():
             sel = input.ph_grid_selected_rows()
-            if not sel:
+            sel_session_id = input.ph_session_id()
+            if not sel or not sel_session_id:
                 status.set("Select a row to delete.")
                 return
             df = await sessions_phef__data()
-            # Placeholder: dataset is coming from DB; deletion not implemented here
+            del_phef = await self.db.delete_fitness_test_from_test_session(int(sel_session_id),int(selected_session_id.get()))
+            if not del_phef:
+                status.set(f"Failed to delete PHEF test for record ID {sel[0]}.")
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
             try:
                 row_idx = sel[0]
                 row = df.iloc[row_idx]
-                status.set(f"Delete not implemented in UI yet for record ID {row['ID']}.")
+                status.set(f"PHEF test for record ID {row['ID']} deleted successfully.")
             except Exception:
                 status.set("Invalid selection.")
 

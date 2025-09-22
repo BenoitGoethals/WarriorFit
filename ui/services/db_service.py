@@ -707,7 +707,7 @@ class DBService(metaclass=Singleton):
                 f"Unexpected error fetching all fitness tests (full): {str(e)}"
             )
             return []
-        
+
     async def get_all_phef(self) -> List[PhefTest]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
@@ -790,7 +790,17 @@ class DBService(metaclass=Singleton):
                     fitness_test = await session.get(
                         FitnessTest,
                         fitness_test_id,
-                        options=[selectin_polymorphic(FitnessTest)],
+                        options=[
+                            selectin_polymorphic(
+                                FitnessTest,
+                                [
+                                    PhefTest,
+                                    FunctionalTest,
+                                    CombatTestParatrooper,
+                                    CombatSwimmingTest,
+                                ],
+                            )
+                        ],
                     )
                     if not fitness_test:
                         self.__logger.error(
@@ -860,7 +870,7 @@ class DBService(metaclass=Singleton):
 
     async def update_user_by_serial(self, user):
 
-        
+
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
