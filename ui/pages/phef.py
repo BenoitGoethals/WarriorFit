@@ -23,7 +23,7 @@ class PhefPage:
                         ui.card(
                             ui.card_header("Session"),
                             ui.input_select("ph_session_id", "Session", choices=[]),
-                            ui.input_action_button("ph_lock", "Lock"),
+
 
                             full_screen=False,
                         ),
@@ -77,33 +77,16 @@ class PhefPage:
         # Reactive state
         records = reactive.Value([])
 
-        locked = reactive.Value(False)
-
-        @reactive.Effect
-        @reactive.event(input.ph_lock)
-        def _on_lock():
-            if locked.get():
-                return
-            locked.set(True)
-
-            # Disable the session selector and the Lock button
-            session.set_input_props("ph_session_id", disabled=True)
-            session.set_input_props("ph_lock", disabled=True)
-
-            try:
-                status.set("Session selection locked.")
-            except Exception:
-                pass
 
         # If you also want to prevent any code reacting to changes while locked:
         @reactive.Effect
         @reactive.event(input.ph_session_id)
         def _guard_session_change_when_locked():
-            if locked.get():
+
                 # Re-apply the current value (optional safeguard)
-                session.set_input_props("ph_session_id", disabled=True)
+
                 try:
-                    status.set("Session is locked. Change ignored.")
+                    status.set(f"Session is set to {selected_session_id.get()}" )
                 except Exception:
                     pass
 
@@ -212,25 +195,30 @@ class PhefPage:
         @reactive.calc
         async def sessions_phef__data():
             _ = self.refresh_tick.get()
-            return pd.DataFrame([
-                {
-                    "ID": r.id,
-                    "Serial": r.serial_number,
-                    "runningTime": r.running_time,
-                    "Running score" : None,
-                    "Sidebridge R ": r.sideBridge_r,
-                    "Sidebridge R score": None,
-                    "Sidebridge L": r.sideBridge_l,
-                    "Sidebridge L score": None,
-                    "Totale Score" : None
-
-                }
-                for r in await self.db.get_all_phef()
-            ])
-
-        @output
-
-
+            session_id = selected_session_id.get()
+            if not session_id:
+                return pd.DataFrame()
+            try:
+                phef_tests = await self.db.get_all_phef(int(session_id))
+                # Create a list of dictionaries with values directly from the database objects
+                data = []
+                for r in phef_tests:
+                    data.append({
+                        "ID": r.id,
+                        "Serial": r.serial_number,
+                        "runningTime": r.running_time,
+                        "Running score": None,
+                        "Sidebridge R ": r.sideBridge_r,
+                        "Sidebridge R score": None,
+                        "Sidebridge L": r.sideBridge_l,
+                        "Sidebridge L score": None,
+                        "Totale Score": None
+                    })
+                # Create DataFrame after collecting all data
+                return pd.DataFrame(data)
+            except Exception as e:
+                print(f"Error fetching PHEF data: {e}")
+                return pd.DataFrame()
         @output
         @render.data_frame
         async def ph_grid():

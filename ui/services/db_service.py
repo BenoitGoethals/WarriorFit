@@ -708,13 +708,35 @@ class DBService(metaclass=Singleton):
             )
             return []
 
-    async def get_all_phef(self) -> List[PhefTest]:
+    async def get_all_phef(self, session_id: int) -> List[PhefTest]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
         """
-        query = select(PhefTest)
-        results = await self.fetch_and_log(query, "phef tests")
-        return results if results else []
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():  # Add transaction context
+                    query = (
+                        select(TestSession)
+                        .where(TestSession.id == session_id)
+                        .options(selectinload(TestSession.fitness_tests))
+                    )
+                    result = await session.execute(query)
+                    test_session = result.unique().scalar_one_or_none()
+
+                    if test_session:
+                        # Create a list of PhefTests while the session is still active
+                        phef_tests = [
+                            test for test in test_session.fitness_tests
+                            if isinstance(test, PhefTest)
+                        ]
+                        # Ensure all necessary data is loaded
+                        for test in phef_tests:
+                            await session.refresh(test)
+                        return phef_tests
+                    return []
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error fetching PHEF tests: {str(e)}")
+            return []
 
     async def delete_fitness_test_from_test_session(
         self, test_session_id: int, fitness_test_id: int
@@ -904,4 +926,10 @@ class DBService(metaclass=Singleton):
         query = select(User).where(User.role ==Role.PTI)
         results = await self.fetch_and_log(query, "users")
         return results if results else []
+
+    async def get_all_test_sessions_type_fitness_test_from_a_test_session(self, type_test,session_id:int)->list[FitnessTest]:
+        query = select(TestSession).where(TestSession.type_test==type_test ).where(TestSession.id==session_id)
+        results = await self.fetch_and_log(query, "test sessions")
+        return results if results else []
+
 
