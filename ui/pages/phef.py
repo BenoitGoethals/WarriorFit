@@ -32,25 +32,34 @@ class PhefPage:
                         ui.card(
                             ui.card_header("Add / Edit PHEF Test"),
                             ui.input_text("ph_serialnr", "Serial Number" ),
+                            ui.layout_columns(
                             ui.input_text(
                                 "ph_side_bridge_r",
                                 "Side-bridge Right time (mm:ss)",
                                 placeholder="e.g., 2:30",
                             ),
-                            ui.output_text("ph_side_bridge_r_score"),
-                            ui.input_text(
-                                "ph_side_bridge_l",
-                                "Side-bridge time Left (mm:ss)",
-                                placeholder="e.g., 2:30",
+
+                                ui.div("Score :", ui.output_text("ph_side_bridge_r_score")),
+                                col_widths=(8, 4),
                             ),
-                            ui.output_text("ph_side_bridge_l_score"),
+
+                            ui.layout_columns(
+                                ui.input_text(
+                                    "ph_side_bridge_l",
+                                    "Side-bridge time Left (mm:ss)",
+                                    placeholder="e.g., 2:30",
+                                ),
+                                ui.div("Score :", ui.output_text("ph_side_bridge_l_score")),
+                                col_widths=(8, 4),
+                            ),
+
                             ui.layout_columns(
                                 ui.input_text(
                                     "ph_run_2400",
                                     "2400m run time (mm:ss)",
                                     placeholder="e.g., 10:45 ",
                                 ),
-                                ui.output_text("ph_run_2400_score"),
+                                ui.div("Score :", ui.output_text("ph_run_2400_score")),
                                 col_widths=(8, 4),
                             ),
                             ui.br(),
@@ -84,8 +93,8 @@ class PhefPage:
     def server(self, input, output, session):
         # Reactive state
         records = reactive.Value([])
-        ph_side_bridge_rl_score = reactive.Value(0)
-        ph_side_bridge_ll_score= reactive.Value(0)
+        ph_side_bridge_r_score_val = reactive.Value("")
+        ph_side_bridge_l_score_val = reactive.Value("")
         ph_run_2400_score_val = reactive.Value("")
         # If you also want to prevent any code reacting to changes while locked:
         @reactive.Effect
@@ -204,6 +213,16 @@ class PhefPage:
 
         @output
         @render.text
+        def ph_side_bridge_r_score():
+            return str(ph_side_bridge_r_score_val.get() or "")
+
+        @output
+        @render.text
+        def ph_side_bridge_l_score():
+            return str(ph_side_bridge_l_score_val.get() or "")
+
+        @output
+        @render.text
         def ph_run_2400_score():
             # Render the latest calculated score (empty when no/invalid input)
             return str(ph_run_2400_score_val.get() or "")
@@ -222,6 +241,36 @@ class PhefPage:
             except Exception:
                 score = ""
             ph_run_2400_score_val.set(score)
+
+        @reactive.Effect
+        @reactive.event(input.ph_side_bridge_r)
+        def ph_side_bridge_r():
+            # Update the Side-bridge Right score whenever the input changes
+            raw = (input.ph_side_bridge_r() or "").strip()
+            ok, val = _parse_time_to_seconds(raw)
+            if not ok:
+                ph_side_bridge_r_score_val.set("")
+                return
+            try:
+                score = PhefCalculator.side_bridge_result(val, 20, Gender.MALE)
+            except Exception:
+                score = ""
+            ph_side_bridge_r_score_val.set(score)
+
+        @reactive.Effect
+        @reactive.event(input.ph_side_bridge_l)
+        def ph_side_bridge_l():
+            # Update the Side-bridge Left score whenever the input changes
+            raw = (input.ph_side_bridge_l() or "").strip()
+            ok, val = _parse_time_to_seconds(raw)
+            if not ok:
+                ph_side_bridge_l_score_val.set("")
+                return
+            try:
+                score = PhefCalculator.side_bridge_result(val, 20, Gender.MALE)
+            except Exception:
+                score = ""
+            ph_side_bridge_l_score_val.set(score)
 
         @reactive.calc
         async def sessions_phef__data():
@@ -296,7 +345,7 @@ class PhefPage:
                     return
                 row = df.iloc[row_idx]
                 selected_phef_id.set(row["ID"] or "")
-                selected_session_id.set(row["ID"] or "")
+                selected_session_id.set(input.ph_session_id()  or "")
                 # Extract fields safely (note: "Sidebridge R " has a trailing space in the DataFrame)
                 serial = str(row.get("Serial", "") or "")
 
