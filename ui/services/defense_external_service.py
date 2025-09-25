@@ -1,9 +1,9 @@
 import datetime
 
 from core.service_men import ServiceMen
+from logic.singleton import Singleton
 
-
-class DefenseExternalService:
+class DefenseExternalService(metaclass=Singleton):
 
     service_men_dict = {
     "SN100001": ServiceMen(

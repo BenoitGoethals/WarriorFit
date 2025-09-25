@@ -6,12 +6,14 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest
 from logic.phef_calculator import PhefCalculator
 from ui.services.db_service import DBService
+from ..services.defense_external_service import DefenseExternalService
 from ..user_store import UserStore
 
 class PhefPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
+        self.external_services=DefenseExternalService()
 
 
     NO_SELECTION_MESSAGE = "No row selected"
@@ -25,13 +27,13 @@ class PhefPage:
                         ui.card(
                             ui.card_header("Session"),
                             ui.input_select("ph_session_id", "Session", choices=[]),
-
-
                             full_screen=False,
                         ),
                         ui.card(
-                            ui.card_header("Add / Edit PHEF Test"),
-                            ui.input_text("ph_serialnr", "Serial Number" ),
+
+                                ui.input_text("ph_serialnr", "Serial Number"),
+                                ui.input_action_button("ph_search", "search", width="150px"),
+
                             ui.layout_columns(
                             ui.input_text(
                                 "ph_side_bridge_r",
@@ -108,7 +110,7 @@ class PhefPage:
                 except Exception:
                     pass
 
-        # ... existing code ...
+
         status = reactive.Value("Ready.")
         selected_session_id = reactive.Value("")  # track current selection
         selected_phef_id= reactive.Value("")
@@ -202,9 +204,12 @@ class PhefPage:
             selected = current if current in items else None
             ui.update_select("ph_session_id", choices=items, selected=selected)
 
-        def _refresh_record_select():
-            # No UI select exists for records; keep for future use if needed.
-            pass
+        @reactive.effect
+        @reactive.event(input.ph_search, ignore_none=False)
+        def ph_search():
+            status.set(f"Bad : {input.ph_serialnr()}")
+            ui.update_text("ph_serialnr", value="")
+
 
         @output
         @render.text
@@ -322,7 +327,6 @@ class PhefPage:
         @reactive.Effect
         async def _init():
             await _refresh_session_choices()
-            _refresh_record_select()
 
         @reactive.Effect
         def _on_session_change():
