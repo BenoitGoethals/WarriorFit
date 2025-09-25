@@ -361,9 +361,9 @@ class PhefPage:
                         return ""
 
                 ui.update_text("ph_serialnr", value=serial)
-                ui.update_text("ph_side_bridge_l", value=fmt(side_l))
-                ui.update_text("ph_side_bridge_r", value=fmt(side_r))
-                ui.update_text("ph_run_2400", value=fmt(run_t))
+                ui.update_text("ph_side_bridge_l", value=(side_l))
+                ui.update_text("ph_side_bridge_r", value=(side_r))
+                ui.update_text("ph_run_2400", value=(run_t))
 
                 status.set(f"Selected PHEF: {serial}")
             except Exception as e:
