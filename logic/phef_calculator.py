@@ -74,6 +74,57 @@ class PhefCalculator:
             ]
         })
 
+    side_bridge_data = pd.DataFrame({
+        "Quotering": list(range(20, -1, -1)),
+        "<30_m": ["2:05", "2:00", "1:55", "1:50", "1:45", "1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:13",
+                  "1:11", "1:10", "1:08", "1:06", "1:05", "1:03", "1:01", "00:60", "minder"],
+        "<30_v": ["1:50", "1:45", "1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:10", "1:05", "00:60", "00:58",
+                  "00:56", "00:54", "00:52", "00:50", "00:47", "00:45", "00:42", "00:40", "minder"],
+        "30-39_m": ["1:55", "1:50", "1:45", "1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:10", "1:05", "1:03",
+                    "1:01", "00:59", "00:57", "00:55", "00:52", "00:50", "00:47", "00:45", "minder"],
+        "30-39_v": ["1:45", "1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:10", "1:05", "00:60", "00:55", "00:53",
+                    "00:51", "00:49", "00:47", "00:45", "00:42", "00:40", "00:37", "00:35", "minder"],
+        "40-49_m": ["1:50", "1:45", "1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:10", "1:05", "00:60", "00:58",
+                    "00:56", "00:54", "00:52", "00:50", "00:47", "00:45", "00:42", "00:40", "minder"],
+        "40-49_v": ["1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:10", "1:05", "1:00", "00:55", "00:50", "00:48",
+                    "00:46", "00:44", "00:42", "00:40", "00:37", "00:35", "00:32", "00:30", "minder"],
+        "50+_m": ["1:45", "1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:10", "1:05", "1:00", "00:55", "00:53",
+                  "00:51", "00:49", "00:47", "00:45", "00:42", "00:40", "00:37", "00:35", "minder"],
+        "50+_v": ["1:35", "1:30", "1:25", "1:20", "1:15", "1:10", "1:05", "1:00", "00:55", "00:50", "00:45", "00:43",
+                  "00:41", "00:39", "00:37", "00:35", "00:32", "00:30", "00:27", "00:25", "minder"],
+    }
+    )
+
+    @classmethod
+    def side_bridge_result(cls, side_time: float, age: int, gender: Gender):
+        """
+                Geef tijd (bv. '1'30'), leeftijd (int), gender (Gender) en krijg quoteringscore terug.
+                """
+        # tijd in seconden
+
+        if side_time is None:
+            return 0
+
+        # leeftijdscategorie bepalen
+        if age < 30:
+            age_group = "<30"
+        elif age < 40:
+            age_group = "30-39"
+        elif age < 50:
+            age_group = "40-49"
+        else:
+            age_group = "50+"
+
+        col = f"{age_group}_{gender.value}"
+
+        # door dataframe lopen en hoogste score vinden waarbij tijd >= grens
+        for i, row in cls.side_bridge_data.iterrows():
+            town_time = cls.convert_to_seconds(row[col])
+            if side_time >= town_time:
+                return cls.side_bridge_data["Quotering"][i]
+
+        return 0  # standaard: geen score
+
 
     @classmethod
     def running_result(cls, running_time: float, age: int, gender: Gender):
@@ -127,3 +178,7 @@ assert PhefCalculator.running_result(571, 20, Gender.FEMALE) == 20
 assert PhefCalculator.running_result(953, 20, Gender.MALE) == 0
 assert PhefCalculator.running_result(953, 20, Gender.FEMALE) == 0
 
+print(PhefCalculator.side_bridge_result(125, 20, Gender.MALE))
+
+assert PhefCalculator.side_bridge_result(125, 20, Gender.MALE) == 20
+assert PhefCalculator.side_bridge_result(110, 20, Gender.FEMALE) == 20

@@ -1,8 +1,10 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
+from core.Gender import Gender
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest
+from logic.phef_calculator import PhefCalculator
 from ui.services.db_service import DBService
 from ..user_store import UserStore
 
@@ -35,15 +37,21 @@ class PhefPage:
                                 "Side-bridge Right time (mm:ss)",
                                 placeholder="e.g., 2:30",
                             ),
+                            ui.output_text("ph_side_bridge_r_score"),
                             ui.input_text(
                                 "ph_side_bridge_l",
                                 "Side-bridge time Left (mm:ss)",
                                 placeholder="e.g., 2:30",
                             ),
-                            ui.input_text(
-                                "ph_run_2400",
-                                "2400m run time (mm:ss)",
-                                placeholder="e.g., 10:45 ",
+                            ui.output_text("ph_side_bridge_l_score"),
+                            ui.layout_columns(
+                                ui.input_text(
+                                    "ph_run_2400",
+                                    "2400m run time (mm:ss)",
+                                    placeholder="e.g., 10:45 ",
+                                ),
+                                ui.output_text("ph_run_2400_score"),
+                                col_widths=(8, 4),
                             ),
                             ui.br(),
                             ui.layout_columns(
@@ -76,8 +84,9 @@ class PhefPage:
     def server(self, input, output, session):
         # Reactive state
         records = reactive.Value([])
-
-
+        ph_side_bridge_rl_score = reactive.Value(0)
+        ph_side_bridge_ll_score= reactive.Value(0)
+        ph_run_2400_score_val = reactive.Value("")
         # If you also want to prevent any code reacting to changes while locked:
         @reactive.Effect
         @reactive.event(input.ph_session_id)
@@ -90,6 +99,7 @@ class PhefPage:
                 except Exception:
                     pass
 
+        # ... existing code ...
         status = reactive.Value("Ready.")
         selected_session_id = reactive.Value("")  # track current selection
         selected_phef_id= reactive.Value("")
@@ -112,10 +122,10 @@ class PhefPage:
             except Exception:
                 return False, "Time must be numeric (mm:ss or seconds)."
 
-        def _format_seconds(sec: int):
+        def _format_seconds(sec: float|int):
             m = sec // 60
             s = sec % 60
-            return f"{m}:{s:02d}"
+            return f"{int(m)}:{int(s):02d}"
 
 
 
@@ -192,6 +202,27 @@ class PhefPage:
         def ph_status():
             return status.get()
 
+        @output
+        @render.text
+        def ph_run_2400_score():
+            # Render the latest calculated score (empty when no/invalid input)
+            return str(ph_run_2400_score_val.get() or "")
+
+        @reactive.Effect
+        @reactive.event(input.ph_run_2400)
+        def ph_run_2400():
+            # Update the 2400m score whenever the input changes
+            raw = (input.ph_run_2400() or "").strip()
+            ok, val = _parse_time_to_seconds(raw)
+            if not ok:
+                ph_run_2400_score_val.set("")
+                return
+            try:
+                score = PhefCalculator.running_result(val, 20, Gender.MALE)
+            except Exception:
+                score = ""
+            ph_run_2400_score_val.set(score)
+
         @reactive.calc
         async def sessions_phef__data():
             _ = self.refresh_tick.get()
@@ -203,22 +234,31 @@ class PhefPage:
                 # Create a list of dictionaries with values directly from the database objects
                 data = []
                 for r in phef_tests:
+                    run = PhefCalculator.running_result(r.running_time,20,Gender.MALE)
+                    run_score_real=(run * (50 / 20))
+                    side_r = PhefCalculator.side_bridge_result(r.sideBridge_r,20,Gender.MALE)
+                    side_r_score_real=(side_r * (25 / 20))
+                    side_l = PhefCalculator.side_bridge_result(r.sideBridge_l,20,Gender.MALE)
+                    side_l_score_real=(side_l * (25 / 20))
+                    total =run_score_real+(side_r_score_real+side_l_score_real)
+
                     data.append({
                         "ID": r.id,
                         "Serial": r.serial_number,
-                        "runningTime": r.running_time,
-                        "Running score": None,
-                        "Sidebridge R ": r.sideBridge_r,
-                        "Sidebridge R score": None,
-                        "Sidebridge L": r.sideBridge_l,
-                        "Sidebridge L score": None,
-                        "Totale Score": None
+                        "runningTime": _format_seconds(r.running_time),
+                        "Running score": f"{run}/20",
+                        "Sidebridge R ": _format_seconds(r.sideBridge_r),
+                        "Sidebridge R score": f"{side_r}/20",
+                        "Sidebridge L": _format_seconds(r.sideBridge_l),
+                        "Sidebridge L score":f"{side_l}/20",
+                        "Totale Score": f"{total}/100",
                     })
                 # Create DataFrame after collecting all data
                 return pd.DataFrame(data)
             except Exception as e:
                 print(f"Error fetching PHEF data: {e}")
                 return pd.DataFrame()
+
         @output
         @render.data_frame
         async def ph_grid():
@@ -228,7 +268,6 @@ class PhefPage:
                 filters=False,
                 selection_mode="rows",
             )
-
 
         # Single async initializer to avoid resetting choices
         @reactive.Effect
