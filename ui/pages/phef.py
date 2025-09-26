@@ -41,7 +41,7 @@ class PhefPage:
                                 placeholder="e.g., 2:30",
                             ),
 
-                                ui.div("Score :", ui.output_text("ph_side_bridge_r_score")),
+                                ui.div("Score :", ui.output_ui("ph_side_bridge_r_score")),
                                 col_widths=(8, 4),
                             ),
 
@@ -51,7 +51,7 @@ class PhefPage:
                                     "Side-bridge time Left (mm:ss)",
                                     placeholder="e.g., 2:30",
                                 ),
-                                ui.div("Score :", ui.output_text("ph_side_bridge_l_score")),
+                                ui.div("Score :", ui.output_ui("ph_side_bridge_l_score")),
                                 col_widths=(8, 4),
                             ),
 
@@ -61,7 +61,7 @@ class PhefPage:
                                     "2400m run time (mm:ss)",
                                     placeholder="e.g., 10:45 ",
                                 ),
-                                ui.div("Score :", ui.output_text("ph_run_2400_score")),
+                                ui.div("Score :", ui.output_ui("ph_run_2400_score")),
                                 col_widths=(8, 4),
                             ),
                             ui.br(),
@@ -217,20 +217,43 @@ class PhefPage:
             return status.get()
 
         @output
-        @render.text
+        @render.ui
         def ph_side_bridge_r_score():
-            return str(ph_side_bridge_r_score_val.get() or "")
+            val = ph_side_bridge_r_score_val.get()
+            text = str(val or "")
+            try:
+                num = float(val)
+            except (TypeError, ValueError):
+                num = None
+            color = "red" if (num is not None and num < 10) else "green"
+            return ui.span(text, style=f"color: {color};")
 
         @output
-        @render.text
+        @render.ui
         def ph_side_bridge_l_score():
-            return str(ph_side_bridge_l_score_val.get() or "")
+            val = ph_side_bridge_l_score_val.get()
+            text = str(val or "")
+            try:
+                num = float(val)
+            except (TypeError, ValueError):
+                num = None
+            color = "red" if (num is not None and num < 10) else "green"
+            return ui.span(text, style=f"color: {color};")
+
+
 
         @output
         @render.text
         def ph_run_2400_score():
-            # Render the latest calculated score (empty when no/invalid input)
-            return str(ph_run_2400_score_val.get() or "")
+            val = ph_run_2400_score_val.get()
+            text = str(val or "")
+            try:
+                num = float(val)
+            except (TypeError, ValueError):
+                num = None
+            color = "red" if (num is not None and num < 10) else "green"
+            return ui.span(text, style=f"color: {color};")
+
 
         @reactive.Effect
         @reactive.event(input.ph_run_2400)
