@@ -2,6 +2,7 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 from core.Gender import Gender
+from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest
 from logic.phef_calculator import PhefCalculator
@@ -14,6 +15,7 @@ class PhefPage:
         self.db = db
         self.refresh_tick = reactive.Value(0)
         self.external_services=DefenseExternalService()
+        self.selected_military:ServiceMen=None
 
 
     NO_SELECTION_MESSAGE = "No row selected"
@@ -207,8 +209,16 @@ class PhefPage:
         @reactive.effect
         @reactive.event(input.ph_search, ignore_none=False)
         def ph_search():
-            status.set(f"Bad : {input.ph_serialnr()}")
-            ui.update_text("ph_serialnr", value="")
+            if input.ph_serialnr() is None or input.ph_serialnr() == "":
+                return
+            try:
+                val=self.external_services.get_serviceman_by_serial(input.ph_serialnr() or "")
+                self.selected_military=val
+               # ui.update_text("ph_serialnr", value=val.service_number+val.first_name+" "+val.last_name)
+                status.set(val.rank+" "+val.service_number+" "+val.first_name+" "+val.last_name)
+            except Exception as e:
+                ui.update_text("ph_serialnr", value="Not found")
+                return
 
 
         @output
@@ -265,7 +275,7 @@ class PhefPage:
                 ph_run_2400_score_val.set("")
                 return
             try:
-                score = PhefCalculator.running_result(val, 20, Gender.MALE)
+                score = PhefCalculator.running_result(val, self.selected_military.age_from_birthdate(), self.selected_military.gender)
             except Exception:
                 score = ""
             ph_run_2400_score_val.set(score)
@@ -280,7 +290,7 @@ class PhefPage:
                 ph_side_bridge_r_score_val.set("")
                 return
             try:
-                score = PhefCalculator.side_bridge_result(val, 20, Gender.MALE)
+                score = PhefCalculator.side_bridge_result(val, self.selected_military.age_from_birthdate(), self.selected_military.gender)
             except Exception:
                 score = ""
             ph_side_bridge_r_score_val.set(score)
@@ -295,7 +305,7 @@ class PhefPage:
                 ph_side_bridge_l_score_val.set("")
                 return
             try:
-                score = PhefCalculator.side_bridge_result(val, 20, Gender.MALE)
+                score = PhefCalculator.side_bridge_result(val, self.selected_military.age_from_birthdate(),self.selected_military.gender)
             except Exception:
                 score = ""
             ph_side_bridge_l_score_val.set(score)
@@ -311,11 +321,15 @@ class PhefPage:
                 # Create a list of dictionaries with values directly from the database objects
                 data = []
                 for r in phef_tests:
-                    run = PhefCalculator.running_result(r.running_time,20,Gender.MALE)
+                    selected_military=self.external_services.get_serviceman_by_serial(r.serial_number)
+                    if selected_military is None:
+                        continue
+                    age = selected_military.age_from_birthdate()
+                    run = PhefCalculator.running_result(r.running_time,age,selected_military.gender)
                     run_score_real=(run * (50 / 20))
-                    side_r = PhefCalculator.side_bridge_result(r.sideBridge_r,20,Gender.MALE)
+                    side_r = PhefCalculator.side_bridge_result(r.sideBridge_r,20,selected_military.gender)
                     side_r_score_real=(side_r * (25 / 20))
-                    side_l = PhefCalculator.side_bridge_result(r.sideBridge_l,20,Gender.MALE)
+                    side_l = PhefCalculator.side_bridge_result(r.sideBridge_l,20,selected_military.gender)
                     side_l_score_real=(side_l * (25 / 20))
                     total =run_score_real+(side_r_score_real+side_l_score_real)
 
@@ -323,11 +337,11 @@ class PhefPage:
                         "ID": r.id,
                         "Serial": r.serial_number,
                         "runningTime": _format_seconds(r.running_time),
-                        "Running score": f"{run}/20",
+                        "Running Score": f"{run}/20",
                         "Sidebridge R ": _format_seconds(r.sideBridge_r),
-                        "Sidebridge R score": f"{side_r}/20",
+                        "Sidebridge R Score": f"{side_r}/20",
                         "Sidebridge L": _format_seconds(r.sideBridge_l),
-                        "Sidebridge L score":f"{side_l}/20",
+                        "Sidebridge L Score":f"{side_l}/20",
                         "Totale Score": f"{total}/100",
                     })
                 # Create DataFrame after collecting all data
@@ -336,16 +350,85 @@ class PhefPage:
                 print(f"Error fetching PHEF data: {e}")
                 return pd.DataFrame()
 
+        def _ph_grid_cell_style(value, row, column):
+            """
+            Style cells based on thresholds:
+            - "Totale Score": if "<50/100" -> red, otherwise green
+            - Running/Sidebridge scores: if <10 -> red, otherwise green
+            Adjust column names below to match your DataFrame exactly.
+            """
+            red_style = {"backgroundColor": "#ffe6e6", "color": "#b30000", "fontWeight": "600"}
+            green_style = {"backgroundColor": "#eaffea", "color": "#006400", "fontWeight": "600"}
+
+            # Normalize access
+            col = str(column).strip()
+
+            # Total score is stored as "NN/100" string
+            if col == "Totale Score":
+                try:
+                    # Extract number before "/100"
+                    s = str(value or "")
+                    num = float(s.split("/")[0])
+                    return red_style if num < 50 else green_style
+                except Exception:
+                    return None
+
+            # Per-exercise scores (treat values <10 as red, else green)
+            low_score_columns = {"Running Score", "Sidebridge R", "Sidebridge L", "Sidebridge R Score",
+                                 "Sidebridge L Score"}
+            if col in low_score_columns:
+                try:
+                    num = float(value)
+                except Exception:
+                    return None
+                return red_style if num < 10 else green_style
+
+            return None
+
+        def _decorate_scores_for_grid(df):
+
+
+            def _total_num(s):
+                try:
+                    # Expecting format like "NN/100"
+                    return float(str(s).split("/")[0])
+                except Exception:
+                    return None
+
+            df2 = df.copy()
+
+            # Totale Score: prefix with red/green indicator
+            if "Totale Score" in df2.columns:
+                def _fmt_total(s):
+                    n = _total_num(s)
+                    if n is None:
+                        return s
+                    return f"🟥 {s}" if n < 50 else f"🟩 {s}"
+                df2["Totale Score"] = df2["Totale Score"].apply(_fmt_total)
+
+            # Per-exercise scores (<10 red else green)
+            score_cols = ["Running Score",  "Sidebridge R Score", "Sidebridge L Score"]
+            for col in score_cols:
+                if col in df2.columns:
+                    def _fmt_score(v):
+                        n = _total_num(v)
+                        if n is None:
+                            return v
+                        return f"🟥 {v}" if n < 10 else f"🟩 {v}"
+                    df2[col] = df2[col].apply(_fmt_score)
+
+            return df2
+
         @output
         @render.data_frame
         async def ph_grid():
             df = await sessions_phef__data()
+            df = _decorate_scores_for_grid(df)
             return render.DataGrid(
                 df,
                 filters=False,
                 selection_mode="rows",
             )
-
         # Single async initializer to avoid resetting choices
         @reactive.Effect
         async def _init():
@@ -406,7 +489,7 @@ class PhefPage:
                 return
 
             # Placeholder: local-only add (no DB persistence implemented here)
-            new_id = max([r["id"] for r in records.get()] + [0]) + 1
+
             record = {
                 "id": data["session_id"],
                 "serialnr": data["serialnr"],

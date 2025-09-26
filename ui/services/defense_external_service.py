@@ -1,92 +1,214 @@
 import datetime
 
-from core.service_men import ServiceMen
 from logic.singleton import Singleton
+from core.service_men import ServiceMen
+from core.Gender import Gender
+import datetime
 
 class DefenseExternalService(metaclass=Singleton):
 
     service_men_dict = {
-    "SN100001": ServiceMen(
-        1, "Thomas", "Peeters", "Caporal", "SN100001",
-        datetime.datetime(1995, 3, 15), "M", "1er Régiment de Chasseurs à Cheval"
-    ),
-    "SN100002": ServiceMen(
-        2, "Julie", "Dubois", "Lieutenant", "SN100002",
-        datetime.datetime(1993, 7, 22), "F", "12e/13e Bataillon de Ligne"
-    ),
-    "SN100003": ServiceMen(
-        3, "Kevin", "Van Damme", "Sergent", "SN100003",
-        datetime.datetime(1994, 11, 8), "M", "2/4 Régiment de Chasseurs à Pied"
-    ),
-    "SN100004": ServiceMen(
-        4, "Emma", "Janssens", "Caporal-Chef", "SN100004",
-        datetime.datetime(1996, 5, 30), "F", "Bataillon Carabiniers Prince Baudouin - Grenadiers"
-    ),
-    "SN100005": ServiceMen(
-        5, "Lucas", "Maes", "Premier Sergent", "SN100005",
-        datetime.datetime(1992, 9, 12), "M", "4e Bataillon de Génie"
-    ),
-    "SN100006": ServiceMen(
-        6, "Sarah", "De Vos", "Adjudant", "SN100006",
-        datetime.datetime(1991, 4, 25), "F", "1 Wing Belgique"
-    ),
-    "SN100007": ServiceMen(
-        7, "Nicolas", "Lambert", "Sergent", "SN100007",
-        datetime.datetime(1997, 2, 18), "M", "2e Bataillon de Commandos"
-    ),
-    "SN100008": ServiceMen(
-        8, "Laura", "Willems", "Caporal", "SN100008",
-        datetime.datetime(1995, 8, 3), "F", "3e Parachutistes"
-    ),
-    "SN100009": ServiceMen(
-        9, "Mathias", "Claes", "Premier Soldat", "SN100009",
-        datetime.datetime(1998, 6, 14), "M", "Special Forces Group"
-    ),
-    "SN100010": ServiceMen(
-        10, "Sophie", "Martens", "Lieutenant", "SN100010",
-        datetime.datetime(1994, 12, 7), "F", "Brigade Légère"
-    ),
-    "SN100011": ServiceMen(
-        11, "David", "Vermeer", "Caporal-Chef", "SN100011",
-        datetime.datetime(1996, 10, 29), "M", "Régiment de Génie"
-    ),
-    "SN100012": ServiceMen(
-        12, "Charlotte", "Wouters", "Sergent", "SN100012",
-        datetime.datetime(1993, 1, 20), "F", "Marine Component"
-    ),
-    "SN100013": ServiceMen(
-        13, "Simon", "De Smet", "Premier Caporal", "SN100013",
-        datetime.datetime(1997, 7, 11), "M", "Composante Air"
-    ),
-    "SN100014": ServiceMen(
-        14, "Alice", "Verhoeven", "Adjudant", "SN100014",
-        datetime.datetime(1992, 3, 8), "F", "Composante Médicale"
-    ),
-    "SN100015": ServiceMen(
-        15, "Maxime", "Leroy", "Sergent-Chef", "SN100015",
-        datetime.datetime(1995, 11, 26), "M", "Composante Terre"
-    ),
-    "SN100016": ServiceMen(
-        16, "Eva", "Jacobs", "Caporal", "SN100016",
-        datetime.datetime(1994, 5, 17), "F", "ISTAR Battalion"
-    ),
-    "SN100017": ServiceMen(
-        17, "Arthur", "Mertens", "Premier Sergent-Major", "SN100017",
-        datetime.datetime(1991, 8, 9), "M", "Bataillon QG"
-    ),
-    "SN100018": ServiceMen(
-        18, "Léa", "Dupont", "Lieutenant", "SN100018",
-        datetime.datetime(1996, 4, 2), "F", "Bataillon Logistics"
-    ),
-    "SN100019": ServiceMen(
-        19, "Vincent", "Gerard", "Caporal-Chef", "SN100019",
-        datetime.datetime(1998, 9, 23), "M", "Medium Brigade"
-    ),
-    "SN100020": ServiceMen(
-        20, "Marie", "Thijs", "Sergent", "SN100020",
-        datetime.datetime(1997, 12, 15), "F", "Bataillon ISTAR"
-    )
-}
+        "SN100001": ServiceMen(
+            id=1,
+            first_name="Thomas",
+            last_name="Peeters",
+            rank="Caporal",
+            service_number="SN100001",
+            birthdate=datetime.datetime(1995, 3, 15),
+            gender=Gender.MALE,
+            unit="1er Régiment de Chasseurs à Cheval",
+        ),
+        "SN100002": ServiceMen(
+            id=2,
+            first_name="Julie",
+            last_name="Dubois",
+            rank="Lieutenant",
+            service_number="SN100002",
+            birthdate=datetime.datetime(1993, 7, 22),
+            gender=Gender.FEMALE,
+            unit="12e/13e Bataillon de Ligne",
+        ),
+        "SN100003": ServiceMen(
+            id=3,
+            first_name="Kevin",
+            last_name="Van Damme",
+            rank="Sergent",
+            service_number="SN100003",
+            birthdate=datetime.datetime(1994, 11, 8),
+            gender=Gender.MALE,
+            unit="2/4 Régiment de Chasseurs à Pied",
+        ),
+        "SN100004": ServiceMen(
+            id=4,
+            first_name="Emma",
+            last_name="Janssens",
+            rank="Caporal-Chef",
+            service_number="SN100004",
+            birthdate=datetime.datetime(1996, 5, 30),
+            gender=Gender.FEMALE,
+            unit="Bataillon Carabiniers Prince Baudouin - Grenadiers",
+        ),
+        "SN100005": ServiceMen(
+            id=5,
+            first_name="Lucas",
+            last_name="Maes",
+            rank="Premier Sergent",
+            service_number="SN100005",
+            birthdate=datetime.datetime(1992, 9, 12),
+            gender=Gender.MALE,
+            unit="4e Bataillon de Génie",
+        ),
+        "SN100006": ServiceMen(
+            id=6,
+            first_name="Sarah",
+            last_name="De Vos",
+            rank="Adjudant",
+            service_number="SN100006",
+            birthdate=datetime.datetime(1991, 4, 25),
+            gender=Gender.FEMALE,
+            unit="1 Wing Belgique",
+        ),
+        "SN100007": ServiceMen(
+            id=7,
+            first_name="Nicolas",
+            last_name="Lambert",
+            rank="Sergent",
+            service_number="SN100007",
+            birthdate=datetime.datetime(1997, 2, 18),
+            gender=Gender.MALE,
+            unit="2e Bataillon de Commandos",
+        ),
+        "SN100008": ServiceMen(
+            id=8,
+            first_name="Laura",
+            last_name="Willems",
+            rank="Caporal",
+            service_number="SN100008",
+            birthdate=datetime.datetime(1995, 8, 3),
+            gender=Gender.FEMALE,
+            unit="3e Parachutistes",
+        ),
+        "SN100009": ServiceMen(
+            id=9,
+            first_name="Mathias",
+            last_name="Claes",
+            rank="Premier Soldat",
+            service_number="SN100009",
+            birthdate=datetime.datetime(1998, 6, 14),
+            gender=Gender.MALE,
+            unit="Special Forces Group",
+        ),
+        "SN100010": ServiceMen(
+            id=10,
+            first_name="Sophie",
+            last_name="Martens",
+            rank="Lieutenant",
+            service_number="SN100010",
+            birthdate=datetime.datetime(1994, 12, 7),
+            gender=Gender.FEMALE,
+            unit="Brigade Légère",
+        ),
+        "SN100011": ServiceMen(
+            id=11,
+            first_name="David",
+            last_name="Vermeer",
+            rank="Caporal-Chef",
+            service_number="SN100011",
+            birthdate=datetime.datetime(1996, 10, 29),
+            gender=Gender.MALE,
+            unit="Régiment de Génie",
+        ),
+        "SN100012": ServiceMen(
+            id=12,
+            first_name="Charlotte",
+            last_name="Wouters",
+            rank="Sergent",
+            service_number="SN100012",
+            birthdate=datetime.datetime(1993, 1, 20),
+            gender=Gender.FEMALE,
+            unit="Marine Component",
+        ),
+        "SN100013": ServiceMen(
+            id=13,
+            first_name="Simon",
+            last_name="De Smet",
+            rank="Premier Caporal",
+            service_number="SN100013",
+            birthdate=datetime.datetime(1997, 7, 11),
+            gender=Gender.MALE,
+            unit="Composante Air",
+        ),
+        "SN100014": ServiceMen(
+            id=14,
+            first_name="Alice",
+            last_name="Verhoeven",
+            rank="Adjudant",
+            service_number="SN100014",
+            birthdate=datetime.datetime(1992, 3, 8),
+            gender=Gender.FEMALE,
+            unit="Composante Médicale",
+        ),
+        "SN100015": ServiceMen(
+            id=15,
+            first_name="Maxime",
+            last_name="Leroy",
+            rank="Sergent-Chef",
+            service_number="SN100015",
+            birthdate=datetime.datetime(1995, 11, 26),
+            gender=Gender.MALE,
+            unit="Composante Terre",
+        ),
+        "SN100016": ServiceMen(
+            id=16,
+            first_name="Eva",
+            last_name="Jacobs",
+            rank="Caporal",
+            service_number="SN100016",
+            birthdate=datetime.datetime(1994, 5, 17),
+            gender=Gender.FEMALE,
+            unit="ISTAR Battalion",
+        ),
+        "SN100017": ServiceMen(
+            id=17,
+            first_name="Arthur",
+            last_name="Mertens",
+            rank="Premier Sergent-Major",
+            service_number="SN100017",
+            birthdate=datetime.datetime(1991, 8, 9),
+            gender=Gender.MALE,
+            unit="Bataillon QG",
+        ),
+        "SN100018": ServiceMen(
+            id=18,
+            first_name="Léa",
+            last_name="Dupont",
+            rank="Lieutenant",
+            service_number="SN100018",
+            birthdate=datetime.datetime(1996, 4, 2),
+            gender=Gender.FEMALE,
+            unit="Bataillon Logistics",
+        ),
+        "SN100019": ServiceMen(
+            id=19,
+            first_name="Vincent",
+            last_name="Gerard",
+            rank="Caporal-Chef",
+            service_number="SN100019",
+            birthdate=datetime.datetime(1998, 9, 23),
+            gender=Gender.MALE,
+            unit="Medium Brigade",
+        ),
+        "SN100020": ServiceMen(
+            id=20,
+            first_name="Marie",
+            last_name="Thijs",
+            rank="Sergent",
+            service_number="SN100020",
+            birthdate=datetime.datetime(1997, 12, 15),
+            gender=Gender.FEMALE,
+            unit="Bataillon ISTAR",
+        ),
+    }
 
     belgian_units = {
         "BN_12_13": "Bataillon 12/13 de Ligne",
