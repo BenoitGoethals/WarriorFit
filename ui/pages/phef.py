@@ -350,40 +350,7 @@ class PhefPage:
                 print(f"Error fetching PHEF data: {e}")
                 return pd.DataFrame()
 
-        def _ph_grid_cell_style(value, row, column):
-            """
-            Style cells based on thresholds:
-            - "Totale Score": if "<50/100" -> red, otherwise green
-            - Running/Sidebridge scores: if <10 -> red, otherwise green
-            Adjust column names below to match your DataFrame exactly.
-            """
-            red_style = {"backgroundColor": "#ffe6e6", "color": "#b30000", "fontWeight": "600"}
-            green_style = {"backgroundColor": "#eaffea", "color": "#006400", "fontWeight": "600"}
 
-            # Normalize access
-            col = str(column).strip()
-
-            # Total score is stored as "NN/100" string
-            if col == "Totale Score":
-                try:
-                    # Extract number before "/100"
-                    s = str(value or "")
-                    num = float(s.split("/")[0])
-                    return red_style if num < 50 else green_style
-                except Exception:
-                    return None
-
-            # Per-exercise scores (treat values <10 as red, else green)
-            low_score_columns = {"Running Score", "Sidebridge R", "Sidebridge L", "Sidebridge R Score",
-                                 "Sidebridge L Score"}
-            if col in low_score_columns:
-                try:
-                    num = float(value)
-                except Exception:
-                    return None
-                return red_style if num < 10 else green_style
-
-            return None
 
         def _decorate_scores_for_grid(df):
 
@@ -566,12 +533,12 @@ class PhefPage:
             if not sel or not sel_session_id:
                 status.set("Select a row to delete.")
                 return
-            df = await sessions_phef__data()
-            del_phef = await self.db.delete_fitness_test_from_test_session(int(sel_session_id),int(selected_session_id.get()))
+            del_phef = await self.db.delete_fitness_test_from_test_session(int(sel_session_id),int(selected_phef_id.get()))
             if not del_phef:
                 status.set(f"Failed to delete PHEF test for record ID {sel[0]}.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             try:
+                df = await sessions_phef__data()
                 row_idx = sel[0]
                 row = df.iloc[row_idx]
                 status.set(f"PHEF test for record ID {row['ID']} deleted successfully.")
