@@ -66,7 +66,7 @@ class FitnessTest(Base):
     __tablename__ = "fitness_tests"
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    serial_number = Column(String(50), unique=True, nullable=True)
+    serial_number = Column(String(50), unique=False, nullable=True)
 
 
 

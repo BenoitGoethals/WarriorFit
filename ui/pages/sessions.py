@@ -71,7 +71,7 @@ class SessionsPage:
                         ui.input_action_button("se_add_btn", "Add"),
                         ui.input_action_button("se_update_btn", "Update"),
                         ui.input_action_button("se_clear_btn", "Clear Form"),
-                        col_widths=(3, 3, 3),
+                        col_widths=(3, 4, 4),
                     ),
                     ui.br(),
                     ui.output_text("se_status"),
@@ -89,7 +89,7 @@ class SessionsPage:
                     ),
                     full_screen=False,
                 ),
-                col_widths=(6, 6),
+                col_widths=(4, 8),
             ),
         )
 

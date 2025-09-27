@@ -40,7 +40,7 @@ class PhefPage:
                             ui.input_text(
                                 "ph_side_bridge_r",
                                 "Side-bridge Right time (mm:ss)",
-                                placeholder="e.g., 2:30",
+                                placeholder="e.g., 2:30"
                             ),
 
                                 ui.div("Score :", ui.output_ui("ph_side_bridge_r_score")),
@@ -104,9 +104,6 @@ class PhefPage:
         @reactive.Effect
         @reactive.event(input.ph_session_id)
         def _guard_session_change_when_locked():
-
-                # Re-apply the current value (optional safeguard)
-
                 try:
                     status.set(f"Session is set to {selected_session_id.get()}" )
                 except Exception:
@@ -189,7 +186,7 @@ class PhefPage:
         def _clear_form():
             _write_form({
                 "serialnr": "",
-                "session_id": None,
+           #     "session_id": None,
                 "side_bridge_r_s": None,
                 "side_bridge_l_s": None,
                 "run2400_s": None
@@ -353,8 +350,6 @@ class PhefPage:
 
 
         def _decorate_scores_for_grid(df):
-
-
             def _total_num(s):
                 try:
                     # Expecting format like "NN/100"
@@ -455,8 +450,6 @@ class PhefPage:
                 status.set(res)
                 return
 
-            # Placeholder: local-only add (no DB persistence implemented here)
-
             record = {
                 "id": data["session_id"],
                 "serialnr": data["serialnr"],
@@ -479,8 +472,8 @@ class PhefPage:
                 status.set(f"Failed to add PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
                 return
 
-            self.refresh_tick.set(self.refresh_tick.get() + 1)
-            records.set(records.get() + [record])
+          #  self.refresh_tick.set(self.refresh_tick.get() + 1)
+           # records.set(records.get() + [record])
 
             status.set(f"Added PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
             _clear_form()
