@@ -4,7 +4,7 @@ import pandas as pd
 from core.Gender import Gender
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import PhefTest
+from data.db.db_model import PhefTest, TestSession
 from logic.phef_calculator import PhefCalculator
 from ui.services.db_service import DBService
 from ..services.defense_external_service import DefenseExternalService
@@ -16,6 +16,7 @@ class PhefPage:
         self.refresh_tick = reactive.Value(0)
         self.external_services=DefenseExternalService()
         self.selected_military:ServiceMen=None
+        self.selected_session:TestSession=None
 
 
     NO_SELECTION_MESSAGE = "No row selected"
@@ -321,12 +322,12 @@ class PhefPage:
                     selected_military=self.external_services.get_serviceman_by_serial(r.serial_number)
                     if selected_military is None:
                         continue
-                    age = selected_military.age_from_birthdate()
-                    run = PhefCalculator.running_result(r.running_time,age,selected_military.gender)
+                    age = selected_military.age_from_birthdate_and_session_date(self.selected_session.datetime_start)
+                    run = PhefCalculator.running_result(r.running_time, age,selected_military.gender)
                     run_score_real=(run * (50 / 20))
-                    side_r = PhefCalculator.side_bridge_result(r.sideBridge_r,20,selected_military.gender)
+                    side_r = PhefCalculator.side_bridge_result(r.sideBridge_r,age,selected_military.gender)
                     side_r_score_real=(side_r * (25 / 20))
-                    side_l = PhefCalculator.side_bridge_result(r.sideBridge_l,20,selected_military.gender)
+                    side_l = PhefCalculator.side_bridge_result(r.sideBridge_l,age,selected_military.gender)
                     side_l_score_real=(side_l * (25 / 20))
                     total =run_score_real+(side_r_score_real+side_l_score_real)
 
@@ -397,10 +398,13 @@ class PhefPage:
             await _refresh_session_choices()
 
         @reactive.Effect
-        def _on_session_change():
+        async def _on_session_change():
             # Track selection changes
             val = (input.ph_session_id() or "").strip()
             selected_session_id.set(val)
+            if val:
+                self.selected_session = await self.db.get_test_session_by_id(int(val))
+
 
         @reactive.Effect
         @reactive.event(input.ph_grid_selected_rows)
