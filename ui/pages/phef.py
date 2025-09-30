@@ -173,10 +173,10 @@ class PhefPage:
 
         def _write_form(rec):
             session.send_input_message("ph_serialnr", {"value": rec.get("serialnr", "")})
-            session.send_input_message(
-                "ph_session_id",
-                {"value": "" if rec.get("session_id") is None else str(rec.get("session_id"))},
-            )
+           # session.send_input_message(
+           #     "ph_session_id",
+           #     {"value": "" if rec.get("session_id") is None else str(rec.get("session_id"))},
+           # )
             sbr_val = rec.get("side_bridge_r_s")
             sbl_val = rec.get("side_bridge_l_s")
             run_val = rec.get("run2400_s")
@@ -273,6 +273,7 @@ class PhefPage:
                 ph_run_2400_score_val.set("")
                 return
             try:
+
                 score = PhefCalculator.running_result(val, self.selected_military.age_from_birthdate(), self.selected_military.gender)
             except Exception:
                 score = ""
@@ -419,12 +420,13 @@ class PhefPage:
                 if row_idx < 0 or row_idx >= len(df):
                     status.set(self.NO_SELECTION_MESSAGE)
                     return
+
                 row = df.iloc[row_idx]
                 selected_phef_id.set(row["ID"] or "")
                 selected_session_id.set(input.ph_session_id()  or "")
                 # Extract fields safely (note: "Sidebridge R " has a trailing space in the DataFrame)
                 serial = str(row.get("Serial", "") or "")
-
+                self.selected_military = self.external_services.get_serviceman_by_serial(serial)
                 side_l = row.get("Sidebridge L", None)
                 side_r = row.get("Sidebridge R ", row.get("Sidebridge R", None))
                 run_t = row.get("runningTime", None)
@@ -476,8 +478,8 @@ class PhefPage:
                 status.set(f"Failed to add PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
                 return
 
-          #  self.refresh_tick.set(self.refresh_tick.get() + 1)
-           # records.set(records.get() + [record])
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+            records.set(records.get() + [record])
 
             status.set(f"Added PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
             _clear_form()
