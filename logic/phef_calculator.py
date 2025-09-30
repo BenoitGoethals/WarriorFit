@@ -175,12 +175,11 @@ class PhefCalculator:
 
 
 assert PhefCalculator.running_result(571, 20, Gender.MALE) == 20
-assert PhefCalculator.running_result(571, 20, Gender.FEMALE) == 20
+assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 20, Gender.FEMALE) == 18
+assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 43, Gender.MALE) == 14
 
-assert PhefCalculator.running_result(953, 20, Gender.MALE) == 0
-assert PhefCalculator.running_result(953, 20, Gender.FEMALE) == 0
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.MALE) == 14
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.FEMALE) == 16
 
-print(PhefCalculator.side_bridge_result(125, 20, Gender.MALE))
-
-assert PhefCalculator.side_bridge_result(125, 20, Gender.MALE) == 20
-assert PhefCalculator.side_bridge_result(110, 20, Gender.FEMALE) == 20
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.MALE) == 10
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.FEMALE) == 12
