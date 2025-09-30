@@ -1,5 +1,6 @@
 from shiny import ui, render, reactive
 import pandas as pd
+from sqlalchemy.sql.operators import truediv
 
 from core.Gender import Gender
 from core.service_men import ServiceMen
@@ -36,12 +37,14 @@ class PhefPage:
 
                                 ui.input_text("ph_serialnr", "Serial Number"),
                                 ui.input_action_button("ph_search", "search", width="150px"),
+                            ui.output_text("ph_miltary", ),
 
                             ui.layout_columns(
                             ui.input_text(
                                 "ph_side_bridge_r",
                                 "Side-bridge Right time (mm:ss)",
-                                placeholder="e.g., 2:30"
+                                placeholder="e.g., 2:30",
+
                             ),
 
                                 ui.div("Score :", ui.output_ui("ph_side_bridge_r_score")),
@@ -63,15 +66,16 @@ class PhefPage:
                                     "ph_run_2400",
                                     "2400m run time (mm:ss)",
                                     placeholder="e.g., 10:45 ",
+
                                 ),
                                 ui.div("Score :", ui.output_ui("ph_run_2400_score")),
                                 col_widths=(8, 4),
                             ),
                             ui.br(),
                             ui.layout_columns(
-                                ui.input_action_button("ph_add_btn", "Add"),
-                                ui.input_action_button("ph_update_btn", "Update"),
-                                ui.input_action_button("ph_clear_btn", "Clear Form"),
+                                ui.input_action_button("ph_add_btn", "Add",disabled=self.selected_military is None, width="150px"),
+                                ui.input_action_button("ph_update_btn", "Update",disabled=self.selected_military is None, width="150px"),
+                                ui.input_action_button("ph_clear_btn", "Clear Form", width="150px"),
                                 col_widths=(4,),
                             ),
                             ui.output_text("ph_status", ),
@@ -111,6 +115,7 @@ class PhefPage:
                     pass
 
 
+        military = reactive.Value("No selection")
         status = reactive.Value("Ready.")
         selected_session_id = reactive.Value("")  # track current selection
         selected_phef_id= reactive.Value("")
@@ -155,6 +160,8 @@ class PhefPage:
             ok_run, run = _parse_time_to_seconds(data["run_2400"])
             if not ok_run:
                 return False, f"2400m run: {run}"
+
+            
             return True, {
              #   "session_id_int": int(data["session_id"]),
                 "side_bridge_r_s": sbr,
@@ -208,12 +215,17 @@ class PhefPage:
         @reactive.event(input.ph_search, ignore_none=False)
         def ph_search():
             if input.ph_serialnr() is None or input.ph_serialnr() == "":
+                ui.update_action_button("ph_add_btn", disabled=True)
+                ui.update_action_button("ph_update_btn", disabled=True)
                 return
             try:
                 val=self.external_services.get_serviceman_by_serial(input.ph_serialnr() or "")
                 self.selected_military=val
                # ui.update_text("ph_serialnr", value=val.service_number+val.first_name+" "+val.last_name)
-                status.set(val.rank+" "+val.service_number+" "+val.first_name+" "+val.last_name)
+
+                military.set(val.rank+" "+val.service_number+" "+val.first_name+" "+val.last_name)
+                ui.update_action_button("ph_add_btn",disabled=False)
+                ui.update_action_button("ph_update_btn",  disabled=False)
             except Exception as e:
                 ui.update_text("ph_serialnr", value="Not found")
                 return
@@ -223,6 +235,12 @@ class PhefPage:
         @render.text
         def ph_status():
             return status.get()
+
+        @output
+        @render.text
+        def ph_miltary():
+            return military.get()
+
 
         @output
         @render.ui
