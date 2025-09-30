@@ -228,7 +228,7 @@ class PhefPage:
         @render.ui
         def ph_side_bridge_r_score():
             val = ph_side_bridge_r_score_val.get()
-            text = str(val or "")
+            text = str(val)
             try:
                 num = float(val)
             except (TypeError, ValueError):
@@ -240,7 +240,7 @@ class PhefPage:
         @render.ui
         def ph_side_bridge_l_score():
             val = ph_side_bridge_l_score_val.get()
-            text = str(val or "")
+            text = str(val)
             try:
                 num = float(val)
             except (TypeError, ValueError):
@@ -254,7 +254,7 @@ class PhefPage:
         @render.text
         def ph_run_2400_score():
             val = ph_run_2400_score_val.get()
-            text = str(val or "")
+            text = str(val)
             try:
                 num = float(val)
             except (TypeError, ValueError):
