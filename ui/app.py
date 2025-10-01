@@ -5,7 +5,7 @@ from shiny import App, ui, run_app, render
 from data.db.db_model import User
 from ui.user_store import UserStore
 from utils.Os import Os
-from .pages import dashboard, reports, settings
+from .pages import dashboard, reports, settings, combat_test
 
 from .pages import usermangement
 from .pages import phef
@@ -101,6 +101,7 @@ class FitnessWarriorApp:
         servers_by_tab = {
             "User Management": usermangement.server,
             "PHEF Tests": phef.server,
+            "Combat Tests": combat_test.server,
             "Sessions": sessions.server,
             "Dashboard": dashboard.server,
             "Reports": reports.server,
@@ -133,7 +134,7 @@ class FitnessWarriorApp:
                     nav_items.append(ui.nav_menu("Admin", *admin_children))
 
             # Base tabs
-            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui()),safe(phef.get_ui())] if
+            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui()),safe(phef.get_ui()),safe(combat_test.get_ui())] if
                               i is not None])
 
             # Logged-in user tabs (also appear for admin if desired)
@@ -255,4 +256,4 @@ app = App(FitnessWarriorApp.build_app_ui(), FitnessWarriorApp.server)
 
 if __name__ == "__main__":
     
-    run_app(app, port=FitnessWarriorApp.DEFAULT_PORT, reload=True)
+    run_app(app, host="0.0.0.0", port=FitnessWarriorApp.DEFAULT_PORT, reload=True)

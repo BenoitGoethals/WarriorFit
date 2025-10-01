@@ -738,6 +738,36 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error fetching PHEF tests: {str(e)}")
             return []
 
+    async def get_all_combat_test(self, session_id: int) -> List[CombatTestParatrooper]:
+        """
+        Fetch all PhefTest entities with their related TestSession objects.
+        """
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():  # Add transaction context
+                    query = (
+                        select(TestSession)
+                        .where(TestSession.id == session_id)
+                        .options(selectinload(TestSession.fitness_tests))
+                    )
+                    result = await session.execute(query)
+                    test_session = result.unique().scalar_one_or_none()
+
+                    if test_session:
+                        # Create a list of PhefTests while the session is still active
+                        tests = [
+                            test for test in test_session.fitness_tests
+                            if isinstance(test, CombatTestParatrooper)
+                        ]
+                        # Ensure all necessary data is loaded
+                        for test in tests:
+                            await session.refresh(test)
+                        return tests
+                    return []
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error fetching Combat tests: {str(e)}")
+            return []
+
     async def delete_fitness_test_from_test_session(
         self, test_session_id: int, fitness_test_id: int
     ) -> bool:
