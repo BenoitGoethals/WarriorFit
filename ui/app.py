@@ -111,7 +111,7 @@ class FitnessWarriorApp:
             "Dashboard": dashboard.server,
             "Reports": reports.server,
             "Settings": settings.server,
-            # ... existing code ...
+
         }
 
         mounted = reactive.Value(set())
@@ -131,22 +131,28 @@ class FitnessWarriorApp:
 
             nav_items = []
 
-            # Admin menu
-            if role == Role.ADMIN:
-                admin_children = [safe(usermangement.get_ui())]
-                admin_children = [c for c in admin_children if c is not None]
-                if admin_children:
-                    nav_items.append(ui.nav_menu("Admin", *admin_children))
+
 
             # Base tabs
-            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui()),
-                                          safe(phef.get_ui()), safe(combat_test.get_ui()),
-                                          safe(functional_test.get_ui()), safe(swim_test.get_ui())] if
+            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()),
+                                         ] if
                               i is not None])
+
+            nav_test = [safe(phef.get_ui()), safe(combat_test.get_ui()),
+                        safe(functional_test.get_ui()), safe(swim_test.get_ui())]
+            nav_test = [c for c in nav_test if c is not None]
+            nav_items.append(ui.nav_menu("Test", *nav_test))
 
             # Logged-in user tabs (also appear for admin if desired)
             if user is not None:
                 nav_items.extend([i for i in [safe(sessions.get_ui())] if i is not None])
+
+            # Admin menu
+            if role == Role.ADMIN:
+                admin_children = [safe(usermangement.get_ui()), safe(settings.get_ui())]
+                admin_children = [c for c in admin_children if c is not None]
+                if admin_children:
+                    nav_items.append(ui.nav_menu("Admin", *admin_children))
 
             # Right-side controls
             nav_items.append(ui.nav_spacer())
