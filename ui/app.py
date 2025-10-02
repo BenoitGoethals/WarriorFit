@@ -10,6 +10,8 @@ from .pages import dashboard, reports, settings, combat_test
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
+from .pages import functional_test
+from .pages import swim_test
 
 from data.db.db_model import User, Role
 
@@ -102,6 +104,9 @@ class FitnessWarriorApp:
             "User Management": usermangement.server,
             "PHEF Tests": phef.server,
             "Combat Tests": combat_test.server,
+            "Functional Tests": functional_test.server,
+            "Swimming Tests": swim_test.server,
+
             "Sessions": sessions.server,
             "Dashboard": dashboard.server,
             "Reports": reports.server,
@@ -134,7 +139,9 @@ class FitnessWarriorApp:
                     nav_items.append(ui.nav_menu("Admin", *admin_children))
 
             # Base tabs
-            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui()),safe(phef.get_ui()),safe(combat_test.get_ui())] if
+            nav_items.extend([i for i in [safe(dashboard.get_ui()), safe(reports.get_ui()), safe(settings.get_ui()),
+                                          safe(phef.get_ui()), safe(combat_test.get_ui()),
+                                          safe(functional_test.get_ui()), safe(swim_test.get_ui())] if
                               i is not None])
 
             # Logged-in user tabs (also appear for admin if desired)

@@ -962,4 +962,61 @@ class DBService(metaclass=Singleton):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
+    async def get_all_functional_test(self, session_id)->list[FunctionalTest]:
+        """
+              Fetch all PhefTest entities with their related TestSession objects.
+              """
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():  # Add transaction context
+                    query = (
+                        select(TestSession)
+                        .where(TestSession.id == session_id)
+                        .options(selectinload(TestSession.fitness_tests))
+                    )
+                    result = await session.execute(query)
+                    test_session = result.unique().scalar_one_or_none()
+
+                    if test_session:
+                        # Create a list of Functionals while the session is still active
+                        func_test = [
+                            test for test in test_session.fitness_tests
+                            if isinstance(test, FunctionalTest)
+                        ]
+                        # Ensure all necessary data is loaded
+                        for test in func_test:
+                            await session.refresh(test)
+                        return func_test
+                    return []
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error fetching Functional tests: {str(e)}")
+            return []
+
+    async def get_all_combat_swimming_test(self, session_id)->list[CombatSwimmingTest]:
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():  # Add transaction context
+                    query = (
+                        select(TestSession)
+                        .where(TestSession.id == session_id)
+                        .options(selectinload(TestSession.fitness_tests))
+                    )
+                    result = await session.execute(query)
+                    test_session = result.unique().scalar_one_or_none()
+
+                    if test_session:
+                        # Create a list of Functionals while the session is still active
+                        func_test = [
+                            test for test in test_session.fitness_tests
+                            if isinstance(test, CombatSwimmingTest)
+                        ]
+                        # Ensure all necessary data is loaded
+                        for test in func_test:
+                            await session.refresh(test)
+                        return func_test
+                    return []
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error fetching Functional tests: {str(e)}")
+            return []
+
 

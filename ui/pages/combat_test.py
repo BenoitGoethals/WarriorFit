@@ -456,7 +456,7 @@ class CombatPage:
             return cp
 
         @reactive.Effect
-        @reactive.event(input.ph_update_btn)
+        @reactive.event(input.combat_update_btn)
         async def _on_update():
             data = _read_form()
             ok, res = _validate(data)

@@ -338,8 +338,8 @@ class SessionsPage:
             except Exception as e:
                 status.set(f"Error adding session: {str(e)}")
                 return
-
-            await _refresh_select()
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+            self.selected_id.set(None)
             await _clear_form()
 
         @reactive.Effect
