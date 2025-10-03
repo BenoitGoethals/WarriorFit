@@ -16,7 +16,10 @@ class DashboardPage:
         return ui.nav_panel(
             "Dashboard",
             ui.h2("📊 Dashboard"),
-            
+            ui.br(),
+            ui.layout_columns(
+            ui.input_action_button("dashboard_refresh", "Refresh dashboard", class_="btn btn-outline-primary"),
+            ),
             # Top row: Status cards
             ui.layout_columns(
                 ui.card(
@@ -95,10 +98,18 @@ class DashboardPage:
 
     def server(self, input, output, session):
         
+        # Refresh trigger
+        @reactive.Effect
+        @reactive.event(input.dashboard_refresh)
+        def _trigger_dashboard_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+            ui.notification_show("Dashboard reloaded", type="message", duration=2)
+        
         # PHEF Statistics
         @output
         @render.ui
         async def phef_stats():
+            _ = self.refresh_tick.get()
             try:
                 sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF)
                 total_tests = 0
@@ -137,6 +148,7 @@ class DashboardPage:
         @output
         @render.ui
         async def combat_stats():
+            _ = self.refresh_tick.get()
             try:
                 sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT)
                 total_tests = 0
@@ -170,6 +182,7 @@ class DashboardPage:
         @output
         @render.ui
         async def functional_stats():
+            _ = self.refresh_tick.get()
             try:
                 sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.FUNCTIONAL)
                 total_tests = 0
@@ -202,6 +215,7 @@ class DashboardPage:
         @output
         @render.ui
         async def swimming_stats():
+            _ = self.refresh_tick.get()
             try:
                 sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.SWIMMING)
                 total_tests = 0
@@ -235,6 +249,7 @@ class DashboardPage:
         @output
         @render.ui
         async def test_distribution_chart():
+            _ = self.refresh_tick.get()
             try:
                 phef_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF)
                 combat_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT)
@@ -263,6 +278,7 @@ class DashboardPage:
         @output
         @render.ui
         async def pass_fail_chart():
+            _ = self.refresh_tick.get()
             try:
                 data = []
                 
@@ -335,6 +351,7 @@ class DashboardPage:
         @output
         @render.data_frame
         async def recent_sessions_table():
+            _ = self.refresh_tick.get()
             try:
                 all_sessions = await self.db.get_all_test_sessions()
                 # Sort by datetime_start descending
@@ -360,6 +377,7 @@ class DashboardPage:
         @output
         @render.ui
         async def phef_score_histogram():
+            _ = self.refresh_tick.get()
             try:
                 phef_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF)
                 scores = []
@@ -393,6 +411,7 @@ class DashboardPage:
         @output
         @render.ui
         async def performance_trend_chart():
+            _ = self.refresh_tick.get()
             try:
                 all_sessions = await self.db.get_all_test_sessions()
                 all_sessions.sort(key=lambda x: x.datetime_start)

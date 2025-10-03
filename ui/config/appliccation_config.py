@@ -21,7 +21,7 @@ class ApplicationConfig(metaclass=Singleton):
         return self.__config
 
 
-    def __init__(self, config_path:str=None):
+    def __init__(self, config_path:str="ui/config/config.yml"):
         """
         Initializes the application configuration with a specified path.
 
@@ -40,6 +40,7 @@ class ApplicationConfig(metaclass=Singleton):
         if not config:
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
         self.__config = self.__setup_connection_from_yaml(config=config)
+        return config
 
     def __load_yaml_file(self)->Any:
         """Helper method to load YAML data from a given file."""
@@ -69,6 +70,10 @@ class ApplicationConfig(metaclass=Singleton):
             pool_recycle=3600,  # Recycle less often if connections are stable
             pool_timeout=30,  # Increase timeout for waiting connections
         )
+
+    def save_config(self, config):
+        with open(self.config_path, 'w') as f:
+            yaml.dump(config, f, default_flow_style=False)
 
 
 

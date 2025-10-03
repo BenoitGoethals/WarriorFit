@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 
-class Configuration:
+class ConfigurationTool:
     """
     Handles configuration-related operations such as validating configuration file presence,
     creating necessary directories, and copying default configuration files. The class is

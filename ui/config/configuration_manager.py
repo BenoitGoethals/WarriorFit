@@ -12,6 +12,8 @@ from logic.singleton import Singleton
 
 class ConfigurationManager(metaclass=Singleton):
 
+    NAME =None
+
     def __init__(self, name: str = None):
         self.__config_path = Path()
         self.__app_config = None
@@ -139,3 +141,6 @@ class ConfigurationManager(metaclass=Singleton):
     @login_use.setter
     def login_use(self, value):
         self.__login_use = value
+
+    def load_configuration(self):
+        return self.__load_configuration()
