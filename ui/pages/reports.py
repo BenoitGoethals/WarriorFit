@@ -5,6 +5,9 @@ from datetime import datetime
 
 from ui.services.db_service import DBService
 from ui.services.file_service import FileService
+from ui.services.report_generator_csv import ReportGeneratorCsv
+from ui.services.report_generator_pdf import ReportGeneratorPdf
+from ui.services.report_type import ReportGeneratorTypeOutput as OutputType, ReportType
 
 
 class ReportsPage:
@@ -15,6 +18,9 @@ class ReportsPage:
         self._report_data = reactive.Value([])
         self._status_msg = reactive.Value(("info", "Click 'Generate Report' to create your report."))
         self._last_paths = reactive.Value([])
+        # New generators
+        self._csv_gen = ReportGeneratorCsv()
+        self._pdf_gen = ReportGeneratorPdf()
 
     def ui(self):
         return ui.nav_panel(
@@ -50,7 +56,7 @@ class ReportsPage:
                 # Shiny for Python uses ui.card() or plain container for main content
                 ui.card(
                     ui.output_ui("report_status"),
-                    ui.output_table("report_preview"),
+                  #  ui.output_table("report_preview"),
                     ui.output_ui("report_paths"),
                 ),
             ),
@@ -61,63 +67,45 @@ class ReportsPage:
         @reactive.event(input.generate_report)
         async def _generate_report():
             try:
+                # Resolve type
                 test_type = input.test_type()
-                if test_type == "all":
-                    fitness_tests = await self.db_service.get_all_fitness_tests()
-                elif test_type == "phef":
-                    fitness_tests = await self.db_service.get_all_phef()
-                elif test_type == "functional":
-                    fitness_tests = await self.db_service.get_all_functional_test()
-                elif test_type == "combat":
-                    fitness_tests = await self.db_service.get_all_combat_test()
-                elif test_type == "swimming":
-                    fitness_tests = await self.db_service.get_all_combat_swimming_test()
-                else:
-                    fitness_tests = []
+                title = input.report_title().strip() or "Report"
 
-                if not fitness_tests:
-                    self._report_data.set([])
-                    self._last_paths.set([])
-                    self._status_msg.set(("warning", "No data found for the selected filters."))
-                    return
 
-                data = self.file_service.get_fitness_test_data_dict(fitness_tests)
-                self._report_data.set(data)
 
-                output_folder = Path(input.output_folder())
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                safe_title = input.report_title().strip().replace(" ", "_") or "Report"
-                base_filename = f"{safe_title}_{test_type}_{timestamp}"
+                # Map UI type to generator enums (only used by generators internally)
+                def _to_report_type(tt: str):
+                    # Generators expect their own ReportType; to keep this file decoupled,
+                    # we’ll pass the UI string forward and let generators map internally if needed.
+                    return tt
 
-                paths = []
+                # Generate files using new generators
                 fmt = input.report_format()
+                paths: list[str] = []
+                report_name = title.replace(" ", "_")
 
-                if fmt in ("pdf", "both"):
-                    pdf_path = output_folder / f"{base_filename}.pdf"
-                    ok = self.file_service.export_fitness_tests_to_pdf(
-                        data=data,
-                        file_path=str(pdf_path),
-                        title=input.report_title(),
-                        test_type=test_type.upper(),
-                    )
-                    if ok:
-                        paths.append(str(pdf_path))
+                # For "all" we produce each category
+                targets = [ReportType.PHEF, ReportType.FUNCTIONAL, ReportType.COMBAT,
+                           ReportType.SWIMMING] if test_type == "all" else [ReportType(test_type)]
 
-                if fmt in ("csv", "both"):
-                    csv_path = output_folder / f"{base_filename}.csv"
-                    ok = self.file_service.export_to_csv(
-                        data=data,
-                        file_path=str(csv_path),
-                    )
-                    if ok:
-                        paths.append(str(csv_path))
+                for t in targets:
+                    if fmt in ("csv", "both"):
+                        csv_result = await self._csv_gen.generate_report(report_name, t)
+                        for v in (csv_result or {}).values():
+                            if v:
+                                paths.append(v)
+                    if fmt in ("pdf", "both"):
+                        pdf_result = await self._pdf_gen.generate_report(report_name,t)
+                        for v in (pdf_result or {}).values():
+                            if v:
+                                paths.append(v)
 
                 if paths:
                     self._last_paths.set(paths)
-                    self._status_msg.set(("success", f"Report generated successfully with {len(data)} records."))
+                    self._status_msg.set(("success", f"Report generated successfully with preview records."))
                 else:
                     self._last_paths.set([])
-                    self._status_msg.set(("danger", "Failed to generate report files."))
+                    self._status_msg.set(("warning", "No files were generated."))
             except Exception as e:
                 self._last_paths.set([])
                 self._status_msg.set(("danger", f"Error generating report: {e}"))

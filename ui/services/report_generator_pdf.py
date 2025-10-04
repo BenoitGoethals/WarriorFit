@@ -9,35 +9,24 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from ui.services.file_service import FileService  # ensure single source for PDF path
 from ui.services.file_service import FileService
+from ui.services.report_type import ReportType
 
 
-class ReportGeneratorTypeOutput(enum.Enum):
-    PDF = 1
-    EXCEL = 2
-
-
-class ReportType(enum.Enum):
-    PHEF = 1
-    FUNCTIONAL = 2
-    COMBAT = 3
-    SWIMMING = 4
-
-
-class ReportGenerator:
+class ReportGeneratorPdf:
 
     def __init__(self):
         self.db_service: DBService = DBService("ui/config/config.yml")
 
-    async def generate_report(self, report_type_output: ReportGeneratorTypeOutput, report_name: str, report_type: ReportType):
+    async def generate_report(self,  report_name: str, report_type: ReportType):
         if report_type is ReportType.PHEF:
             print(f"Generating PHEF report for {report_name}")
-            return await self.generate_phef_report(report_name, report_type_output)
+            return await self.generate_phef_report(report_name)
         elif report_type is ReportType.FUNCTIONAL:
-            return await self.generate_functional_report(report_name, report_type_output)
+            return await self.generate_functional_report(report_name)
         elif report_type is ReportType.COMBAT:
-            return await self.generate_combat_report(report_name, report_type_output)
+            return await self.generate_combat_report(report_name)
         elif report_type is ReportType.SWIMMING:
-            return await self.generate_swimming_report(report_name, report_type_output)
+            return await self.generate_swimming_report(report_name)
         else:
             raise ValueError("Invalid report type")
 # ... existing code ...
@@ -86,7 +75,7 @@ class ReportGenerator:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{report_name}_{file_suffix}_{timestamp}.pdf"
         out_dir = self._output_dir()
-       
+
         output_path = os.path.join(out_dir, file_name)
 
         doc = deps["SimpleDocTemplate"](output_path, pagesize=deps["A4"])
@@ -119,16 +108,14 @@ class ReportGenerator:
         doc.build(story)
         print(f"PDF generated: {output_path}")
         return output_path
-# ... existing code ...
-    async def generate_phef_report(self, report_name: str, report_type_output: ReportGeneratorTypeOutput):
+
+    async def generate_phef_report(self, report_name: str):
         """
         Generate PDFs for PHEF:
         - All FAILED tests (<50 total)
         - All PASSED tests (>=50 total)
         Returns dict with 'failed' and 'passed' -> file paths (or None if not created).
         """
-        if report_type_output is not ReportGeneratorTypeOutput.PDF:
-            raise ValueError("Only PDF output is supported for PHEF report.")
 
         async def _collect_rows() -> tuple[List[dict], List[dict]]:
             failed: List[dict] = []
@@ -197,14 +184,7 @@ class ReportGenerator:
         )
         return {"failed": failed_path, "passed": passed_path}
 # ... existing code ...
-    async def generate_functional_report(self, report_name: str, report_type_output: ReportGeneratorTypeOutput):
-        """
-        Generate PDFs for Functional tests:
-        - Failed (<50 total reps)
-        - Passed (>=50 total reps)
-        """
-        if report_type_output is not ReportGeneratorTypeOutput.PDF:
-            raise ValueError("Only PDF output is supported for Functional report.")
+    async def generate_functional_report(self, report_name: str):
 
         async def _collect_rows() -> Tuple[List[dict], List[dict]]:
             failed, passed = [], []
@@ -255,14 +235,12 @@ class ReportGenerator:
         )
         return {"failed": failed_path, "passed": passed_path}
 # ... existing code ...
-    async def generate_combat_report(self, report_name: str, report_type_output: ReportGeneratorTypeOutput):
+    async def generate_combat_report(self, report_name: str, ):
         """
         Generate PDFs for Combat tests:
         - Failed (any requirement not met)
         - Passed (rope + obstacle passed and running_time <= 7200)
         """
-        if report_type_output is not ReportGeneratorTypeOutput.PDF:
-            raise ValueError("Only PDF output is supported for Combat report.")
 
         async def _collect_rows() -> Tuple[List[dict], List[dict]]:
             failed, passed = [], []
@@ -313,14 +291,8 @@ class ReportGenerator:
         )
         return {"failed": failed_path, "passed": passed_path}
 # ... existing code ...
-    async def generate_swimming_report(self, report_name: str, report_type_output: ReportGeneratorTypeOutput):
-        """
-        Generate PDFs for Swimming tests:
-        - Failed (swim_paased is False)
-        - Passed (swim_paased is True)
-        """
-        if report_type_output is not ReportGeneratorTypeOutput.PDF:
-            raise ValueError("Only PDF output is supported for Swimming report.")
+    async def generate_swimming_report(self, report_name: str):
+
 
         async def _collect_rows() -> Tuple[List[dict], List[dict]]:
             failed, passed = [], []
@@ -367,10 +339,10 @@ if __name__ == "__main__":
     import asyncio
 
     async def main():
-        gem = ReportGenerator()
-        await gem.generate_report(ReportGeneratorTypeOutput.PDF, "tstasd", ReportType.COMBAT)
-        await gem.generate_report(ReportGeneratorTypeOutput.PDF, "tstwe", ReportType.SWIMMING)
-        await gem.generate_report(ReportGeneratorTypeOutput.PDF, "tstf", ReportType.FUNCTIONAL)
-        await gem.generate_report(ReportGeneratorTypeOutput.PDF, "tstsdf", ReportType.PHEF)
+        gem = ReportGeneratorPdf()
+        await gem.generate_report("tstasd", ReportType.COMBAT)
+        await gem.generate_report( "tstwe", ReportType.SWIMMING)
+        await gem.generate_report( "tstf", ReportType.FUNCTIONAL)
+        await gem.generate_report( "tstsdf", ReportType.PHEF)
 
     asyncio.run(main())
