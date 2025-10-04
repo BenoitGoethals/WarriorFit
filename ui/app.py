@@ -218,6 +218,58 @@ class FitnessWarriorApp:
                 ui.notification_show("You have been logged out.", type="message")
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
 
+        # ===== Auto-logout after 10 minutes of inactivity (no ui.now) =====
+        import time
+        INACTIVITY_LIMIT_SECONDS = 600  # 10 minutes
+        last_activity = reactive.Value(time.time())
+
+        @output
+        @render.ui
+        def _activity_probe():
+            return ui.tags.script(
+                """
+                (function(){
+                  const report = () => Shiny.setInputValue('activity_ping', Date.now(), {priority: 'event'});
+                  const events = ['click','keydown','mousemove','scroll','touchstart','touchmove','visibilitychange'];
+                  events.forEach(ev => window.addEventListener(ev, report, {passive:true}));
+                  setInterval(report, 30000);
+                  report();
+                })();
+                """
+            )
+
+        @reactive.Effect
+        def _record_activity():
+            try:
+                _ = input.activity_ping()
+            except Exception:
+                return
+            last_activity.set(time.time())
+
+        @reactive.Effect
+        def _reset_on_nav_or_login():
+            try:
+                _ = input.main_nav()
+            except Exception:
+                pass
+            _ = nav_version.get()
+            last_activity.set(time.time())
+
+        @reactive.Effect
+        def _auto_logout_timer():
+            reactive.invalidate_later(5)  # check every 5s
+            user = UserStore.get_user()
+            if not user:
+                return
+            ts = last_activity.get() or time.time()
+            if time.time() - ts >= INACTIVITY_LIMIT_SECONDS:
+                try:
+                    UserStore.logout()
+                except Exception:
+                    UserStore.set_user(None)
+                ui.update_navs("main_nav", selected="Dashboard")
+                ui.notification_show("You were logged out due to 10 minutes of inactivity.", type="warning")
+                ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
 
 # Initialize logging once at import and expose ASGI app
 FitnessWarriorApp.setup_logger()
