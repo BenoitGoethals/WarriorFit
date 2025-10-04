@@ -5,5 +5,5 @@ db:
   username : "benoi"
   password : "ranger14"
 path:
-  pdf_path : "c:/temp"
+  pdf_path : "/home/benoit/temp"
 

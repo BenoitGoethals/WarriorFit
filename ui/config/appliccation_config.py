@@ -8,6 +8,7 @@ from logic.singleton import Singleton
 
 class ApplicationConfig(metaclass=Singleton):
     __config= None
+    __pdf_path=None
 
     @property
     def config(self):
@@ -16,10 +17,17 @@ class ApplicationConfig(metaclass=Singleton):
 
         :return: The application configuration dictionary.
         """
+
         if self.__config is None:
             raise ValueError("Configuration not loaded. Please call load_config() first.")
         return self.__config
 
+    @property
+    def pdf_output_path(self):
+
+        if self.__pdf_path is None:
+            raise ValueError("Configuration not loaded. Please call load_config() first.")
+        return self.__pdf_path
 
     def __init__(self, config_path:str="ui/config/config.yml"):
         """
@@ -27,8 +35,28 @@ class ApplicationConfig(metaclass=Singleton):
 
         :param config_path: Optional path to the configuration file.
         """
-        self.config_path:Path = Path(config_path)
+
+        self.config_path:Path = self.__get_project_root().joinpath(Path(config_path))
         self.load_config()
+
+
+    @staticmethod
+    def __get_project_root() -> Path:
+        current_path = Path(__file__).resolve().parent
+        while current_path != current_path.root:
+            if any(
+                    (current_path / marker_file).exists()
+                    for marker_file in [
+                        "pyproject.toml",
+                        "requirements.txt",
+                        ".env",
+                    ]
+            ):
+                return current_path
+            current_path = current_path.parent
+
+        # Fallback to the parent of the current file
+        return Path(__file__).resolve().parent
 
     def load_config(self):
         """
@@ -39,6 +67,7 @@ class ApplicationConfig(metaclass=Singleton):
         config=self.__load_yaml_file()
         if not config:
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
+        self.__pdf_path = config["path"]["pdf_path"]
         self.__config = self.__setup_connection_from_yaml(config=config)
         return config
 
@@ -49,7 +78,7 @@ class ApplicationConfig(metaclass=Singleton):
             with open(self.config_path.absolute(), "r") as file:
                 return yaml.safe_load(file)
         except FileNotFoundError:
-            raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
+            raise FileNotFoundError(f"Configuration file not found: {self.config_path.absolute()}")
         except yaml.YAMLError as error:
             raise ValueError(f"Error parsing YAML file: {self.config_path}, Error: {error}")
 
@@ -74,6 +103,7 @@ class ApplicationConfig(metaclass=Singleton):
     def save_config(self, config):
         with open(self.config_path, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
+
 
 
 

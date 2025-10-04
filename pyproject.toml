@@ -23,6 +23,7 @@ dependencies = [
     "psycopg[binary]>=3.2.10",
     "python-jose>=3.5.0",
     "pyyaml>=6.0.2",
+    "reportlab>=4.4.4",
     "rsconnect-python>=1.27.1",
     "shiny>=1.4.0",
     "sqlalchemy>=2.0.43",
