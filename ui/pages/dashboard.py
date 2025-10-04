@@ -1,6 +1,9 @@
 from shiny import ui, render, reactive
 import pandas as pd
+
+from logic.phef_calculator import PhefCalculator
 from ui.services.db_service import DBService
+from ui.services.defense_external_service import DefenseExternalService
 from ui.user_store import UserStore
 from core.type_fitness_test import TypeFitnessTest
 import plotly.express as px
@@ -11,6 +14,7 @@ class DashboardPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
+        self.external_services = DefenseExternalService()
 
     def get_ui(self):
         return ui.nav_panel(
@@ -120,9 +124,10 @@ class DashboardPage:
                     for test in tests:
                         total_tests += 1
                         # Calculate total score
-                        score_r = test.pointBridge_r or 0
-                        score_l = test.pointBridge_l or 0
-                        score_run = test.pointsRunning or 0
+                        val = self.external_services.get_serviceman_by_serial(test.serial_number or "")
+                        score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, val.age_from_birthdate(), val.gender)
+                        score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, val.age_from_birthdate(), val.gender)
+                        score_run = PhefCalculator.running_result(test.running_time, val.age_from_birthdate(), val.gender)
                         total_score = (score_run * (50/20)) + ((score_r + score_l) * (25/20))
                         if total_score >= 50:
                             passed_tests += 1
@@ -288,9 +293,13 @@ class DashboardPage:
                 for sess in phef_sessions:
                     tests = await self.db.get_all_phef(sess.id)
                     for test in tests:
-                        score_r = test.pointBridge_r or 0
-                        score_l = test.pointBridge_l or 0
-                        score_run = test.pointsRunning or 0
+                        val = self.external_services.get_serviceman_by_serial(test.serial_number or "")
+                        score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, val.age_from_birthdate(),
+                                                                    val.gender)
+                        score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, val.age_from_birthdate(),
+                                                                    val.gender)
+                        score_run = PhefCalculator.running_result(test.running_time, val.age_from_birthdate(),
+                                                                  val.gender)
                         total = (score_run * (50/20)) + ((score_r + score_l) * (25/20))
                         if total >= 50:
                             phef_pass += 1
@@ -385,9 +394,13 @@ class DashboardPage:
                 for sess in phef_sessions:
                     tests = await self.db.get_all_phef(sess.id)
                     for test in tests:
-                        score_r = test.pointBridge_r or 0
-                        score_l = test.pointBridge_l or 0
-                        score_run = test.pointsRunning or 0
+                        val = self.external_services.get_serviceman_by_serial(test.serial_number or "")
+                        score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, val.age_from_birthdate(),
+                                                                    val.gender)
+                        score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, val.age_from_birthdate(),
+                                                                    val.gender)
+                        score_run = PhefCalculator.running_result(test.running_time, val.age_from_birthdate(),
+                                                                  val.gender)
                         total = (score_run * (50/20)) + ((score_r + score_l) * (25/20))
                         scores.append(total)
                 
@@ -424,9 +437,13 @@ class DashboardPage:
                     if sess.type_test == TypeFitnessTest.PHEF:
                         tests = await self.db.get_all_phef(sess.id)
                         for test in tests:
-                            score_r = test.pointBridge_r or 0
-                            score_l = test.pointBridge_l or 0
-                            score_run = test.pointsRunning or 0
+                            val = self.external_services.get_serviceman_by_serial(test.serial_number or "")
+                            score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, val.age_from_birthdate(),
+                                                                        val.gender)
+                            score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, val.age_from_birthdate(),
+                                                                        val.gender)
+                            score_run = PhefCalculator.running_result(test.running_time, val.age_from_birthdate(),
+                                                                      val.gender)
                             total = (score_run * (50/20)) + ((score_r + score_l) * (25/20))
                             trend_data.append({'Date': date, 'Type': 'PHEF', 'Score': total})
                     
