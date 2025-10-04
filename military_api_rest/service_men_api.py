@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from core.service_men import ServiceMen
+from core.unit import Unit
 from military_api_rest.db_service_service_men import DbServiceServiceMen
 
 
@@ -15,6 +16,11 @@ class ServiceMenResponse(BaseModel):
     unit: str | None = None
     birthdate: str | None = None
     gender: str | None = None
+
+class UnitResponse(BaseModel):
+    name: str
+    base_location: str
+
 
 
 
@@ -60,6 +66,18 @@ class ServiceMenApi:
                 birthdate=str(member.birthdate),
                 gender=member.gender.value,
             ) for member in data]
+
+        @self.app.get("/units", response_model=List[UnitResponse])
+        async def get_all_units():
+            data: List[Unit] = await self.db_service.get_all_units()
+            if not data:
+                raise HTTPException(status_code=404, detail="Service member not found")
+            else:
+                data_response: List[UnitResponse] = []
+                for unit in data:
+                    data_response.append(UnitResponse(name=unit.name, base_location=unit.base_location))
+                return data_response
+
 
 
 # Create an instance of the API
