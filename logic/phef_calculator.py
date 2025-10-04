@@ -106,6 +106,11 @@ class PhefCalculator:
         if side_time is None:
             return 0
 
+        if gender == Gender.MALE:
+            kolom = "m"
+        else:
+            kolom = "v"
+
         # leeftijdscategorie bepalen
         if age < 30:
             age_group = "<30"
@@ -116,7 +121,7 @@ class PhefCalculator:
         else:
             age_group = "50+"
 
-        col = f"{age_group}_{gender.value}"
+        col = f"{age_group}_{kolom}"
 
         # door dataframe lopen en hoogste score vinden waarbij tijd >= grens
         for i, row in cls.side_bridge_data.iterrows():
@@ -137,24 +142,29 @@ class PhefCalculator:
                :param tijd: Tijd als 'MM:SS'
                :return: Score tussen 0 en 20
                """
+        if gender==Gender.MALE:
+            kolom = "m"
+        else:
+            kolom = "v"
+
 
         # Leeftijdscategorie bepalen
         if age < 30:
-            kolom = "<30_" + gender.value
+            kolom = "<30_" + kolom
         elif age < 35:
-            kolom = "30-34_" + gender.value
+            kolom = "30-34_" + kolom
         elif age < 40:
-            kolom = "35-39_" + gender.value
+            kolom = "35-39_" + kolom
         elif age < 45:
-            kolom = "40-44_" + gender.value
+            kolom = "40-44_" + kolom
         elif age < 50:
-            kolom = "45-49_" + gender.value
+            kolom = "45-49_" + kolom
         elif age < 55:
-            kolom = "50-54_" + gender.value
+            kolom = "50-54_" +kolom
         elif age < 60:
-            kolom = "55-59_" + gender.value
+            kolom = "55-59_" + kolom
         else:
-            kolom = "60+_" + gender.value
+            kolom = "60+_" + kolom
 
         if kolom not in cls.running_data.columns:
             raise ValueError(f"Geen normen beschikbaar voor kolom: {kolom}")
