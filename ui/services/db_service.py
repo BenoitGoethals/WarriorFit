@@ -464,7 +464,10 @@ class DBService(metaclass=Singleton):
         :return: A list of test session objects.
         :rtype: List[Any]
         """
-        query = select(TestSession).where(TestSession.type_test==typetest)
+        now_year = datetime.now().year
+        start = datetime(now_year, 1, 1)
+        end = datetime(now_year, 12, 31, 23, 59, 59)
+        query = select(TestSession).where(TestSession.type_test==typetest).where(TestSession.datetime_start.between(start, end))
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
