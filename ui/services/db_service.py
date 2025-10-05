@@ -2,6 +2,8 @@ import logging
 from datetime import datetime
 from typing import List, Optional, Any, Coroutine
 
+from IPython.core.completerlib import module_list
+
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import User, Role, TestSession
 import bcrypt
@@ -23,6 +25,7 @@ from data.db.db_model import (
     CombatTestParatrooper,
     CombatSwimmingTest,
 )
+from ui.services.defense_external_service import DefenseExternalService
 from utils.Os import Os
 
 
@@ -46,7 +49,7 @@ class DBService(metaclass=Singleton):
         """
         # Configure logging
         self.setup_logger()
-
+        self.external_service=DefenseExternalService()
         logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
         self.__logger = logging.getLogger(__name__)
         async_engine = ApplicationConfig(file_name).config
@@ -453,7 +456,10 @@ class DBService(metaclass=Singleton):
         :return: A list of test session objects.
         :rtype: List[Any]
         """
-        query = select(TestSession)
+        now_year = datetime.now().year
+        start = datetime(now_year, 1, 1)
+        end = datetime(now_year, 12, 31, 23, 59, 59)
+        query = select(TestSession).where(TestSession.datetime_start.between(start, end))
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
@@ -1020,5 +1026,21 @@ class DBService(metaclass=Singleton):
         except SQLAlchemyError as e:
             self.__logger.error(f"Database error fetching Functional tests: {str(e)}")
             return []
+
+
+    async def get_all_test_sessions_from_unit(self,unit: str):
+        sessions = await self.get_all_test_sessions()
+        if not sessions:
+            return []
+        mils=self.external_service.get_all_mil_form_unit(unit)
+        if not mils:
+            return []
+
+
+        for session in sessions:
+            for test in session.fitness_tests:
+                if test.serial_number in mils:
+                    return [session]
+
 
 

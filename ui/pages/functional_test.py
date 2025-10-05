@@ -6,6 +6,7 @@ from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import FunctionalTest, TestSession
 from ui.services.db_service import DBService
+from ..services.be_mil_service import BEMILService
 from ..services.defense_external_service import DefenseExternalService
 from ..user_store import UserStore
 
@@ -14,7 +15,7 @@ class FunctionalPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
-        self.external_services = DefenseExternalService()
+        self.be_mil_service = BEMILService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
 
@@ -168,13 +169,13 @@ class FunctionalPage:
 
         @reactive.effect
         @reactive.event(input.functional_search, ignore_none=False)
-        def functional_search():
+        async def functional_search():
             if input.functional_serialnr() is None or input.functional_serialnr() == "":
                 ui.update_action_button("functional_add_btn", disabled=True)
                 ui.update_action_button("functional_update_btn", disabled=True)
                 return
             try:
-                val = self.external_services.get_serviceman_by_serial(input.functional_serialnr() or "")
+                val = await self.be_mil_service.get_be_mil_by_id(input.functional_serialnr() or "")
                 self.selected_military = val
                 military.set(val.rank + " " + val.service_number + " " + val.first_name + " " + val.last_name)
                 ui.update_action_button("functional_add_btn", disabled=False)
@@ -266,7 +267,7 @@ class FunctionalPage:
                 functional_tests = await self.db.get_all_functional_test(int(session_id))
                 data = []
                 for r in functional_tests:
-                    selected_military = self.external_services.get_serviceman_by_serial(r.serial_number)
+                    selected_military = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
                     if selected_military is None:
                         continue
 
@@ -346,7 +347,7 @@ class FunctionalPage:
                 selected_functional_id.set(row["ID"] or "")
                 selected_session_id.set(input.functional_session_id() or "")
                 serial = str(row.get("Serial", "") or "")
-                self.selected_military = self.external_services.get_serviceman_by_serial(serial)
+                self.selected_military = await self.be_mil_service.get_be_mil_by_id(serial)
 
                 push_ups = row.get("Push-ups", 0)
                 sit_ups = row.get("Sit-ups", 0)

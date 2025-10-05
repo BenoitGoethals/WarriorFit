@@ -6,8 +6,9 @@ from core.Gender import Gender
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest, TestSession, CombatTestParatrooper
-from logic.phef_calculator import PhefCalculator
+
 from ui.services.db_service import DBService
+from ..services.be_mil_service import BEMILService
 from ..services.defense_external_service import DefenseExternalService
 from ..user_store import UserStore
 
@@ -16,7 +17,7 @@ class CombatPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
-        self.external_services = DefenseExternalService()
+        self.be_mil_service = BEMILService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
 
@@ -211,13 +212,13 @@ class CombatPage:
 
         @reactive.effect
         @reactive.event(input.combat_search, ignore_none=False)
-        def combat_search():
+        async def combat_search():
             if input.combat_serialnr() is None or input.combat_serialnr() == "":
                 ui.update_action_button("combat_add_btn", disabled=True)
                 ui.update_action_button("combat_update_btn", disabled=True)
                 return
             try:
-                val = self.external_services.get_serviceman_by_serial(input.combat_serialnr() or "")
+                val = await self.be_mil_service.get_be_mil_by_id(input.combat_serialnr() or "")
                 self.selected_military = val
                 # ui.update_text("ph_serialnr", value=val.service_number+val.first_name+" "+val.last_name)
 
@@ -283,7 +284,7 @@ class CombatPage:
                 # Create a list of dictionaries with values directly from the database objects
                 data = []
                 for r in combat_tests:
-                    selected_military = self.external_services.get_serviceman_by_serial(r.serial_number)
+                    selected_military = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
                     if selected_military is None:
                         continue
 
@@ -387,7 +388,7 @@ class CombatPage:
                 selected_combat_id.set(row["ID"] or "")
                 selected_session_id.set(input.combat_session_id() or "")
                 serial = str(row.get("Serial", "") or "")
-                self.selected_military = self.external_services.get_serviceman_by_serial(serial)
+                self.selected_military = await self.be_mil_service.get_be_mil_by_id(serial)
                 oc = True if row.get("ObstacleCourse", None) == "Passed"  else False
                 rc = True if row.get("RobeCourse") == "Passed" else False
                 run_t = row.get("speedmarsTime", None)

@@ -6,6 +6,7 @@ from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import CombatSwimmingTest, TestSession
 from ui.services.db_service import DBService
+from ..services.be_mil_service import BEMILService
 from ..services.defense_external_service import DefenseExternalService
 from ..user_store import UserStore
 
@@ -14,7 +15,7 @@ class SwimTestPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
-        self.external_services = DefenseExternalService()
+        self.be_mil_service = BEMILService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
 
@@ -124,13 +125,13 @@ class SwimTestPage:
 
         @reactive.effect
         @reactive.event(input.swim_search, ignore_none=False)
-        def swim_search():
+        async def swim_search():
             if input.swim_serialnr() is None or input.swim_serialnr() == "":
                 ui.update_action_button("swim_add_btn", disabled=True)
                 ui.update_action_button("swim_update_btn", disabled=True)
                 return
             try:
-                val = self.external_services.get_serviceman_by_serial(input.swim_serialnr() or "")
+                val = await self.be_mil_service.get_be_mil_by_id(input.swim_serialnr() or "")
                 self.selected_military = val
                 military.set(val.rank + " " + val.service_number + " " + val.first_name + " " + val.last_name)
                 ui.update_action_button("swim_add_btn", disabled=False)
@@ -172,7 +173,7 @@ class SwimTestPage:
                 swim_tests = await self.db.get_all_combat_swimming_test(int(session_id))
                 data = []
                 for r in swim_tests:
-                    selected_military = self.external_services.get_serviceman_by_serial(r.serial_number)
+                    selected_military = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
                     if selected_military is None:
                         continue
 
@@ -246,7 +247,7 @@ class SwimTestPage:
                 selected_swim_id.set(row["ID"] or "")
                 selected_session_id.set(input.swim_session_id() or "")
                 serial = str(row.get("Serial", "") or "")
-                self.selected_military = self.external_services.get_serviceman_by_serial(serial)
+                self.selected_military = await self.be_mil_service.get_be_mil_by_id(serial)
 
                 swim_passed = row.get("Result", "FAILED") == "PASSED"
 

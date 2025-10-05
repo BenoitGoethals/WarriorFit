@@ -16,7 +16,7 @@ class DefenseExternalService(metaclass=Singleton):
             service_number="SN100001",
             birthdate=datetime.datetime(1995, 3, 15),
             gender=Gender.MALE,
-            unit="1er Régiment de Chasseurs à Cheval",
+            unit="1-3 Bn Lanciers",
         ),
         "SN100002": ServiceMen(
             id=2,
@@ -26,7 +26,7 @@ class DefenseExternalService(metaclass=Singleton):
             service_number="SN100002",
             birthdate=datetime.datetime(1993, 7, 22),
             gender=Gender.FEMALE,
-            unit="12e/13e Bataillon de Ligne",
+            unit="1-3 Bn Lanciers",
         ),
         "SN100003": ServiceMen(
             id=3,
@@ -36,7 +36,7 @@ class DefenseExternalService(metaclass=Singleton):
             service_number="SN100003",
             birthdate=datetime.datetime(1994, 11, 8),
             gender=Gender.MALE,
-            unit="2/4 Régiment de Chasseurs à Pied",
+            unit="1-3 Bn Lanciers",
         ),
         "SN100004": ServiceMen(
             id=4,
@@ -56,7 +56,7 @@ class DefenseExternalService(metaclass=Singleton):
             service_number="SN100005",
             birthdate=datetime.datetime(1992, 9, 12),
             gender=Gender.MALE,
-            unit="4e Bataillon de Génie",
+            unit="1-3 Bn Lanciers",
         ),
         "SN100006": ServiceMen(
             id=6,
@@ -66,7 +66,7 @@ class DefenseExternalService(metaclass=Singleton):
             service_number="SN100006",
             birthdate=datetime.datetime(1991, 4, 25),
             gender=Gender.FEMALE,
-            unit="1 Wing Belgique",
+            unit="1-3 Bn Lanciers",
         ),
         "SN100007": ServiceMen(
             id=7,
@@ -76,7 +76,7 @@ class DefenseExternalService(metaclass=Singleton):
             service_number="SN100007",
             birthdate=datetime.datetime(1997, 2, 18),
             gender=Gender.MALE,
-            unit="2e Bataillon de Commandos",
+            unit="1-3 Bn Lanciers",
         ),
         "SN100008": ServiceMen(
             id=8,
@@ -253,5 +253,12 @@ class DefenseExternalService(metaclass=Singleton):
     def get_all_belgian_units(self):
         return self.belgian_units.values()
 
+    def get_all_mil_form_unit(self,unit):
+        return [x for x in self.service_men_dict.values() if unit == x.unit]
+
 assert DefenseExternalService().get_belgian_unit("BN_CARA_GREN") == "Bataillon Carabiniers Prince Baudouin - Grenadiers"
 assert DefenseExternalService().get_serviceman_by_serial("SN100018").last_name == "Dupont"
+
+test_list = DefenseExternalService().get_all_mil_form_unit("1-3 Bn Lanciers")
+for x in test_list:
+    print(f"{x.last_name} {x.first_name} {x.service_number} - {x.unit}")

@@ -16,6 +16,9 @@ class ServiceMenResponse(BaseModel):
     unit: str | None = None
     birthdate: str | None = None
     gender: str | None = None
+    para: bool = False
+    ops_test: bool = False
+
 
 class UnitResponse(BaseModel):
     name: str
@@ -51,6 +54,8 @@ class ServiceMenApi:
                 unit=data[0].unit.name,
                 birthdate=str(data[0].birthdate),
                 gender=data[0].gender.value,
+                para=data[0].para,
+                ops_test=data[0].ops_test,
             )
         @self.app.get("/service-men/unit/{unit_name}", response_model=List[ServiceMenResponse])
         async def get_all_service_men_from_unit(unit_name:str):
@@ -65,6 +70,8 @@ class ServiceMenApi:
                 unit=member.unit.name,
                 birthdate=str(member.birthdate),
                 gender=member.gender.value,
+                para=member.para,
+                ops_test=member.ops_test,
             ) for member in data]
 
         @self.app.get("/units", response_model=List[UnitResponse])

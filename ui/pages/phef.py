@@ -8,16 +8,17 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest, TestSession
 from logic.phef_calculator import PhefCalculator
 from ui.services.db_service import DBService
-from ..services.defense_external_service import DefenseExternalService
+from ..services.be_mil_service import BEMILService
 from ..user_store import UserStore
 
 class PhefPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
-        self.external_services=DefenseExternalService()
+        self.be_mil_service=BEMILService()
         self.selected_military:ServiceMen=None
         self.selected_session:TestSession=None
+
 
 
     NO_SELECTION_MESSAGE = "No row selected"
@@ -213,13 +214,14 @@ class PhefPage:
 
         @reactive.effect
         @reactive.event(input.ph_search, ignore_none=False)
-        def ph_search():
+        async def ph_search():
             if input.ph_serialnr() is None or input.ph_serialnr() == "":
                 ui.update_action_button("ph_add_btn", disabled=True)
                 ui.update_action_button("ph_update_btn", disabled=True)
                 return
             try:
-                val=self.external_services.get_serviceman_by_serial(input.ph_serialnr() or "")
+
+                val=await self.be_mil_service.get_be_mil_by_id(input.ph_serialnr() or "")
                 self.selected_military=val
                # ui.update_text("ph_serialnr", value=val.service_number+val.first_name+" "+val.last_name)
 
@@ -338,7 +340,7 @@ class PhefPage:
                 # Create a list of dictionaries with values directly from the database objects
                 data = []
                 for r in phef_tests:
-                    selected_military=self.external_services.get_serviceman_by_serial(r.serial_number)
+                    selected_military:ServiceMen=await self.be_mil_service.get_be_mil_by_id(r.serial_number)
                     if selected_military is None:
                         continue
                     age = selected_military.age_from_birthdate_and_session_date(self.selected_session.datetime_start)
@@ -444,7 +446,7 @@ class PhefPage:
                 selected_session_id.set(input.ph_session_id()  or "")
                 # Extract fields safely (note: "Sidebridge R " has a trailing space in the DataFrame)
                 serial = str(row.get("Serial", "") or "")
-                self.selected_military = self.external_services.get_serviceman_by_serial(serial)
+                self.selected_military = await self.be_mil_service.get_be_mil_by_id(serial)
                 side_l = row.get("Sidebridge L", None)
                 side_r = row.get("Sidebridge R ", row.get("Sidebridge R", None))
                 run_t = row.get("runningTime", None)

@@ -71,7 +71,8 @@ class DbServiceServiceMen(metaclass=Singleton):
             for row in rows:
                 sm = ServiceMen(id=row[0], service_number=row[4], last_name=row[2], first_name=row[1], birthdate=row[5],
                                 gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
-                                unit=Unit(id=row[7], name=row[8], base_location=row[9]), rank=row[3])
+                                unit=Unit(id=row[9], name=row[10], base_location=row[11]), rank=row[3],
+                                para=row[7], ops_test=row[8])
                 service_mens.append(sm)
             return service_mens
         except sqlite3.Error as e:
@@ -105,16 +106,10 @@ class DbServiceServiceMen(metaclass=Singleton):
             logger.info(f"Fetched {len(rows)} service men for service_number={service}")
             service_mens = []
             for row in rows:
-                sm = ServiceMen(
-                    id=row[0],
-                    service_number=row[4],
-                    last_name=row[2],
-                    first_name=row[1],
-                    birthdate=row[5],
-                    gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
-                    unit=Unit(id=row[7], name=row[8], base_location=row[9]),
-                    rank=row[3],
-                )
+                sm = ServiceMen(id=row[0], service_number=row[4], last_name=row[2], first_name=row[1], birthdate=row[5],
+                                gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
+                                unit=Unit(id=row[9], name=row[10], base_location=row[11]), rank=row[3],
+                                para=row[7], ops_test=row[8])
                 service_mens.append(sm)
             return service_mens
         except sqlite3.Error as e:
@@ -173,7 +168,8 @@ class DbServiceServiceMen(metaclass=Singleton):
             for row in rows:
                 sm = ServiceMen(id=row[0], service_number=row[4], last_name=row[2], first_name=row[1], birthdate=row[5],
                                 gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
-                                unit=Unit(id=row[7], name=row[8], base_location=row[9]), rank=row[3])
+                                unit=Unit(id=row[9], name=row[10], base_location=row[11]), rank=row[3],
+                                para=row[7], ops_test=row[8])
                 service_mens.append(sm)
             return service_mens
         except sqlite3.Error as e:
