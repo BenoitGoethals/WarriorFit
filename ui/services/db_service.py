@@ -701,10 +701,12 @@ class DBService(metaclass=Singleton):
             async with self.SessionLocal() as session:
                 # Load related sessions and ensure polymorphic subtypes are populated
                 query = select(FitnessTest).options(
-                    joinedload(FitnessTest.test_sessions),
-                    selectin_polymorphic(FitnessTest),
+                    selectin_polymorphic(FitnessTest,
+                                         [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]),
+                    selectinload(FitnessTest.test_sessions)
                 )
                 result = await session.execute(query)
+
                 tests = result.unique().scalars().all()
                 return list(tests) if tests else []
         except SQLAlchemyError as e:
@@ -1028,53 +1030,14 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error fetching Functional tests: {str(e)}")
             return []
 
-
-    async def get_all_test_sessions_from_unit(self,unit: str):
-        sessions = await self.get_all_test_sessions()
-        if not sessions:
-            return []
-        mils=self._be_mil_service.get_be_mil_by_id(unit)
-
-    async def get_all_fitness_tests_from_military_units(self, military_units: List[str]) -> List[Dict]:
-        """
-        Get all fitness tests from servicemen who are in specified military units.
-
-        :param military_units: List of military unit identifiers
-        :type military_units: List[str]
-        :return: List of fitness tests with serviceman details
-        :rtype: List[Dict]
-        """
+    async def get_all_fitness_tests_from_military_units(self, unit: str) -> List[FitnessTest]:
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    # Get all test sessions
-                    query = select(TestSession).options(
-                        selectinload(TestSession.fitness_tests).selectin_polymorphic(
-                            [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]
-                        )
-                    )
-                    result = await session.execute(query)
-                    test_sessions = result.unique().scalars().all()
-
-                    # Filter and format results
-                    fitness_tests = []
-                    for test_session in test_sessions:
-                        for fitness_test in test_session.fitness_tests:
-                            serviceman = self._be_mil_service.get_be_mil_by_id(fitness_test.serial_number)
-                            if serviceman and serviceman.get('unit') in military_units:
-                                fitness_tests.append({
-                                    'test_id': fitness_test.id,
-                                    'test_type': type(fitness_test).__name__,
-                                    'serial_number': fitness_test.serial_number,
-                                    'unit': serviceman,
-                                    'test_date': test_session.datetime_start,
-                                    'passed': fitness_test.passed
-                                })
-                    return fitness_tests
-
-        except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching fitness tests for military units: {str(e)}")
+            mils = await self._be_mil_service.get_all_be_mil_from_unit(unit)
+            fit_tests = await self.get_all_fitness_tests_full()
+            if not (mils and fit_tests):
+                return []
+            return [test for test in fit_tests if test.serial_number in [m.service_number for m in mils]]
+        except (SQLAlchemyError, Exception) as e:
+            self.__logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
             return []
-        except Exception as e:
-            self.__logger.error(f"Unexpected error fetching fitness tests for military units: {str(e)}")
-            return []
+        

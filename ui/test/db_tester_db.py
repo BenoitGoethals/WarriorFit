@@ -20,12 +20,15 @@ async def main():
         Optional[User]: Created user instance if successful, None otherwise
     """
     try:
-        db_service = DBService("../config/config.yml")
+        db_service = DBService("ui/config/config.yml")
       #  await test_user(db_service)
 
-        await test_test_session(db_service)
+      #  await test_test_session(db_service)
 
 
+        test = await db_service.get_all_fitness_tests_from_military_units("1-3 Bn Lanciers")
+        for t in test:
+            print(t)
 
 
 
@@ -100,6 +103,9 @@ async def test_user(db_service):
     all_users = await db_service.get_all_users()
     for user in all_users:
         print(user.username, user.email, user.role)
+
+
+
 
 
 if __name__ == "__main__":
