@@ -105,6 +105,9 @@ class SettingsPage:
                     path = config['path']
                     ui.update_text("pdf_path", value=path.get('pdf_path', ''))
 
+                if 'unit' in config:
+                    ui.update_text("own_unit", value=config['unit']['name'])
+
         @output
         @render.text
         def darkmode_status():

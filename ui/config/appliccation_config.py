@@ -9,6 +9,7 @@ from logic.singleton import Singleton
 class ApplicationConfig(metaclass=Singleton):
     __config= None
     __pdf_path=None
+    __own_unit=None
 
     @property
     def config(self):
@@ -28,6 +29,14 @@ class ApplicationConfig(metaclass=Singleton):
         if self.__pdf_path is None:
             raise ValueError("Configuration not loaded. Please call load_config() first.")
         return self.__pdf_path
+
+
+    @property
+    def own_unit(self):
+
+        if self.__own_unit is None:
+            raise ValueError("Configuration not loaded. Please call load_config() first.")
+        return self.__own_unit
 
     def __init__(self, config_path:str="ui/config/config.yml"):
         """
@@ -68,6 +77,7 @@ class ApplicationConfig(metaclass=Singleton):
         if not config:
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
         self.__pdf_path = config["path"]["pdf_path"]
+        self.__own_unit = config["unit"]["name"]
         self.__config = self.__setup_connection_from_yaml(config=config)
         return config
 

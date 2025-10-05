@@ -4,6 +4,7 @@ from shiny import App, ui, render
 from data.db.db_model import Role
 from ui.user_store import UserStore
 from utils.Os import Os
+from .config.appliccation_config import ApplicationConfig
 from .pages import dashboard, reports, settings, combat_test
 from .pages import usermangement  # keep as-is to match actual module name
 from .pages import phef
@@ -185,7 +186,7 @@ class FitnessWarriorApp:
                 if await db_service.check_user(username_login, password_login):
                     user = await db_service.get_user_by_username(username_login)
                     UserStore.set_user(user)
-                    login_user_text.set(f"User: {username_login}  Role: {user.role}")
+                    login_user_text.set(f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}" )
                     status_text.set("")
                     ui.modal_remove()
                     nav_version.set(nav_version.get() + 1)

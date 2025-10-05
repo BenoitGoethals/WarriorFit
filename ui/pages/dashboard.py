@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from shiny import ui, render, reactive
 import pandas as pd
 
@@ -19,7 +21,7 @@ class DashboardPage:
     def get_ui(self):
         return ui.nav_panel(
             "Dashboard",
-            ui.h2("📊 Dashboard"),
+            ui.h2("📊 Dashboard " + str(datetime.now().year)),
             ui.br(),
             ui.layout_columns(
             ui.input_action_button("dashboard_refresh", "Refresh dashboard", class_="btn btn-outline-primary"),

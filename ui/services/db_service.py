@@ -922,7 +922,6 @@ class DBService(metaclass=Singleton):
 
     async def update_user_by_serial(self, user):
 
-
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
