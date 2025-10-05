@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Any, Coroutine
+from typing import List, Optional, Any, Coroutine, Dict
 
 from IPython.core.completerlib import module_list
 
@@ -25,6 +25,7 @@ from data.db.db_model import (
     CombatTestParatrooper,
     CombatSwimmingTest,
 )
+from ui.services.be_mil_service import BEMILService
 from ui.services.defense_external_service import DefenseExternalService
 from utils.Os import Os
 
@@ -49,7 +50,7 @@ class DBService(metaclass=Singleton):
         """
         # Configure logging
         self.setup_logger()
-        self.external_service=DefenseExternalService()
+        self._be_mil_service = BEMILService()
         logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
         self.__logger = logging.getLogger(__name__)
         async_engine = ApplicationConfig(file_name).config
@@ -1032,15 +1033,48 @@ class DBService(metaclass=Singleton):
         sessions = await self.get_all_test_sessions()
         if not sessions:
             return []
-        mils=self.external_service.get_all_mil_form_unit(unit)
-        if not mils:
+        mils=self._be_mil_service.get_be_mil_by_id(unit)
+
+    async def get_all_fitness_tests_from_military_units(self, military_units: List[str]) -> List[Dict]:
+        """
+        Get all fitness tests from servicemen who are in specified military units.
+
+        :param military_units: List of military unit identifiers
+        :type military_units: List[str]
+        :return: List of fitness tests with serviceman details
+        :rtype: List[Dict]
+        """
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    # Get all test sessions
+                    query = select(TestSession).options(
+                        selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                            [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]
+                        )
+                    )
+                    result = await session.execute(query)
+                    test_sessions = result.unique().scalars().all()
+
+                    # Filter and format results
+                    fitness_tests = []
+                    for test_session in test_sessions:
+                        for fitness_test in test_session.fitness_tests:
+                            serviceman = self._be_mil_service.get_be_mil_by_id(fitness_test.serial_number)
+                            if serviceman and serviceman.get('unit') in military_units:
+                                fitness_tests.append({
+                                    'test_id': fitness_test.id,
+                                    'test_type': type(fitness_test).__name__,
+                                    'serial_number': fitness_test.serial_number,
+                                    'unit': serviceman,
+                                    'test_date': test_session.datetime_start,
+                                    'passed': fitness_test.passed
+                                })
+                    return fitness_tests
+
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error fetching fitness tests for military units: {str(e)}")
             return []
-
-
-        for session in sessions:
-            for test in session.fitness_tests:
-                if test.serial_number in mils:
-                    return [session]
-
-
-
+        except Exception as e:
+            self.__logger.error(f"Unexpected error fetching fitness tests for military units: {str(e)}")
+            return []

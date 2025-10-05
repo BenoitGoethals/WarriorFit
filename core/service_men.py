@@ -20,7 +20,11 @@ class ServiceMen:
 
 
     def age_from_birthdate(self) -> int:
-        d = self.birthdate.date()
+        if  isinstance(self.birthdate,str):
+            d= datetime.datetime.strptime(self.birthdate, "%Y-%m-%d")
+            #d = self.birthdate.date()
+        else:
+           d = self.birthdate.date()
         today = datetime.date.today()
         return today.year - d.year - ((today.month, today.day) < (d.month, d.day))
 

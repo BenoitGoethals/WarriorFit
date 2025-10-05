@@ -16,7 +16,7 @@ class DashboardOwnUnitPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
-        self.external_services = DefenseExternalService()
+
         self._own_unit = ApplicationConfig().own_unit
         self._be_mil_service = BEMILService()
 
@@ -105,8 +105,8 @@ class DashboardOwnUnitPage:
         except Exception:
             return []
 
-    def _phef_total_score(self, test) -> float:
-        val = self.external_services.get_serviceman_by_serial(test.serial_number or "")
+    async def _phef_total_score(self, test) -> float:
+        val = await self._be_mil_service.get_be_mil_by_id(test.serial_number or "")
         age = val.age_from_birthdate()
         gender = val.gender
         score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, age, gender)
@@ -164,7 +164,7 @@ class DashboardOwnUnitPage:
                     for test in await self.db.get_all_phef(sess.id):
                         if test.serial_number in serials:
                             total_tests += 1
-                            if self._phef_total_score(test) >= 50:
+                            if await self._phef_total_score(test) >= 50:
                                 passed_tests += 1
                 pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
                 return self._ui_stats_card("Total Tests (Own Unit)", total_tests, f"{pass_rate:.1f}%", "Pass Rate", "text-success")
@@ -257,7 +257,7 @@ class DashboardOwnUnitPage:
                 for sess in phef_sessions:
                     for test in await self.db.get_all_phef(sess.id):
                         if test.serial_number in serials:
-                            if self._phef_total_score(test) >= 50:
+                            if await self._phef_total_score(test) >= 50:
                                 phef_pass += 1
                             else:
                                 phef_fail += 1

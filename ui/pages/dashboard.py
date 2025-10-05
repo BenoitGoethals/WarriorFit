@@ -4,6 +4,7 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 from logic.phef_calculator import PhefCalculator
+from ui.services.be_mil_service import BEMILService
 from ui.services.db_service import DBService
 from ui.services.defense_external_service import DefenseExternalService
 from ui.user_store import UserStore
@@ -16,7 +17,7 @@ class DashboardPage:
     def __init__(self, db: DBService):
         self.db = db
         self.refresh_tick = reactive.Value(0)
-        self.external_services = DefenseExternalService()
+        self.be_mil_service = BEMILService()
 
     def get_ui(self):
         return ui.nav_panel(
@@ -118,8 +119,8 @@ class DashboardPage:
         except Exception:
             return []
 
-    def _phef_total_score(self, test) -> float:
-        val = self.external_services.get_serviceman_by_serial(test.serial_number or "")
+    async def _phef_total_score(self, test) -> float:
+        val = await self.be_mil_service.get_be_mil_by_id(test.serial_number or "")
         age = val.age_from_birthdate()
         gender = val.gender
         score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, age, gender)
@@ -162,12 +163,14 @@ class DashboardPage:
                     tests = await self.db.get_all_phef(sess.id)
                     for test in tests:
                         total_tests += 1
-                        if self._phef_total_score(test) >= 50:
+                        if await self._phef_total_score(test) >= 50:
                             passed_tests += 1
                 pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
                 return self._ui_stats_card("Total Tests", total_tests, f"{pass_rate:.1f}%", "Pass Rate", "text-success")
-            except Exception:
+            except Exception as e:
+                ui.notification_show(f"Error loading PHEF statistics: {str(e)}", type="error", duration=5)
                 return self._ui_stats_card("Total Tests", 0, None, "", "")
+
 
         # Combat Statistics
         @output
@@ -264,8 +267,8 @@ class DashboardPage:
                 phef_pass = phef_fail = 0
                 for sess in phef_sessions:
                     for test in await self.db.get_all_phef(sess.id):
-                        phef_pass += 1 if self._phef_total_score(test) >= 50 else 0
-                        phef_fail += 0 if self._phef_total_score(test) >= 50 else 1
+                        phef_pass += 1 if await self._phef_total_score(test) >= 50 else 0
+                        phef_fail += 0 if await self._phef_total_score(test) >= 50 else 1
 
                 # Combat pass/fail
                 combat_sessions = await self._safe_sessions_by_type(TypeFitnessTest.COMBAT)
@@ -343,7 +346,7 @@ class DashboardPage:
                 scores = []
                 for sess in phef_sessions:
                     for test in await self.db.get_all_phef(sess.id):
-                        scores.append(self._phef_total_score(test))
+                        scores.append(await self._phef_total_score(test))
                 if not scores:
                     return ui.p("No PHEF data available", class_="text-muted")
                 fig = px.histogram(scores, nbins=20,
@@ -371,7 +374,7 @@ class DashboardPage:
                     date = sess.datetime_start.strftime('%Y-%m-%d')
                     if sess.type_test == TypeFitnessTest.PHEF:
                         for test in await self.db.get_all_phef(sess.id):
-                            trend_data.append({'Date': date, 'Type': 'PHEF', 'Score': self._phef_total_score(test)})
+                            trend_data.append({'Date': date, 'Type': 'PHEF', 'Score': await self._phef_total_score(test)})
                     elif sess.type_test == TypeFitnessTest.COMBAT:
                         for test in await self.db.get_all_combat_test(sess.id):
                             passed = test.rope_passed and test.obstacle_passed and test.running_time <= 7200
