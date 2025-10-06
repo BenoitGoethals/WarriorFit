@@ -30,7 +30,11 @@ class DashboardOwnUnitPage:
                 ui.input_action_button("own_unit_refresh", "Refresh", class_="btn btn-outline-primary"),
             ),
             ui.layout_columns(
-
+                ui.card(
+                    ui.card_header("👥 Unit Personnel", class_="bg-secondary text-white"),
+                    ui.output_ui("own_unit_personnel_stats"),
+                    class_="text-center",
+                ),
                 ui.card(
                     ui.card_header("🏃 PHEF Tests", class_="bg-primary text-white"),
                     ui.output_ui("own_unit_phef_stats"),
@@ -90,6 +94,30 @@ class DashboardOwnUnitPage:
                 ),
                 col_widths=[12],
             ),
+            ui.br(),
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header("Who Failed - PHEF (Own Unit)"),
+                   # ui.output_data_frame("own_unit_failed_phef_grid"),
+                    full_screen=True,
+                ),
+                ui.card(
+                    ui.card_header("Who Failed - Combat / Functional / Swimming (Own Unit)"),
+                   # ui.output_ui("own_unit_failed_other_tabs"),
+                    full_screen=True,
+                ),
+                col_widths=[6, 6],
+            ),
+            ui.br(),
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header("Who Failed (All Tests, Own Unit)"),
+                    ui.output_data_frame("own_unit_failed_all_grid"),
+                    full_screen=True,
+                ),
+                col_widths=[12],
+            ),
+            ui.br(),
         )
 
     def _ui_stats_card(self, total_text: str, total_value: int | float, sub_value: str | None, sub_label: str, sub_class: str):
@@ -183,6 +211,32 @@ class DashboardOwnUnitPage:
                                            "text-info")
             except Exception:
                 return self._ui_stats_card("Total Tests (Own Unit)", 0, None, "", "")
+
+
+        @output
+        @render.ui
+        async def own_unit_personnel_stats():
+            _ = self.refresh_tick.get()
+            try:
+                serials = await self._own_unit_serials()
+                # Compute PHEF pass/fail for the unit
+                phef_sessions = await self._safe_sessions_by_type(TypeFitnessTest.PHEF)
+                passed_tests = failed_tests = 0
+                for sess in phef_sessions:
+
+                        if sess.serial_number in serials:
+                            try:
+                                total = await self._phef_total_score(sess)
+                            except Exception:
+                                total = 0
+                            if total >= 50:
+                                passed_tests += 1
+                            else:
+                                failed_tests += 1
+                subtitle = f"✅ {passed_tests} | ❌ {failed_tests}"
+                return self._ui_stats_card("Service members in unit", len(serials), subtitle, "PHEF Passed | Failed", "text-secondary")
+            except Exception:
+                return self._ui_stats_card("Service members in unit", 0, None, "", "")
 
         # ... existing code ...
 
@@ -437,6 +491,84 @@ class DashboardOwnUnitPage:
                 return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="own_unit_trends"))
             except Exception as e:
                 return ui.p(f"No data available: {str(e)}", class_="text-muted")
+
+        @output
+        @render.data_frame
+        async def own_unit_failed_all_grid():
+            _ = self.refresh_tick.get()
+            import pandas as pd
+            try:
+                serials = await self._own_unit_serials()
+                rows = []
+
+                # PHEF (<50 total)
+                for sess in await self._safe_sessions_by_type(TypeFitnessTest.PHEF):
+
+                        if sess.serial_number in serials:
+                            try:
+                                total = await self._phef_total_score(sess)
+                            except Exception:
+                                total = 0
+                            if total < 50:
+                                rows.append({
+                                    "Type": "PHEF",
+                                    "Serial": sess.serial_number,
+                                    "Reason": f"Total {total:.1f} < 50",
+                                })
+
+                # Combat (any requirement fails)
+                for sess in await self._safe_sessions_by_type(TypeFitnessTest.COMBAT):
+
+                        if sess.serial_number in serials:
+                            rope = bool(getattr(sess, "rope_passed", False))
+                            obst = bool(getattr(sess, "obstacle_passed", False))
+                            run_s = int(getattr(sess, "running_time", 0) or 0)
+                            passed = rope and obst and run_s <= 7200
+                            if not passed:
+                                reason_parts = []
+                                if not rope: reason_parts.append("Rope")
+                                if not obst: reason_parts.append("Obstacle")
+                                if run_s > 7200: reason_parts.append(f"Run {run_s}s > 7200s")
+                                rows.append({
+                                    "Type": "Combat",
+                                    "Serial": sess.serial_number,
+                                    "Reason": ", ".join(reason_parts) or "Failed",
+                                })
+
+                # Functional (total < 50)
+                for sess in await self._safe_sessions_by_type(TypeFitnessTest.FUNCTIONAL):
+
+                        if sess.serial_number in serials:
+                            total = int(getattr(sess, "push_ups", 0) or 0) + int(getattr(sess, "sit_ups", 0) or 0) + int(getattr(sess, "pull_ups", 0) or 0)
+                            if total < 50:
+                                rows.append({
+                                    "Type": "Functional",
+                                    "Serial": sess.serial_number,
+                                    "Reason": f"Total {total} < 50",
+                                })
+
+                # Swimming (not passed)
+                for sess in await self._safe_sessions_by_type(TypeFitnessTest.SWIMMING):
+
+                        if sess.serial_number in serials and not bool(getattr(sess, "swim_paased", False)):
+                            rows.append({
+                                "Type": "Swimming",
+                                "Serial": sess.serial_number,
+                                "Reason": "Not passed",
+                            })
+
+                df = pd.DataFrame(rows)
+                # Sort by date descending if available
+                if not df.empty and "Date" in df.columns:
+                    try:
+                        df["_dt"] = pd.to_datetime(df["Date"])
+                        df = df.sort_values(by="_dt", ascending=False).drop(columns=["_dt"])
+                    except Exception:
+                        pass
+                return df
+            except Exception as e:
+                ui.notification_show(f"Error generating fitness report: {e}")
+                return pd.DataFrame(columns=["Date", "Type", "Serial", "Reason"])
 
 
 # Simple module-level helpers to align with existing app wiring
