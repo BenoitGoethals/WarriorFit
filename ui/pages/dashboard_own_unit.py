@@ -23,17 +23,14 @@ class DashboardOwnUnitPage:
     def get_ui(self):
         return ui.nav_panel(
             "Own Dashboard",
-            ui.h2(f"📊 {self._own_unit} Dashboard " + str(datetime.now().year)),
+            ui.h2(f"📊 {self._own_unit} Dashboard " + str(datetime.now().year)) ,
+
             ui.br(),
             ui.layout_columns(
                 ui.input_action_button("own_unit_refresh", "Refresh", class_="btn btn-outline-primary"),
             ),
             ui.layout_columns(
-                ui.card(
-                    ui.card_header("👥 Unit Personnel", class_="bg-secondary text-white"),
-                    ui.output_ui("own_unit_personnel_stats"),
-                    class_="text-center",
-                ),
+
                 ui.card(
                     ui.card_header("🏃 PHEF Tests", class_="bg-primary text-white"),
                     ui.output_ui("own_unit_phef_stats"),
@@ -47,6 +44,11 @@ class DashboardOwnUnitPage:
                 ui.card(
                     ui.card_header("💪 Functional Tests", class_="bg-warning text-white"),
                     ui.output_ui("own_unit_functional_stats"),
+                    class_="text-center",
+                ),
+                ui.card(
+                    ui.card_header("🏊 Swimming Tests", class_="bg-info text-white"),
+                    ui.output_ui("own_unit_swimming_stats"),
                     class_="text-center",
                 ),
                 col_widths=[3, 3, 3, 3],
@@ -101,7 +103,7 @@ class DashboardOwnUnitPage:
 
     async def _safe_sessions_by_type(self, test_type: TypeFitnessTest):
         try:
-            return await self.db.get_all_test_sessions_type_fitnessTest(test_type)
+            return await self.db.get_all_fitness_tests_from_military_units_TypeFitnessTest(ApplicationConfig().own_unit,test_type)
         except Exception:
             return []
 
@@ -130,7 +132,7 @@ class DashboardOwnUnitPage:
     async def _own_unit_serials(self) -> set[str]:
         try:
             people = await self._be_mil_service.get_all_be_mil_from_unit(self._own_unit)
-            return {p.serial_number for p in people}
+            return {p.service_number for p in people}
         except Exception:
             return set()
 
@@ -142,15 +144,6 @@ class DashboardOwnUnitPage:
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             ui.notification_show("Own unit dashboard reloaded", type="message", duration=2)
 
-        @output
-        @render.ui
-        async def own_unit_personnel_stats():
-            _ = self.refresh_tick.get()
-            try:
-                serials = await self._own_unit_serials()
-                return self._ui_stats_card("Total Personnel", len(serials), None, "", "")
-            except Exception:
-                return self._ui_stats_card("Total Personnel", 0, None, "", "")
 
         @output
         @render.ui
@@ -161,15 +154,37 @@ class DashboardOwnUnitPage:
                 sessions = await self._safe_sessions_by_type(TypeFitnessTest.PHEF)
                 total_tests = passed_tests = 0
                 for sess in sessions:
-                    for test in await self.db.get_all_phef(sess.id):
-                        if test.serial_number in serials:
+                        if sess.serial_number in serials:
                             total_tests += 1
-                            if await self._phef_total_score(test) >= 50:
+                            if await self._phef_total_score(sess) >= 50:
                                 passed_tests += 1
                 pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
                 return self._ui_stats_card("Total Tests (Own Unit)", total_tests, f"{pass_rate:.1f}%", "Pass Rate", "text-success")
             except Exception:
                 return self._ui_stats_card("Total Tests (Own Unit)", 0, None, "", "")
+
+        @output
+        @render.ui
+        async def own_unit_swimming_stats():
+            _ = self.refresh_tick.get()
+            try:
+                serials = await self._own_unit_serials()
+                sessions = await self._safe_sessions_by_type(TypeFitnessTest.SWIMMING)
+                total_tests = 0
+                passed_tests = 0
+                for sess in sessions:
+
+                        if sess.serial_number in serials:
+                            total_tests += 1
+                            if getattr(sess, "swim_paased", False):
+                                passed_tests += 1
+                pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+                return self._ui_stats_card("Total Tests (Own Unit)", total_tests, f"{pass_rate:.1f}%", "Pass Rate",
+                                           "text-info")
+            except Exception:
+                return self._ui_stats_card("Total Tests (Own Unit)", 0, None, "", "")
+
+        # ... existing code ...
 
         @output
         @render.ui
@@ -180,10 +195,10 @@ class DashboardOwnUnitPage:
                 sessions = await self._safe_sessions_by_type(TypeFitnessTest.COMBAT)
                 total_tests = passed_tests = 0
                 for sess in sessions:
-                    for test in await self.db.get_all_combat_test(sess.id):
-                        if test.serial_number in serials:
+
+                        if sess.serial_number in serials:
                             total_tests += 1
-                            passed = test.rope_passed and test.obstacle_passed and test.running_time <= 7200
+                            passed = sess.rope_passed and sess.obstacle_passed and sess.running_time <= 7200
                             if passed:
                                 passed_tests += 1
                 pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
@@ -201,10 +216,10 @@ class DashboardOwnUnitPage:
                 total_tests = 0
                 total_score = 0
                 for sess in sessions:
-                    for test in await self.db.get_all_functional_test(sess.id):
-                        if test.serial_number in serials:
+
+                        if sess.serial_number in serials:
                             total_tests += 1
-                            total_score += test.push_ups + test.sit_ups + test.pull_ups
+                            total_score += sess.push_ups + sess.sit_ups + sess.pull_ups
                 avg_score = (total_score / total_tests) if total_tests > 0 else 0
                 return self._ui_stats_card("Total Tests (Own Unit)", total_tests, f"{avg_score:.1f}", "Avg Total Score", "text-warning")
             except Exception:
@@ -221,18 +236,18 @@ class DashboardOwnUnitPage:
                 functional_sessions = await self._safe_sessions_by_type(TypeFitnessTest.FUNCTIONAL)
                 swimming_sessions = await self._safe_sessions_by_type(TypeFitnessTest.SWIMMING)
 
-                async def _count_for_serials(sessions, fetch):
+                async def _count_for_serials(sessions):
                     cnt = 0
                     for sess in sessions:
-                        for t in await fetch(sess.id):
-                            if t.serial_number in serials:
+
+                            if sess.serial_number in serials:
                                 cnt += 1
                     return cnt
 
-                phef_count = await _count_for_serials(phef_sessions, self.db.get_all_phef)
-                combat_count = await _count_for_serials(combat_sessions, self.db.get_all_combat_test)
-                functional_count = await _count_for_serials(functional_sessions, self.db.get_all_functional_test)
-                swimming_count = await _count_for_serials(swimming_sessions, self.db.get_all_combat_swimming_test)
+                phef_count = await _count_for_serials(phef_sessions)
+                combat_count = await _count_for_serials(combat_sessions)
+                functional_count = await _count_for_serials(functional_sessions)
+                swimming_count = await _count_for_serials(swimming_sessions)
 
                 data = pd.DataFrame({
                     'Test Type': ['PHEF', 'Combat', 'Functional', 'Swimming'],
@@ -255,9 +270,9 @@ class DashboardOwnUnitPage:
                 phef_sessions = await self._safe_sessions_by_type(TypeFitnessTest.PHEF)
                 phef_pass = phef_fail = 0
                 for sess in phef_sessions:
-                    for test in await self.db.get_all_phef(sess.id):
-                        if test.serial_number in serials:
-                            if await self._phef_total_score(test) >= 50:
+
+                        if sess.serial_number in serials:
+                            if await self._phef_total_score(sess) >= 50:
                                 phef_pass += 1
                             else:
                                 phef_fail += 1
@@ -265,9 +280,9 @@ class DashboardOwnUnitPage:
                 combat_sessions = await self._safe_sessions_by_type(TypeFitnessTest.COMBAT)
                 combat_pass = combat_fail = 0
                 for sess in combat_sessions:
-                    for test in await self.db.get_all_combat_test(sess.id):
-                        if test.serial_number in serials:
-                            passed = test.rope_passed and test.obstacle_passed and test.running_time <= 7200
+
+                        if sess.serial_number in serials:
+                            passed = sess.rope_passed and sess.obstacle_passed and sess.running_time <= 7200
                             if passed:
                                 combat_pass += 1
                             else:
@@ -276,9 +291,9 @@ class DashboardOwnUnitPage:
                 functional_sessions = await self._safe_sessions_by_type(TypeFitnessTest.FUNCTIONAL)
                 func_pass = func_fail = 0
                 for sess in functional_sessions:
-                    for test in await self.db.get_all_functional_test(sess.id):
-                        if test.serial_number in serials:
-                            total = test.push_ups + test.sit_ups + test.pull_ups
+
+                        if sess.serial_number in serials:
+                            total = sess.push_ups + sess.sit_ups + sess.pull_ups
                             if total >= 50:
                                 func_pass += 1
                             else:
@@ -287,9 +302,9 @@ class DashboardOwnUnitPage:
                 swim_sessions = await self._safe_sessions_by_type(TypeFitnessTest.SWIMMING)
                 swim_pass = swim_fail = 0
                 for sess in swim_sessions:
-                    for test in await self.db.get_all_combat_swimming_test(sess.id):
-                        if test.serial_number in serials:
-                            if test.swim_paased:
+
+                        if sess.serial_number in serials:
+                            if sess.swim_paased:
                                 swim_pass += 1
                             else:
                                 swim_fail += 1
@@ -368,9 +383,9 @@ class DashboardOwnUnitPage:
                 phef_sessions = await self._safe_sessions_by_type(TypeFitnessTest.PHEF)
                 scores = []
                 for sess in phef_sessions:
-                    for test in await self.db.get_all_phef(sess.id):
-                        if test.serial_number in serials:
-                            scores.append(self._phef_total_score(test))
+
+                        if sess.serial_number in serials:
+                            scores.append(await self._phef_total_score(sess))
                 if not scores:
                     return ui.p("No PHEF data available for your unit", class_="text-muted")
                 fig = px.histogram(scores, nbins=20,
@@ -399,7 +414,7 @@ class DashboardOwnUnitPage:
                     if sess.type_test == TypeFitnessTest.PHEF:
                         for test in await self.db.get_all_phef(sess.id):
                             if test.serial_number in serials:
-                                trend_data.append({'Date': date, 'Type': 'PHEF', 'Score': self._phef_total_score(test)})
+                                trend_data.append({'Date': date, 'Type': 'PHEF', 'Score': await self._phef_total_score(test)})
                     elif sess.type_test == TypeFitnessTest.COMBAT:
                         for test in await self.db.get_all_combat_test(sess.id):
                             if test.serial_number in serials:

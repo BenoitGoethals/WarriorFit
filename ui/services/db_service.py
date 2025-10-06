@@ -478,6 +478,31 @@ class DBService(metaclass=Singleton):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
+    async def get_all_test_sessions_type_fitnessTest_full(self, typetest: TypeFitnessTest) -> List[TestSession]:
+        """
+        Fetches all test sessions from the database.
+
+        :return: A list of test session objects.
+        :rtype: List[Any]
+        """
+        now_year = datetime.now().year
+        start = datetime(now_year, 1, 1)
+        end = datetime(now_year, 12, 31, 23, 59, 59)
+        query = select(TestSession).where(TestSession.type_test == typetest).where(
+            TestSession.datetime_start.between(start, end)).options(
+                        # Load the collection via select-in and include subclass columns
+                        selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                            [
+                                PhefTest,
+                                FunctionalTest,
+                                CombatTestParatrooper,
+                                CombatSwimmingTest,
+                            ]
+                        )
+                    )
+        results = await self.fetch_and_log(query, "test sessions")
+        return results if results else []
+
     async def delete_all_test_sessions(self):
         query = delete(TestSession)
         try:
@@ -719,6 +744,39 @@ class DBService(metaclass=Singleton):
                 f"Unexpected error fetching all fitness tests (full): {str(e)}"
             )
             return []
+
+
+    async def get_all_fitness_tests_full_this_year(self) -> list[FitnessTest]:
+        """
+        Fetches all fitness tests with:
+        - Polymorphic loading of concrete subtypes
+        - Related TestSession objects
+
+        :return: A list of FitnessTest objects with related data.
+        """
+        try:
+            async with self.SessionLocal() as session:
+                # Load related sessions and ensure polymorphic subtypes are populated
+                query = select(FitnessTest).options(
+                    selectin_polymorphic(FitnessTest,
+                                         [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]),
+                    selectinload(FitnessTest.test_sessions)
+                )
+                result = await session.execute(query)
+
+                tests = result.unique().scalars().all()
+                return list(tests) if tests else []
+        except SQLAlchemyError as e:
+            self.__logger.error(
+                f"Database error fetching all fitness tests (full): {str(e)}"
+            )
+            return []
+        except Exception as e:
+            self.__logger.error(
+                f"Unexpected error fetching all fitness tests (full): {str(e)}"
+            )
+            return []
+
 
     async def get_all_phef(self, session_id: int) -> List[PhefTest]:
         """
@@ -1037,6 +1095,25 @@ class DBService(metaclass=Singleton):
             if not (mils and fit_tests):
                 return []
             return [test for test in fit_tests if test.serial_number in [m.service_number for m in mils]]
+        except (SQLAlchemyError, Exception) as e:
+            self.__logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
+            return []
+
+
+    async def get_all_fitness_tests_from_military_units_TypeFitnessTest(self, unit: str, fitness_type: TypeFitnessTest) -> List[FitnessTest]:
+        try:
+            mils = await self._be_mil_service.get_all_be_mil_from_unit(unit)
+            sessions: List[TestSession] = await self.get_all_test_sessions_type_fitnessTest_full(fitness_type)
+            if not (mils and sessions):
+                return []
+
+            service_numbers = {m.service_number for m in mils}
+            return [
+                ft
+                for session in sessions
+                for ft in session.fitness_tests
+                if getattr(ft, "serial_number", None) in service_numbers
+            ]
         except (SQLAlchemyError, Exception) as e:
             self.__logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
             return []

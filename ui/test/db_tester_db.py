@@ -26,7 +26,7 @@ async def main():
       #  await test_test_session(db_service)
 
 
-        test = await db_service.get_all_fitness_tests_from_military_units("1-3 Bn Lanciers")
+        test = await db_service.get_all_fitness_tests_from_military_units_TypeFitnessTest("1-3 Bn Lanciers", TypeFitnessTest.PHEF)
         for t in test:
             print(t)
 
