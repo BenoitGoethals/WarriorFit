@@ -133,7 +133,7 @@ class FitnessWarriorApp:
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
             nav_items.extend(
-                [i for i in [_safe_panel(ind_test_show.get_ui()),_safe_panel(dashboard_own_unit.get_ui()),
+                [i for i in [_safe_panel(dashboard_own_unit.get_ui()),_safe_panel(ind_test_show.get_ui()),
                     _safe_panel(own_unit.get_ui()),_safe_panel(dashboard.get_ui()), _safe_panel(reports.get_ui())] if i is not None]
             )
             nav_items.append(_build_test_menu())
