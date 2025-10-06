@@ -85,38 +85,22 @@ class DashboardOwnUnitPage:
                 ),
                 col_widths=[6, 6],
             ),
-            ui.br(),
-            ui.layout_columns(
-                ui.card(
-                    ui.card_header("Performance Trends Over Time (Own Unit)"),
-                    ui.output_ui("own_unit_performance_trend_chart"),
-                    full_screen=True,
-                ),
-                col_widths=[12],
-            ),
+
             ui.br(),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Who Failed - PHEF (Own Unit)"),
-                   # ui.output_data_frame("own_unit_failed_phef_grid"),
+                    ui.output_data_frame("own_unit_failed_phef_grid"),
                     full_screen=True,
                 ),
-                ui.card(
-                    ui.card_header("Who Failed - Combat / Functional / Swimming (Own Unit)"),
-                   # ui.output_ui("own_unit_failed_other_tabs"),
-                    full_screen=True,
-                ),
-                col_widths=[6, 6],
-            ),
-            ui.br(),
-            ui.layout_columns(
                 ui.card(
                     ui.card_header("Who Failed (All Tests, Own Unit)"),
                     ui.output_data_frame("own_unit_failed_all_grid"),
                     full_screen=True,
                 ),
-                col_widths=[12],
+
             ),
+
             ui.br(),
         )
 
@@ -310,7 +294,7 @@ class DashboardOwnUnitPage:
                 fig = px.pie(data, values='Count', names='Test Type',
                              color_discrete_sequence=['#0d6efd', '#198754', '#ffc107', '#0dcaf0'])
                 fig.update_layout(margin=dict(t=0, b=0, l=0, r=0))
-                return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="own_unit_test_dist"))
+                return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="own_unit_test_distribution_chart"))
             except Exception as e:
                 return ui.p(f"No data available: {str(e)}", class_="text-muted")
 
@@ -450,47 +434,38 @@ class DashboardOwnUnitPage:
                                   showlegend=False)
                 fig.add_vline(x=50, line_dash="dash", line_color="red",
                               annotation_text="Pass Threshold")
-                return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="own_unit_phef_hist"))
+                return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="own_unit_phef_score_histogram"))
             except Exception as e:
                 return ui.p(f"No data available: {str(e)}", class_="text-muted")
 
+
         @output
-        @render.ui
-        async def own_unit_performance_trend_chart():
+        @render.data_frame
+        async def own_unit_failed_phef_grid():
             _ = self.refresh_tick.get()
+            import pandas as pd
             try:
                 serials = await self._own_unit_serials()
-                all_sessions = await self.db.get_all_test_sessions()
-                all_sessions.sort(key=lambda x: x.datetime_start)
-                trend_data = []
-                for sess in all_sessions:
-                    date = sess.datetime_start.strftime('%Y-%m-%d')
-                    if sess.type_test == TypeFitnessTest.PHEF:
-                        for test in await self.db.get_all_phef(sess.id):
-                            if test.serial_number in serials:
-                                trend_data.append({'Date': date, 'Type': 'PHEF', 'Score': await self._phef_total_score(test)})
-                    elif sess.type_test == TypeFitnessTest.COMBAT:
-                        for test in await self.db.get_all_combat_test(sess.id):
-                            if test.serial_number in serials:
-                                passed = test.rope_passed and test.obstacle_passed and test.running_time <= 7200
-                                trend_data.append({'Date': date, 'Type': 'Combat', 'Score': 100 if passed else 0})
-                    elif sess.type_test == TypeFitnessTest.FUNCTIONAL:
-                        for test in await self.db.get_all_functional_test(sess.id):
-                            if test.serial_number in serials:
-                                total = test.push_ups + test.sit_ups + test.pull_ups
-                                trend_data.append({'Date': date, 'Type': 'Functional', 'Score': total})
-                if not trend_data:
-                    return ui.p("No trend data available for your unit", class_="text-muted")
-                df = pd.DataFrame(trend_data)
-                df_avg = df.groupby(['Date', 'Type'])['Score'].mean().reset_index()
-                fig = px.line(df_avg, x='Date', y='Score', color='Type',
-                              color_discrete_map={'PHEF': '#0d6efd', 'Combat': '#198754',
-                                                  'Functional': '#ffc107'})
-                fig.update_layout(margin=dict(t=20, b=40, l=40, r=20),
-                                  xaxis_title="Date", yaxis_title="Average Score")
-                return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="own_unit_trends"))
+                rows = []
+
+                # PHEF only: failed if total < 50
+                for sess in await self._safe_sessions_by_type(TypeFitnessTest.PHEF):
+                    if sess.serial_number in serials:
+                        try:
+                            total = await self._phef_total_score(sess)
+                        except Exception:
+                            total = 0
+                        if total < 50:
+                            rows.append({
+                                "Type": "PHEF",
+                                "Serial": sess.serial_number,
+                                "Reason": f"Total {total:.1f} < 50",
+                            })
+
+                return pd.DataFrame(rows)
             except Exception as e:
-                return ui.p(f"No data available: {str(e)}", class_="text-muted")
+                ui.notification_show(f"Error generating fitness report: {e}")
+                return pd.DataFrame(columns=["Type", "Serial", "Reason"])
 
         @output
         @render.data_frame

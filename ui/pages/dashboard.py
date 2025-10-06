@@ -62,7 +62,7 @@ class DashboardPage:
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Test Type Distribution"),
-                    ui.output_ui("test_distribution_chart"),
+                    ui.output_ui("test_phef__distribution_chart"),
                     full_screen=True,
                 ),
                 ui.card(
@@ -234,7 +234,7 @@ class DashboardPage:
         # Test Distribution Chart
         @output
         @render.ui
-        async def test_distribution_chart():
+        async def test_phef__distribution_chart():
             _ = self.refresh_tick.get()
             try:
                 phef_sessions = await self._safe_sessions_by_type(TypeFitnessTest.PHEF)
@@ -252,7 +252,7 @@ class DashboardPage:
                 fig = px.pie(data, values='Count', names='Test Type',
                              color_discrete_sequence=['#0d6efd', '#198754', '#ffc107', '#0dcaf0'])
                 fig.update_layout(margin=dict(t=0, b=0, l=0, r=0))
-                return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="test_dist"))
+                return ui.HTML(fig.to_html(include_plotlyjs='cdn', div_id="test_phef__distribution_chart"))
             except Exception as e:
                 return ui.p(f"No data available: {str(e)}", class_="text-muted")
 
