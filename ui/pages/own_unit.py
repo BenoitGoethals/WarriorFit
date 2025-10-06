@@ -2,6 +2,7 @@ from shiny import reactive, ui
 from shiny.express import render
 import pandas as pd
 
+from logic.data_collector import DataCollector
 from ui.config.appliccation_config import ApplicationConfig
 from ui.services.be_mil_service import BEMILService
 
@@ -97,23 +98,32 @@ class OwnUnitPage:
 
         async def _fetch_tests_for_serial(serial: str) -> pd.DataFrame:
             try:
-                tests = await self._mil_service.get_be_mil_by_id(serial)
+                # Fetch tests as a DataFrame using DataCollector (already returns a DataFrame)
+                tests_df = await DataCollector().collect_tests_for_serial(serial)
             except Exception:
-                tests = None
+                tests_df = pd.DataFrame(
+                    columns=["Date", "Type", "Details", "Scores", "Total", "Result", "Session ID", "Record ID"]
+                )
 
-            tests_list = tests if isinstance(tests, list) else ([tests] if tests is not None else [])
-            rows = []
-            for t in tests_list:
-                status_txt = getattr(t, "status", None)
-                if status_txt is None:
-                    passed = getattr(t, "passed", None)
-                    status_txt = "Passed" if passed is True else "Failed" if passed is False else "Unknown"
-                rows.append({
-                    "Test Type": getattr(t, "type", "") or getattr(t, "type_test", ""),
-                    "Session": getattr(t, "session_time", "") or getattr(t, "datetime_start", ""),
-                    "Status": status_txt,
-                })
-            return pd.DataFrame(rows)
+            # Adapt DataCollector DataFrame to the 3-column grid expected by this page
+            if tests_df is None or tests_df.empty:
+                return pd.DataFrame(columns=["Test Type", "Session", "Status"])
+
+            def _first_non_empty(*vals):
+                for v in vals:
+                    if pd.notna(v) and str(v).strip() != "":
+                        return v
+                return ""
+
+            out = pd.DataFrame({
+                "Test Type": tests_df.get("Type", pd.Series(dtype=str)).apply(lambda v: _first_non_empty(v)),
+                "Session": tests_df.get("Date", pd.Series(dtype=str)).apply(lambda v: _first_non_empty(v)),
+                "Status": tests_df.get("Result", pd.Series(dtype=str)).apply(lambda v: _first_non_empty(v)),
+            })
+
+            # Ensure correct column order and types
+            out = out[["Test Type", "Session", "Status"]].fillna("")
+            return out
 
         @output
         @render.data_frame
