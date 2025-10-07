@@ -34,7 +34,7 @@ class SettingsPage:
             return False
 
     def get_ui(self):
-        if UserStore.get_user():
+
             return ui.nav_panel(
                 "Settings",
                 ui.h2("⚙ Settings"),
@@ -81,7 +81,7 @@ class SettingsPage:
                     full_screen=False,
                 ),
             )
-        return None
+
 
     def server(self, input, output, session):
         config_status_val = reactive.Value("")

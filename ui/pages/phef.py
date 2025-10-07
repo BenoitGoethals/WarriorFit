@@ -23,7 +23,7 @@ class PhefPage:
 
     NO_SELECTION_MESSAGE = "No row selected"
     def get_ui(self):
-        if UserStore.get_user():
+
             return ui.nav_panel(
                 "PHEF Tests",
                 ui.h2("🧪 PHEF Tests"),
@@ -98,7 +98,7 @@ class PhefPage:
                     col_widths=(4, 8),  # Records occupies ~2/3 width
                 ),
             )
-        return None
+
 
     def server(self, input, output, session):
         # Reactive state
