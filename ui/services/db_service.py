@@ -450,56 +450,75 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error adding fitness test: {str(e)}")
             return None
 
-    async def get_all_test_sessions(self)-> List[TestSession]:
+    async def get_all_test_sessions(self,this_year:bool=True)-> List[TestSession]:
         """
         Fetches all test sessions from the database.
 
         :return: A list of test session objects.
         :rtype: List[Any]
         """
-        now_year = datetime.now().year
-        start = datetime(now_year, 1, 1)
-        end = datetime(now_year, 12, 31, 23, 59, 59)
-        query = select(TestSession).where(TestSession.datetime_start.between(start, end))
+        if this_year:
+            end, start = await self.running_year()
+            query = select(TestSession).where(TestSession.datetime_start.between(start, end))
+        else:
+            query = select(TestSession)
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def get_all_test_sessions_type_fitnessTest(self,typetest:TypeFitnessTest) -> List[TestSession]:
+    async def get_all_test_sessions_type_fitnessTest(self,typetest:TypeFitnessTest,this_year:bool=True) -> List[TestSession]:
         """
         Fetches all test sessions from the database.
 
         :return: A list of test session objects.
         :rtype: List[Any]
         """
-        now_year = datetime.now().year
-        start = datetime(now_year, 1, 1)
-        end = datetime(now_year, 12, 31, 23, 59, 59)
-        query = select(TestSession).where(TestSession.type_test==typetest).where(TestSession.datetime_start.between(start, end))
+        if this_year:
+            end, start = await self.running_year()
+            query = select(TestSession).where(TestSession.type_test==typetest).where(TestSession.datetime_start.between(start, end))
+        else:
+            query = select(TestSession).where(TestSession.type_test==typetest)
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def get_all_test_sessions_type_fitnessTest_full(self, typetest: TypeFitnessTest) -> List[TestSession]:
+    async def running_year(self) -> tuple[datetime, datetime]:
+        now_year = datetime.now().year
+        start = datetime(now_year, 1, 1)
+        end = datetime(now_year, 12, 31, 23, 59, 59)
+        return end, start
+
+    async def get_all_test_sessions_type_fitnessTest_full(self, typetest: TypeFitnessTest,this_year:bool=True) -> List[TestSession]:
         """
         Fetches all test sessions from the database.
 
         :return: A list of test session objects.
         :rtype: List[Any]
         """
-        now_year = datetime.now().year
-        start = datetime(now_year, 1, 1)
-        end = datetime(now_year, 12, 31, 23, 59, 59)
-        query = select(TestSession).where(TestSession.type_test == typetest).where(
-            TestSession.datetime_start.between(start, end)).options(
-                        # Load the collection via select-in and include subclass columns
-                        selectinload(TestSession.fitness_tests).selectin_polymorphic(
-                            [
-                                PhefTest,
-                                FunctionalTest,
-                                CombatTestParatrooper,
-                                CombatSwimmingTest,
-                            ]
+        if this_year:
+            end, start = await self.running_year()
+            query = select(TestSession).where(TestSession.type_test == typetest).where(
+                TestSession.datetime_start.between(start, end)).options(
+                            # Load the collection via select-in and include subclass columns
+                            selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                                [
+                                    PhefTest,
+                                    FunctionalTest,
+                                    CombatTestParatrooper,
+                                    CombatSwimmingTest,
+                                ]
+                            )
                         )
-                    )
+        else:
+            query = select(TestSession).where(TestSession.type_test == typetest).options(
+                # Load the collection via select-in and include subclass columns
+                selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                    [
+                        PhefTest,
+                        FunctionalTest,
+                        CombatTestParatrooper,
+                        CombatSwimmingTest,
+                    ]
+                )
+            )
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
@@ -1100,7 +1119,7 @@ class DBService(metaclass=Singleton):
             return []
 
 
-    async def get_all_fitness_tests_from_military_units_TypeFitnessTest(self, unit: str, fitness_type: TypeFitnessTest) -> List[FitnessTest]:
+    async def get_all_fitness_tests_from_military_units_TypeFitnessTest(self, unit: str, fitness_type: TypeFitnessTest) -> List[FitnessTest|PhefTest|FunctionalTest|CombatTestParatrooper|CombatSwimmingTest]:
         try:
             mils = await self._be_mil_service.get_all_be_mil_from_unit(unit)
             sessions: List[TestSession] = await self.get_all_test_sessions_type_fitnessTest_full(fitness_type)

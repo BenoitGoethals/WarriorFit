@@ -7,7 +7,7 @@ from ui.services.db_service import DBService
 from ui.services.file_service import FileService
 from ui.services.report_generator_csv import ReportGeneratorCsv
 from ui.services.report_generator_pdf import ReportGeneratorPdf
-from ui.services.report_type import ReportGeneratorTypeOutput as OutputType, ReportType
+from ui.services.report_type import ReportType
 
 
 class ReportsPage:
@@ -29,15 +29,17 @@ class ReportsPage:
             ui.layout_sidebar(
                 ui.sidebar(
                     ui.input_text("report_title", "Report Title:", "Fitness Test Report"),
+                    ui.input_checkbox("own_Unit", "Own Unit", value=True),
+                    ui.input_checkbox("this_year", "This Year", value=True),
                     ui.input_select(
                         "test_type",
                         "Test Type:",
                         {
                             "all": "All Tests",
-                            "phef": "PHEF Tests",
-                            "functional": "Functional Tests",
-                            "combat": "Combat Tests",
-                            "swimming": "Swimming Tests",
+                            "PHEF": "PHEF Tests",
+                            "FUNCTIONAL": "Functional Tests",
+                            "COMBAT": "Combat Tests",
+                            "SWIMMING": "Swimming Tests",
                         },
                     ),
                     ui.input_select(
@@ -49,7 +51,7 @@ class ReportsPage:
                             "both": "Both (PDF & CSV)",
                         },
                     ),
-                    ui.input_text("output_folder", "Output Folder:", "reports"),
+
                     ui.input_action_button("generate_report", "Generate Report", class_="btn-primary"),
                     width=300,
                 ),
@@ -86,16 +88,19 @@ class ReportsPage:
 
                 # For "all" we produce each category
                 targets = [ReportType.PHEF, ReportType.FUNCTIONAL, ReportType.COMBAT,
-                           ReportType.SWIMMING] if test_type == "all" else [ReportType(test_type)]
+                           ReportType.SWIMMING] if test_type == "all" else [ReportType.from_str(test_type)]
+
+                own_unit = input.own_Unit()
+                this_year = input.this_year()
 
                 for t in targets:
                     if fmt in ("csv", "both"):
-                        csv_result = await self._csv_gen.generate_report(report_name, t)
+                        csv_result = await self._csv_gen.generate_report(report_name, t,own_unit,this_year)
                         for v in (csv_result or {}).values():
                             if v:
                                 paths.append(v)
                     if fmt in ("pdf", "both"):
-                        pdf_result = await self._pdf_gen.generate_report(report_name,t)
+                        pdf_result = await self._pdf_gen.generate_report(report_name,t,own_unit,this_year)
                         for v in (pdf_result or {}).values():
                             if v:
                                 paths.append(v)
