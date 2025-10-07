@@ -2,15 +2,12 @@ import enum
 import os
 from datetime import datetime
 from typing import List, Tuple, Dict, Optional, Callable, Any
-
 from logic.phef_calculator import PhefCalculator
 from ui.config.appliccation_config import ApplicationConfig
 from ui.services.be_mil_service import BEMILService
 from ui.services.db_service import DBService
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
-from ui.services.file_service import FileService  # ensure single source for PDF path
-from ui.services.file_service import FileService
 from ui.services.report_type import ReportType
 
 
@@ -41,7 +38,7 @@ class ReportGeneratorPdf:
             return ApplicationConfig().pdf_output_path
         except Exception:
             return os.getcwd()
-# ... existing code ...
+
     @staticmethod
     def _fmt_time(sec: int | float | None) -> str:
         try:
@@ -210,7 +207,6 @@ class ReportGeneratorPdf:
                     if own_unit:
                         if not test.serial_number in [s.service_number for s in mils]:
                             continue
-
                     pu = getattr(test, "push_ups", 0) or 0
                     su = getattr(test, "sit_ups", 0) or 0
                     plu = getattr(test, "pull_ups", 0) or 0
