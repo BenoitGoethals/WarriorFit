@@ -18,7 +18,6 @@ class FitnessWarriorApp:
     DEFAULT_PORT = 8000
     LOGIN_MODAL_SIZE = "m"
 
-    USER_STORE: UserStore = UserStore()
 
     @classmethod
     def _create_logger_formatter(cls) -> logging.Formatter:
@@ -128,13 +127,23 @@ class FitnessWarriorApp:
             admin_children = [c for c in admin_children if c is not None]
             return ui.nav_menu("Admin", *admin_children) if admin_children else None
 
+        def _get_session_user():
+            return getattr(session, "user", None)
+
+        def _set_session_user(user):
+            setattr(session, "user", user)
+
+        def _clear_session_user():
+            if hasattr(session, "user"):
+                delattr(session, "user")
+
         def build_main_navbar() -> ui.page_navbar:
-            user = UserStore.get_user()
+            user = _get_session_user()
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
             nav_items.extend(
-                [i for i in [_safe_panel(dashboard_own_unit.get_ui()),_safe_panel(ind_test_show.get_ui()),
-                    _safe_panel(own_unit.get_ui()),_safe_panel(dashboard.get_ui()), _safe_panel(reports.get_ui())] if i is not None]
+                [i for i in [_safe_panel(dashboard_own_unit.get_ui()), _safe_panel(ind_test_show.get_ui()),
+                             _safe_panel(own_unit.get_ui()), _safe_panel(dashboard.get_ui()), _safe_panel(reports.get_ui())] if i is not None]
             )
             nav_items.append(_build_test_menu())
             if user is not None:
@@ -189,8 +198,8 @@ class FitnessWarriorApp:
             try:
                 if await db_service.check_user(username_login, password_login):
                     user = await db_service.get_user_by_username(username_login)
-                    UserStore.set_user(user)
-                    login_user_text.set(f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}" )
+                    _set_session_user(user)
+                    login_user_text.set(f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}")
                     status_text.set("")
                     ui.modal_remove()
                     nav_version.set(nav_version.get() + 1)
@@ -215,10 +224,7 @@ class FitnessWarriorApp:
             except Exception:
                 return
             if clicks and clicks > 0:
-                try:
-                    UserStore.logout()
-                except Exception:
-                    UserStore.set_user(None)
+                _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You have been logged out.", type="message")
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
@@ -263,15 +269,12 @@ class FitnessWarriorApp:
         @reactive.Effect
         def _auto_logout_timer():
             reactive.invalidate_later(5)  # check every 5s
-            user = UserStore.get_user()
+            user = _get_session_user()
             if not user:
                 return
             ts = last_activity.get() or time.time()
             if time.time() - ts >= INACTIVITY_LIMIT_SECONDS:
-                try:
-                    UserStore.logout()
-                except Exception:
-                    UserStore.set_user(None)
+                _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You were logged out due to 10 minutes of inactivity.", type="warning")
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
