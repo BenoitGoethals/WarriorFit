@@ -1,16 +1,16 @@
 import csv
 import os
 from datetime import datetime
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional
 
 from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from logic.phef_calculator import PhefCalculator
-from ui.services.be_mil_service import BEMILService
-from ui.services.db_service import DBService
+from services.be_mil_service import BEMILService
+from services.db_service import DBService
 from ui.config.appliccation_config import ApplicationConfig
 from core.type_fitness_test import TypeFitnessTest
 from api.testsession import TestSession
-from ui.services.report_type import ReportType
+from services.report_type import ReportType
 
 
 class ReportGeneratorCsv:

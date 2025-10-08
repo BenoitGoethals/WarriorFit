@@ -2,11 +2,8 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 from logic.data_collector import DataCollector
-from ui.services.db_service import DBService
-from ui.services.be_mil_service import BEMILService
-from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
-from logic.phef_calculator import PhefCalculator
+from services.db_service import DBService
+from services.be_mil_service import BEMILService
 
 
 class IndTestShowPage:

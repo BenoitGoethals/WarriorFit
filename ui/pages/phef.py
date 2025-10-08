@@ -1,15 +1,14 @@
 from shiny import ui, render, reactive
 import pandas as pd
-from sqlalchemy.sql.operators import truediv
 
-from core.Gender import Gender
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest, TestSession
 from logic.phef_calculator import PhefCalculator
-from ui.services.db_service import DBService
-from ..services.be_mil_service import BEMILService
-from ..user_store import UserStore
+from services.be_mil_service import BEMILService
+from services.db_service import DBService
+
+
 
 class PhefPage:
     def __init__(self, db: DBService):

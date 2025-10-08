@@ -3,8 +3,8 @@ import pandas as pd
 from core.type_fitness_test import TypeFitnessTest
 from logic.phef_calculator import PhefCalculator
 from logic.singleton import Singleton
-from ui.services.be_mil_service import BEMILService
-from ui.services.db_service import DBService
+from services.be_mil_service import BEMILService
+from services.db_service import DBService
 
 
 class DataCollector(metaclass=Singleton):

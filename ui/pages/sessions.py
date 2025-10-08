@@ -2,13 +2,13 @@ from typing import List, Optional, Dict, Any
 
 from shiny import ui, render, reactive
 
-from api.users import add_user
 from data.db.db_model import TestSession,Role
-from ..services.db_service import DBService
+
 import datetime
 import pandas as pd
 
 from core.type_fitness_test import TypeFitnessTest
+from services.db_service import DBService
 
 
 class SessionsPage:

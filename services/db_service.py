@@ -1,11 +1,9 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Any, Coroutine, Dict
-
-from IPython.core.completerlib import module_list
+from typing import List, Optional, Any
 
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import User, Role, TestSession
+from data.db.db_model import Role
 import bcrypt
 from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
@@ -25,8 +23,7 @@ from data.db.db_model import (
     CombatTestParatrooper,
     CombatSwimmingTest,
 )
-from ui.services.be_mil_service import BEMILService
-from ui.services.defense_external_service import DefenseExternalService
+from services.be_mil_service import BEMILService
 from utils.Os import Os
 
 

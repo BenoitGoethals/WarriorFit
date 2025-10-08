@@ -94,7 +94,7 @@ class FitnessWarriorApp:
     @staticmethod
     def server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
-        from ui.services.db_service import DBService
+        from services.db_service import DBService
         db_service = DBService("ui/config/config.yml")
 
         FitnessWarriorApp.register_pages_server(input, output, session)

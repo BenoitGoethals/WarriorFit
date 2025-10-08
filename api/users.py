@@ -11,7 +11,7 @@ from api.auth_service import Auth
 from api.json_shema import LoginSchema
 from data.db.db_model import User
 from core.role import Role
-from ui.services.db_service import DBService
+from services.db_service import DBService
 
 router = APIRouter(prefix="/users", tags=["users"])
 logger = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ from fastapi_cache.backends.memcached import MemcachedBackend
 from api import users, testsession
 from api.auth_service import Auth
 from core.role import Role
-from ui.services.db_service import DBService
+from services.db_service import DBService
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))

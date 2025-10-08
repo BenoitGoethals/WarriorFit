@@ -5,11 +5,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from ui.config.appliccation_config import ApplicationConfig
-from ui.services.be_mil_service import BEMILService
-from ui.services.db_service import DBService
+from services.be_mil_service import BEMILService
+from services.db_service import DBService
 from core.type_fitness_test import TypeFitnessTest
 from logic.phef_calculator import PhefCalculator
-from ui.services.defense_external_service import DefenseExternalService
 
 
 class DashboardOwnUnitPage:

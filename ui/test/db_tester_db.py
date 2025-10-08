@@ -5,7 +5,7 @@ from typing import Optional
 from data.db.db_model import User, TestSession, PhefTest
 from core.role import Role
 from core.type_fitness_test import TypeFitnessTest
-from ui.services.db_service import DBService
+from services.db_service import DBService
 
 # Constants
 DEFAULT_ROLE = Role.USER

@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from starlette import status
 
 from core.role import Role
-from ui.services.db_service import DBService
+from services.db_service import DBService
 
 # Configuration constants
 SECRET_KEY = "your-secret-key-here"  # In production, use a secure secret key

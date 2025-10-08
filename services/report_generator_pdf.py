@@ -1,14 +1,13 @@
-import enum
 import os
 from datetime import datetime
-from typing import List, Tuple, Dict, Optional, Callable, Any
+from typing import List, Tuple, Optional, Callable, Any
 from logic.phef_calculator import PhefCalculator
 from ui.config.appliccation_config import ApplicationConfig
-from ui.services.be_mil_service import BEMILService
-from ui.services.db_service import DBService
+from services.be_mil_service import BEMILService
+from services.db_service import DBService
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
-from ui.services.report_type import ReportType
+from services.report_type import ReportType
 
 
 class ReportGeneratorPdf:

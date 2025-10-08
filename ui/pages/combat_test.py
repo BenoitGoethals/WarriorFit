@@ -1,16 +1,13 @@
 from shiny import ui, render, reactive
 import pandas as pd
-from sqlalchemy.sql.operators import truediv
 
-from core.Gender import Gender
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import PhefTest, TestSession, CombatTestParatrooper
+from data.db.db_model import TestSession, CombatTestParatrooper
+from services.be_mil_service import BEMILService
 
-from ui.services.db_service import DBService
-from ..services.be_mil_service import BEMILService
-from ..services.defense_external_service import DefenseExternalService
-from ..user_store import UserStore
+from services.db_service import DBService
+
 
 
 class CombatPage:

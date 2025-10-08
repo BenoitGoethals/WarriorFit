@@ -4,7 +4,7 @@ import pandas as pd
 
 from logic.data_collector import DataCollector
 from ui.config.appliccation_config import ApplicationConfig
-from ui.services.be_mil_service import BEMILService
+from services.be_mil_service import BEMILService
 
 class OwnUnitPage:
     def __init__(self, mil_service: BEMILService):

@@ -7,7 +7,7 @@ from fastapi.params import Body, Depends
 from api.auth_service import Auth
 from api.json_shema import TestSession, TestSessionFull
 from core.role import Role
-from ui.services.db_service import DBService
+from services.db_service import DBService
 
 router = APIRouter(prefix="/testsessions", tags=["testsessions"])
 logger = logging.getLogger(__name__)
