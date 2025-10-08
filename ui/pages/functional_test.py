@@ -5,6 +5,7 @@ from core.Gender import Gender
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import FunctionalTest, TestSession
+from logic.Functional_calculator import FunctionalCalculator
 from ui.services.db_service import DBService
 from ..services.be_mil_service import BEMILService
 from ..services.defense_external_service import DefenseExternalService
@@ -198,44 +199,51 @@ class FunctionalPage:
         @render.text
         def functional_push_ups_score():
             val = functional_score_push_ups_val.get()
-            text = str(val)
             try:
-                num = int(val)
+                if self.selected_military:
+                    num = FunctionalCalculator.get_score_pushup(self.selected_military.gender, self.selected_military.age_from_birthdate(), int(val))
+                else:
+                    num = 0
             except (TypeError, ValueError):
                 num = None
             color = "red" if (num is not None and num < 20) else "green"
-            return ui.span(text, style=f"color: {color};")
+            return ui.span(str(num), style=f"color: {color};")
 
         @output
         @render.text
         def functional_sit_ups_score():
             val = functional_score_sit_ups_val.get()
-            text = str(val)
             try:
-                num = int(val)
+                if self.selected_military:
+                    num = FunctionalCalculator.get_score_situp(self.selected_military.gender,
+                                                            self.selected_military.age_from_birthdate(), int(val))
+                else:
+                    num = 0
             except (TypeError, ValueError):
                 num = None
             color = "red" if (num is not None and num < 20) else "green"
-            return ui.span(text, style=f"color: {color};")
+            return ui.span(str(num), style=f"color: {color};")
 
         @output
         @render.text
         def functional_pull_ups_score():
             val = functional_score_pull_ups_val.get()
-            text = str(val)
             try:
-                num = int(val)
+                if self.selected_military:
+                    num = FunctionalCalculator.get_score_pullup(self.selected_military.gender, self.selected_military.age_from_birthdate(), int(val))
+                else:
+                    num = 0
             except (TypeError, ValueError):
                 num = None
-            color = "red" if (num is not None and num < 5) else "green"
-            return ui.span(text, style=f"color: {color};")
+            color = "red" if (num is not None and num < 20) else "green"
+            return ui.span(str(num), style=f"color: {color};")
 
         @reactive.Effect
         @reactive.event(input.functional_push_ups)
         def on_push_ups_change():
             try:
                 val = int(input.functional_push_ups() or 0)
-                functional_score_push_ups_val.set(val)
+                functional_score_push_ups_val.set(str(val))
             except Exception:
                 functional_score_push_ups_val.set("")
 
@@ -244,7 +252,7 @@ class FunctionalPage:
         def on_sit_ups_change():
             try:
                 val = int(input.functional_sit_ups() or 0)
-                functional_score_sit_ups_val.set(val)
+                functional_score_sit_ups_val.set(str(val))
             except Exception:
                 functional_score_sit_ups_val.set("")
 
@@ -253,7 +261,7 @@ class FunctionalPage:
         def on_pull_ups_change():
             try:
                 val = int(input.functional_pull_ups() or 0)
-                functional_score_pull_ups_val.set(val)
+                functional_score_pull_ups_val.set(str(val))
             except Exception:
                 functional_score_pull_ups_val.set("")
 
@@ -270,16 +278,27 @@ class FunctionalPage:
                     selected_military = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
                     if selected_military is None:
                         continue
+                    if isinstance(selected_military.gender,str):
+                        if selected_military.gender.lower() == "m":
+                            gender = Gender.MALE
+                        else:
+                            gender = Gender.FEMALE
+                    else:
+                        gender = selected_military.gender
 
-                    # Calculate total score (simple sum for demonstration)
-                    total_score = r.push_ups + r.sit_ups + r.pull_ups
-
+                    pull = FunctionalCalculator.get_score_pullup(gender, selected_military.age_from_birthdate(), int(r.pull_ups))
+                    situp = FunctionalCalculator.get_score_situp(gender, selected_military.age_from_birthdate(), int(r.sit_ups))
+                    push =  FunctionalCalculator.get_score_pushup(gender, selected_military.age_from_birthdate(), int(r.push_ups))
+                    total_score = ((pull + situp + push)/60)*100
                     data.append({
                         "ID": r.id,
                         "Serial": r.serial_number,
                         "Push-ups": r.push_ups,
+                        "Push-ups-score": push,
                         "Sit-ups": r.sit_ups,
+                        "Sit-ups-score": situp,
                         "Pull-ups": r.pull_ups,
+                        "Pull-ups-score": pull,
                         "Total Score": total_score,
                     })
                 return pd.DataFrame(data)
