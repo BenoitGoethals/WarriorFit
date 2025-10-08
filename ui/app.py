@@ -2,11 +2,10 @@ import logging
 from typing import Any, Optional
 from shiny import App, ui, render
 from data.db.db_model import Role
-from ui.user_store import UserStore
 from utils.Os import Os
 from .config.appliccation_config import ApplicationConfig
 from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show
-from .pages import usermangement  # keep as-is to match actual module name
+from .pages import usermangement
 from .pages import phef
 from .pages import sessions
 from .pages import functional_test
@@ -141,16 +140,39 @@ class FitnessWarriorApp:
             user = _get_session_user()
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
+
             nav_items.extend(
                 [i for i in [_safe_panel(dashboard_own_unit.get_ui()),
-                             _safe_panel(own_unit.get_ui()), _safe_panel(dashboard.get_ui()), _safe_panel(reports.get_ui())] if i is not None]
+                             _safe_panel(own_unit.get_ui()), ] if i is not None]
             )
-            nav_items.append(_build_test_menu())
-            if user is not None:
-                nav_items.extend([i for i in [_safe_panel(sessions.get_ui())] if i is not None])
             admin_menu = _build_admin_menu(role)
-            if admin_menu is not None:
+            if role is Role.ADMIN:
+                if admin_menu is not None:
+                    nav_items.append(_build_test_menu())
+                    nav_items.append(_safe_panel(ind_test_show.get_ui()))
+                    nav_items.append(_safe_panel(reports.get_ui()))
+                    nav_items.append(_safe_panel(dashboard.get_ui()))
+                    nav_items.append(_safe_panel((sessions.get_ui())))
+                    nav_items.append(admin_menu)
+            elif role is Role.USER:
+                nav_items.append(_safe_panel(own_unit.get_ui()))
+                nav_items.append(_safe_panel(ind_test_show.get_ui()))
+            elif role is Role.PTI:
+                nav_items.append(_safe_panel(ind_test_show.get_ui()))
+                nav_items.append(_build_test_menu())
+                nav_items.append(_safe_panel(dashboard.get_ui()))
+                nav_items.append(_safe_panel(reports.get_ui()))
                 nav_items.append(admin_menu)
+            elif role is Role.APTI:
+                nav_items.append(_safe_panel(ind_test_show.get_ui()))
+                nav_items.append(_build_test_menu())
+                nav_items.append(_safe_panel(dashboard.get_ui()))
+                nav_items.append(_safe_panel(reports.get_ui()))
+            elif role is Role.PLANNER:
+                nav_items.append(_safe_panel(dashboard.get_ui()))
+                nav_items.append(_safe_panel((sessions.get_ui())))
+
+
             nav_items.append(ui.nav_spacer())
             nav_items.append(
                 ui.nav_control(
