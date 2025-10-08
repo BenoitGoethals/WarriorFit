@@ -12,6 +12,7 @@ class ServiceMenResponse(BaseModel):
     service_number: str
     first_name: str | None = None
     last_name: str | None = None
+    mail: str | None = None
     rank: str | None = None
     unit: str | None = None
     birthdate: str | None = None
@@ -50,6 +51,7 @@ class ServiceMenApi:
                 service_number=data[0].service_number,
                 first_name=data[0].first_name,
                 last_name=data[0].last_name,
+                mail=data[0].mail,
                 rank=data[0].rank,
                 unit=data[0].unit.name,
                 birthdate=str(data[0].birthdate),
@@ -66,6 +68,7 @@ class ServiceMenApi:
                 service_number=member.service_number,
                 first_name=member.first_name,
                 last_name=member.last_name,
+                mail=member.mail,
                 rank=member.rank,
                 unit=member.unit.name,
                 birthdate=str(member.birthdate),

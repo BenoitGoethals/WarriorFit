@@ -7,7 +7,7 @@ from data.db.db_model import PhefTest, TestSession
 from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
-
+from services.mail_service import MailService
 
 
 class PhefPage:
@@ -493,6 +493,7 @@ class PhefPage:
             phef.pointBridge_l=0
             phef.pointsRunning=0
             added_phef= await self.db.add_fitness_test_to_TestSession(int(record["id"]), phef)
+           # MailService().send_html(self.selected_military.mail)
             if not added_phef:
                 status.set(f"Failed to add PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
                 return

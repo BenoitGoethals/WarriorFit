@@ -6,6 +6,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Iterable, Optional
 
+from logic.singleton import Singleton
+
 
 @dataclass(frozen=True)
 class SmtpConfig:
@@ -13,12 +15,12 @@ class SmtpConfig:
     port: int = 587
     username: Optional[str] = None
     password: Optional[str] = None
-    use_tls: bool = True
+    use_tls: bool = False
     use_ssl: bool = False
     sender_email: Optional[str] = None  # fallback From address
 
 
-class MailService:
+class MailService(metaclass=Singleton):
     """
     Simple SMTP mailer that sends HTML emails with optional calendar invites
     compatible with Google Calendar and Outlook by attaching a text/calendar
@@ -260,11 +262,11 @@ class MailService:
 # Example usage (remove or adapt in production):
 if __name__ == "__main__":
     cfg = SmtpConfig(
-        host="smtp.example.com",
-        port=587,
-        username="user@example.com",
-        password="secret",
-        sender_email="noreply@example.com",
+        host="192.168.0.174",
+        port=25,
+        username="benoit",
+        password="R@nger&1401!",
+        sender_email="benoit@albatros.be",
     )
     ms = MailService(cfg)
     start_dt = datetime.utcnow() + timedelta(days=1)
@@ -277,14 +279,14 @@ if __name__ == "__main__":
       <li>When: Tomorrow</li>
     </ul>
     """
-    # ms.send_html("person@example.com", "Plain HTML Test", html)
-    # ms.send_with_calendar_invite(
-    #     to=["person@example.com"],
-    #     subject="Fitness Assessment Invite",
-    #     html_body=html,
-    #     start=start_dt,
-    #     end=end_dt,
-    #     organizer_email="coach@example.com",
-    #     organizer_name="Coach",
-    #     location="Gym Hall A",
-    # )
+    ms.send_html("person@example.com", "Plain HTML Test", html)
+    ms.send_with_calendar_invite(
+        to=["benoit@albatros.be"],
+        subject="Fitness Assessment Invite",
+        html_body=html,
+        start=start_dt,
+        end=end_dt,
+        organizer_email="benoit@albatros.be",
+        organizer_name="Coach",
+        location="Gym Hall A",
+    )
