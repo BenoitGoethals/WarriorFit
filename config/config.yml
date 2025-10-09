@@ -9,14 +9,14 @@ path:
 unit:
   name : "1-3 Bn Lanciers"
 mail:
-  host : "smtp.gmail.com"
-  port : 587
-  username : ""
-  password : ""
-  sender : ""
+  host : "192.168.0.174"
+  port : 25
+  username : "benoit"
+  password : "R@nger&1401!"
+  sender : "enoit@albatros.be"
   use_tls: False
   use_ssl: False
-  sender_email : ""
+  sender_email : "R@nger&1401!"
 
 
 

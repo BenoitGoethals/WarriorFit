@@ -3,6 +3,8 @@ from typing import Any
 import asyncpg
 import yaml
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from config.smtp_config import SmtpConfig
 from logic.singleton import Singleton
 
 
@@ -10,6 +12,7 @@ class ApplicationConfig(metaclass=Singleton):
     __config= None
     __pdf_path=None
     __own_unit=None
+    __mail_server=None
 
 
     def __init__(self, config_path:str="config/config.yml"):
@@ -44,11 +47,17 @@ class ApplicationConfig(metaclass=Singleton):
 
 
     @property
-    def own_unit(self):
+    def own_unit(self)->str:
 
         if self.__own_unit is None:
             raise ValueError("Configuration not loaded. Please call load_config() first.")
         return self.__own_unit
+
+    @property
+    def mail_server(self)->SmtpConfig:
+        if self.__mail_server is None:
+            raise ValueError("Configuration not loaded. Please call load_config() first.")
+        return self.__mail_server
 
     @staticmethod
     def __get_project_root() -> Path:
@@ -79,6 +88,13 @@ class ApplicationConfig(metaclass=Singleton):
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
         self.__pdf_path = config["path"]["pdf_path"]
         self.__own_unit = config["unit"]["name"]
+        self.__mail_server= SmtpConfig(host=config["mail"]["host"],
+                                       port=config["mail"]["port"],
+                                       username=config["mail"]["username"],
+                                       password=config["mail"]["password"],
+                                       use_tls=config["mail"]["use_tls"],
+                                       use_ssl=config["mail"]["use_ssl"],
+                                       sender_email=config["mail"]["sender_email"] )
         self.__config = self.__setup_connection_from_yaml(config=config)
         return config
 

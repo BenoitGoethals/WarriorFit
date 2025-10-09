@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Iterable, Optional
+
+from config.appliccation_config import ApplicationConfig
 from config.smtp_config import SmtpConfig
 from logic.singleton import Singleton
 
@@ -15,8 +17,11 @@ class MailService(metaclass=Singleton):
     (iCalendar/ICS) alternative part.
     """
 
-    def __init__(self, config: SmtpConfig):
-        self.config = config
+    def __init__(self, config: SmtpConfig=None):
+        if config is None:
+            self.config = ApplicationConfig().mail_server
+        else:
+             self.config = config
 
     # Public API
     def send_html(
