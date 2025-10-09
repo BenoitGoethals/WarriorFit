@@ -1741,6 +1741,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pythonping"
+version = "1.1.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/e5/6c12081f6be60648e6432dca495c3c048a096c9e719283270158256af69c/pythonping-1.1.4.tar.gz", hash = "sha256:acef84640fee6f20b725f2a1d2392771f2845554cfabcef30b1fdea5030161af", size = 21482, upload-time = "2022-10-25T10:36:26.838Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/08/d7/ac061f5010ae44604a091820c75e78edb8153214caf4519007cff812cd72/pythonping-1.1.4-py3-none-any.whl", hash = "sha256:dedd690e36cb8c69703175610cf6ce01ff0c2070b447cc64c31a82951c9a53f6", size = 16328, upload-time = "2022-10-25T10:36:24.961Z" },
+]
+
+[[package]]
 name = "pytz"
 version = "2025.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2308,6 +2317,7 @@ dependencies = [
     { name = "psycopg", extra = ["binary"] },
     { name = "psycopg2-binary" },
     { name = "python-jose" },
+    { name = "pythonping" },
     { name = "pyyaml" },
     { name = "reportlab" },
     { name = "rsconnect-python" },
@@ -2336,6 +2346,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.10" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "python-jose", specifier = ">=3.5.0" },
+    { name = "pythonping", specifier = ">=1.1.4" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "reportlab", specifier = ">=4.4.4" },
     { name = "rsconnect-python", specifier = ">=1.27.1" },

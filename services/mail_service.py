@@ -8,7 +8,7 @@ from typing import Iterable, Optional
 from config.appliccation_config import ApplicationConfig
 from config.smtp_config import SmtpConfig
 from logic.singleton import Singleton
-
+from pythonping import ping
 
 class MailService(metaclass=Singleton):
     """
@@ -124,6 +124,13 @@ class MailService(metaclass=Singleton):
         self._deliver(from_email, recipients, msg)
 
     def _deliver(self, from_email: str, recipients: list[str], msg: MIMEMultipart) -> None:
+
+        def is_alive(host):
+            response = ping(host, count=2, timeout=1)
+            return response.success()
+        if not is_alive(self.config.host):
+            print("SMTP server not alive")
+            return
         if self.config.use_ssl:
             context = ssl.create_default_context()
             with smtplib.SMTP_SSL(self.config.host, self.config.port, context=context) as server:
