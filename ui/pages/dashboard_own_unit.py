@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-from ui.config.appliccation_config import ApplicationConfig
+from config.appliccation_config import ApplicationConfig
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
 from core.type_fitness_test import TypeFitnessTest

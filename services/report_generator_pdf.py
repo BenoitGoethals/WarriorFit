@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from typing import List, Tuple, Optional, Callable, Any
 from logic.phef_calculator import PhefCalculator
-from ui.config.appliccation_config import ApplicationConfig
+from config.appliccation_config import ApplicationConfig
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
 from core.type_fitness_test import TypeFitnessTest
@@ -13,7 +13,7 @@ from services.report_type import ReportType
 class ReportGeneratorPdf:
 
     def __init__(self):
-        self.db_service: DBService = DBService("ui/config/config.yml")
+        self.db_service: DBService = DBService()
         self.be_mil_service=BEMILService()
 
     async def generate_report(self,  report_name: str, report_type: ReportType,own_unit:bool,this_year:bool):

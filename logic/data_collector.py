@@ -10,7 +10,7 @@ from services.db_service import DBService
 class DataCollector(metaclass=Singleton):
 
     def __init__(self):
-        self.db = DBService("ui/config/config.yml")
+        self.db = DBService()
         self.be_mil = BEMILService()
 
 

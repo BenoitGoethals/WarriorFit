@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.orm import joinedload  # add selectin_polymorphic
 from sqlalchemy.orm import selectinload, selectin_polymorphic
 
-from ui.config.appliccation_config import ApplicationConfig
+from config.appliccation_config import ApplicationConfig
 from logic.singleton import Singleton
 from data.db.db_model import (
     AuditLog,
@@ -50,7 +50,7 @@ class DBService(metaclass=Singleton):
         self._be_mil_service = BEMILService()
         logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
         self.__logger = logging.getLogger(__name__)
-        async_engine = ApplicationConfig(file_name).config
+        async_engine = ApplicationConfig().config
         if async_engine is None:
             self.__logger.error(
                 "Database configuration not found. Please check your configuration file."

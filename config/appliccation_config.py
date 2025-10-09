@@ -11,6 +11,18 @@ class ApplicationConfig(metaclass=Singleton):
     __pdf_path=None
     __own_unit=None
 
+
+    def __init__(self, config_path:str="config/config.yml"):
+        """
+        Initializes the application configuration with a specified path.
+
+        :param config_path: Optional path to the configuration file.
+        """
+
+        self.config_path:Path = self.__get_project_root().joinpath(Path(config_path))
+        self.load_config()
+
+
     @property
     def config(self):
         """
@@ -37,17 +49,6 @@ class ApplicationConfig(metaclass=Singleton):
         if self.__own_unit is None:
             raise ValueError("Configuration not loaded. Please call load_config() first.")
         return self.__own_unit
-
-    def __init__(self, config_path:str="ui/config/config.yml"):
-        """
-        Initializes the application configuration with a specified path.
-
-        :param config_path: Optional path to the configuration file.
-        """
-
-        self.config_path:Path = self.__get_project_root().joinpath(Path(config_path))
-        self.load_config()
-
 
     @staticmethod
     def __get_project_root() -> Path:

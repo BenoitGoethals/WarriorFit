@@ -396,7 +396,7 @@ class DashboardPage:
 
 
 # Public API
-_page = DashboardPage(DBService("ui/config/config.yml"))
+_page = DashboardPage(DBService())
 
 
 def get_ui():

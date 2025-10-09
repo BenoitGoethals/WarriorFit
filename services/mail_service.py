@@ -1,23 +1,11 @@
 import smtplib
 import ssl
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Iterable, Optional
-
+from config.smtp_config import SmtpConfig
 from logic.singleton import Singleton
-
-
-@dataclass(frozen=True)
-class SmtpConfig:
-    host: str
-    port: int = 587
-    username: Optional[str] = None
-    password: Optional[str] = None
-    use_tls: bool = False
-    use_ssl: bool = False
-    sender_email: Optional[str] = None  # fallback From address
 
 
 class MailService(metaclass=Singleton):

@@ -1,8 +1,7 @@
 
 from shiny import ui, render, reactive
 
-from ui.config.appliccation_config import ApplicationConfig
-
+from config.appliccation_config import ApplicationConfig
 
 
 class SettingsPage:

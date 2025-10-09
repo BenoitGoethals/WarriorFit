@@ -3,7 +3,7 @@ from typing import Any, Optional
 from shiny import App, ui, render
 from data.db.db_model import Role
 from utils.Os import Os
-from .config.appliccation_config import ApplicationConfig
+from config.appliccation_config import ApplicationConfig
 from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show
 from .pages import usermangement
 from .pages import phef
@@ -95,7 +95,7 @@ class FitnessWarriorApp:
     def server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
         from services.db_service import DBService
-        db_service = DBService("ui/config/config.yml")
+        db_service = DBService()
 
         FitnessWarriorApp.register_pages_server(input, output, session)
 

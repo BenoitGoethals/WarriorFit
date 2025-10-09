@@ -17,9 +17,9 @@ class SessionsPage:
 
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def __init__(self, db_service: Optional[DBService] = None, config_path: str = "ui/config/config.yml") -> None:
+    def __init__(self, db_service: DBService) -> None:
         # Allow DI for testing; default to app config path
-        self.db_service = db_service or DBService(config_path)
+        self.db_service = db_service
         self.refresh_tick = reactive.Value(0)
         self.selected_id = reactive.Value(None)
         # Hold the currently selected row (as a dict) for reuse by update/delete
@@ -420,7 +420,7 @@ _page_instance: Optional[SessionsPage] = None
 def _get_page() -> SessionsPage:
     global _page_instance
     if _page_instance is None:
-        _page_instance = SessionsPage()
+        _page_instance = SessionsPage(DBService())
     return _page_instance
 
 

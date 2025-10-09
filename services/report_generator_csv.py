@@ -3,20 +3,20 @@ import os
 from datetime import datetime
 from typing import Any, Callable, List, Optional
 
-from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
+from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, TestSession
 from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
-from ui.config.appliccation_config import ApplicationConfig
+from config.appliccation_config import ApplicationConfig
 from core.type_fitness_test import TypeFitnessTest
-from api.testsession import TestSession
+
 from services.report_type import ReportType
 
 
 class ReportGeneratorCsv:
     def __init__(self):
         self.be_mil_service = BEMILService()
-        self.db_service: DBService = DBService("ui/config/config.yml")
+        self.db_service: DBService = DBService()
 
     async def generate_report(self, report_name: str, report_type: ReportType,own_unit:bool,this_year:bool):
         if report_type is ReportType.PHEF:

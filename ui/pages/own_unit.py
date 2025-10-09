@@ -2,8 +2,9 @@ from shiny import reactive, ui
 from shiny.express import render
 import pandas as pd
 
+from config.appliccation_config import ApplicationConfig
 from logic.data_collector import DataCollector
-from ui.config.appliccation_config import ApplicationConfig
+
 from services.be_mil_service import BEMILService
 
 class OwnUnitPage:
