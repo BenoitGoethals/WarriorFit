@@ -2,13 +2,16 @@ from typing import List, Optional, Dict, Any
 
 from shiny import ui, render, reactive
 
+from config.appliccation_config import ApplicationConfig
 from data.db.db_model import TestSession,Role
 
 import datetime
 import pandas as pd
 
 from core.type_fitness_test import TypeFitnessTest
+from services.be_mil_service import BEMILService
 from services.db_service import DBService
+from services.mail_service import MailService
 
 
 class SessionsPage:
@@ -20,6 +23,7 @@ class SessionsPage:
     def __init__(self, db_service: DBService) -> None:
         # Allow DI for testing; default to app config path
         self.db_service = db_service
+        self.be_mil_service = BEMILService()
         self.refresh_tick = reactive.Value(0)
         self.selected_id = reactive.Value(None)
         # Hold the currently selected row (as a dict) for reuse by update/delete
@@ -335,12 +339,33 @@ class SessionsPage:
                     ]
                 )
                 status.set("Session added successfully.")
+                await self._send_mail_bulk(body= _build_session_added_html(test_session),subject="New Fitness Test Session Added",
+                                           invite=True, start_dt=added.datetime_start,
+                                           end_dt=added.datetime_start + datetime.timedelta(hours=2),
+                                           coach=added.serial_number_pti)
             except Exception as e:
                 status.set(f"Error adding session: {str(e)}")
                 return
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_id.set(None)
             await _clear_form()
+
+        def _build_session_added_html(ts: TestSession) -> str:
+            # Extracted for readability and reusability
+            status_text = "Executed" if ts.executed else "Planned"
+            dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+            desc = ts.description or "No description provided"
+            return f"""
+                               <h2>New Fitness Test Session Added</h2>
+                               <div style='background-color: #f5f5f5; padding: 20px; border-radius: 5px;'>                                 
+                                   <p><strong>Type:</strong> {ts.type_test.name}</p>
+                                   <p><strong>Date & Time:</strong> {dt_str}</p>
+                                   <p><strong>PTI Serial Number:</strong> {ts.serial_number_pti}</p>
+                                   <p><strong>Status:</strong> {status_text}</p>
+                                   <p><strong>Description:</strong> {desc}</p>
+                               </div>
+                               <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
+                           """
 
         @reactive.Effect
         @reactive.event(input.se_load_btn)
@@ -382,10 +407,28 @@ class SessionsPage:
             if not updated:
                 status.set("Failed to update session.")
                 return
-
+            await self._send_mail_bulk(body=_build_session_updated_html(data),
+                                       subject="update Fitness Test Session updated")
             status.set(f"Updated session #{sel_id}.")
             # Bump refresh tick to trigger session_list and re-render se_grid
             self.refresh_tick.set(self.refresh_tick.get() + 1)
+
+        def _build_session_updated_html(ts: TestSession) -> str:
+            # Extracted for readability and reusability
+            status_text = "Executed" if ts.executed else "Planned"
+            dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+            desc = ts.description or "No description provided"
+            return f"""
+                                          <h2>New Fitness Test Session Update</h2>
+                                          <div style='background-color: #f5f5f5; padding: 20px; border-radius: 5px;'>                                 
+                                              <p><strong>Type:</strong> {ts.type_test}</p>
+                                              <p><strong>Date & Time:</strong> {dt_str}</p>
+                                              <p><strong>PTI Serial Number:</strong> {ts.serial_number_pti}</p>
+                                              <p><strong>Status:</strong> {status_text}</p>
+                                              <p><strong>Description:</strong> {desc}</p>
+                                          </div>
+                                          <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
+                                      """
 
         @reactive.Effect
         @reactive.event(input.se_delete_btn)
@@ -395,22 +438,66 @@ class SessionsPage:
             if not selected_id:
                 status.set("Select a session to delete.")
                 return
+            session_delete:TestSession= await self.db_service.get_test_session_by_id(selected_id)
             status_deleted = await self.db_service.delete_test_session(selected_id)
             if not status_deleted:
                 status.set("Failed to delete session.")
                 return
+            await self._send_mail_bulk(body=_build_session_delete_html(session_delete),
+                                       subject="Deleted Fitness Test Session deleted")
             status.set(f"Deleted session #{selected_id}.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_id.set(None)
             await _refresh_select()
             await _clear_form()
 
-
+        def _build_session_delete_html(ts:TestSession)->str:
+            status_text = "Executed" if ts.executed else "Planned"
+            dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+            desc = ts.description or "No description provided"
+            return f"""
+                                                    <h2>New Fitness Test Session Deleted</h2>
+                                                    <div style='background-color: #f5f5f5; padding: 20px; border-radius: 5px;'>                                 
+                                                        <p><strong>Type:</strong> {ts.type_test.name}</p>
+                                                        <p><strong>Date & Time:</strong> {dt_str}</p>
+                                                        <p><strong>PTI Serial Number:</strong> {ts.serial_number_pti}</p>
+                                                        <p><strong>Status:</strong> {status_text}</p>
+                                                        <p><strong>Description:</strong> {desc}</p>
+                                                    </div>
+                                                    <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
+                                                """
         @reactive.Effect
         @reactive.event(input.se_clear_btn)
         async def _on_clear():
             await _clear_form()
             status.set("Form cleared.")
+
+    async def _send_mail_bulk(self,*,body:str,subject:str,invite:bool=False, start_dt:datetime.datetime=None,end_dt:datetime.datetime=None,coach:str=None):
+        recipients: list[str] = [r.mail for r in await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)]
+        if recipients:
+            mail_sessions_add = {
+                "subject": subject,
+                "html_body": body
+                ,
+                "from_email": ApplicationConfig().mail_server.sender_email,
+                "to": recipients
+            }
+            try:
+                MailService().send_html(**mail_sessions_add)
+                if invite:
+                    MailService().send_with_calendar_invite(
+                        to=recipients,
+                        subject="Fitness Assessment Invite",
+                        html_body="Fitness Session scheduled for today. Please join the session at the following URL:",
+                        start=start_dt,
+                        end=end_dt,
+                        organizer_email=ApplicationConfig().mail_server.sender_email,
+                        organizer_name=coach,
+                        location="Gym Hall",
+                )
+            except Exception as e:
+                print(f"Error sending email: {str(e)}")
+                return
 
 
 # Optional: keep backward-compatible module-level functions
@@ -434,3 +521,4 @@ def server(input, output, session):
 
 def get_sessions_store():
     return [None]
+

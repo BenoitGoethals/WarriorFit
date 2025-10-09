@@ -1,6 +1,11 @@
+import datetime
+from typing import Any
+
+from pandas import Series
 from shiny import ui, render, reactive
 import pandas as pd
 
+from config.appliccation_config import ApplicationConfig
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest, TestSession
@@ -8,6 +13,7 @@ from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
 from services.mail_service import MailService
+from ui.pages.notify_mail import NotifyMail
 
 
 class PhefPage:
@@ -342,14 +348,7 @@ class PhefPage:
                     selected_military:ServiceMen=await self.be_mil_service.get_be_mil_by_id(r.serial_number)
                     if selected_military is None:
                         continue
-                    age = selected_military.age_from_birthdate_and_session_date(self.selected_session.datetime_start)
-                    run = PhefCalculator.running_result(r.running_time, age,selected_military.gender)
-                    run_score_real=(run * (50 / 20))
-                    side_r = PhefCalculator.side_bridge_result(r.sideBridge_r,age,selected_military.gender)
-                    side_r_score_real=(side_r * (25 / 20))
-                    side_l = PhefCalculator.side_bridge_result(r.sideBridge_l,age,selected_military.gender)
-                    side_l_score_real=(side_l * (25 / 20))
-                    total =run_score_real+(side_r_score_real+side_l_score_real)
+                    run, side_l, side_r, total = await _calculate_phef_results(r, selected_military)
 
                     data.append({
                         "ID": r.id,
@@ -368,7 +367,16 @@ class PhefPage:
                 print(f"Error fetching PHEF data: {e}")
                 return pd.DataFrame()
 
-
+        async def _calculate_phef_results(r: PhefTest, selected_military: ServiceMen) -> tuple:
+            age = selected_military.age_from_birthdate_and_session_date(self.selected_session.datetime_start)
+            run = PhefCalculator.running_result(r.running_time, age, selected_military.gender)
+            run_score_real = (run * (50 / 20))
+            side_r = PhefCalculator.side_bridge_result(r.sideBridge_r, age, selected_military.gender)
+            side_r_score_real = (side_r * (25 / 20))
+            side_l = PhefCalculator.side_bridge_result(r.sideBridge_l, age, selected_military.gender)
+            side_l_score_real = (side_l * (25 / 20))
+            total = run_score_real + (side_r_score_real + side_l_score_real)
+            return run, side_l, side_r, total
 
         def _decorate_scores_for_grid(df):
             def _total_num(s):
@@ -493,11 +501,65 @@ class PhefPage:
             phef.pointBridge_l=0
             phef.pointsRunning=0
             added_phef= await self.db.add_fitness_test_to_TestSession(int(record["id"]), phef)
-           # MailService().send_html(self.selected_military.mail)
+
             if not added_phef:
                 status.set(f"Failed to add PHEF test for {phef.serial_number} in session {str(phef.test_session_id)}.")
                 return
-
+            run, side_l, side_r, total = await _calculate_phef_results(phef, self.selected_military)
+            body = f"""
+                <h2>PHEF Test Results</h2>
+                <table style="border-collapse: collapse; width: 100%;">
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Service Member Information</th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Service Member:</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{self.selected_military.rank} {self.selected_military.service_number}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Name:</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{self.selected_military.first_name} {self.selected_military.last_name}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Test Session ID:</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{str(phef.test_session_id)}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Serial Number:</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{phef.serial_number}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Test Results</th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Running (2400m)</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">
+                            Time: {_format_seconds(phef.running_time)}<br>
+                            Score: {run}/20
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Side Bridge Right</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">
+                            Time: {_format_seconds(phef.sideBridge_r)}<br>
+                            Score: {side_r}/20
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;"><strong>Side Bridge Left</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">
+                            Time: {_format_seconds(phef.sideBridge_l)}<br>
+                            Score: {side_l}/20
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Total Score</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">{total}/100</th>
+                    </tr>
+                </table>
+            """
+            await NotifyMail().send_mail(body=body,subject="Result Test",to=self.selected_military.mail)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])
 
@@ -570,8 +632,10 @@ class PhefPage:
             _clear_form()
             status.set("Form cleared.")
 
+
+
 # Public API: keep same signatures
-_page = PhefPage(DBService("ui/config/config.yml"))
+_page = PhefPage(DBService())
 
 def get_ui():
     return _page.get_ui()

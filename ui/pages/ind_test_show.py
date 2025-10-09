@@ -86,7 +86,7 @@ class IndTestShowPage:
             )
 
 
-_page = IndTestShowPage(DBService("ui/config/config.yml"))
+_page = IndTestShowPage(DBService())
 
 def get_ui():
     return _page.get_ui()

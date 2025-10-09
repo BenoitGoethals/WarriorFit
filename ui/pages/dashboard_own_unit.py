@@ -551,11 +551,11 @@ _page_instance: DashboardOwnUnitPage | None = None
 def get_ui():
     global _page_instance
     if _page_instance is None:
-        _page_instance = DashboardOwnUnitPage(DBService("ui/config/config.yml"))
+        _page_instance = DashboardOwnUnitPage(DBService())
     return _page_instance.get_ui()
 
 def server(input, output, session):
     global _page_instance
     if _page_instance is None:
-        _page_instance = DashboardOwnUnitPage(DBService("ui/config/config.yml"))
+        _page_instance = DashboardOwnUnitPage(DBService())
     _page_instance.server(input, output, session)

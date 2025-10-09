@@ -8,6 +8,7 @@ from data.db.db_model import FunctionalTest, TestSession
 from logic.Functional_calculator import FunctionalCalculator
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
+from ui.pages.notify_mail import NotifyMail
 
 
 class FunctionalPage:
@@ -406,7 +407,42 @@ class FunctionalPage:
             if not added_functional:
                 status.set(f"Failed to add Functional test for {ft.serial_number} in session {record['id']}.")
                 return
-
+            body = f"""
+                Dear {self.selected_military.rank} {self.selected_military.first_name} {self.selected_military.last_name},
+                <br><br>
+                Your functional test results from {self.selected_session.datetime_start.strftime('%Y-%m-%d')} are:
+                <br><br>
+                <table border="1" cellpadding="5" style="border-collapse: collapse;">
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Repetitions</th>
+                        <th>Score</th>
+                    </tr>
+                    <tr>
+                        <td>Push-ups</td>
+                        <td>{record['push_ups']}</td>
+                        <td>{FunctionalCalculator.get_score_pushup(self.selected_military.gender, self.selected_military.age_from_birthdate(), record['push_ups'])}</td>
+                    </tr>
+                    <tr>
+                        <td>Sit-ups</td>
+                        <td>{record['sit_ups']}</td>
+                        <td>{FunctionalCalculator.get_score_situp(self.selected_military.gender, self.selected_military.age_from_birthdate(), record['sit_ups'])}</td>
+                    </tr>
+                    <tr>
+                        <td>Pull-ups</td>
+                        <td>{record['pull_ups']}</td>
+                        <td>{FunctionalCalculator.get_score_pullup(self.selected_military.gender, self.selected_military.age_from_birthdate(), record['pull_ups'])}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><strong>Total Score</strong></td>
+                        <td><strong>{((FunctionalCalculator.get_score_pullup(self.selected_military.gender, self.selected_military.age_from_birthdate(), record['pull_ups']) + FunctionalCalculator.get_score_situp(self.selected_military.gender, self.selected_military.age_from_birthdate(), record['sit_ups']) + FunctionalCalculator.get_score_pushup(self.selected_military.gender, self.selected_military.age_from_birthdate(), record['push_ups'])) / 60) * 100:.2f}%</strong></td>
+                    </tr>
+                </table>
+                <br><br>
+                Best regards,<br>
+                Fitness Test System
+                """
+            await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])
 
@@ -483,7 +519,7 @@ class FunctionalPage:
 
 
 # Public API: keep same signatures
-_page = FunctionalPage(DBService("ui/config/config.yml"))
+_page = FunctionalPage(DBService())
 
 
 def get_ui():

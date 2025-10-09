@@ -13,10 +13,10 @@ mail:
   port : 25
   username : "benoit"
   password : "R@nger&1401!"
-  sender : "enoit@albatros.be"
+  sender : "benoit@albatros.be"
   use_tls: False
   use_ssl: False
-  sender_email : "R@nger&1401!"
+  sender_email : "benoit@albatros.be"
 
 
 

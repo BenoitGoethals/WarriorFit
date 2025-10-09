@@ -6,6 +6,7 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import CombatSwimmingTest, TestSession
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
+from ui.pages.notify_mail import NotifyMail
 
 
 class SwimTestPage:
@@ -281,7 +282,17 @@ class SwimTestPage:
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])
-
+            body = f"""
+                Dear {self.selected_military.rank} {self.selected_military.first_name} {self.selected_military.last_name},
+                
+                    Your swimming test results from {self.selected_session.datetime_start.strftime('%Y-%m-%d')} are:
+                    
+                    Passed: {record['swim_passed']}
+                    
+                Best regards,
+                Fitness Test System
+                """
+            await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
             status.set(f"Added Swimming test for {st.serial_number} in session {record['id']}.")
             _clear_form()
 
@@ -353,7 +364,7 @@ class SwimTestPage:
 
 
 # Public API: keep same signatures
-_page = SwimTestPage(DBService("ui/config/config.yml"))
+_page = SwimTestPage(DBService())
 
 
 def get_ui():

@@ -7,7 +7,7 @@ from data.db.db_model import TestSession, CombatTestParatrooper
 from services.be_mil_service import BEMILService
 
 from services.db_service import DBService
-
+from ui.pages.notify_mail import NotifyMail
 
 
 class CombatPage:
@@ -434,7 +434,48 @@ class CombatPage:
             if not added_combat:
                 status.set(f"Failed to add Combat test for {cp.serial_number} in session {str(cp.test_session_id)}.")
                 return
-
+            body = f"""
+            <table border="1" style="border-collapse: collapse; width: 100%;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="padding: 8px; text-align: left;">Test Component</th>
+                        <th style="padding: 8px; text-align: left;">Result</th>
+                        <th style="padding: 8px; text-align: left;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 8px;">Obstacle Course</td>
+                        <td style="padding: 8px;">{str(record['combat_obstacle'])}</td>
+                        <td style="padding: 8px; color: {'green' if record['combat_obstacle'] else 'red'}">
+                            {'PASSED' if record['combat_obstacle'] else 'FAILED'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Rope Course</td>
+                        <td style="padding: 8px;">{str(record['combat_robe'])}</td>
+                        <td style="padding: 8px; color: {'green' if record['combat_robe'] else 'red'}">
+                            {'PASSED' if record['combat_robe'] else 'FAILED'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">Speed March</td>
+                        <td style="padding: 8px;">{_format_seconds(record['combat_speedmars'])}</td>
+                        <td style="padding: 8px; color: {'green' if record['combat_speedmars'] <= 2400 else 'red'}">
+                            {'PASSED' if record['combat_speedmars'] <= 2400 else 'FAILED'}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold;">Overall Result</td>
+                        <td style="padding: 8px;"></td>
+                        <td style="padding: 8px; color: {'green' if (record['combat_obstacle'] and record['combat_robe'] and record['combat_speedmars'] <= 2400) else 'red'}; font-weight: bold">
+                            {'PASSED' if (record['combat_obstacle'] and record['combat_robe'] and record['combat_speedmars'] <= 2400) else 'FAILED'}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            """
+            await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])
 
@@ -508,7 +549,7 @@ class CombatPage:
 
 
 # Public API: keep same signatures
-_page = CombatPage(DBService("ui/config/config.yml"))
+_page = CombatPage(DBService())
 
 
 def get_ui():
