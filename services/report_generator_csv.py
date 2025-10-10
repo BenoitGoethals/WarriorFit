@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 from datetime import datetime
 from typing import Any, Callable, List, Optional
@@ -17,6 +18,7 @@ class ReportGeneratorCsv:
     def __init__(self):
         self.be_mil_service = BEMILService()
         self.db_service: DBService = DBService()
+        self.__logger = logging.getLogger(__name__)
 
     async def generate_report(self, report_name: str, report_type: ReportType,own_unit:bool,this_year:bool):
         if report_type is ReportType.PHEF:
@@ -71,70 +73,74 @@ class ReportGeneratorCsv:
         return output_path
 
     async def generate_phef_report(self, report_name: str,own_unit:bool,this_year:bool):
-        failed: List[dict] = []
-        passed: List[dict] = []
+        try:
+            failed: List[dict] = []
+            passed: List[dict] = []
 
-        sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
-            TypeFitnessTest.PHEF, this_year=this_year
-        )
-        if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
-        for sess in sessions or []:
-            phef_tests: List[PhefTest] = await self.db_service.get_all_phef(sess.id)
-            for test in phef_tests or []:
-                if own_unit:
-                    if not test.serial_number in [s.service_number for s in mils]:
-                        continue
-                sm = await self.be_mil_service.get_be_mil_by_id(test.serial_number)
-                score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, sm.age_from_birthdate(), sm.gender)
-                score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, sm.age_from_birthdate(), sm.gender)
-                score_run = score_l = PhefCalculator.running_result(test.pointsRunning, sm.age_from_birthdate(),
-                                                                    sm.gender)
-                total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
-                row = {
-                    "session_id": sess.id,
-                    "session_date": getattr(sess, "datetime_start", None),
-                    "serial": getattr(test, "serial_number", ""),
-                    "run_score": score_run,
-                    "side_r_score": score_r,
-                    "side_l_score": score_l,
-                    "total": total,
-                    "run_time_s": getattr(test, "running_time", None),
-                    "side_r_s": getattr(test, "sideBridge_r", None),
-                    "side_l_s": getattr(test, "sideBridge_l", None),
-                }
-                (passed if total >= 50 else failed).append(row)
+            sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
+                TypeFitnessTest.PHEF, this_year=this_year
+            )
+            if own_unit:
+                mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            for sess in sessions or []:
+                phef_tests: List[PhefTest] = await self.db_service.get_all_phef(sess.id)
+                for test in phef_tests or []:
+                    if own_unit:
+                        if not test.serial_number in [s.service_number for s in mils]:
+                            continue
+                    sm = await self.be_mil_service.get_be_mil_by_id(test.serial_number)
+                    score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, sm.age_from_birthdate(), sm.gender)
+                    score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, sm.age_from_birthdate(), sm.gender)
+                    score_run = score_l = PhefCalculator.running_result(test.pointsRunning, sm.age_from_birthdate(),
+                                                                        sm.gender)
+                    total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
+                    row = {
+                        "session_id": sess.id,
+                        "session_date": getattr(sess, "datetime_start", None),
+                        "serial": getattr(test, "serial_number", ""),
+                        "run_score": score_run,
+                        "side_r_score": score_r,
+                        "side_l_score": score_l,
+                        "total": total,
+                        "run_time_s": getattr(test, "running_time", None),
+                        "side_r_s": getattr(test, "sideBridge_r", None),
+                        "side_l_s": getattr(test, "sideBridge_l", None),
+                    }
+                    (passed if total >= 50 else failed).append(row)
 
-        headers = [
-            "Session ID",
-            "Date",
-            "Serial",
-            "Run (pts)",
-            "Side R (pts)",
-            "Side L (pts)",
-            "Total /100",
-            "Run Time",
-            "Side R",
-            "Side L",
-        ]
-
-        def row_builder(r: dict) -> List[Any]:
-            return [
-                r["session_id"],
-                "-" if r["session_date"] is None else r["session_date"].strftime("%Y-%m-%d %H:%M"),
-                r["serial"],
-                f"{r['run_score']}",
-                f"{r['side_r_score']}",
-                f"{r['side_l_score']}",
-                f"{r['total']:.1f}",
-                self._fmt_time(r["run_time_s"]),
-                self._fmt_time(r["side_r_s"]),
-                self._fmt_time(r["side_l_s"]),
+            headers = [
+                "Session ID",
+                "Date",
+                "Serial",
+                "Run (pts)",
+                "Side R (pts)",
+                "Side L (pts)",
+                "Total /100",
+                "Run Time",
+                "Side R",
+                "Side L",
             ]
 
-        failed_path = self._build_csv(failed, report_name, "phef_failed", headers, row_builder)
-        passed_path = self._build_csv(passed, report_name, "phef_passed", headers, row_builder)
-        return {"failed": failed_path, "passed": passed_path}
+            def row_builder(r: dict) -> List[Any]:
+                return [
+                    r["session_id"],
+                    "-" if r["session_date"] is None else r["session_date"].strftime("%Y-%m-%d %H:%M"),
+                    r["serial"],
+                    f"{r['run_score']}",
+                    f"{r['side_r_score']}",
+                    f"{r['side_l_score']}",
+                    f"{r['total']:.1f}",
+                    self._fmt_time(r["run_time_s"]),
+                    self._fmt_time(r["side_r_s"]),
+                    self._fmt_time(r["side_l_s"]),
+                ]
+
+            failed_path = self._build_csv(failed, report_name, "phef_failed", headers, row_builder)
+            passed_path = self._build_csv(passed, report_name, "phef_passed", headers, row_builder)
+            return {"failed": failed_path, "passed": passed_path}
+        except Exception as e:
+            self.__logger.error(f"Error generating PHEF report: {e}")
+            return None
 
     async def generate_functional_report(self, report_name: str,own_unit:bool,this_year:bool):
         failed: List[dict] = []

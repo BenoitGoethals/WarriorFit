@@ -2,6 +2,7 @@ import logging
 from typing import Any, Optional
 from shiny import App, ui, render
 from data.db.db_model import Role
+from military_api_rest.db_service_service_men import DbServiceServiceMen
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show
@@ -96,6 +97,7 @@ class FitnessWarriorApp:
         from shiny import reactive
         from services.db_service import DBService
         db_service = DBService()
+
 
         FitnessWarriorApp.register_pages_server(input, output, session)
 

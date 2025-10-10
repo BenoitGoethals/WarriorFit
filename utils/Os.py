@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Any
-
+from pythonping import ping
 
 class Os:
 
@@ -22,3 +22,8 @@ class Os:
                 return current_dir
             current_dir = current_dir.parent  # Move one directory up
         return None
+
+    @staticmethod
+    def is_alive(host):
+        response = ping(host, count=2, timeout=1)
+        return response.success()

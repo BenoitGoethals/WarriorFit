@@ -1,14 +1,17 @@
+import logging
 import smtplib
 import ssl
 from datetime import datetime, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Iterable, Optional
-
 from config.appliccation_config import ApplicationConfig
 from config.smtp_config import SmtpConfig
 from logic.singleton import Singleton
-from pythonping import ping
+
+
+from utils.Os import Os
+
 
 class MailService(metaclass=Singleton):
     """
@@ -22,6 +25,7 @@ class MailService(metaclass=Singleton):
             self.config = ApplicationConfig().mail_server
         else:
              self.config = config
+        self.logger = logging.getLogger(__name__)
 
     # Public API
     def send_html(
@@ -125,23 +129,23 @@ class MailService(metaclass=Singleton):
 
     def _deliver(self, from_email: str, recipients: list[str], msg: MIMEMultipart) -> None:
 
-        def is_alive(host):
-            response = ping(host, count=2, timeout=1)
-            return response.success()
-        if not is_alive(self.config.host):
-            print("SMTP server not alive")
+        if not Os.is_alive(self.config.host):
+            logging.error(f"SMTP server {self.config.host} is not alive")
             return
-        if self.config.use_ssl:
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(self.config.host, self.config.port, context=context) as server:
-                self._maybe_login(server)
-                server.sendmail(from_email, recipients, msg.as_string())
-        else:
-            with smtplib.SMTP(self.config.host, self.config.port) as server:
-                if self.config.use_tls:
-                    server.starttls(context=ssl.create_default_context())
-                self._maybe_login(server)
-                server.sendmail(from_email, recipients, msg.as_string())
+        try:
+            if self.config.use_ssl:
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(self.config.host, self.config.port, context=context) as server:
+                    self._maybe_login(server)
+                    server.sendmail(from_email, recipients, msg.as_string())
+            else:
+                with smtplib.SMTP(self.config.host, self.config.port) as server:
+                    if self.config.use_tls:
+                        server.starttls(context=ssl.create_default_context())
+                    self._maybe_login(server)
+                    server.sendmail(from_email, recipients, msg.as_string())
+        except Exception as e:
+            logging.error(f"Failed to send email: {e}")
 
     def _maybe_login(self, server: smtplib.SMTP) -> None:
         if self.config.username and self.config.password:

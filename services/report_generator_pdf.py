@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 from typing import List, Tuple, Optional, Callable, Any
@@ -15,6 +16,7 @@ class ReportGeneratorPdf:
     def __init__(self):
         self.db_service: DBService = DBService()
         self.be_mil_service=BEMILService()
+        self.__logger = logging.getLogger(__name__)
 
     async def generate_report(self,  report_name: str, report_type: ReportType,own_unit:bool,this_year:bool):
         if report_type is ReportType.PHEF:
@@ -105,7 +107,7 @@ class ReportGeneratorPdf:
         )
         story.append(tbl)
         doc.build(story)
-        print(f"PDF generated: {output_path}")
+        self.__logger.info(f"Generating PDF: {output_path}")
         return output_path
 
     async def generate_phef_report(self, report_name: str,own_unit:bool,this_year:bool):
@@ -194,33 +196,37 @@ class ReportGeneratorPdf:
     async def generate_functional_report(self, report_name: str,own_unit:bool,this_year:bool):
 
         async def _collect_rows(own_unit:bool,this_year:bool) -> Tuple[List[dict], List[dict]]:
-            failed, passed = [], []
-            sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
-                TypeFitnessTest.PHEF, this_year=this_year
-            )
-            if own_unit:
-                mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
-            for sess in sessions or []:
-                tests: List[FunctionalTest] = await self.db_service.get_all_functional_test(sess.id)
-                for test in tests or []:
-                    if own_unit:
-                        if not test.serial_number in [s.service_number for s in mils]:
-                            continue
-                    pu = getattr(test, "push_ups", 0) or 0
-                    su = getattr(test, "sit_ups", 0) or 0
-                    plu = getattr(test, "pull_ups", 0) or 0
-                    total = int(pu) + int(su) + int(plu)
-                    row = {
-                        "session_id": sess.id,
-                        "session_date": getattr(sess, "datetime_start", None),
-                        "serial": getattr(test, "serial_number", ""),
-                        "push_ups": pu,
-                        "sit_ups": su,
-                        "pull_ups": plu,
-                        "total": total,
-                    }
-                    (passed if total >= 50 else failed).append(row)
-            return failed, passed
+            try:
+                failed, passed = [], []
+                sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
+                    TypeFitnessTest.PHEF, this_year=this_year
+                )
+                if own_unit:
+                    mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+                for sess in sessions or []:
+                    tests: List[FunctionalTest] = await self.db_service.get_all_functional_test(sess.id)
+                    for test in tests or []:
+                        if own_unit:
+                            if not test.serial_number in [s.service_number for s in mils]:
+                                continue
+                        pu = getattr(test, "push_ups", 0) or 0
+                        su = getattr(test, "sit_ups", 0) or 0
+                        plu = getattr(test, "pull_ups", 0) or 0
+                        total = int(pu) + int(su) + int(plu)
+                        row = {
+                            "session_id": sess.id,
+                            "session_date": getattr(sess, "datetime_start", None),
+                            "serial": getattr(test, "serial_number", ""),
+                            "push_ups": pu,
+                            "sit_ups": su,
+                            "pull_ups": plu,
+                            "total": total,
+                        }
+                        (passed if total >= 50 else failed).append(row)
+                return failed, passed
+            except Exception as e:
+                self.__logger.error(f"Error collecting functional tests: {e}")
+                return [], []
 
         failed, passed = await _collect_rows(own_unit,this_year)
 

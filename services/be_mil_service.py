@@ -1,3 +1,4 @@
+import logging
 from functools import cache
 
 from core.service_men import ServiceMen
@@ -12,25 +13,33 @@ class BEMILService(metaclass=Singleton):
 
     """Service class for managing BEMIL-related operations."""
     def __init__(self):
-        pass
+        self.__logger = logging.getLogger(__name__)
 
 
     async def get_all_be_mil_from_unit(self, unit_name: str)->list[ServiceMen]:
         async with httpx.AsyncClient() as client:
-            response = await client.get(f"{BASE_URL}/service-men/unit/{unit_name}")
-            response.raise_for_status()  # raises error if status != 200
-            resp= response.json()
-            # Map API responses (dicts) into the pydantic response model we actually receive
-            return  [ServiceMen(**item) for item in resp]
+            try:
+                response = await client.get(f"{BASE_URL}/service-men/unit/{unit_name}")
+                response.raise_for_status()  # raises error if status != 200
+                resp= response.json()
+                # Map API responses (dicts) into the pydantic response model we actually receive
+                return  [ServiceMen(**item) for item in resp]
+            except httpx.HTTPStatusError as e:
+                self.__logger.error(f"Error fetching BEMILs from unit {unit_name}: {e}")
+                raise httpx.HTTPError(f"Server error when fetching BEMIL ")
 
 
     async def get_be_mil_by_id(self, be_mil_serial_number:str) -> ServiceMen:
         """Retrieve a specific ServiceMen by its service number."""
         async with httpx.AsyncClient() as client:
-            response = await client.get(f"{BASE_URL}/service-men/{be_mil_serial_number}")
-            response.raise_for_status()
-            data = response.json()
-            return ServiceMen(**data)
+            try:
+                response = await client.get(f"{BASE_URL}/service-men/{be_mil_serial_number}")
+                response.raise_for_status()
+                data = response.json()
+                return ServiceMen(**data)
+            except httpx.HTTPStatusError as e:
+                self.__logger.error(f"Error fetching BEMIL by serial number {be_mil_serial_number}: {e}")
+                raise httpx.HTTPError(f"Server error when fetching BEMIL by serial number {be_mil_serial_number}")
 
 #
 # if __name__ == "__main__":

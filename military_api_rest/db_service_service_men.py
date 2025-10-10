@@ -1,9 +1,6 @@
 import sqlite3
 import asyncio
 import logging
-from functools import partial
-
-from core import service_men
 from core.Gender import Gender
 from core.service_men import ServiceMen
 from core.unit import Unit
