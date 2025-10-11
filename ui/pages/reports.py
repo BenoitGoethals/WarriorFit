@@ -1,6 +1,8 @@
 # Python
 from __future__ import annotations
 
+import logging
+from pathlib import Path
 from shiny import ui, render, reactive
 
 from ui.controllers.reports_controller import ReportsController, ReportRequest
@@ -11,7 +13,7 @@ class ReportsPage:
         self.controller = ReportsController()
         self._status_msg = reactive.Value(("info", "Click 'Generate Report' to create your report."))
         self._last_paths = reactive.Value([])
-
+        self.__logger = logging.getLogger(__name__)
     def get_ui(self):
         return ui.nav_panel(
             "Reports",
@@ -42,6 +44,9 @@ class ReportsPage:
                         },
                     ),
                     ui.input_action_button("generate_report", "Generate Report", class_="btn-primary"),
+                    ui.download_button("download_report", "Download", class_="btn-primary"),
+
+
                     width=300,
                 ),
                 ui.card(
@@ -84,11 +89,35 @@ class ReportsPage:
             paths = self._last_paths.get()
             if not paths:
                 return ui.div()
-            items = [ui.tags.li(ui.tags.code(p)) for p in paths]
+            items = [ui.tags.li(ui.tags.code(Path(p).name)) for p in paths]
             return ui.div(
-                ui.tags.h4("Saved files"),
+                ui.tags.h4("Generated files"),
                 ui.tags.ul(*items),
+                ui.download_button("download_button", "Download Reports", class_="btn-primary"),
             )
+
+        @render.download(filename=lambda: "reports.zip")
+        def download_report():
+            import io
+            import zipfile
+            paths = [p for p in self._last_paths.get() or [] if p]
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+                for p in paths:
+                    try:
+                        path_obj = Path(p)
+                        if path_obj.is_file():
+                            zf.write(path_obj, arcname=path_obj.name)
+                    except Exception:
+                        logging.exception("Failed to add file to zip")
+            buf.seek(0)
+            data = buf.read()
+
+            # Return an iterator yielding bytes (not text, not int)
+            def _iter():
+                yield data
+
+            return _iter()
 
 # Public API: keep same signatures
 _page = ReportsPage()
