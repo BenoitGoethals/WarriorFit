@@ -88,7 +88,6 @@ class UserManagementController:
                     f"User with username '{form.username}' already exists."
                 )
 
-
         return True, "OK"
 
     def set_selected_user(self, user:UserForm):

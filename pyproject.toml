@@ -22,6 +22,7 @@ dependencies = [
     "plotly>=6.3.0",
     "psycopg2-binary>=2.9.10",
     "psycopg[binary]>=3.2.10",
+    "pytest>=8.4.2",
     "python-jose>=3.5.0",
     "pythonping>=1.1.4",
     "pyyaml>=6.0.2",
