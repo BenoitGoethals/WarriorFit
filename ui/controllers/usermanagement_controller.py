@@ -25,6 +25,7 @@ class UserManagementController:
     def __init__(self, db: Optional[DBService] = None):
         # If your DBService requires a config path, adjust here
         self.db = db or DBService()
+        self.selected_user=None
 
     @staticmethod
     def role_choices() -> List[str]:
@@ -49,7 +50,7 @@ class UserManagementController:
             for u in users
         ])
 
-    async def validate(self, form: UserForm, *, is_update: bool, current_serial: Optional[str] = None) -> Tuple[bool, str]:
+    async def validate(self, form: UserForm, *, is_update: bool) -> Tuple[bool, str]:
         req = ["serial", "username", "password", "email", "role"]
         for f in req:
             if not getattr(form, f, "").strip():
@@ -58,14 +59,20 @@ class UserManagementController:
             return False, "Invalid email address."
         exists = await self.db.serial_exists(form.serial.strip())
         mail_unique = await self.db.user_mail_exist(form.email)
+        user_name_exist = await self.db.get_user_by_username(form.username)
         if is_update:
-            if form.serial.strip() != (current_serial or "") and exists:
+            if form.serial.strip() != (self.selected_user.serial or "") and exists:
                 return False, f"Serial '{form.serial}' already exists."
 
-            if form.email.strip() !=(form.email or "") and mail_unique:
+            if form.email.strip() !=(self.selected_user.email or "") and mail_unique:
                 return (
                     False,
                     f"User with email '{form.email}' already exists."
+                )
+            if form.username.strip() !=(self.selected_user.username or "") and user_name_exist:
+                return (
+                    False,
+                    f"User with username '{form.username}' already exists."
                 )
         else:
             if exists:
@@ -75,9 +82,18 @@ class UserManagementController:
                     False,
                     f"User with email '{form.email}' already exists."
                 )
+            if user_name_exist:
+                return (
+                    False,
+                    f"User with username '{form.username}' already exists."
+                )
 
 
         return True, "OK"
+
+    def set_selected_user(self, user:UserForm):
+        self.selected_user=user
+
 
     async def create_user(self, form: UserForm) -> Optional[User]:
         user = User()

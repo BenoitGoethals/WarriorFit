@@ -115,6 +115,10 @@ class UserManagementPage:
             row = df.iloc[row_idx]
             serial = row[self.COLUMN_SERIAL]
             self.selected_serial.set(serial)
+            self.controller.set_selected_user(UserForm(serial=row[self.COLUMN_SERIAL], username=row.get("Username", ""), email=row.get("Email", ""), role=row.get("Role", ""),password=row.get("Password", "")))
+
+
+
             self.selected_id.set(row.get("ID"))
             self.status.set(f"Selected user '{serial}'.")
             # Pre-fill form (note: we do not reveal real password; keep hashed in df if needed)
@@ -153,7 +157,7 @@ class UserManagementPage:
                 self.status.set("Select a user to update.")
                 return
             form = self._read_form(input)
-            ok, msg = await self.controller.validate(form, is_update=True, current_serial=form.serial)
+            ok, msg = await self.controller.validate(form, is_update=True)
             if not ok:
                 self.status.set(msg)
                 return
