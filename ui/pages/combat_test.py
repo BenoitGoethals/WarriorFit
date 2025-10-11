@@ -7,7 +7,10 @@ from data.db.db_model import TestSession, CombatTestParatrooper
 from services.be_mil_service import BEMILService
 
 from services.db_service import DBService
+from ui.controllers.combat_controller import CombatController
 from ui.pages.notify_mail import NotifyMail
+
+import html
 
 
 class CombatPage:
@@ -17,6 +20,7 @@ class CombatPage:
         self.be_mil_service = BEMILService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
+        self.controller = CombatController(self.db, self.be_mil_service)  # <-- controller instance
 
     NO_SELECTION_MESSAGE = "No row selected"
 
@@ -118,52 +122,18 @@ class CombatPage:
 
         military = reactive.Value("No selection")
         status = reactive.Value("Ready.")
-        selected_session_id = reactive.Value("")  # track current selection
+        selected_session_id = reactive.Value("")
         selected_combat_id = reactive.Value("")
 
+        # Use controller helpers
         def _parse_time_to_seconds(val: str):
-            txt = (val or "").strip()
-            if not txt:
-                return False, "Time value is required."
-            try:
-                if ":" in txt:
-                    parts = txt.split(":")
-                    if len(parts) != 2:
-                        return False, "Time must be in mm:ss or seconds."
-                    m = int(parts[0]);
-                    s = int(parts[1])
-                    total = m * 60 + s
-                else:
-                    total = int(float(txt))
-                if total <= 0:
-                    return False, "Time must be positive."
-                return True, int(total)
-            except Exception:
-                return False, "Time must be numeric (mm:ss or seconds)."
+            return self.controller.parse_time_to_seconds(val)
 
         def _format_seconds(sec: float | int):
-            m = sec // 60
-            s = sec % 60
-            return f"{int(m)}:{int(s):02d}"
+            return self.controller.format_seconds(sec)
 
         def _validate(data):
-            if not (data["serialnr"] or "").strip():
-                return False, "Serial number is required."
-            # if not (data["session_id"] or "").strip():
-            #    return False, "Session selection is required."
-
-
-            ok_run, run = _parse_time_to_seconds(data["combat_speedmars"])
-            if not ok_run:
-                return False, f"combat_speedmars: {run}"
-
-            return True, {
-                #   "session_id_int": int(data["session_id"]),
-
-                "combat_speedmars": run,
-                "combat_obstacle": data["combat_obstacle"],
-                "combat_robe": data["combat_robe"],
-            }
+            return self.controller.validate_form(data)
 
         def _read_form():
             return {
@@ -176,10 +146,6 @@ class CombatPage:
 
         def _write_form(rec):
             session.send_input_message("ph_serialnr", {"value": rec.get("serialnr", "")})
-            # session.send_input_message(
-            #     "ph_session_id",
-            #     {"value": "" if rec.get("session_id") is None else str(rec.get("session_id"))},
-            # )
             cr_val = rec.get("combat_robe")
             co_val = rec.get("combat_obstacle")
             speedmars_val = rec.get("speedmars_s")
@@ -190,16 +156,14 @@ class CombatPage:
         def _clear_form():
             _write_form({
                 "serialnr": "",
-                #     "session_id": None,
                 "combat_obstacle": False,
                 "combat_robe": False,
                 "combat_speedmars": None
             })
 
-        # Populate sessions into the select input, preserving current selection when possible
         async def _refresh_session_choices():
-            test_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT)
-            items = {  # key must be a string; label a human-readable string
+            test_sessions = await self.controller.load_sessions()
+            items = {
                 str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
                 for s in (test_sessions or [])
             }
@@ -215,14 +179,15 @@ class CombatPage:
                 ui.update_action_button("combat_update_btn", disabled=True)
                 return
             try:
-                val = await self.be_mil_service.get_be_mil_by_id(input.combat_serialnr() or "")
+                val = await self.controller.search_military(input.combat_serialnr() or "")
                 self.selected_military = val
-                # ui.update_text("ph_serialnr", value=val.service_number+val.first_name+" "+val.last_name)
-
+                if val is None:
+                    ui.update_text("combat_serialnr", value="Not found")
+                    return
                 military.set(val.rank + " " + val.service_number + " " + val.first_name + " " + val.last_name)
                 ui.update_action_button("combat_add_btn", disabled=False)
                 ui.update_action_button("combat_update_btn", disabled=False)
-            except Exception as e:
+            except Exception:
                 ui.update_text("combat_serialnr", value="Not found")
                 return
 
@@ -235,7 +200,6 @@ class CombatPage:
         @render.text
         def combat_miltary():
             return military.get()
-
 
         @output
         @render.text
@@ -252,23 +216,16 @@ class CombatPage:
         @reactive.Effect
         @reactive.event(input.combat_speedmars)
         def combat_speedmars():
-            # Update the 2400m score whenever the input changes
             raw = (input.combat_speedmars() or "").strip()
             ok, val = _parse_time_to_seconds(raw)
             if not ok:
                 combat_score_speedmars_val.set("")
                 return
             try:
-
-                if val < 2400:
-                    score = "Passes"
-                else:
-                    score = "Fails"
-
+                score = "Passes" if val < 2400 else "Fails"
             except Exception:
                 score = ""
             combat_score_speedmars_val.set(score)
-
 
         @reactive.calc
         async def sessions_combat__data():
@@ -277,91 +234,28 @@ class CombatPage:
             if not session_id:
                 return pd.DataFrame()
             try:
-                combat_tests = await self.db.get_all_combat_test(int(session_id))
-                # Create a list of dictionaries with values directly from the database objects
-                data = []
-                for r in combat_tests:
-                    selected_military = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
-                    if selected_military is None:
-                        continue
-
-                    total = r.rope_passed and r.obstacle_passed and r.running_time <= 7200
-
-                    data.append({
-                        "ID": r.id,
-                        "Serial": r.serial_number,
-                        "speedmarsTime": _format_seconds(r.running_time),
-                        "Speedmars Score": f"{r.running_time <= 7200}",
-                        "ObstacleCourse": _is_passed(r.obstacle_passed),
-                        "RobeCourse": _is_passed(r.rope_passed),
-
-                        "Totale Score": f"{_is_passed(total)}",
-                    })
-                # Create DataFrame after collecting all data
-                return pd.DataFrame(data)
+                return await self.controller.list_combat_tests_df(int(session_id))
             except Exception as e:
-                print(f"Error fetching PHEF data: {e}")
+                print(f"Error fetching Combat data: {e}")
                 return pd.DataFrame()
-
-        def _is_passed(passed:bool)->str:
-            if passed:
-                return "Passed"
-            else:
-                return "Failed"
-
-        def _decorate_scores_for_grid(df):
-            def _total_num(s):
-                try:
-                    # Expecting format like "NN/100"
-                    return float(str(s).split("/")[0])
-                except Exception:
-                    return None
-
-            df2 = df.copy()
-
-            # Totale Score: prefix with red/green indicator
-            if "Totale Score" in df2.columns:
-                def _fmt_total(s):
-                    n = _total_num(s)
-                    if n is None:
-                        return s
-                    return f"🟥 {s}" if n < 50 else f"🟩 {s}"
-
-                df2["Totale Score"] = df2["Totale Score"].apply(_fmt_total)
-
-            # Per-exercise scores (<10 red else green)
-            score_cols = ["Running Score", "Sidebridge R Score", "Sidebridge L Score"]
-            for col in score_cols:
-                if col in df2.columns:
-                    def _fmt_score(v):
-                        n = _total_num(v)
-                        if n is None:
-                            return v
-                        return f"🟥 {v}" if n < 10 else f"🟩 {v}"
-
-                    df2[col] = df2[col].apply(_fmt_score)
-
-            return df2
 
         @output
         @render.data_frame
         async def combat_grid():
             df = await sessions_combat__data()
-            df = _decorate_scores_for_grid(df)
+            df = self.controller.decorate_grid(df)
             return render.DataGrid(
                 df,
                 filters=False,
                 selection_mode="rows",
             )
 
-        # Single async initializer to avoid resetting choices
         @reactive.Effect
         async def _init():
             await _refresh_session_choices()
 
         @reactive.Effect
         async def _on_session_change():
-            # Track selection changes
             val = (input.combat_session_id() or "").strip()
             selected_session_id.set(val)
             if val:
@@ -380,28 +274,18 @@ class CombatPage:
                 if row_idx < 0 or row_idx >= len(df):
                     status.set(self.NO_SELECTION_MESSAGE)
                     return
-
                 row = df.iloc[row_idx]
                 selected_combat_id.set(row["ID"] or "")
                 selected_session_id.set(input.combat_session_id() or "")
                 serial = str(row.get("Serial", "") or "")
-                self.selected_military = await self.be_mil_service.get_be_mil_by_id(serial)
+                self.selected_military = await self.controller.search_military(serial)
                 oc = True if row.get("ObstacleCourse", None) == "Passed"  else False
                 rc = True if row.get("RobeCourse") == "Passed" else False
                 run_t = row.get("speedmarsTime", None)
-
-                # Format to mm:ss where possible
-                def fmt(x):
-                    try:
-                        return _format_seconds(int(x))
-                    except Exception:
-                        return ""
-
                 ui.update_text("combat_serialnr", value=serial)
                 ui.update_checkbox("combat_obstacle", value=oc)
                 ui.update_checkbox("combat_robe", value=rc)
                 ui.update_text("combat_speedmars", value=str(run_t))
-
                 status.set(f"Selected Combat Test: {serial}")
             except Exception as e:
                 status.set(f"Selection error: {e}")
@@ -414,75 +298,25 @@ class CombatPage:
             if not ok:
                 status.set(res)
                 return
-
             record = {
                 "id": data["session_id"],
                 "serialnr": data["serialnr"],
-
                 "combat_obstacle": res["combat_obstacle"],
                 "combat_robe": res["combat_robe"],
                 "combat_speedmars": res["combat_speedmars"],
             }
-            cp = CombatTestParatrooper()
-            cp.test_session_id = int(record["id"])
-            cp.serial_number = record["serialnr"]
-            cp.running_time = record["combat_speedmars"]
-            cp.rope_passed = record["combat_robe"]
-            cp.obstacle_passed = record["combat_obstacle"]
-
-            added_combat = await self.db.add_fitness_test_to_TestSession(int(record["id"]), cp)
-            if not added_combat:
-                status.set(f"Failed to add Combat test for {cp.serial_number} in session {str(cp.test_session_id)}.")
+            added = await self.controller.add_combat(int(record["id"]), record)
+            if not added:
+                status.set(f"Failed to add Combat test for {record['serialnr']} in session {str(record['id'])}.")
                 return
-            body = f"""
-            <table border="1" style="border-collapse: collapse; width: 100%;">
-                <thead>
-                    <tr style="background-color: #f2f2f2;">
-                        <th style="padding: 8px; text-align: left;">Test Component</th>
-                        <th style="padding: 8px; text-align: left;">Result</th>
-                        <th style="padding: 8px; text-align: left;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 8px;">Obstacle Course</td>
-                        <td style="padding: 8px;">{str(record['combat_obstacle'])}</td>
-                        <td style="padding: 8px; color: {'green' if record['combat_obstacle'] else 'red'}">
-                            {'PASSED' if record['combat_obstacle'] else 'FAILED'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px;">Rope Course</td>
-                        <td style="padding: 8px;">{str(record['combat_robe'])}</td>
-                        <td style="padding: 8px; color: {'green' if record['combat_robe'] else 'red'}">
-                            {'PASSED' if record['combat_robe'] else 'FAILED'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px;">Speed March</td>
-                        <td style="padding: 8px;">{_format_seconds(record['combat_speedmars'])}</td>
-                        <td style="padding: 8px; color: {'green' if record['combat_speedmars'] <= 2400 else 'red'}">
-                            {'PASSED' if record['combat_speedmars'] <= 2400 else 'FAILED'}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px; font-weight: bold;">Overall Result</td>
-                        <td style="padding: 8px;"></td>
-                        <td style="padding: 8px; color: {'green' if (record['combat_obstacle'] and record['combat_robe'] and record['combat_speedmars'] <= 2400) else 'red'}; font-weight: bold">
-                            {'PASSED' if (record['combat_obstacle'] and record['combat_robe'] and record['combat_speedmars'] <= 2400) else 'FAILED'}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            """
-            await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
+            body = self.controller.build_email_body(record)
+            if self.selected_military and getattr(self.selected_military, "mail", None):
+                await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])
-
-            status.set(f"Added Combat test for {cp.serial_number} in session {str(cp.test_session_id)}.")
+            status.set(f"Added Combat test for {record['serialnr']} in session {str(record['id'])}.")
             _clear_form()
 
-        # Helper to build a PhefTest from merged, validated input
         def _build_combat_from_form(payload: dict) -> CombatTestParatrooper:
             cp = CombatTestParatrooper()
             cp.id = selected_combat_id.get()
@@ -491,7 +325,6 @@ class CombatPage:
             cp.running_time = payload["combat_speedmars"]
             cp.obstacle_passed = payload["combat_obstacle"]
             cp.rope_passed = payload["combat_robe"]
-
             return cp
 
         @reactive.Effect
@@ -502,21 +335,16 @@ class CombatPage:
             if not ok:
                 status.set(res)
                 return
-
-            # Merge raw data (for ids/text) with validated/normalized values
             payload = {**data, **res}
-            combat:CombatTestParatrooper = _build_combat_from_form(payload)
-
-            updated_combat:CombatTestParatrooper = await self.db.update_fitness_test(int(combat.id), combat)
-            if not updated_combat:
+            updated = await self.controller.update_combat(int(selected_combat_id.get()), payload)
+            if not updated:
                 status.set(
-                    f"Failed to update Combat test for {combat.serial_number} in session {str(combat.test_session_id)}."
+                    f"Failed to update Combat test for {payload['serialnr']} in session {str(payload['session_id'])}."
                 )
                 return
-
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(
-                f"Updated Combat test for {combat.serial_number} in session {str(combat.test_session_id)}."
+                f"Updated Combat test for {payload['serialnr']} in session {str(payload['session_id'])}."
             )
             _clear_form()
 
@@ -528,9 +356,8 @@ class CombatPage:
             if not sel or not sel_session_id:
                 status.set("Select a row to delete.")
                 return
-            del_combat = await self.db.delete_fitness_test_from_test_session(int(sel_session_id),
-                                                                           int(selected_combat_id.get()))
-            if not del_combat:
+            ok = await self.controller.delete_combat(int(sel_session_id), int(selected_combat_id.get()))
+            if not ok:
                 status.set(f"Failed to delete Combat test for record ID {sel[0]}.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             try:
@@ -546,8 +373,6 @@ class CombatPage:
         def _on_clear():
             _clear_form()
             status.set("Form cleared.")
-
-
 # Public API: keep same signatures
 _page = CombatPage(DBService())
 

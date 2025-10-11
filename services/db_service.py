@@ -179,6 +179,11 @@ class DBService(metaclass=Singleton):
             self.__logger.error(f"Database error adding user {user.username}: {str(e)}")
             return None
 
+    async def user_mail_exist(self,mail:str)->bool:
+        query = select(User).where(User.email==mail)
+        results = await self.fetch_and_log(query, "user")
+        return len(results)>0
+
     async def get_user_by_username(self, username: str) -> Optional[User]:
         """
         Fetches a user from the database by their username.

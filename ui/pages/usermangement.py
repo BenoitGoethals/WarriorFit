@@ -1,29 +1,25 @@
-from shiny import ui, render, reactive
+# Python
+from __future__ import annotations
+
+from typing import Optional
+
 import pandas as pd
+from shiny import ui, render, reactive
 
-
-from data.db.db_model import User,Role
-from security.auth_service import Auth
 from services.db_service import DBService
-# ... existing code ...
+from ui.controllers.usermanagement_controller import UserManagementController, UserForm
+
 
 class UserManagementPage:
     COLUMN_SERIAL = "Serial"
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def __init__(self) -> None:
-        self.db_service = DBService("ui/config/config.yml")
+    def __init__(self, db: Optional[DBService] = None) -> None:
+        self.controller = UserManagementController(db or DBService())
         self.status = reactive.Value("Ready.")
         self.refresh_tick = reactive.Value(0)
         self.selected_serial = reactive.Value(None)
         self.selected_id = reactive.Value(None)
-
-    @staticmethod
-    def _get_role_choices():
-        try:
-            return [r.value for r in Role]
-        except Exception:
-            return [str(r) for r in Role]
 
     def get_ui(self):
         return ui.nav_panel(
@@ -45,7 +41,7 @@ class UserManagementPage:
                     ui.input_select(
                         "um_role",
                         "Role",
-                        choices=self._get_role_choices()
+                        choices=self.controller.role_choices(),
                     ),
                     ui.br(),
                     ui.layout_columns(
@@ -56,7 +52,6 @@ class UserManagementPage:
                     ),
                     ui.br(),
                     ui.output_text("um_status"),
-
                     ui.output_text("selected_user"),
                     full_screen=False,
                 ),
@@ -65,42 +60,14 @@ class UserManagementPage:
             ),
         )
 
-    def _key(self, u: dict) -> str:
-        return u.get("serial", "")
-
-    async def _validate_user(self, u: dict, is_update: bool = False, current_serial: str | None = None):
-        required_fields = ["serial", "username", "password", "email", "role"]
-        for f in required_fields:
-            if not (u.get(f) or "").strip():
-                return False, f"Field '{f}' is required."
-        email = u["email"].strip()
-        if "@" not in email or "." not in email.split("@")[-1]:
-            return False, "Invalid email address."
-        serial = u["serial"].strip()
-        existing_serials = await self.db_service.serial_exists(serial)
-        if is_update:
-            if serial != (current_serial or "") and existing_serials:
-                return False, f"Serial '{serial}' already exists."
-        else:
-            if existing_serials:
-                return False, f"Serial '{serial}' already exists."
-        return True, "OK"
-
-    async def _refresh_select_choices(self, session):
-        opts = {u.serial_number: f'{u.serial_number} — {u.username} {u.email}' for u in await self.db_service.get_all_users()}
-        session.send_input_message(
-            "um_select_serial",
-            {"choices": opts, "selected": None},
+    def _read_form(self, input) -> UserForm:
+        return UserForm(
+            serial=(input.um_serial() or "").strip(),
+            username=(input.um_username() or "").strip(),
+            password=(input.um_password() or "").strip(),
+            email=(input.um_email() or "").strip(),
+            role=(input.um_role() or "").strip(),
         )
-
-    def _read_form(self, input):
-        return {
-            "serial": (input.um_serial() or "").strip(),
-            "username": (input.um_username() or "").strip(),
-            "password": (input.um_password() or "").strip(),
-            "email": (input.um_email() or "").strip(),
-            "role": (input.um_role() or "").strip(),
-        }
 
     def _write_form(self, session, u: dict):
         session.send_input_message("um_serial", {"value": u.get("serial", "")})
@@ -110,13 +77,11 @@ class UserManagementPage:
         session.send_input_message("um_role", {"value": u.get("role", "")})
 
     def _clear_form(self, session):
-        self.selected_serial = reactive.Value(None)
-        self.selected_id = reactive.Value(None)
+        self.selected_serial.set(None)
+        self.selected_id.set(None)
         self._write_form(session, {"serial": "", "username": "", "password": "", "email": "", "role": ""})
 
     def server(self, input, output, session):
-        users = reactive.Value(self.db_service.get_all_users())
-
         @output
         @render.text
         def um_status():
@@ -124,34 +89,23 @@ class UserManagementPage:
 
         @reactive.calc
         async def users_list():
-            users_list_pd = pd.DataFrame([{
-                self.COLUMN_SERIAL: u.serial_number,
-                'id' : u.id,
-                'Username': u.username,
-                'Email': u.email,
-                'Role': str(u.role),
-                'Active': str(u.is_active),
-                'Password':  u.password_hash,
-                'Created': str(u.created_at.date())
-            } for u in await self.db_service.get_all_users()])
             _ = self.refresh_tick.get()
-            return users_list_pd
+            return await self.controller.list_users_df()
 
         @output
         @render.data_frame
         async def um_grid():
-            df = await users_list()          
-            df = df.drop(columns=['Password','id'])
-            return render.DataGrid(
-                df,
-                filters=True,
-                selection_mode="rows",
-            )
+            df = await users_list()
+            # Hide sensitive/internal columns
+            to_drop = [c for c in ["Password", "ID"] if c in df.columns]
+            if to_drop:
+                df = df.drop(columns=to_drop)
+            return render.DataGrid(df, filters=True, selection_mode="rows")
 
         @output
         @render.text
         async def selected_user():
-            sel = input.um_grid_selected_rows()  # list of row indices
+            sel = input.um_grid_selected_rows()
             if not sel:
                 return self.NO_SELECTION_MESSAGE
             row_idx = sel[0]
@@ -161,63 +115,55 @@ class UserManagementPage:
             row = df.iloc[row_idx]
             serial = row[self.COLUMN_SERIAL]
             self.selected_serial.set(serial)
-            self.selected_id.set(row["id"])
+            self.selected_id.set(row.get("ID"))
             self.status.set(f"Selected user '{serial}'.")
-            self._write_form(session, {"serial": row[self.COLUMN_SERIAL], "username": row["Username"], "password": row["Password"], "email": row["Email"], "role":row["Role"]})
+            # Pre-fill form (note: we do not reveal real password; keep hashed in df if needed)
+            self._write_form(
+                session,
+                {
+                    "serial": row[self.COLUMN_SERIAL],
+                    "username": row.get("Username", ""),
+                    "password": "",  # do not pre-fill password for security
+                    "email": row.get("Email", ""),
+                    "role": row.get("Role", ""),
+                },
+            )
             return serial
-
-        @reactive.Effect
-        async def _init_choices():
-            await self._refresh_select_choices(session)
 
         @reactive.Effect
         @reactive.event(input.um_create_btn)
         async def _on_create():
-            new_user = self._read_form(input)
-            ok, msg = await self._validate_user(new_user, is_update=False)
+            form = self._read_form(input)
+            ok, msg = await self.controller.validate(form, is_update=False)
             if not ok:
                 self.status.set(msg)
                 return
-            add_user = User()
-            add_user.serial_number = new_user["serial"]
-            add_user.username = new_user["username"]
-            add_user.password_hash = Auth.hash_password(new_user["password"])
-            add_user.email = new_user["email"]
-            add_user.role = new_user["role"]
-            add_user.is_active = True
-            ret_user = await self.db_service.add_user(add_user)
-            if ret_user:
-                self.status.set(f"Created user '{new_user['serial']}'.")
+            created = await self.controller.create_user(form)
+            if created:
+                self.status.set(f"Created user '{form.serial}'.")
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
-                self.status.set(f"Failed to create user '{new_user['serial']}'.")
+                self.status.set(f"Failed to create user '{form.serial}'.")
 
         @reactive.Effect
         @reactive.event(input.um_update_btn)
         async def _on_update():
-
-            updated = self._read_form(input)
-            ok, msg = await self._validate_user(updated, is_update=True, current_serial=updated["serial"]) # type: ignore
-            if not ok:
-                self.status.set(msg)  # type: ignore
+            if not self.selected_id.get():
+                self.status.set("Select a user to update.")
                 return
-            user= User()
-            user.id = self.selected_id.get()
-            user.serial_number = updated["serial"]
-            user.username = updated["username"]
-            user.password_hash = Auth.hash_password(updated["password"])
-            user.email = updated["email"]
-            user.role = updated["role"]
-            updated=await self.db_service.update_user(user.id,user)
+            form = self._read_form(input)
+            ok, msg = await self.controller.validate(form, is_update=True, current_serial=form.serial)
+            if not ok:
+                self.status.set(msg)
+                return
+            updated = await self.controller.update_user(int(self.selected_id.get()), form)
             if not updated:
                 self.status.set("Failed to update user.")
                 return
-            self.status.set(f"Updated user '{user.serial_number}'.")
+            self.status.set(f"Updated user '{form.serial}'.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            self.selected_serial = reactive.Value(None)
             self._clear_form(session)
-
 
         @reactive.Effect
         @reactive.event(input.um_delete_btn)
@@ -226,7 +172,7 @@ class UserManagementPage:
             if not sel_serial:
                 self.status.set("Select a user to delete.")
                 return
-            deleted = await self.db_service.delete_user_by_serial(sel_serial)
+            deleted = await self.controller.delete_user_by_serial(sel_serial)
             if not deleted:
                 self.status.set(f"No user found with serial '{sel_serial}'.")
                 return
@@ -235,31 +181,19 @@ class UserManagementPage:
             self.selected_serial.set(None)
 
         @reactive.Effect
-        @reactive.event(input.um_load_btn)
-        def _on_load():
-            sel = input.um_select_serial()
-            if not sel:
-                self.status.set("Select a user to load.")
-                return
-            current = users.get()
-            user = next((u for u in current if self._key(u) == sel), None)
-            if not user:
-                self.status.set("Selected user not found.")
-                return
-            self._write_form(session, user)
-            self.status.set(f"Loaded user '{sel}' into form.")
-
-        @reactive.Effect
         @reactive.event(input.um_clear_btn)
         def _on_clear():
             self._clear_form(session)
             self.status.set("Form cleared.")
 
-# Public API preserved for existing imports/usages
-_page = UserManagementPage()
+
+# Public API
+_page = UserManagementPage(DBService())
+
 
 def get_ui():
     return _page.get_ui()
 
+
 def server(input, output, session):
-    return _page.server(input, output, session)
+    _page.server(input, output, session)

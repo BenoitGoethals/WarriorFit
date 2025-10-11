@@ -1,17 +1,16 @@
-from typing import List, Optional, Dict, Any
+import datetime
+from typing import Optional, Dict, Any, List
 
-from shiny import ui, render, reactive
+import pandas as pd
+from shiny import reactive, ui, render
 
 from config.appliccation_config import ApplicationConfig
-from data.db.db_model import TestSession,Role
-
-import datetime
-import pandas as pd
-
+from core.role import Role
 from core.type_fitness_test import TypeFitnessTest
 from services.be_mil_service import BEMILService
 from services.db_service import DBService
 from services.mail_service import MailService
+from ui.controllers.session_controller import SessionsController
 
 
 class SessionsPage:
@@ -28,6 +27,8 @@ class SessionsPage:
         self.selected_id = reactive.Value(None)
         # Hold the currently selected row (as a dict) for reuse by update/delete
         self.selected_row: Optional[Dict[str, Any]] = None
+        # Controller
+        self.controller = SessionsController(self.db_service, self.be_mil_service)
 
     def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
         # Ensure required fields and valid type
@@ -106,8 +107,7 @@ class SessionsPage:
         status = reactive.Value("Ready.")
 
         async def all_pti() -> List[str]:
-            pts = await self.db_service.get_all_pti()
-            return [p.serial_number for p in pts]
+            return await self.controller.get_all_pti_serials()
 
         # Populate the Serial Number select once the page/server mounts
         async def _populate_pti_choices():
@@ -124,7 +124,7 @@ class SessionsPage:
             await _populate_pti_choices()
 
         async def _load_initial():
-            items = await self.db_service.get_all_test_sessions()
+            items = await self.controller.list_sessions()
 
             def _to_dict_session(r: Any) -> Dict[str, Any]:
                 return {
@@ -193,8 +193,6 @@ class SessionsPage:
             session.send_input_message("se_executed", {"value": bool(rec.get("executed", False))})
             session.send_input_message("se_description", {"value": rec.get("description", "") or ""})
 
-
-
         async def _clear_form():
             # Refresh PTI choices and reset the form fields
             await _populate_pti_choices()
@@ -225,21 +223,7 @@ class SessionsPage:
         async def session_list():
             # Make this calc depend on refresh_tick so it re-runs after add/update/delete
             _ = self.refresh_tick.get()
-            items = await self.db_service.get_all_test_sessions()
-            df = pd.DataFrame(
-                [
-                    {
-                        "ID": r.id,
-                        "Type": str(r.type_test.name),
-                        "Start": str(r.datetime_start),
-                        "Description": r.description,
-                        "Serial PTI": r.serial_number_pti,
-                        "Executed": "Yes" if r.executed else "No",
-                    }
-                    for r in items
-                ]
-            )
-            return df
+            return await self.controller.list_sessions_df()
 
         @output
         @render.data_frame
@@ -306,26 +290,12 @@ class SessionsPage:
             if not ok:
                 status.set(msg)
                 return
-            test_session = TestSession()
-            # Map type string to Enum; fallback to default if unknown
             try:
-                enum_type = getattr(TypeFitnessTest, str(data["type_test"]).upper())
-            except Exception:
-                enum_type = TypeFitnessTest.PHEF
-
-            test_session.serial_number_pti = data["serial_number_pti"]
-            test_session.datetime_start = data["datetime_start"]
-            test_session.executed = bool(data["executed"])
-            test_session.description = data["description"]
-            test_session.type_test = enum_type
-
-            try:
-                added = await self.db_service.add_test_session(test_session)
+                added = await self.controller.add_session(data)
                 if not added:
                     status.set("Failed to add session.")
                     return
                 self.refresh_tick = reactive.Value(0)
-                #render.DataGrid(await session_list(),selection_mode="rows")
                 next_id.set(next_id.get() + 1)
                 sessions.set(
                     sessions.get() + [
@@ -339,33 +309,27 @@ class SessionsPage:
                     ]
                 )
                 status.set("Session added successfully.")
-                await self._send_mail_bulk(body= _build_session_added_html(test_session),subject="New Fitness Test Session Added",
-                                           invite=True, start_dt=added.datetime_start,
-                                           end_dt=added.datetime_start + datetime.timedelta(hours=2),
-                                           coach=added.serial_number_pti)
+                try:
+                    recipients = await self.controller.recipients_for_unit()
+                    if recipients:
+                        html = self.controller.build_added_html(added)
+                        self.controller.send_html(
+                            subject="New Fitness Test Session Added",
+                            html_body=html,
+                            to=recipients,
+                            invite=True,
+                            start_dt=added.datetime_start,
+                            end_dt=added.datetime_start + datetime.timedelta(hours=2),
+                            organizer_name=added.serial_number_pti,
+                        )
+                except Exception as e:
+                    print(f"Error sending email: {str(e)}")
             except Exception as e:
                 status.set(f"Error adding session: {str(e)}")
                 return
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_id.set(None)
             await _clear_form()
-
-        def _build_session_added_html(ts: TestSession) -> str:
-            # Extracted for readability and reusability
-            status_text = "Executed" if ts.executed else "Planned"
-            dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
-            desc = ts.description or "No description provided"
-            return f"""
-                               <h2>New Fitness Test Session Added</h2>
-                               <div style='background-color: #f5f5f5; padding: 20px; border-radius: 5px;'>                                 
-                                   <p><strong>Type:</strong> {ts.type_test.name}</p>
-                                   <p><strong>Date & Time:</strong> {dt_str}</p>
-                                   <p><strong>PTI Serial Number:</strong> {ts.serial_number_pti}</p>
-                                   <p><strong>Status:</strong> {status_text}</p>
-                                   <p><strong>Description:</strong> {desc}</p>
-                               </div>
-                               <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
-                           """
 
         @reactive.Effect
         @reactive.event(input.se_load_btn)
@@ -385,87 +349,59 @@ class SessionsPage:
         @reactive.Effect
         @reactive.event(input.se_update_btn)
         async def _on_update():
-            # Use the tracked selected row stored by selected()
             sel_row = self.selected_row
             if not sel_row or not sel_row.get("ID"):
                 status.set("Select a session to update.")
                 return
             sel_id = int(sel_row["ID"])
-            data_form = _read_form()
-            ok, msg = self._validate(data_form)
+            payload = _read_form()
+            ok, msg = self._validate(payload)
             if not ok:
                 status.set(msg)
                 return
-            data = TestSession(type_test=data_form["type_test"],
-                               serial_number_pti=data_form["serial_number_pti"],
-                               datetime_start=data_form["datetime_start"],
-                               executed=bool(data_form["executed"]),
-                               description=data_form["description"],
-                               id=sel_id,
-                               )
-            updated = await self.db_service.update_test_session(data)
-            if not updated:
+            updated_ok = await self.controller.update_session(sel_id, payload)
+            if not updated_ok:
                 status.set("Failed to update session.")
                 return
-            await self._send_mail_bulk(body=_build_session_updated_html(data),
-                                       subject="update Fitness Test Session updated")
+            try:
+                # Build a TestSession-like object for email content preview
+                ts = await self.controller.get_session_by_id(sel_id)
+                if ts:
+                    recipients = await self.controller.recipients_for_unit()
+                    if recipients:
+                        html = self.controller.build_updated_html(ts)
+                        self.controller.send_html(subject="update Fitness Test Session updated", html_body=html, to=recipients)
+            except Exception as e:
+                print(f"Error sending email: {str(e)}")
             status.set(f"Updated session #{sel_id}.")
-            # Bump refresh tick to trigger session_list and re-render se_grid
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-
-        def _build_session_updated_html(ts: TestSession) -> str:
-            # Extracted for readability and reusability
-            status_text = "Executed" if ts.executed else "Planned"
-            dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
-            desc = ts.description or "No description provided"
-            return f"""
-                                          <h2>New Fitness Test Session Update</h2>
-                                          <div style='background-color: #f5f5f5; padding: 20px; border-radius: 5px;'>                                 
-                                              <p><strong>Type:</strong> {ts.type_test}</p>
-                                              <p><strong>Date & Time:</strong> {dt_str}</p>
-                                              <p><strong>PTI Serial Number:</strong> {ts.serial_number_pti}</p>
-                                              <p><strong>Status:</strong> {status_text}</p>
-                                              <p><strong>Description:</strong> {desc}</p>
-                                          </div>
-                                          <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
-                                      """
 
         @reactive.Effect
         @reactive.event(input.se_delete_btn)
         async def _on_delete():
-            # Use the tracked selected row stored by selected()
             selected_id = self.selected_id.get()
             if not selected_id:
                 status.set("Select a session to delete.")
                 return
-            session_delete:TestSession= await self.db_service.get_test_session_by_id(selected_id)
-            status_deleted = await self.db_service.delete_test_session(selected_id)
-            if not status_deleted:
+            ts = await self.controller.get_session_by_id(int(selected_id))
+            ok = await self.controller.delete_session(int(selected_id))
+            if not ok:
                 status.set("Failed to delete session.")
                 return
-            await self._send_mail_bulk(body=_build_session_delete_html(session_delete),
-                                       subject="Deleted Fitness Test Session deleted")
+            try:
+                if ts:
+                    recipients = await self.controller.recipients_for_unit()
+                    if recipients:
+                        html = self.controller.build_deleted_html(ts)
+                        self.controller.send_html(subject="Deleted Fitness Test Session deleted", html_body=html, to=recipients)
+            except Exception as e:
+                print(f"Error sending email: {str(e)}")
             status.set(f"Deleted session #{selected_id}.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_id.set(None)
             await _refresh_select()
             await _clear_form()
 
-        def _build_session_delete_html(ts:TestSession)->str:
-            status_text = "Executed" if ts.executed else "Planned"
-            dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
-            desc = ts.description or "No description provided"
-            return f"""
-                                                    <h2>New Fitness Test Session Deleted</h2>
-                                                    <div style='background-color: #f5f5f5; padding: 20px; border-radius: 5px;'>                                 
-                                                        <p><strong>Type:</strong> {ts.type_test.name}</p>
-                                                        <p><strong>Date & Time:</strong> {dt_str}</p>
-                                                        <p><strong>PTI Serial Number:</strong> {ts.serial_number_pti}</p>
-                                                        <p><strong>Status:</strong> {status_text}</p>
-                                                        <p><strong>Description:</strong> {desc}</p>
-                                                    </div>
-                                                    <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
-                                                """
         @reactive.Effect
         @reactive.event(input.se_clear_btn)
         async def _on_clear():
@@ -521,4 +457,3 @@ def server(input, output, session):
 
 def get_sessions_store():
     return [None]
-

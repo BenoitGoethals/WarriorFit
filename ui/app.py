@@ -2,7 +2,6 @@ import logging
 from typing import Any, Optional
 from shiny import App, ui, render
 from data.db.db_model import Role
-from military_api_rest.db_service_service_men import DbServiceServiceMen
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show
@@ -173,7 +172,6 @@ class FitnessWarriorApp:
             elif role is Role.PLANNER:
                 nav_items.append(_safe_panel(dashboard.get_ui()))
                 nav_items.append(_safe_panel((sessions.get_ui())))
-
 
             nav_items.append(ui.nav_spacer())
             nav_items.append(

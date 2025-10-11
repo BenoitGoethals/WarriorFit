@@ -1,15 +1,20 @@
-from shiny import ui, render, reactive
-import pandas as pd
+# Python
+from __future__ import annotations
 
-from logic.data_collector import DataCollector
+from typing import Optional
+
+import pandas as pd
+from shiny import ui, render, reactive
+
 from services.db_service import DBService
 from services.be_mil_service import BEMILService
+from ui.controllers.ind_test_show_controller import IndTestShowController
 
 
 class IndTestShowPage:
-    def __init__(self, db: DBService):
-        self.db = db
-        self.be_mil = BEMILService()
+    def __init__(self, db: Optional[DBService] = None, be_mil_service: Optional[BEMILService] = None):
+        self.db = db or DBService()
+        self.controller = IndTestShowController(be_mil_service or BEMILService())
         self.refresh_tick = reactive.Value(0)
         self.serial = reactive.Value("")
         self.mil_info = reactive.Value("No serviceman selected.")
@@ -53,13 +58,15 @@ class IndTestShowPage:
                 self.tests_df.set(pd.DataFrame())
                 return
             try:
-                mil = await self.be_mil.get_be_mil_by_id(s)
+                mil = await self.controller.find_military(s)
+                if not mil:
+                    raise ValueError("not found")
                 self.serial.set(s)
                 self.mil_info.set(f"{mil.rank} {mil.first_name} {mil.last_name} — {mil.service_number} — {mil.unit}")
 
-                df = await DataCollector().collect_tests_for_serial(s)
-                self.tests_df.set(df)
-                status.set(f"Loaded {len(df)} records." if not df.empty else "No tests found.")
+                df = await self.controller.collect_tests_df(s)
+                self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
+                status.set(f"Loaded {len(self.tests_df.get())} records." if not self.tests_df.get().empty else "No tests found.")
             except Exception:
                 self.serial.set("")
                 self.mil_info.set("Not found.")
@@ -79,17 +86,22 @@ class IndTestShowPage:
         @output
         @render.data_frame
         def ind_grid():
+            df = self.tests_df.get()
+            if df is None or not isinstance(df, pd.DataFrame):
+                df = pd.DataFrame()
             return render.DataGrid(
-                self.tests_df.get(),
+                df,
                 filters=False,
                 selection_mode="none",
+                width="100%",
             )
-
 
 _page = IndTestShowPage(DBService())
 
+
 def get_ui():
     return _page.get_ui()
+
 
 def server(input, output, session):
     _page.server(input, output, session)

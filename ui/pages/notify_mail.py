@@ -3,11 +3,9 @@ from logic.singleton import Singleton
 from services.be_mil_service import BEMILService
 from services.mail_service import MailService
 
-
 class NotifyMail(metaclass=Singleton):
 
     def __init__(self, ):
-
         self.be_mil_service = BEMILService()
 
     async def send_mail(self, *, body: str, subject: str,to:str):
