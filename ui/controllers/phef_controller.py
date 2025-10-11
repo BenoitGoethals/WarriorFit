@@ -127,12 +127,19 @@ class PhefController:
 
         out = df.copy()
         if "Totale Score" in out.columns:
-            def _fmt_total(s: str):
+            def _fmt_total_row(row: pd.Series) -> str:
+                s = row.get("Totale Score")
+                sr = row.get("Sidebridge R Score")
+                st = row.get("Sidebridge L Score")
+                rtr = row.get("Running Score")
                 n = _num(s, 100.0)
-                if n is None:
+                r = _num(sr, 20.0)
+                t = _num(st, 20.0)
+                rs = _num(rtr, 20.0)
+                if n is None or r is None or t is None or rs is None:
                     return s
-                return f"🟥 {s}" if n < 50 else f"🟩 {s}"
-            out["Totale Score"] = out["Totale Score"].apply(_fmt_total)
+                return f"🟥 {s}" if rs < 10 or (r + t) < 20 else f"🟩 {s}"
+            out["Totale Score"] = out.apply(_fmt_total_row, axis=1)
 
         for col in ["Running Score", "Sidebridge R Score", "Sidebridge L Score"]:
             if col in out.columns:

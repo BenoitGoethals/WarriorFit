@@ -24,7 +24,7 @@ class PhefPage:
     def get_ui(self):
         return ui.nav_panel(
             "PHEF Tests",
-            ui.h2("🧪 PHEF Tests"),
+            ui.h2("🧪 PHEF Tests "),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -78,7 +78,7 @@ class PhefPage:
                     ),
                 ),
                 ui.card(
-                    ui.card_header("PHEF Tests"),
+                    ui.card_header("PHEF Tests (You must pass running and side-bridge tests to have a pass on the PHEF test)"),
                     ui.output_data_frame("ph_grid"),
                     ui.br(),
                     ui.layout_columns(
