@@ -123,7 +123,7 @@ class DashboardOwnUnitController:
 
     async def pass_fail_bar_html(self) -> str:
         phef_tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
-        phef_pass = sum(1 for t in phef_tests if (await self.phef_total_score(t)) >= 50)
+        phef_pass = len([t for t in phef_tests if await self.phef_total_score(t) >= 50])
         phef_fail = len(phef_tests) - phef_pass
 
         combat_tests: List[CombatTestParatrooper] = await self._tests_for_unit(TypeFitnessTest.COMBAT)

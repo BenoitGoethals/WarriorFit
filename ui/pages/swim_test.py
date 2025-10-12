@@ -33,7 +33,7 @@ class SwimTestPage:
                     ),
                     ui.card(
                         ui.input_text("swim_serialnr", "Serial Number"),
-                        ui.input_action_button("swim_search", "search", width="150px"),
+                        ui.input_action_button("swim_search", "Conform Serial", width="150px"),
                         ui.output_text("swim_miltary"),
                         ui.layout_columns(
                             ui.input_checkbox("swim_passed", "Swimming Test Passed"),

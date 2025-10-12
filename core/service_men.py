@@ -29,11 +29,16 @@ class ServiceMen:
         today = datetime.date.today()
         return today.year - d.year - ((today.month, today.day) < (d.month, d.day))
 
-    def age_from_birthdate_and_session_date(self,date_session:datetime.date) -> int:
-        today = datetime.date.today()
-        return today.year - date_session.year - ((today.month, today.day) < (date_session.month, date_session.day))
 
+    def age_from_birthdate_and_session_date(self, date_session: datetime.date) -> int:
+        if isinstance(self.birthdate, str):
+            birthdate = datetime.datetime.strptime(self.birthdate, "%Y-%m-%d").date()
+        else:
+            birthdate = self.birthdate.date()
+
+        return date_session.year - birthdate.year - (
+                    (date_session.month, date_session.day) < (birthdate.month, birthdate.day))
     def __str__(self):
         return f"{self.first_name} {self.last_name}  {self.mail}"
     def __repr__(self):
-        return f"{self.first_name} {self.last_name}  {self.mail}"
+       return f"{self.first_name} {self.last_name}  {self.mail}"

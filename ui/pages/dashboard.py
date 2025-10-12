@@ -73,6 +73,7 @@ class DashboardPage:
                 ui.card(
                     ui.card_header("Recent Test Sessions"),
                     ui.output_data_frame("recent_sessions_table"),
+
                     full_screen=True,
                 ),
                 ui.card(

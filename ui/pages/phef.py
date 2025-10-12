@@ -34,7 +34,7 @@ class PhefPage:
                     ),
                     ui.card(
                         ui.input_text("ph_serialnr", "Serial Number"),
-                        ui.input_action_button("ph_search", "search", width="150px"),
+                        ui.input_action_button("ph_search", "Conform Serial", width="150px"),
                         ui.output_text("ph_miltary"),
                         ui.layout_columns(
                             ui.input_text(
@@ -142,6 +142,8 @@ class PhefPage:
             if not (input.ph_serialnr() or "").strip():
                 ui.update_action_button("ph_add_btn", disabled=True)
                 ui.update_action_button("ph_update_btn", disabled=True)
+                # Disable inputs via inline JS
+                enable_input_field(True)
                 return
             val = await self.controller.search_military(input.ph_serialnr() or "")
             self.selected_military = val
@@ -151,6 +153,30 @@ class PhefPage:
             military.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             ui.update_action_button("ph_add_btn", disabled=False)
             ui.update_action_button("ph_update_btn", disabled=False)
+            # Enable inputs via inline JS
+            enable_input_field(False)
+
+        @reactive.Effect
+        @reactive.event(input.ph_clear_btn)
+        def clear_form():
+            _clear_form()
+
+
+        def enable_input_field(enable: bool):
+            enable = "false" if not enable else "true"
+            ui.insert_ui(
+                selector="body",
+                where="beforeEnd",
+                ui=ui.tags.script(f"""
+                            (function(){{
+                              const ids = ['ph_run_2400','ph_run_2400_input','ph_side_bridge_r','ph_side_bridge_r_input','ph_side_bridge_l','ph_side_bridge_l_input'];
+                              for (const id of ids) {{
+                                const el = document.getElementById(id);
+                                if (el) el.disabled = {enable};
+                              }}
+                            }})();
+                            """),
+            )
 
         # Status outputs
         @output

@@ -34,7 +34,7 @@ class FunctionalPage:
                     ),
                     ui.card(
                         ui.input_text("functional_serialnr", "Serial Number"),
-                        ui.input_action_button("functional_search", "search", width="150px"),
+                        ui.input_action_button("functional_search", "Conform Serial", width="150px"),
                         ui.output_text("functional_miltary"),
                         ui.layout_columns(
                             ui.input_numeric("functional_push_ups", "Push-ups", value=0, min=0),

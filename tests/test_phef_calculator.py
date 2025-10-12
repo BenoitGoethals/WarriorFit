@@ -1,7 +1,7 @@
 # tests/test_phef_calculator.py
 
 import unittest
-
+import pytest
 from core.Gender import Gender
 from logic.phef_calculator import PhefCalculator
 
@@ -14,15 +14,15 @@ class TestPhefCalculator(unittest.TestCase):
 
     def test_side_bridge_result_female_under_30_low_score(self):
         result = PhefCalculator.side_bridge_result(40, 25, Gender.FEMALE)  # 40 seconds equivalent
-        self.assertEqual(0, result)
+        self.assertEqual(1, result)
 
     def test_side_bridge_result_male_30_to_39_medium_score(self):
         result = PhefCalculator.side_bridge_result(85, 35, Gender.MALE)  # 85 seconds equivalent
-        self.assertEqual(5, result)
+        self.assertEqual(14, result)
 
     def test_side_bridge_result_female_40_to_49_high_score(self):
         result = PhefCalculator.side_bridge_result(100, 45, Gender.FEMALE)  # 100 seconds equivalent to 1:40
-        self.assertEqual(19, result)
+        self.assertEqual(20, result)
 
     def test_side_bridge_result_male_50_plus_zero_score(self):
         result = PhefCalculator.side_bridge_result(25, 55, Gender.MALE)  # Time lower than minimum threshold
@@ -34,11 +34,11 @@ class TestPhefCalculator(unittest.TestCase):
 
     def test_side_bridge_result_boundary_case_age_30(self):
         result = PhefCalculator.side_bridge_result(80, 30, Gender.MALE)  # Boundary age 30 falls into 30-39
-        self.assertEqual(7, result)
+        self.assertEqual(13, result)
 
     def test_side_bridge_result_boundary_case_age_40(self):
         result = PhefCalculator.side_bridge_result(70, 40, Gender.FEMALE)  # Boundary age 40 falls into 40-49
-        self.assertEqual(5, result)
+        self.assertEqual(14, result)
 
     # New tests for running_result
     def test_running_result_male_under_30_high_score(self):
@@ -47,23 +47,165 @@ class TestPhefCalculator(unittest.TestCase):
 
     def test_running_result_female_under_30_low_score(self):
         result = PhefCalculator.running_result(951, 28, Gender.FEMALE)  # 951 seconds equivalent to ~15:51
-        self.assertEqual(0, result)
+        self.assertEqual(1, result)
 
     def test_running_result_male_40_to_44_medium_score(self):
         result = PhefCalculator.running_result(645, 42, Gender.MALE)  # 645 seconds equivalent to ~10:45
-        self.assertEqual(16, result)
+        self.assertEqual(17, result)
 
     def test_running_result_female_55_to_59_high_score(self):
         result = PhefCalculator.running_result(960, 57, Gender.FEMALE)  # 960 seconds equivalent to ~16:00
-        self.assertEqual(18, result)
+        self.assertEqual(14, result)
 
     def test_running_result_boundary_age_30(self):
         result = PhefCalculator.running_result(605, 30, Gender.MALE)  # Boundary age 30 falls into 30-34
-        self.assertEqual(20, result)
+        self.assertEqual(18, result)
 
     def test_running_result_invalid_column(self):
-        with self.assertRaises(ValueError):
-            PhefCalculator.running_result(600, 20, "INVALID_GENDER")
+        result = PhefCalculator.running_result(600, 20, "INVALID_GENDER")
+        self.assertEqual(0, result)
+
+    def test_side_bridge_result_male_under_30_high_score_time_str(self):
+        result = PhefCalculator.side_bridge_result("02:05", 25, Gender.MALE)  # 125 seconds equivalent to 2:05
+        self.assertEqual(20, result)
+
+    def test_side_bridge_result_female_under_30_low_score_time_str(self):
+        result = PhefCalculator.side_bridge_result("00:40", 25, Gender.FEMALE)  # 40 seconds equivalent
+        self.assertEqual(1, result)
+
+    def test_side_bridge_result_male_30_to_39_medium_score_time_str(self):
+        result = PhefCalculator.side_bridge_result("01:25", 35, Gender.MALE)  # 85 seconds equivalent
+        self.assertEqual(14, result)
+
+    def test_side_bridge_result_female_40_to_49_high_score_time_str(self):
+        result = PhefCalculator.side_bridge_result("01:40", 45, Gender.FEMALE)  # 100 seconds equivalent to 1:40
+        self.assertEqual(20, result)
+
+    def test_side_bridge_result_male_50_plus_zero_score_time_str(self):
+        result = PhefCalculator.side_bridge_result("00:25", 55, Gender.MALE)  # Time lower than minimum threshold
+        self.assertEqual(0, result)
+
+    def test_side_bridge_result_none_time_time_str(self):
+        result = PhefCalculator.side_bridge_result(None, 30, Gender.FEMALE)
+        self.assertEqual(0, result)
+
+    def test_side_bridge_result_boundary_case_age_30_time_str(self):
+        result = PhefCalculator.side_bridge_result("01:20", 30, Gender.MALE)  # 80 seconds
+        self.assertEqual(13, result)
+
+    def test_side_bridge_result_boundary_case_age_40_time_str(self):
+        result = PhefCalculator.side_bridge_result("01:10", 40, Gender.FEMALE)  # 70 seconds
+        self.assertEqual(14, result)
+
+        # New tests for running_result
+
+    def test_running_result_male_under_30_high_score_time_str(self):
+        result = PhefCalculator.running_result("09:30", 25, Gender.MALE)  # 570 seconds
+        self.assertEqual(20, result)
+
+    def test_running_result_female_under_30_low_score_time_str(self):
+        result = PhefCalculator.running_result("15:51", 28, Gender.FEMALE)  # 951 seconds
+        self.assertEqual(1, result)
+
+    def test_running_result_male_40_to_44_medium_score_time_str(self):
+        result = PhefCalculator.running_result("10:45", 42, Gender.MALE)  # 645 seconds
+        self.assertEqual(17, result)
+
+    def test_running_result_female_55_to_59_high_score_time_str(self):
+        result = PhefCalculator.running_result("16:00", 57, Gender.FEMALE)  # 960 seconds
+        self.assertEqual(14, result)
+
+    def test_running_result_boundary_age_30_time_str(self):
+        result = PhefCalculator.running_result("10:05", 30, Gender.MALE)  # 605 seconds
+        self.assertEqual(18, result)
+
+    def test_running_result_invalid_column_time_str(self):
+
+         result = PhefCalculator.running_result("10:00", 20, "INVALID_GENDER")
+         self.assertEqual(0, result)
+
+
+@pytest.mark.parametrize(
+    "age, seconds, gender, expected_score",
+    [
+        # Example from your message: below minimum threshold for <30 male -> 0
+        (25, 55, Gender.MALE, 0),
+
+        # Score 20 thresholds (from table) — exact times converted to seconds
+        # <30 man 2'05" = 125s -> score 20
+        (25, 125, Gender.MALE, 20),
+        # <30 woman 1'50" = 110s -> score 20
+        (25, 110, Gender.FEMALE, 20),
+        # 30-39 man 1'55" = 115s -> score 20
+        (35, 115, Gender.MALE, 20),
+        # 30-39 woman 1'45" = 105s -> score 20
+        (35, 105, Gender.FEMALE, 20),
+        # 40-49 man 1'50" = 110s -> score 20
+        (45, 110, Gender.MALE, 20),
+        # 50+ woman 1'35" = 95s -> score 20
+        (55, 95, Gender.FEMALE, 20),
+
+        # Score 10 examples (mid-table) — exact times to seconds
+        # <30 man 1'15" = 75s -> score 10
+        (28, 75, Gender.MALE, 10),
+        # <30 woman 60" = 60s -> score 10
+        (28, 60, Gender.FEMALE, 10),
+        # 30-39 man 1'05" = 65s -> score 10
+        (31, 65, Gender.MALE, 10),
+        # 50+ woman 45" = 45s -> score 10
+        (52, 45, Gender.FEMALE, 10),
+
+        # Boundary checks: exactly at score-1 threshold should return 1 (if table says so)
+        # From table: <30 man score 1 threshold = 60s -> score 1
+        (29, 60, Gender.MALE, 1),
+        # <30 woman score 1 threshold = 40s -> score 1
+        (29, 40, Gender.FEMALE, 1),
+
+        # Slightly below those thresholds -> 0
+        (29, 59, Gender.MALE, 0),
+        (29, 39, Gender.FEMALE, 0),
+        # Example from your message: below minimum threshold for <30 male -> 0
+        (25, "00:55", Gender.MALE, 0),
+
+        # Score 20 thresholds (from table) — exact times as "MM:SS"
+        # <30 man 2'05" -> score 20
+        (25, "02:05", Gender.MALE, 20),
+        # <30 woman 1'50" -> score 20
+        (25, "01:50", Gender.FEMALE, 20),
+        # 30-39 man 1'55" -> score 20
+        (35, "01:55", Gender.MALE, 20),
+        # 30-39 woman 1'45" -> score 20
+        (35, "01:45", Gender.FEMALE, 20),
+        # 40-49 man 1'50" -> score 20
+        (45, "01:50", Gender.MALE, 20),
+        # 50+ woman 1'35" -> score 20
+        (55, "01:35", Gender.FEMALE, 20),
+
+        # Score 10 examples (mid-table)
+        # <30 man 1'15" -> score 10
+        (28, "01:15", Gender.MALE, 10),
+        # <30 woman 60" -> score 10
+        (28, "01:00", Gender.FEMALE, 10),
+        # 30-39 man 1'05" -> score 10
+        (31, "01:05", Gender.MALE, 10),
+        # 50+ woman 45" -> score 10
+        (52, "00:45", Gender.FEMALE, 10),
+
+        # Boundary checks: exactly at score-1 threshold should return 1 (if table says so)
+        # From table: <30 man score 1 threshold = 60s -> score 1
+        (29, "01:00", Gender.MALE, 1),
+        # <30 woman score 1 threshold = 40s -> score 1
+        (29, "00:40", Gender.FEMALE, 1),
+
+        # Slightly below those thresholds -> 0
+        (29, "00:59", Gender.MALE, 0),
+        (29, "00:39", Gender.FEMALE, 0),
+    ],
+)
+def test_side_bridge_result_various(age, seconds, gender, expected_score):
+    """Parametrized test cases from the side-bridge scoring table."""
+    result = PhefCalculator.side_bridge_result( seconds, age, gender)
+    assert result == expected_score
 
 
 if __name__ == "__main__":

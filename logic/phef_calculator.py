@@ -6,7 +6,7 @@ from datetime import date, datetime
 class PhefCalculator:
 
 
-    running_data = pd.DataFrame(
+    _running_data = pd.DataFrame(
         {
             "Score": list(range(20, -1, -1)),
             "<30_m": [
@@ -75,7 +75,7 @@ class PhefCalculator:
             ]
         })
 
-    side_bridge_data = pd.DataFrame({
+    _side_bridge_data = pd.DataFrame({
         "Quotering": list(range(20, -1, -1)),
         "<30_m": ["2:05", "2:00", "1:55", "1:50", "1:45", "1:40", "1:35", "1:30", "1:25", "1:20", "1:15", "1:13",
                   "1:11", "1:10", "1:08", "1:06", "1:05", "1:03", "1:01", "00:60", "00:50"],
@@ -96,8 +96,9 @@ class PhefCalculator:
     }
     )
 
+
     @classmethod
-    def side_bridge_result(cls, side_time: float, age: int, gender: Gender):
+    def side_bridge_result(cls, side_time: float|str, age: int, gender: Gender)->int:
         """
                 Geef tijd (bv. '1'30'), leeftijd (int), gender (Gender) en krijg quoteringscore terug.
                 """
@@ -105,11 +106,17 @@ class PhefCalculator:
 
         if side_time is None:
             return 0
+        elif isinstance(side_time, str):
+            side_time = cls.convert_to_seconds(side_time)
+        elif not isinstance(side_time, (int, float)):
+            raise TypeError(f"Tijd moet een int of float zijn, niet {type(side_time)}")
 
-        if gender == Gender.MALE:
+        if gender == Gender.MALE or gender == "M":
             kolom = "m"
-        else:
+        elif gender == Gender.FEMALE or gender == "F":
             kolom = "v"
+        else:
+            return 0
 
         # leeftijdscategorie bepalen
         if age < 30:
@@ -124,16 +131,16 @@ class PhefCalculator:
         col = f"{age_group}_{kolom}"
 
         # door dataframe lopen en hoogste score vinden waarbij tijd >= grens
-        for i, row in cls.side_bridge_data.iterrows():
+        for i, row in cls._side_bridge_data.iterrows():
             town_time = cls.convert_to_seconds(row[col])
             if side_time >= town_time:
-                return cls.side_bridge_data["Quotering"][i]
+                return cls._side_bridge_data["Quotering"][i]
 
         return 0  # standaard: geen score
 
 
     @classmethod
-    def running_result(cls, running_time: float, age: int, gender: Gender):
+    def running_result(cls, running_time: float|str, age: int, gender: Gender|str)->int:
         """
                Berekent score voor 2400m PHEF-test.
 
@@ -142,11 +149,20 @@ class PhefCalculator:
                :param tijd: Tijd als 'MM:SS'
                :return: Score tussen 0 en 20
                """
-        if gender==Gender.MALE:
-            kolom = "m"
-        else:
-            kolom = "v"
 
+        if gender == Gender.MALE or gender == "M":
+            kolom = "m"
+        elif gender == Gender.FEMALE or gender == "F":
+            kolom = "v"
+        else:
+            return 0
+
+        if running_time is None:
+            return 0
+        elif isinstance(running_time, str):
+            running_time = cls.convert_to_seconds(running_time)
+        elif not isinstance(running_time, (int, float)):
+            raise TypeError(f"Tijd moet een int of float zijn, niet {type(running_time)}")
 
         # Leeftijdscategorie bepalen
         if age < 30:
@@ -166,18 +182,18 @@ class PhefCalculator:
         else:
             kolom = "60+_" + kolom
 
-        if kolom not in cls.running_data.columns:
+        if kolom not in cls._running_data.columns:
             raise ValueError(f"Geen normen beschikbaar voor kolom: {kolom}")
 
-        for i, normtijd in enumerate(cls.running_data[kolom]):
+        for i, normtijd in enumerate(cls._running_data[kolom]):
             if running_time <= cls.convert_to_seconds(normtijd):
-                return cls.running_data["Score"][i]
+                return cls._running_data["Score"][i]
 
         return 0  # trager dan laagste norm
 
 
     @staticmethod
-    def convert_to_seconds(tijd_str):
+    def convert_to_seconds(tijd_str:str):
         """Zet tijd in 'M:SS' formaat om naar seconden."""
         minuten, seconden = map(int, tijd_str.split(':'))
         return minuten * 60 + seconden
@@ -193,3 +209,12 @@ assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20
 
 assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.MALE) == 10
 assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.FEMALE) == 12
+
+assert PhefCalculator.running_result("11:15", 20, Gender.FEMALE) == 18
+assert PhefCalculator.running_result("11:15", 43, Gender.MALE) == 14
+
+assert PhefCalculator.side_bridge_result("1:20", 44, Gender.MALE) == 14
+assert PhefCalculator.side_bridge_result("1:20", 44, Gender.FEMALE) == 16
+
+assert PhefCalculator.side_bridge_result("1:05", 35, Gender.MALE) == 10
+assert PhefCalculator.side_bridge_result("1:05", 35, Gender.FEMALE) == 12

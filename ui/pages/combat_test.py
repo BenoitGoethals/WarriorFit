@@ -39,7 +39,7 @@ class CombatPage:
                         ui.card(
 
                             ui.input_text("combat_serialnr", "Serial Number"),
-                            ui.input_action_button("combat_search", "search", width="150px"),
+                            ui.input_action_button("combat_search", "Conform Serial", width="150px"),
                             ui.output_text("combat_miltary", ),
 
                             ui.layout_columns(
