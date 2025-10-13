@@ -8,7 +8,7 @@ from config.appliccation_config import ApplicationConfig
 from core.role import Role
 from core.type_fitness_test import TypeFitnessTest
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+
 from services.mail_service import MailService
 from ui.controllers.session_controller import SessionsController
 
@@ -19,16 +19,15 @@ class SessionsPage:
 
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def __init__(self, db_service: DBService) -> None:
-        # Allow DI for testing; default to app config path
-        self.db_service = db_service
+    def __init__(self, ) -> None:
+
         self.be_mil_service = BEMILService()
         self.refresh_tick = reactive.Value(0)
         self.selected_id = reactive.Value(None)
         # Hold the currently selected row (as a dict) for reuse by update/delete
         self.selected_row: Optional[Dict[str, Any]] = None
         # Controller
-        self.controller = SessionsController(self.db_service, self.be_mil_service)
+        self.controller = SessionsController()
 
     def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
         # Ensure required fields and valid type
@@ -443,7 +442,7 @@ _page_instance: Optional[SessionsPage] = None
 def _get_page() -> SessionsPage:
     global _page_instance
     if _page_instance is None:
-        _page_instance = SessionsPage(DBService())
+        _page_instance = SessionsPage()
     return _page_instance
 
 

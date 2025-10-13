@@ -1,13 +1,11 @@
 from __future__ import annotations
 from typing import Optional, Dict, Any
-
 import pandas as pd
-
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import CombatSwimmingTest, TestSession
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+from services.service_test import ServiceTest
 
 
 class SwimmingController:
@@ -17,9 +15,9 @@ class SwimmingController:
     - DB queries and commands
     - Grid decoration and email HTML body
     """
-    def __init__(self, db: DBService, be_mil_service: Optional[BEMILService] = None) -> None:
-        self.db = db
-        self.be_mil_service = be_mil_service or BEMILService()
+    def __init__(self,) -> None:
+        self._service = ServiceTest()
+        self.be_mil_service =  BEMILService()
 
     # ----- Validation -----
     @staticmethod
@@ -33,10 +31,10 @@ class SwimmingController:
 
     # ----- Queries -----
     async def load_sessions(self):
-        return await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.SWIMMING)
+        return await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.SWIMMING,True)
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
-        return await self.db.get_test_session_by_id(int(session_id))
+        return await self._service.get_test_session_by_id(int(session_id))
 
     async def search_military(self, serialnr: str) -> Optional[ServiceMen]:
         serial = (serialnr or "").strip()
@@ -46,7 +44,7 @@ class SwimmingController:
 
     async def list_swim_df(self, session_id: int) -> pd.DataFrame:
         try:
-            swim_tests = await self.db.get_all_combat_swimming_test(int(session_id))
+            swim_tests = await self._service.get_all_combat_swimming_test(int(session_id))
             rows = []
             for r in swim_tests or []:
                 sm = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
@@ -79,7 +77,7 @@ class SwimmingController:
         st.test_session_id = int(session_id)
         st.serial_number = payload["serialnr"]
         st.swim_paased = bool(payload["swim_passed"])
-        return await self.db.add_fitness_test_to_TestSession(int(session_id), st)
+        return await self._service.add_fitness_test_to_TestSession(int(session_id), st)
 
     async def update_swim(self, swim_id: int, payload: Dict[str, Any]) -> Optional[CombatSwimmingTest]:
         st = CombatSwimmingTest()
@@ -87,10 +85,10 @@ class SwimmingController:
         st.test_session_id = int(payload["session_id"])
         st.serial_number = payload["serialnr"]
         st.swim_paased = bool(payload["swim_passed"])
-        return await self.db.update_fitness_test(int(swim_id), st)
+        return await self._service.update_fitness_test(int(swim_id), st)
 
     async def delete_swim(self, session_id: int, swim_id: int) -> bool:
-        return await self.db.delete_fitness_test_from_test_session(int(session_id), int(swim_id))
+        return await self._service.delete_fitness_test_from_test_session(int(session_id), int(swim_id))
 
     # ----- Presentation: mail HTML -----
     @staticmethod

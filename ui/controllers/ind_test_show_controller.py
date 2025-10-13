@@ -16,8 +16,8 @@ class IndTestShowController:
     - Collect tests for a serial as DataFrame
     """
 
-    def __init__(self, be_mil_service: Optional[BEMILService] = None):
-        self.be_mil = be_mil_service or BEMILService()
+    def __init__(self):
+        self.be_mil = BEMILService()
 
     async def find_military(self, serial: str):
         return await self.be_mil.get_be_mil_by_id(serial)

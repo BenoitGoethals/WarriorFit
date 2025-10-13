@@ -1,15 +1,13 @@
 from __future__ import annotations
 from typing import Optional, Dict, Any, Tuple
-
 import pandas as pd
-
 from core.Gender import Gender
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import FunctionalTest, TestSession
 from logic.Functional_calculator import FunctionalCalculator
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+from services.service_test import ServiceTest
 
 
 class FunctionalController:
@@ -19,9 +17,9 @@ class FunctionalController:
     - DB queries and commands
     - Presentation helpers (grid decoration, mail body)
     """
-    def __init__(self, db: DBService, be_mil_service: Optional[BEMILService] = None) -> None:
-        self.db = db
-        self.be_mil_service = be_mil_service or BEMILService()
+    def __init__(self, ) -> None:
+        self._service = ServiceTest()
+        self.be_mil_service = BEMILService()
 
     # ----- Helpers -----
     @staticmethod
@@ -47,10 +45,10 @@ class FunctionalController:
 
     # ----- Queries (only here) -----
     async def load_sessions(self):
-        return await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.FUNCTIONAL)
+        return await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.FUNCTIONAL,True)
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
-        return await self.db.get_test_session_by_id(int(session_id))
+        return await self._service.get_test_session_by_id(int(session_id))
 
     async def search_military(self, serialnr: str) -> Optional[ServiceMen]:
         serial = (serialnr or "").strip()
@@ -60,7 +58,7 @@ class FunctionalController:
 
     async def list_functional_tests_df(self, session_id: int) -> pd.DataFrame:
         try:
-            rows = await self.db.get_all_functional_test(int(session_id))
+            rows = await self._service.get_all_functional_test(int(session_id))
             data = []
             for r in rows:
                 sm = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
@@ -110,7 +108,7 @@ class FunctionalController:
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]
         ft.pull_ups = payload["pull_ups"]
-        return await self.db.add_fitness_test_to_TestSession(int(session_id), ft)
+        return await self._service.add_fitness_test_to_TestSession(int(session_id), ft)
 
     async def update_functional(self, functional_id: int, payload: Dict[str, Any]) -> Optional[FunctionalTest]:
         ft = FunctionalTest()
@@ -120,10 +118,10 @@ class FunctionalController:
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]
         ft.pull_ups = payload["pull_ups"]
-        return await self.db.update_fitness_test(int(functional_id), ft)
+        return await self._service.update_fitness_test(int(functional_id), ft)
 
     async def delete_functional(self, session_id: int, functional_id: int) -> bool:
-        return await self.db.delete_fitness_test_from_test_session(int(session_id), int(functional_id))
+        return await self._service.delete_fitness_test_from_test_session(int(session_id), int(functional_id))
 
     # ----- Presentation (mail body only here) -----
     def build_email_body(self, sm: ServiceMen, session: TestSession, record: Dict[str, Any]) -> str:

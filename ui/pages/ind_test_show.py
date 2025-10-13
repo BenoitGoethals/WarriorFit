@@ -6,15 +6,15 @@ from typing import Optional
 import pandas as pd
 from shiny import ui, render, reactive
 
-from services.db_service import DBService
+
 from services.be_mil_service import BEMILService
 from ui.controllers.ind_test_show_controller import IndTestShowController
 
 
 class IndTestShowPage:
-    def __init__(self, db: Optional[DBService] = None, be_mil_service: Optional[BEMILService] = None):
-        self.db = db or DBService()
-        self.controller = IndTestShowController(be_mil_service or BEMILService())
+    def __init__(self):
+
+        self.controller = IndTestShowController()
         self.refresh_tick = reactive.Value(0)
         self.serial = reactive.Value("")
         self.mil_info = reactive.Value("No serviceman selected.")
@@ -96,7 +96,7 @@ class IndTestShowPage:
                 width="100%",
             )
 
-_page = IndTestShowPage(DBService())
+_page = IndTestShowPage()
 
 
 def get_ui():

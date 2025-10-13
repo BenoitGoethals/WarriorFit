@@ -6,7 +6,7 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, CombatTestParatrooper
 from services.be_mil_service import BEMILService
 
-from services.db_service import DBService
+
 from ui.controllers.combat_controller import CombatController
 from ui.pages.notify_mail import NotifyMail
 
@@ -14,13 +14,13 @@ import html
 
 
 class CombatPage:
-    def __init__(self, db: DBService):
-        self.db = db
+    def __init__(self):
+
         self.refresh_tick = reactive.Value(0)
-        self.be_mil_service = BEMILService()
+
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
-        self.controller = CombatController(self.db, self.be_mil_service)  # <-- controller instance
+        self.controller = CombatController()  # <-- controller instance
 
     NO_SELECTION_MESSAGE = "No row selected"
 
@@ -259,7 +259,7 @@ class CombatPage:
             val = (input.combat_session_id() or "").strip()
             selected_session_id.set(val)
             if val:
-                self.selected_session = await self.db.get_test_session_by_id(int(val))
+                self.selected_session = await self.controller.get_test_session_by_id(int(val))
 
         @reactive.Effect
         @reactive.event(input.combat_grid_selected_rows)
@@ -374,7 +374,7 @@ class CombatPage:
             _clear_form()
             status.set("Form cleared.")
 # Public API: keep same signatures
-_page = CombatPage(DBService())
+_page = CombatPage()
 
 
 def get_ui():

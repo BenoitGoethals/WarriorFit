@@ -4,19 +4,19 @@ import pandas as pd
 from core.service_men import ServiceMen
 from data.db.db_model import TestSession
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+
 from ui.controllers.swimming_controller import SwimmingController
 from ui.pages.notify_mail import NotifyMail
 
 
 class SwimTestPage:
-    def __init__(self, db: DBService):
-        self.db = db
+    def __init__(self,):
+
         self.refresh_tick = reactive.Value(0)
-        self.be_mil_service = BEMILService()
+
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
-        self.controller = SwimmingController(self.db, self.be_mil_service)
+        self.controller = SwimmingController()
 
     NO_SELECTION_MESSAGE = "No row selected"
 
@@ -278,7 +278,7 @@ class SwimTestPage:
 
 
 # Public API
-_page = SwimTestPage(DBService())
+_page = SwimTestPage()
 
 
 def get_ui():

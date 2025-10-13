@@ -4,13 +4,13 @@ from core.type_fitness_test import TypeFitnessTest
 from logic.phef_calculator import PhefCalculator
 from logic.singleton import Singleton
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+from services.service_test import ServiceTest
 
 
 class DataCollector(metaclass=Singleton):
 
     def __init__(self):
-        self.db = DBService()
+        self._service = ServiceTest()
         self.be_mil = BEMILService()
 
 
@@ -19,9 +19,9 @@ class DataCollector(metaclass=Singleton):
         rows: list[dict] = []
 
         # PHEF
-        phef_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF)
+        phef_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF,True)
         for sess in phef_sessions or []:
-            phef_tests = await self.db.get_all_phef(sess.id)
+            phef_tests = await self._service.get_all_phef(sess.id)
             for t in phef_tests or []:
                 if getattr(t, "serial_number", "") != serial:
                     continue
@@ -46,9 +46,9 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Functional
-        func_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.FUNCTIONAL)
+        func_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.FUNCTIONAL,True)
         for sess in func_sessions or []:
-            func_tests = await self.db.get_all_functional_test(sess.id)
+            func_tests = await self._service.get_all_functional_test(sess.id)
             for t in func_tests or []:
                 if getattr(t, "serial_number", "") != serial:
                     continue
@@ -68,9 +68,9 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Combat
-        combat_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT)
+        combat_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT,True)
         for sess in combat_sessions or []:
-            tests = await self.db.get_all_combat_test(sess.id)
+            tests = await self._service.get_all_combat_test(sess.id)
             for t in tests or []:
                 if getattr(t, "serial_number", "") != serial:
                     continue
@@ -90,9 +90,9 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Swimming
-        swim_sessions = await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.SWIMMING)
+        swim_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.SWIMMING,True)
         for sess in swim_sessions or []:
-            tests = await self.db.get_all_combat_swimming_test(sess.id)
+            tests = await self._service.get_all_combat_swimming_test(sess.id)
             for t in tests or []:
                 if getattr(t, "serial_number", "") != serial:
                     continue

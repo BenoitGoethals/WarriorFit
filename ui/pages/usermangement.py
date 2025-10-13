@@ -6,7 +6,7 @@ from typing import Optional
 import pandas as pd
 from shiny import ui, render, reactive
 
-from services.db_service import DBService
+
 from ui.controllers.usermanagement_controller import UserManagementController, UserForm
 
 
@@ -14,8 +14,8 @@ class UserManagementPage:
     COLUMN_SERIAL = "Serial"
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def __init__(self, db: Optional[DBService] = None) -> None:
-        self.controller = UserManagementController(db or DBService())
+    def __init__(self) -> None:
+        self.controller = UserManagementController()
         self.status = reactive.Value("Ready.")
         self.refresh_tick = reactive.Value(0)
         self.selected_serial = reactive.Value(None)
@@ -192,7 +192,7 @@ class UserManagementPage:
 
 
 # Public API
-_page = UserManagementPage(DBService())
+_page = UserManagementPage()
 
 
 def get_ui():

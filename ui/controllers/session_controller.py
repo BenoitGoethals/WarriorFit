@@ -1,17 +1,12 @@
 from typing import List, Optional, Dict, Any
-
-from shiny import ui, render, reactive
-
 from config.appliccation_config import ApplicationConfig
-from data.db.db_model import TestSession,Role
-
+from data.db.db_model import TestSession
 import datetime
 import pandas as pd
-
 from core.type_fitness_test import TypeFitnessTest
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
 from services.mail_service import MailService
+from services.service_test import ServiceTest
 
 
 class SessionsController:
@@ -19,13 +14,13 @@ class SessionsController:
     Thin controller encapsulating data access and formatting for SessionsPage.
     Keeps UI/server code slimmer and easier to test.
     """
-    def __init__(self, db_service: DBService, be_mil_service: BEMILService):
-        self.db_service = db_service
-        self.be_mil_service = be_mil_service
+    def __init__(self, ):
+        self._service = ServiceTest()
+        self.be_mil_service = BEMILService()
 
     # Data fetchers
     async def list_sessions(self) -> list[TestSession]:
-        return await self.db_service.get_all_test_sessions()
+        return await self._service.get_all_test_sessions()
 
     async def list_sessions_df(self) -> pd.DataFrame:
         items = await self.list_sessions()
@@ -44,7 +39,7 @@ class SessionsController:
         )
 
     async def get_all_pti_serials(self) -> List[str]:
-        pts = await self.db_service.get_all_pti()
+        pts = await self._service.get_all_pti()
         return [p.serial_number for p in pts]
 
     async def add_session(self, payload: Dict[str, Any]) -> Optional[TestSession]:
@@ -58,7 +53,7 @@ class SessionsController:
             ts.type_test = getattr(TypeFitnessTest, str(payload["type_test"]).upper())
         except Exception:
             ts.type_test = TypeFitnessTest.PHEF
-        return await self.db_service.add_test_session(ts)
+        return await self._service.add_test_session(ts)
 
     async def update_session(self, sel_id: int, payload: Dict[str, Any]) -> bool:
         # Accepts string name for type_test for convenience
@@ -74,13 +69,13 @@ class SessionsController:
             executed=bool(payload["executed"]),
             description=payload["description"],
         )
-        return await self.db_service.update_test_session(data)
+        return await self._service.update_test_session(data)
 
     async def delete_session(self, sel_id: int) -> bool:
-        return await self.db_service.delete_test_session(sel_id)
+        return await self._service.delete_test_session(sel_id)
 
     async def get_session_by_id(self, sel_id: int) -> Optional[TestSession]:
-        return await self.db_service.get_test_session_by_id(sel_id)
+        return await self._service.get_test_session_by_id(sel_id)
 
     # Mail helpers
     async def recipients_for_unit(self) -> list[str]:

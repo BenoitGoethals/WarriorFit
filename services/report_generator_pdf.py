@@ -5,16 +5,17 @@ from typing import List, Tuple, Optional, Callable, Any
 from logic.phef_calculator import PhefCalculator
 from config.appliccation_config import ApplicationConfig
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from services.report_type import ReportType
+from services.service_test import ServiceTest
 
 
 class ReportGeneratorPdf:
 
     def __init__(self):
-        self.db_service: DBService = DBService()
+        self._user_service=ServiceTest()
         self.be_mil_service=BEMILService()
         self.__logger = logging.getLogger(__name__)
 
@@ -121,13 +122,13 @@ class ReportGeneratorPdf:
         async def _collect_rows(own_unit:bool,this_year:bool) -> tuple[List[dict], List[dict]]:
             failed: List[dict] = []
             passed: List[dict] = []
-            sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
+            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
                 TypeFitnessTest.PHEF,this_year=this_year
             )
             if own_unit:
                 mils=await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
             for sess in sessions or []:
-                phef_tests: List[PhefTest] = await self.db_service.get_all_phef(sess.id)
+                phef_tests: List[PhefTest] = await self._user_service.get_all_phef(sess.id)
                 for test in phef_tests or []:
                     if own_unit:
                         if not test.serial_number in [s.service_number for s in mils]:
@@ -198,13 +199,13 @@ class ReportGeneratorPdf:
         async def _collect_rows(own_unit:bool,this_year:bool) -> Tuple[List[dict], List[dict]]:
             try:
                 failed, passed = [], []
-                sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
+                sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
                     TypeFitnessTest.PHEF, this_year=this_year
                 )
                 if own_unit:
                     mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
                 for sess in sessions or []:
-                    tests: List[FunctionalTest] = await self.db_service.get_all_functional_test(sess.id)
+                    tests: List[FunctionalTest] = await self._user_service.get_all_functional_test(sess.id)
                     for test in tests or []:
                         if own_unit:
                             if not test.serial_number in [s.service_number for s in mils]:
@@ -262,13 +263,13 @@ class ReportGeneratorPdf:
 
         async def _collect_rows(own_unit:bool,this_year:bool) -> Tuple[List[dict], List[dict]]:
             failed, passed = [], []
-            sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
+            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
                 TypeFitnessTest.COMBAT, this_year=this_year
             )
             if own_unit:
                 mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
             for sess in sessions or []:
-                tests: List[CombatTestParatrooper] = await self.db_service.get_all_combat_test(sess.id)
+                tests: List[CombatTestParatrooper] = await self._user_service.get_all_combat_test(sess.id)
                 for test in tests or []:
                     if own_unit:
                         if not test.serial_number in [s.service_number for s in mils]:
@@ -319,13 +320,13 @@ class ReportGeneratorPdf:
 
         async def _collect_rows(own_unit:bool,this_year:bool) -> Tuple[List[dict], List[dict]]:
             failed, passed = [], []
-            sessions: List[TestSession] = await self.db_service.get_all_test_sessions_type_fitnessTest(
+            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
                 TypeFitnessTest.SWIMMING, this_year=this_year
             )
             if own_unit:
                 mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
             for sess in sessions or []:
-                tests: List[CombatSwimmingTest] = await self.db_service.get_all_combat_swimming_test(sess.id)
+                tests: List[CombatSwimmingTest] = await self._user_service.get_all_combat_swimming_test(sess.id)
                 for test in tests or []:
                     if own_unit:
                         if not test.serial_number in [s.service_number for s in mils]:

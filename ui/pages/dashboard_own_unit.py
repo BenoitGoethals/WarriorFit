@@ -4,15 +4,16 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+from services.service_test import ServiceTest
+
 from ui.controllers.dashboard_own_unit_controller import DashboardOwnUnitController
 
 
 class DashboardOwnUnitPage:
-    def __init__(self, db: DBService):
-        self.db = db
+    def __init__(self):
+
         self.refresh_tick = reactive.Value(0)
-        self.controller = DashboardOwnUnitController(self.db, BEMILService())
+        self.controller = DashboardOwnUnitController()
 
     def get_ui(self):
         return ui.nav_panel(
@@ -206,7 +207,7 @@ class DashboardOwnUnitPage:
 
 
 # Public API
-_page = DashboardOwnUnitPage(DBService())
+_page = DashboardOwnUnitPage()
 
 
 def get_ui():

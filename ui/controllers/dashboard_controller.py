@@ -9,7 +9,8 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+from services.service_test import ServiceTest
+from services.service_user import UserService
 
 
 class DashboardController:
@@ -17,20 +18,21 @@ class DashboardController:
     Encapsulates all Dashboard data retrieval and computations.
     The UI layer should only call these methods and render their results.
     """
-    def __init__(self, db: DBService, be_mil_service: Optional[BEMILService] = None) -> None:
-        self.db = db
-        self.be_mil_service = be_mil_service or BEMILService()
+    def __init__(self) -> None:
+
+        self.service_test = ServiceTest()
+        self.be_mil_service = BEMILService()
 
     # ---------- Sessions ----------
     async def sessions_by_type(self, test_type: TypeFitnessTest) -> List[TestSession]:
         try:
-            return await self.db.get_all_test_sessions_type_fitnessTest(test_type)
+            return await self.service_test.get_all_test_sessions_type_fitnessTest(test_type, True)
         except Exception:
             return []
 
     async def all_sessions(self) -> List[TestSession]:
         try:
-            return await self.db.get_all_test_sessions()
+            return await self.service_test.get_all_test_sessions()
         except Exception:
             return []
 
@@ -50,7 +52,7 @@ class DashboardController:
         total_tests = 0
         passed_tests = 0
         for sess in sessions:
-            tests = await self.db.get_all_phef(sess.id)
+            tests = await self.service_test.get_all_phef(sess.id)
             for test in tests:
                 total_tests += 1
                 if await self.phef_total_score(test) >= 50:
@@ -63,7 +65,7 @@ class DashboardController:
         total_tests = 0
         passed_tests = 0
         for sess in sessions:
-            tests = await self.db.get_all_combat_test(sess.id)
+            tests = await self.service_test.get_all_combat_test(sess.id)
             for test in tests:
                 total_tests += 1
                 if test.rope_passed and test.obstacle_passed and test.running_time <= 7200:
@@ -76,7 +78,7 @@ class DashboardController:
         total_tests = 0
         total_score = 0
         for sess in sessions:
-            tests = await self.db.get_all_functional_test(sess.id)
+            tests = await self.service_test.get_all_functional_test(sess.id)
             for test in tests:
                 total_tests += 1
                 total_score += test.push_ups + test.sit_ups + test.pull_ups
@@ -88,7 +90,7 @@ class DashboardController:
         total_tests = 0
         passed_tests = 0
         for sess in sessions:
-            tests = await self.db.get_all_combat_swimming_test(sess.id)
+            tests = await self.service_test.get_all_combat_swimming_test(sess.id)
             for test in tests:
                 total_tests += 1
                 if test.swim_paased:
@@ -103,10 +105,10 @@ class DashboardController:
         functional_sessions = await self.sessions_by_type(TypeFitnessTest.FUNCTIONAL)
         swimming_sessions = await self.sessions_by_type(TypeFitnessTest.SWIMMING)
 
-        phef_count = await self._count_tests(phef_sessions, self.db.get_all_phef)
-        combat_count = await self._count_tests(combat_sessions, self.db.get_all_combat_test)
-        functional_count = await self._count_tests(functional_sessions, self.db.get_all_functional_test)
-        swimming_count = await self._count_tests(swimming_sessions, self.db.get_all_combat_swimming_test)
+        phef_count = await self._count_tests(phef_sessions, self.service_test.get_all_phef)
+        combat_count = await self._count_tests(combat_sessions, self.service_test.get_all_combat_test)
+        functional_count = await self._count_tests(functional_sessions, self.service_test.get_all_functional_test)
+        swimming_count = await self._count_tests(swimming_sessions, self.service_test.get_all_combat_swimming_test)
 
         data = pd.DataFrame({
             'Test Type': ['PHEF', 'Combat', 'Functional', 'Swimming'],
@@ -121,7 +123,7 @@ class DashboardController:
         phef_sessions = await self.sessions_by_type(TypeFitnessTest.PHEF)
         phef_pass = phef_fail = 0
         for sess in phef_sessions:
-            for test in await self.db.get_all_phef(sess.id):
+            for test in await self.service_test.get_all_phef(sess.id):
                 if await self.phef_total_score(test) >= 50:
                     phef_pass += 1
                 else:
@@ -130,7 +132,7 @@ class DashboardController:
         combat_sessions = await self.sessions_by_type(TypeFitnessTest.COMBAT)
         combat_pass = combat_fail = 0
         for sess in combat_sessions:
-            for test in await self.db.get_all_combat_test(sess.id):
+            for test in await self.service_test.get_all_combat_test(sess.id):
                 passed = test.rope_passed and test.obstacle_passed and test.running_time <= 7200
                 combat_pass += 1 if passed else 0
                 combat_fail += 0 if passed else 1
@@ -138,7 +140,7 @@ class DashboardController:
         functional_sessions = await self.sessions_by_type(TypeFitnessTest.FUNCTIONAL)
         func_pass = func_fail = 0
         for sess in functional_sessions:
-            for test in await self.db.get_all_functional_test(sess.id):
+            for test in await self.service_test.get_all_functional_test(sess.id):
                 total = test.push_ups + test.sit_ups + test.pull_ups
                 func_pass += 1 if total >= 50 else 0
                 func_fail += 0 if total >= 50 else 1
@@ -146,7 +148,7 @@ class DashboardController:
         swim_sessions = await self.sessions_by_type(TypeFitnessTest.SWIMMING)
         swim_pass = swim_fail = 0
         for sess in swim_sessions:
-            for test in await self.db.get_all_combat_swimming_test(sess.id):
+            for test in await self.service_test.get_all_combat_swimming_test(sess.id):
                 swim_pass += 1 if test.swim_paased else 0
                 swim_fail += 0 if test.swim_paased else 1
 
@@ -176,7 +178,7 @@ class DashboardController:
         phef_sessions = await self.sessions_by_type(TypeFitnessTest.PHEF)
         scores = []
         for sess in phef_sessions:
-            for test in await self.db.get_all_phef(sess.id):
+            for test in await self.service_test.get_all_phef(sess.id):
                 scores.append(await self.phef_total_score(test))
         if not scores:
             return None
@@ -197,14 +199,14 @@ class DashboardController:
         for sess in all_sessions:
             date = sess.datetime_start.strftime('%Y-%m-%d')
             if sess.type_test == TypeFitnessTest.PHEF:
-                for test in await self.db.get_all_phef(sess.id):
+                for test in await self.service_test.get_all_phef(sess.id):
                     trend_data.append({'Date': date, 'Type': 'PHEF', 'Score': await self.phef_total_score(test)})
             elif sess.type_test == TypeFitnessTest.COMBAT:
-                for test in await self.db.get_all_combat_test(sess.id):
+                for test in await self.service_test.get_all_combat_test(sess.id):
                     passed = test.rope_passed and test.obstacle_passed and test.running_time <= 7200
                     trend_data.append({'Date': date, 'Type': 'Combat', 'Score': 100 if passed else 0})
             elif sess.type_test == TypeFitnessTest.FUNCTIONAL:
-                for test in await self.db.get_all_functional_test(sess.id):
+                for test in await self.service_test.get_all_functional_test(sess.id):
                     total = test.push_ups + test.sit_ups + test.pull_ups
                     trend_data.append({'Date': date, 'Type': 'Functional', 'Score': total})
         if not trend_data:

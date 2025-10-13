@@ -2,6 +2,7 @@ import logging
 from typing import Any, Optional
 from shiny import App, ui, render
 from data.db.db_model import Role
+from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show
@@ -94,8 +95,8 @@ class FitnessWarriorApp:
     @staticmethod
     def server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
-        from services.db_service import DBService
-        db_service = DBService()
+
+        user_service = UserService()
 
 
         FitnessWarriorApp.register_pages_server(input, output, session)
@@ -218,8 +219,8 @@ class FitnessWarriorApp:
             username_login = (input.username_login() or "").lower()
             password_login = input.password_login()
             try:
-                if await db_service.check_user(username_login, password_login):
-                    user = await db_service.get_user_by_username(username_login)
+                if await user_service.check_user(username_login, password_login):
+                    user = await user_service.get_user_by_username(username_login)
                     _set_session_user(user)
                     login_user_text.set(f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}")
                     status_text.set("")
@@ -275,7 +276,8 @@ class FitnessWarriorApp:
         def _record_activity():
             try:
                 _ = input.activity_ping()
-            except Exception:
+            except Exception as e:
+                logging.error(f"Error recording activity: {e}")
                 return
             last_activity.set(time.time())
 
@@ -283,7 +285,8 @@ class FitnessWarriorApp:
         def _reset_on_nav_or_login():
             try:
                 _ = input.main_nav()
-            except Exception:
+            except Exception as e:
+                logging.error(f"Error resetting nav: {e}")
                 pass
             _ = nav_version.get()
             last_activity.set(time.time())

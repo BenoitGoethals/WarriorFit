@@ -5,19 +5,19 @@ from core.service_men import ServiceMen
 from data.db.db_model import FunctionalTest, TestSession
 from logic.Functional_calculator import FunctionalCalculator
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+
 from ui.controllers.functional_controller import FunctionalController
 from ui.pages.notify_mail import NotifyMail
 
 
 class FunctionalPage:
-    def __init__(self, db: DBService):
-        self.db = db
+    def __init__(self,):
+
         self.refresh_tick = reactive.Value(0)
         self.be_mil_service = BEMILService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
-        self.controller = FunctionalController(self.db, self.be_mil_service)
+        self.controller = FunctionalController()
 
     NO_SELECTION_MESSAGE = "No row selected"
 
@@ -371,7 +371,7 @@ class FunctionalPage:
 
 
 # Public API: keep same signatures
-_page = FunctionalPage(DBService())
+_page = FunctionalPage()
 
 
 def get_ui():

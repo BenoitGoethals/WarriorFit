@@ -5,19 +5,19 @@ from core.service_men import ServiceMen
 from data.db.db_model import TestSession
 from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+
 from ui.controllers.phef_controller import PhefController
 from ui.pages.notify_mail import NotifyMail
 
 
 class PhefPage:
-    def __init__(self, db: DBService):
-        self.db = db
+    def __init__(self):
+
         self.refresh_tick = reactive.Value(0)
         self.be_mil_service = BEMILService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
-        self.controller = PhefController(self.db, self.be_mil_service)
+        self.controller = PhefController()
 
     NO_SELECTION_MESSAGE = "No row selected"
 
@@ -408,7 +408,7 @@ class PhefPage:
 
 
 # Public API
-_page = PhefPage(DBService())
+_page = PhefPage()
 
 
 def get_ui():

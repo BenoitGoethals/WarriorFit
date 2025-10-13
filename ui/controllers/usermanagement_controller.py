@@ -8,8 +8,7 @@ import pandas as pd
 
 from data.db.db_model import User, Role
 from security.auth_service import Auth
-from services.db_service import DBService
-
+from services.service_user import UserService
 
 
 @dataclass
@@ -22,9 +21,9 @@ class UserForm:
 
 
 class UserManagementController:
-    def __init__(self, db: Optional[DBService] = None):
+    def __init__(self,):
         # If your DBService requires a config path, adjust here
-        self.db = db or DBService()
+        self._service =  UserService()
         self.selected_user=None
 
     @staticmethod
@@ -35,7 +34,7 @@ class UserManagementController:
             return [str(r) for r in Role]
 
     async def list_users_df(self) -> pd.DataFrame:
-        users = await self.db.get_all_users()
+        users = await self._service.get_all_users()
         return pd.DataFrame([
             {
                 "Serial": u.serial_number,
@@ -57,9 +56,9 @@ class UserManagementController:
                 return False, f"Field '{f}' is required."
         if "@" not in form.email or "." not in form.email.split("@")[-1]:
             return False, "Invalid email address."
-        exists = await self.db.serial_exists(form.serial.strip())
-        mail_unique = await self.db.user_mail_exist(form.email)
-        user_name_exist = await self.db.get_user_by_username(form.username)
+        exists = await self._service.serial_exists(form.serial.strip())
+        mail_unique = await self._service.user_mail_exist(form.email)
+        user_name_exist = await self._service.get_user_by_username(form.username)
         if is_update:
             if form.serial.strip() != (self.selected_user.serial or "") and exists:
                 return False, f"Serial '{form.serial}' already exists."
@@ -102,7 +101,7 @@ class UserManagementController:
         user.email = form.email
         user.role = form.role
         user.is_active = True
-        return await self.db.add_user(user)
+        return await self._service.add_user(user)
 
     async def update_user(self, user_id: int, form: UserForm) -> bool:
         user = User()
@@ -112,8 +111,8 @@ class UserManagementController:
         user.password_hash = Auth.hash_password(form.password)
         user.email = form.email
         user.role = form.role
-        updated = await self.db.update_user(user_id, user)
+        updated = await self._service.update_user(user_id, user)
         return bool(updated)
 
     async def delete_user_by_serial(self, serial: str) -> bool:
-        return await self.db.delete_user_by_serial(serial)
+        return await self._service.delete_user_by_serial(serial)

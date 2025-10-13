@@ -8,13 +8,13 @@ from core.type_fitness_test import TypeFitnessTest
 from core.service_men import ServiceMen
 from data.db.db_model import CombatTestParatrooper
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+from services.service_test import ServiceTest
 
 
 class CombatController:
-    def __init__(self, db: DBService, be_mil_service: Optional[BEMILService] = None) -> None:
-        self.db = db
-        self.be_mil_service = be_mil_service or BEMILService()
+    def __init__(self) -> None:
+        self._service = ServiceTest()
+        self.be_mil_service =BEMILService()
 
     # ----- Helpers -----
     @staticmethod
@@ -64,7 +64,7 @@ class CombatController:
 
     # ----- Queries -----
     async def load_sessions(self):
-        return await self.db.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT)
+        return await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT,True)
 
     async def search_military(self, serialnr: str) -> Optional[ServiceMen]:
         serial = (serialnr or "").strip()
@@ -74,7 +74,7 @@ class CombatController:
 
     async def list_combat_tests_df(self, session_id: int) -> pd.DataFrame:
         try:
-            combat_tests = await self.db.get_all_combat_test(int(session_id))
+            combat_tests = await self._service.get_all_combat_test(int(session_id))
             data = []
             for r in combat_tests:
                 sm = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
@@ -113,7 +113,7 @@ class CombatController:
         cp.running_time = payload["combat_speedmars"]
         cp.rope_passed = payload["combat_robe"]
         cp.obstacle_passed = payload["combat_obstacle"]
-        return await self.db.add_fitness_test_to_TestSession(int(session_id), cp)
+        return await self._service.add_fitness_test_to_TestSession(int(session_id), cp)
 
     async def update_combat(self, combat_id: int, payload: Dict[str, Any]) -> Optional[CombatTestParatrooper]:
         cp = CombatTestParatrooper()
@@ -123,10 +123,10 @@ class CombatController:
         cp.running_time = payload["combat_speedmars"]
         cp.obstacle_passed = payload["combat_obstacle"]
         cp.rope_passed = payload["combat_robe"]
-        return await self.db.update_fitness_test(int(combat_id), cp)
+        return await self._service.update_fitness_test(int(combat_id), cp)
 
     async def delete_combat(self, session_id: int, combat_id: int) -> bool:
-        return await self.db.delete_fitness_test_from_test_session(int(session_id), int(combat_id))
+        return await self._service.delete_fitness_test_from_test_session(int(session_id), int(combat_id))
 
     # ----- Presentation bits -----
     @staticmethod
@@ -172,3 +172,6 @@ class CombatController:
             </tbody>
         </table>
         """)
+
+    async def get_test_session_by_id(self, param):
+        return await self._service.get_test_session_by_id(param)

@@ -2,22 +2,14 @@ from datetime import datetime
 
 from shiny import ui, render, reactive
 import pandas as pd
-
-from services.be_mil_service import BEMILService
-from services.db_service import DBService
-from core.type_fitness_test import TypeFitnessTest
-import plotly.express as px
-import plotly.graph_objects as go
-
 from ui.controllers.dashboard_controller import DashboardController
 
 
 class DashboardPage:
-    def __init__(self, db: DBService):
-        self.db = db
+    def __init__(self):
+
         self.refresh_tick = reactive.Value(0)
-        self.be_mil_service = BEMILService()
-        self.controller = DashboardController(self.db, self.be_mil_service)
+        self.controller = DashboardController()
 
     def get_ui(self):
         return ui.nav_panel(
@@ -197,7 +189,7 @@ class DashboardPage:
 
 
 # Public API
-_page = DashboardPage(DBService())
+_page = DashboardPage()
 
 
 def get_ui():

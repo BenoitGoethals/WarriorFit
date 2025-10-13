@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from starlette import status
 
 from core.role import Role
-from services.db_service import DBService
+from services.service_user import UserService
 
 # Configuration constants
 SECRET_KEY = "your-secret-key-here"  # In production, use a secure secret key
@@ -19,7 +19,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 class Auth:
     @staticmethod
     async def authenticate_user(username: str, password: str):
-        db_service = DBService("../ui/config/config.yml")
+        db_service = UserService()
         user = await db_service.get_user_by_username(username)
         if not user:
             return None

@@ -10,7 +10,8 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
-from services.db_service import DBService
+
+from services.service_test import ServiceTest
 
 
 class DashboardOwnUnitController:
@@ -18,17 +19,17 @@ class DashboardOwnUnitController:
     Dashboard controller focused on a single 'own unit'.
     Provides pre-aggregated stats, charts HTML, and tables for the page.
     """
-    def __init__(self, db: DBService, be_mil_service: Optional[BEMILService] = None, unit_name: Optional[str] = None) -> None:
-        self.db = db
-        self.be_mil_service = be_mil_service or BEMILService()
-        self.unit_name = unit_name or ApplicationConfig().own_unit
+    def __init__(self) -> None:
+        self._service = ServiceTest()
+        self.be_mil_service = BEMILService()
+        self.unit_name=ApplicationConfig().own_unit
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:
         try:
             people = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
             return {p.service_number for p in (people or [])}
-        except Exception:
+        except Exception as e:
             return set()
 
     async def phef_total_score(self, test: PhefTest) -> float:
@@ -42,18 +43,22 @@ class DashboardOwnUnitController:
 
     # ---------- fetch all tests by type but filtered to own unit ----------
     async def _tests_for_unit(self, t: TypeFitnessTest) -> List[Any]:
-        sessions = await self.db.get_all_test_sessions_type_fitnessTest(t)
+        sessions = await self._service.get_all_test_sessions()
+        sessions.sort(
+            key=lambda x: x.datetime_start,
+            reverse=True,
+        )
         serials = await self.own_unit_serials()
         results: List[Any] = []
         for sess in sessions:
             if t == TypeFitnessTest.PHEF:
-                tests = await self.db.get_all_phef(sess.id)
+                tests = await self._service.get_all_phef(sess.id)
             elif t == TypeFitnessTest.COMBAT:
-                tests = await self.db.get_all_combat_test(sess.id)
+                tests = await self._service.get_all_combat_test(sess.id)
             elif t == TypeFitnessTest.FUNCTIONAL:
-                tests = await self.db.get_all_functional_test(sess.id)
+                tests = await self._service.get_all_functional_test(sess.id)
             elif t == TypeFitnessTest.SWIMMING:
-                tests = await self.db.get_all_combat_swimming_test(sess.id)
+                tests = await self._service.get_all_combat_swimming_test(sess.id)
             else:
                 tests = []
             results.extend([t for t in tests if getattr(t, "serial_number", None) in serials])
@@ -151,20 +156,20 @@ class DashboardOwnUnitController:
     # ---------- tables ----------
     async def recent_sessions_df(self) -> pd.DataFrame:
         serials = await self.own_unit_serials()
-        all_sessions = await self.db.get_all_test_sessions()
+        all_sessions = await self._service.get_all_test_sessions()
         all_sessions.sort(key=lambda x: x.datetime_start, reverse=True)
 
         rows = []
         for sess in all_sessions:
             tests = []
             if sess.type_test == TypeFitnessTest.PHEF:
-                tests = await self.db.get_all_phef(sess.id)
+                tests = await self._service.get_all_phef(sess.id)
             elif sess.type_test == TypeFitnessTest.COMBAT:
-                tests = await self.db.get_all_combat_test(sess.id)
+                tests = await self._service.get_all_combat_test(sess.id)
             elif sess.type_test == TypeFitnessTest.FUNCTIONAL:
-                tests = await self.db.get_all_functional_test(sess.id)
+                tests = await self._service.get_all_functional_test(sess.id)
             elif sess.type_test == TypeFitnessTest.SWIMMING:
-                tests = await self.db.get_all_combat_swimming_test(sess.id)
+                tests = await self._service.get_all_combat_swimming_test(sess.id)
             if any(getattr(t, "serial_number", None) in serials for t in tests):
                 rows.append({
                     "Date": sess.datetime_start.strftime("%Y-%m-%d %H:%M"),
