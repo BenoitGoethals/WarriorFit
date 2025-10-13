@@ -5,7 +5,8 @@ from data.db.db_model import Role
 from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
-from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show
+from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
+    cross_planning
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
@@ -64,6 +65,8 @@ class FitnessWarriorApp:
     def register_pages_server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
         servers_by_tab = {
+            "Cross Planning": cross_planning.server,
+            "Cross": cross.server,
             "User Management": usermangement.server,
             "PHEF Tests": phef.server,
             "Combat Tests": combat_test.server,
@@ -150,6 +153,8 @@ class FitnessWarriorApp:
             admin_menu = _build_admin_menu(role)
             if role is Role.ADMIN:
                 if admin_menu is not None:
+                    nav_items.append(_safe_panel(cross_planning.get_ui()))
+                    nav_items.append(_safe_panel(cross.get_ui()))
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(ind_test_show.get_ui()))
                     nav_items.append(_safe_panel(reports.get_ui()))

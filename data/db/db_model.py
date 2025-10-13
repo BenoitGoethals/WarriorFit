@@ -177,6 +177,7 @@ class Cross(Base):
     __tablename__ = "cross"
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     datetime_start = Column(TIMESTAMP, nullable=False)
+    distance = Column(Float, nullable=False)
     executed = Column(Boolean, default=False, nullable=False)
     description = Column(String(255), nullable=True)
 
@@ -186,6 +187,7 @@ class Cross(Base):
 class Runner(Base):
     __tablename__ = "runners"
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    serial_number = Column(String(50), unique=False, nullable=True)
     running_time = Column(Float, nullable=False)
 
     crosses = relationship("Cross", secondary="cross_runners", back_populates="runners")
