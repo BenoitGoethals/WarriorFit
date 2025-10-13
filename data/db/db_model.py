@@ -47,9 +47,7 @@ class AuditLog(Base):
 
 
 class User(Base):
-
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
@@ -64,7 +62,6 @@ class User(Base):
 
 class FitnessTest(Base):
     __tablename__ = "fitness_tests"
-
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     serial_number = Column(String(50), unique=False, nullable=True)
 
@@ -174,8 +171,27 @@ class SessionFitnessTests(Base):
     session_id = Column(Integer, ForeignKey('test_sessions.id'), primary_key=True)
     fitness_test_id = Column(Integer, ForeignKey('fitness_tests.id'), primary_key=True)
 
+#CROSS
+
+class Cross(Base):
+    __tablename__ = "cross"
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    datetime_start = Column(TIMESTAMP, nullable=False)
+    executed = Column(Boolean, default=False, nullable=False)
+    description = Column(String(255), nullable=True)
+
+    runners = relationship("Runner", secondary="cross_runners", back_populates="crosses")
 
 
+class Runner(Base):
+    __tablename__ = "runners"
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    running_time = Column(Float, nullable=False)
+
+    crosses = relationship("Cross", secondary="cross_runners", back_populates="runners")
 
 
-
+class CrossRunners(Base):
+    __tablename__ = "cross_runners"
+    cross_id = Column(Integer, ForeignKey('cross.id'), primary_key=True)
+    runner_id = Column(Integer, ForeignKey('runners.id'), primary_key=True)
