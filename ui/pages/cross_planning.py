@@ -25,8 +25,13 @@ class CrossPlanningPage:
                 ui.card(
                     ui.card_header("Cross Form"),
                     ui.input_date("cr_date", "Date"),
+
+                    ui.input_text("cr_time", "Pick a time:",placeholder="Select a time", value="09:30"),
+                    ui.output_text_verbatim("show_time"),
+                    ui.input_numeric("cr_distance", "Distance", value=5, min=0),
                     ui.input_checkbox("cr_executed", "Executed", value=False),
                     ui.input_text("cr_desc", "Description", placeholder="Optional"),
+
                     ui.br(),
                     ui.layout_columns(
                         ui.input_action_button("cr_add_btn", "Add", width="120px"),
@@ -83,6 +88,7 @@ class CrossPlanningPage:
         return {
             "datetime_start": dt,
             "executed": bool(input.cr_executed()),
+            "distance": input.cr_distance(),
             "description": (input.cr_desc() or "").strip(),
         }
 
@@ -92,12 +98,14 @@ class CrossPlanningPage:
         time_val = dt.strftime("%H:%M") if dt else ""
         session.send_input_message("cr_date", {"value": date_val})
         session.send_input_message("cr_time", {"value": time_val})
+        session.send_input_message("cr_distance", {"value": rec.get("distance", 0)})
         session.send_input_message("cr_executed", {"value": bool(rec.get("executed", False))})
         session.send_input_message("cr_desc", {"value": rec.get("description", "")})
 
     def _clear_form(self, session) -> None:
         session.send_input_message("cr_date", {"value": ""})
         session.send_input_message("cr_time", {"value": ""})
+        session.send_input_message("cr_distance", {"value": 0})
         session.send_input_message("cr_executed", {"value": False})
         session.send_input_message("cr_desc", {"value": ""})
 
@@ -108,6 +116,11 @@ class CrossPlanningPage:
     def server(self, input, output, session):
         status = reactive.Value("Ready.")
 
+        @output
+        @render.text
+        def show_time():
+            return f"Selected time: {input.cr_date().strftime('%d/%m/%Y')} {input.cr_time()}"
+
         # Status output
         @output
         @render.text
@@ -116,25 +129,26 @@ class CrossPlanningPage:
 
         # Data
         @reactive.calc
-        def cross_df() -> pd.DataFrame:
+        async def cross_df() -> pd.DataFrame:
             _ = self.refresh_tick.get()
-            rows = self._controller.list_crosses()
+            rows = await self._controller.list_crosses()
             data = [
                 {
                     "ID": r["id"],
                     "Start": self._format_dt(r["datetime_start"]),
                     "Executed": r["executed"],
+                    "Distance": r.get("distance", 0),
                     "Description": r["description"] or "",
 
                 }
                 for r in rows
             ]
-            return pd.DataFrame(data) if data else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", ])
+            return pd.DataFrame(data) if data else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", "Distance" ])
 
         @output
         @render.data_frame
-        def cr_grid():
-            df = cross_df()
+        async def cr_grid():
+            df = await cross_df()
             return render.DataGrid(
                 df,
                 selection_mode="rows",
@@ -145,14 +159,15 @@ class CrossPlanningPage:
         # Row selection -> populate form
         @reactive.Effect
         @reactive.event(input.cr_grid_selected_rows)
-        def _on_row_selected():
+        async def _on_row_selected():
             try:
                 sel = input.cr_grid_selected_rows()
                 if not sel:
                     status.set(self.NO_SELECTION_MESSAGE)
                     self.selected_cross_id.set("")
                     return
-                df = cross_df()
+                # Await the async calc to get the DataFrame
+                df = await cross_df()
                 row_idx = sel[0]
                 if row_idx < 0 or row_idx >= len(df):
                     status.set(self.NO_SELECTION_MESSAGE)
@@ -161,7 +176,7 @@ class CrossPlanningPage:
                 row = df.iloc[row_idx]
                 cross_id = int(row["ID"])
                 self.selected_cross_id.set(str(cross_id))
-                detail = self._controller.get_cross_view(cross_id)
+                detail = await self._controller.get_cross_view(cross_id)
                 self._write_form(session, detail)
                 status.set(f"Selected Cross #{cross_id}")
             except Exception as e:
@@ -177,15 +192,16 @@ class CrossPlanningPage:
 
         @reactive.Effect
         @reactive.event(input.cr_add_btn)
-        def _on_add():
+        async def _on_add():
             data = self._read_form(input)
             if not data["datetime_start"]:
                 status.set("Please provide a valid date and time.")
                 return
             try:
-                detail = self._controller.create_cross(
+                detail = await self._controller.create_cross(
                     datetime_start=data["datetime_start"],
                     executed=data["executed"],
+                    distance=data["distance"],
                     description=data["description"] or None,
                 )
                 self.selected_cross_id.set(str(detail["id"]))
@@ -197,7 +213,7 @@ class CrossPlanningPage:
 
         @reactive.Effect
         @reactive.event(input.cr_update_btn)
-        def _on_update():
+        async def _on_update():
             sel = self.selected_cross_id.get()
             if not sel:
                 status.set(self.NO_SELECTION_MESSAGE)
@@ -207,10 +223,11 @@ class CrossPlanningPage:
                 status.set("Please provide a valid date and time.")
                 return
             try:
-                detail = self._controller.update_cross(
+                detail = await self._controller.update_cross(
                     int(sel),
                     datetime_start=data["datetime_start"],
                     executed=data["executed"],
+                    distance=data["distance"],
                     description=data["description"] or None,
                 )
                 self._write_form(session, detail)
@@ -221,9 +238,10 @@ class CrossPlanningPage:
 
         @reactive.Effect
         @reactive.event(input.cr_delete_btn)
-        def _on_delete():
+        async def _on_delete():
             sel = input.cr_grid_selected_rows()
-            df = cross_df()
+            # cross_df is async -> await it
+            df = await cross_df()
             if not sel or df.empty:
                 status.set(self.NO_SELECTION_MESSAGE)
                 return
@@ -233,6 +251,7 @@ class CrossPlanningPage:
                 return
             cross_id = int(df.iloc[idx]["ID"])
             try:
+                # delete_cross is sync in controller -> do NOT await
                 self._controller.delete_cross(cross_id)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)

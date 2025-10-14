@@ -45,3 +45,6 @@ class ServiceCross(Service):
 
     async def remove_runner_from_cross(self,id)->bool:
         return await self._cross_repo.remove_runner(id)
+
+    async def update_cross(self, cross):
+        await self._cross_repo.update_cross(cross)

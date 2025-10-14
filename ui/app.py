@@ -145,7 +145,8 @@ class FitnessWarriorApp:
             user = _get_session_user()
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
-
+            nav_items.append(_safe_panel(cross_planning.get_ui()))
+            nav_items.append(_safe_panel(cross.get_ui()))
             nav_items.extend(
                 [i for i in [_safe_panel(dashboard_own_unit.get_ui()),
                              _safe_panel(own_unit.get_ui()), ] if i is not None]
@@ -153,8 +154,7 @@ class FitnessWarriorApp:
             admin_menu = _build_admin_menu(role)
             if role is Role.ADMIN:
                 if admin_menu is not None:
-                    nav_items.append(_safe_panel(cross_planning.get_ui()))
-                    nav_items.append(_safe_panel(cross.get_ui()))
+
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(ind_test_show.get_ui()))
                     nav_items.append(_safe_panel(reports.get_ui()))
