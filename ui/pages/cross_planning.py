@@ -5,13 +5,13 @@ from typing import Optional, Dict, Any, List
 
 import pandas as pd
 from shiny import ui, render, reactive
-from ui.controllers.cross_controller import CrossController
-from ui.controllers.cross_plannig_controller import CrossPlannigController
+
+from ui.controllers.cross_plannig_controller import CrossPlanningController
 
 
 class CrossPlanningPage:
     def __init__(self):
-        self._controller = CrossPlannigController()
+        self._controller = CrossPlanningController()
         self.refresh_tick = reactive.Value(0)
         self.selected_cross_id = reactive.Value("")
 

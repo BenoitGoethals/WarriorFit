@@ -1,36 +1,47 @@
+from watchfiles import awatch
+
+from data.db.cross_repository import CrossRepository
+from data.db.db_model import Cross,Runner
 from services.service import Service
 
 
 class ServiceCross(Service):
     def __init__(self):
         super().__init__()
+        self._cross_repo = CrossRepository()
 
-    def get(self, Runner, runner_id):
-        pass
+    async def get_runner(self,  runner_id)-> Runner | None:
+        return await self._cross_repo.get_runner(runner_id)
 
-    def add(self, cross):
-        pass
+    async def get_cross(self, cross_id)-> Cross | None:
+        return await self._cross_repo.get_cross(cross_id)
 
-    def list_all(self, Cross):
-        pass
+    async def add(self, cross)-> Cross | None:
+        return await self._cross_repo.add_cross(cross)
 
-    def delete(self, runner):
-        pass
+    async def list_all(self)-> list[Cross]:
+        return await self._cross_repo.get_all_cross()
 
-    async def get_all_crosses(self):
-        pass
+    async def get_all_runners(self)-> list[Runner]:
+        return await self._cross_repo.get_all_runners()
 
-    async def get_cross_by_id(self, param):
-        pass
+    async def delete_cross(self, id: float)-> bool:
+        return await self._cross_repo.remove_cross(id)
 
-    async def get_cross_with_runners(self, param):
-        pass
+    async def get_all_crosses(self)-> list[Cross]:
+        return await self._cross_repo.get_all_cross()
 
-    async def add_runner_to_cross(self, param, r):
-        pass
+    async def get_cross_by_id(self, id)-> Cross | None:
+        return await self._cross_repo.get_cross(id)
 
-    async def update_runner(self, param, r):
-        pass
+    async def get_cross_with_runners(self, id)-> list[Runner]:
+        return await self._cross_repo.get_runners_from_a_cross(id)
 
-    async def remove_runner_from_cross(self, param, param1):
-        pass
+    async def add_runner_to_cross(self, r)-> Runner:
+        return await self._cross_repo.add_runner(r)
+
+    async def update_runner(self, r):
+        return await self._cross_repo.update_runner(r.id, r)
+
+    async def remove_runner_from_cross(self,id)->bool:
+        return await self._cross_repo.remove_runner(id)

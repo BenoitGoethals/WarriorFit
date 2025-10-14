@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any, Coroutine
 
 from data.db.db_model import Cross, Runner
 from services.service_cross import ServiceCross
 
 
-class CrossPlannigController:
+class CrossPlanningController:
     """
     Controller for managing Cross registrations:
     - add/remove runners to a cross
@@ -18,13 +18,14 @@ class CrossPlannigController:
         self._service = ServiceCross()
 
     # --- CRUD Cross ---
-    def create_cross(self, *, datetime_start: datetime, executed: bool = False, description: str | None = None) -> Dict:
+    async def create_cross(self, *, datetime_start: datetime, executed: bool = False, description: str | None = None) -> \
+    Coroutine[Any, Any, dict]:
         cross = Cross(datetime_start=datetime_start, executed=executed, description=description)
-        self._service.add(cross)
-        return self.get_cross_view(cross.id)
+        await self._service.add(cross)
+        return  self.get_cross_view(cross.id)
 
-    def list_crosses(self) -> list[Dict]:
-        crosses: list[Cross] = self._service.list_all(Cross)
+    async def list_crosses(self) -> list[Dict]:
+        crosses: list[Cross] = await self._service.get_all_crosses()
         if not crosses:
             return []
         # sort by datetime_start desc, then id desc
@@ -40,27 +41,27 @@ class CrossPlannigController:
             for c in crosses
         ]
 
-    def update_cross(self, cross_id: int, *, datetime_start: datetime | None = None, executed: bool | None = None, description: str | None = None) -> Dict:
-        return self.set_cross_details(cross_id, datetime_start=datetime_start, executed=executed, description=description)
+    async def update_cross(self, cross_id: int, *, datetime_start: datetime | None = None, executed: bool | None = None, description: str | None = None) -> Dict:
+        return await self.set_cross_details(cross_id, datetime_start=datetime_start, executed=executed, description=description)
 
     def delete_cross(self, cross_id: int) -> None:
         cross = self.get_cross(cross_id)
-        self._service.delete(cross)
+        self._service.delete_cross(cross_id)
 
     # --- Getters already present ---
-    def get_cross(self, cross_id: int) -> Cross:
-        cross = self._service.get(Cross, cross_id)
+    async def get_cross(self, cross_id: int) -> Cross:
+        cross = await self._service.get_cross(cross_id)
         if not cross:
             raise ValueError(f"Cross {cross_id} not found")
         return cross
 
-    def get_cross_view(self, cross_id: int) -> Dict:
+    async def get_cross_view(self, cross_id: int) -> Dict:
         """
         Returns the cross details with:
         - runners: ordered list by running_time asc
         - runners_by_serial: dict serial_number -> ordered list of runners
         """
-        cross = self.get_cross(cross_id)
+        cross =  await self.get_cross(cross_id)
         runners = list(cross.runners or [])
         runners.sort(key=lambda r: (r.running_time, r.id))
 
@@ -87,40 +88,8 @@ class CrossPlannigController:
             "runners_by_serial": runners_by_serial,
         }
 
-    # --- Runner attach/detach ---
-    def add_runner(self, cross_id: int, runner_id: int) -> Dict:
-        """
-        Adds a runner to the cross if not already present.
-        Returns fresh cross view.
-        """
-        cross = self.get_cross(cross_id)
-        runner = self._service.get(Runner, runner_id)
-        if not runner:
-            raise ValueError(f"Runner {runner_id} not found")
 
-        if runner not in cross.runners:
-            cross.runners.append(runner)
-            self._service.add(cross)
-
-        return self.get_cross_view(cross_id)
-
-    def remove_runner(self, cross_id: int, runner_id: int) -> Dict:
-        """
-        Removes a runner from the cross if present.
-        Returns fresh cross view.
-        """
-        cross = self.get_cross(cross_id)
-        runner = self._service.get(Runner, runner_id)
-        if not runner:
-            raise ValueError(f"Runner {runner_id} not found")
-
-        if runner in cross.runners:
-            cross.runners.remove(runner)
-            self._service.add(cross)
-
-        return self.get_cross_view(cross_id)
-
-    def set_cross_details(
+    async def set_cross_details(
         self,
         cross_id: int,
         *,
@@ -139,24 +108,7 @@ class CrossPlannigController:
         if description is not None:
             cross.description = description
 
-        self._service.add(cross)
+        await self._service.add(cross)
 
-        return self.get_cross_view(cross_id)
+        return await self.get_cross_view(cross_id)
 
-    # --- Runner CRUD (optional convenience) ---
-    def create_runner(self, *, serial_number: str | None, running_time: float) -> Dict:
-        runner = Runner(serial_number=serial_number, running_time=running_time)
-        self._service.add(runner)
-        return {"id": runner.id, "serial_number": runner.serial_number, "running_time": runner.running_time}
-
-    def list_runners(self) -> list[Dict]:
-        runners: list[Runner] = self._service.list_all(Runner)
-        runners.sort(key=lambda r: (r.running_time, r.id))
-        return [{"id": r.id, "serial_number": r.serial_number, "running_time": r.running_time} for r in runners]
-
-    def delete_runner(self, runner_id: int) -> None:
-        runner = self._service.get(Runner, runner_id)
-        if not runner:
-            raise ValueError(f"Runner {runner_id} not found")
-        self._service.delete(runner)
-# ... existing code ...eCross()
