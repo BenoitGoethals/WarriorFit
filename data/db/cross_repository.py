@@ -1,6 +1,6 @@
 import logging
 from typing import List
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from data.db.abc_repository import ABCRepository
@@ -51,18 +51,42 @@ class CrossRepository(ABCRepository):
             self._logger.error(f"Database error removing cross {id}: {str(e)}")
             return False
 
-    async def add_runner(self, runner: Runner) -> Runner | None:
+    async def add_runner_to_cross(self, cross_id: int, runner: Runner) -> Runner | None:
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    session.add(runner)
+                    cross = await session.get(Cross, cross_id)
+                    if not cross:
+                        self._logger.error(f"Cross {cross_id} not found")
+                        return None
+
+                    # Persist runner (new or detached)
+                    if runner.id is None:
+                        session.add(runner)
+                        await session.flush()  # ensure runner.id
+                    else:
+                        # ensure runner is attached to this session
+                        runner = await session.merge(runner)
+                        await session.flush()
+
+                    # Avoid touching cross.runners (prevents lazy-load)
+                    exists = await session.execute(
+                        select(1).select_from(CrossRunners).where(
+                            CrossRunners.cross_id == cross_id,
+                            CrossRunners.runner_id == runner.id,
+                        )
+                    )
+                    if exists.scalar() is None:
+                        await session.execute(
+                            insert(CrossRunners).values(cross_id=cross_id, runner_id=runner.id)
+                        )
+
+                    # If you need current state, refresh here while session is active
                     await session.refresh(runner)
-                    return runner
-        except IntegrityError as e:
-            self._logger.error(f"Integrity error adding runner {getattr(runner, 'id', 'unknown')}: {str(e)}")
-            return None
-        except SQLAlchemyError as e:
-            self._logger.error(f"Database error adding runner {getattr(runner, 'id', 'unknown')}: {str(e)}")
+
+            return runner
+        except Exception as e:
+            self._logger.error(f"Linking runner to cross failed: {e}")
             return None
 
     async def remove_runner(self, id: int) -> bool:

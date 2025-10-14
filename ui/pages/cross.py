@@ -5,6 +5,9 @@ from typing import Dict, Any, Optional
 import pandas as pd
 from shiny import ui, render, reactive
 
+# UI:
+ui.output_ui("runner_card")
+
 from ui.controllers.cross_controller import CrossController
 
 
@@ -27,23 +30,10 @@ class CrossPage:
                     ui.card(
                         ui.card_header("Cross"),
                         ui.input_select("cross_id", "Cross", choices=[]),
+                        ui.input_action_button("cross_locker", "Select", width="150px"),
                         full_screen=False,
                     ),
-                    ui.card(
-                        ui.card_header("Runner"),
-                        ui.input_text("runner_serialnr", "Serial Number"),
-                        ui.input_action_button("runner_search", "Confirm Serial", width="150px"),
-                        ui.output_text("runner_military"),
-                        ui.input_text("runner_time", "Running time (mm:ss)", placeholder="e.g., 10:45"),
-                        ui.layout_columns(
-                            ui.input_action_button("runner_add_btn", "Add", width="120px"),
-                            ui.input_action_button("runner_update_btn", "Update", width="120px"),
-                            ui.input_action_button("runner_clear_btn", "Clear Form", width="120px"),
-                            col_widths=(4, 4, 4),
-                        ),
-                        ui.output_text("runner_status"),
-                        full_screen=False,
-                    ),
+                    ui.output_ui("runner_card"),
                 ),
                 ui.card(
                     ui.card_header("Runners"),
@@ -58,6 +48,42 @@ class CrossPage:
 
     def server(self, input, output, session):
         status = reactive.Value("Ready.")
+
+        cross_selected_id = reactive.Value("")  # or None
+
+        @output
+        @render.ui
+        def runner_card():
+            if not cross_selected_id.get():
+                return ui.div()  # hidden
+            return ui.card(
+                ui.card_header("Runner"),
+                ui.input_text("runner_serialnr", "Serial Number"),
+                ui.input_action_button("runner_search", "Confirm Serial", width="150px"),
+                ui.output_text("runner_military"),
+                ui.input_text("runner_time", "Running time (mm:ss)", placeholder="e.g., 10:45"),
+                ui.layout_columns(
+                    ui.input_action_button("runner_add_btn", "Add", width="120px"),
+                    ui.input_action_button("runner_update_btn", "Update", width="120px"),
+                    ui.input_action_button("runner_clear_btn", "Clear Form", width="120px"),
+                    col_widths=(4, 4, 4),
+                ),
+                ui.output_text("runner_status"),
+                full_screen=False,
+            )
+
+        # Example: when a cross is chosen from a select
+        @reactive.Effect
+        @reactive.event(input.cross_select)
+        def on_cross_select():
+            val = (input.cross_select() or "").strip()
+            cross_selected_id.set(val)
+
+        @reactive.Effect
+        @reactive.event(input.cross_locker)
+        def on_cross_locker():
+            val = (input.cross_id() or "").strip()
+            cross_selected_id.set(val)
 
         def _read_form() -> Dict[str, Any]:
             return {
@@ -79,7 +105,7 @@ class CrossPage:
             selected = cur if cur in items else None
             ui.update_select("cross_id", choices=items, selected=selected)
 
-        @reactive.calc
+
         async def runners_df():
             _ = self.refresh_tick.get()
             cid = self.selected_cross_id.get()
@@ -113,7 +139,7 @@ class CrossPage:
         async def _init():
             await _refresh_cross_choices()
 
-        @reactive.Effect
+      #  @reactive.Effect
         async def _on_cross_change():
             val = (input.cross_id() or "").strip()
             self.selected_cross_id.set(val)
@@ -134,7 +160,7 @@ class CrossPage:
             if sm is None:
                 status.set("Not found.")
             else:
-                status.set("Service member found.")
+                status.set(f"Service {sm.rank} {sm.last_name} {sm.service_number} member found.")
 
         @reactive.Effect
         @reactive.event(input.runners_grid_selected_rows)
