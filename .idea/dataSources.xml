@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="192.168.0.30" uuid="55b0ca6b-8e0d-494b-bfd4-f53b0fcf6ecd">
+    <data-source source="LOCAL" name="78.21.255.210" uuid="55b0ca6b-8e0d-494b-bfd4-f53b0fcf6ecd">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://192.168.0.30:5432/postgres</jdbc-url>
+      <jdbc-url>jdbc:postgresql://78.21.255.210:5432/postgres</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
     <data-source source="LOCAL" name="military_be.db" uuid="c48ea3bc-bad9-4572-babf-0282d650ad9c">

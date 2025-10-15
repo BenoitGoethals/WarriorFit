@@ -90,16 +90,21 @@ class CrossController:
             data = []
             for r in cross:
                 data.append({
+                    "Order" : 0,
                     "ID": r.id,
                     "Serial": r.serial_number or "",
                     "Running Time": self.format_seconds(r.running_time),
+                    "Running seconds": (r.running_time)
 
                 })
             df = pd.DataFrame(data)
             if df.empty:
                 return df
             # Sort by running time ascending (fastest first)
-            return df.sort_values(by="Running Time", ascending=True).reset_index(drop=True)
+            df = df.sort_values(by="Running seconds", ascending=True).reset_index(drop=True)
+            df["Order"] = df.index + 1  # Add 1 to make it 1-based instead of 0-based
+
+            return df
         except Exception as e:
             return pd.DataFrame()
 
