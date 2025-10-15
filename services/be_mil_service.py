@@ -41,6 +41,8 @@ class BEMILService(metaclass=Singleton):
                 self.__logger.error(f"Error fetching BEMIL by serial number {be_mil_serial_number}: {e}")
                 return None
 
+
+
 #
 # if __name__ == "__main__":
 #     import asyncio

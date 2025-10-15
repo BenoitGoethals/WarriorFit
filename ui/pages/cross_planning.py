@@ -46,7 +46,7 @@ class CrossPlanningPage:
                     ui.card_header("Crosses"),
                     ui.layout_columns(
                         ui.output_data_frame("cr_grid"),
-                        col_widths=(6,),
+
                     ),
                     ui.br(),
                     ui.layout_columns(
@@ -206,6 +206,7 @@ class CrossPlanningPage:
                 )
                 self.selected_cross_id.set(str(detail["id"]))
                 self._write_form(session, detail)
+
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{detail['id']} created.")
             except Exception as e:

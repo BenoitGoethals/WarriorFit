@@ -1,7 +1,8 @@
 import logging
 from typing import List
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, exists, and_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import aliased
 
 from data.db.abc_repository import ABCRepository
 from data.db.db_model import Cross, Runner, CrossRunners  # ensure association table is imported
@@ -59,6 +60,15 @@ class CrossRepository(ABCRepository):
                     if not cross:
                         self._logger.error(f"Cross {cross_id} not found")
                         return None
+
+                    already_encoded =await session.execute(
+                    select(1).where(
+                        CrossRunners.cross_id == cross_id,
+                        CrossRunners.runner_id == runner.id,
+                    ))
+                    if already_encoded.scalar() is not None:
+                        return None
+
 
                     # Persist runner (new or detached)
                     if runner.id is None:
@@ -119,8 +129,8 @@ class CrossRepository(ABCRepository):
         # Many-to-many via association table; no Runner.cross_id column
         query = (
             select(Runner)
-            .join(CrossRunners, Runner.id == CrossRunners.c.runner_id)
-            .where(CrossRunners.c.cross_id == id)
+            .join(CrossRunners, Runner.id == CrossRunners.runner_id)
+            .where(CrossRunners.cross_id == id)
         )
         results = await self.fetch_and_log(query, "runners")
         return results if results else []
@@ -180,4 +190,38 @@ class CrossRepository(ABCRepository):
             self._logger.error(f"Database error updating cross {getattr(cross, 'id', 'unknown')}: {str(e)}")
             return None
 
+    async def exist_in_cross(self, serial: str, cross_id: int) -> bool:
+        """
+        Check if a runner with given serial number exists in a specific cross.
+        """
+        if not serial:
+            return False
+        serial = serial.strip()
 
+        # Enforce integer type to avoid VARCHAR binding from callers
+        try:
+            cross_id_int = int(cross_id)
+        except (TypeError, ValueError):
+            self._logger.warning(f"exist_in_cross called with non-integer cross_id={cross_id!r}")
+            return False
+
+        # Proper EXISTS with explicit join to Runner
+        stmt = select(
+            exists().where(
+                and_(
+                    CrossRunners.cross_id == cross_id_int,
+                    Runner.id == CrossRunners.runner_id,
+                    Runner.serial_number == serial,
+                )
+            )
+        )
+
+        try:
+            async with self.SessionLocal() as session:
+                result = await session.execute(stmt)
+                return bool(result.scalar())
+        except SQLAlchemyError as e:
+            self._logger.error(
+                "Database error checking runner existence in cross: %s", e, exc_info=True
+            )
+            return False

@@ -41,10 +41,18 @@ class CrossController:
         s = int(sec) % 60
         return f"{int(m)}:{int(s):02d}"
 
-    @staticmethod
-    def validate_form(data: Dict[str, Any]) -> Tuple[bool, Dict[str, Any] | str]:
+
+    async def validate_form(self, data: Dict[str, Any]) -> Tuple[bool, Dict[str, Any] | str]:
         if not (data.get("serialnr") or "").strip():
             return False, "Serial number is required."
+        if await self.search_military(data.get("serialnr")) is None:
+            return (
+                False,
+                "Serial number does not exist. Please enter a valid serial number.",
+            )
+        if await self._service.exist_in_cross(data.get("serialnr"),data.get("cross_id")):
+            return False, "Serial number already exists."
+
         ok_run, run = CrossController.parse_time_to_seconds(data.get("running_time") or "")
         if not ok_run:
             return False, f"Running time: {run}"
@@ -72,22 +80,22 @@ class CrossController:
     async def list_runners_df(self, cross_id: int) -> pd.DataFrame:
         try:
             cross = await self._service.get_cross_with_runners(int(cross_id))
-            if cross is None or not getattr(cross, "runners", None):
+            if cross is None:
                 return pd.DataFrame()
             data = []
-            for r in cross.runners:
+            for r in cross:
                 data.append({
                     "ID": r.id,
                     "Serial": r.serial_number or "",
                     "Running Time": self.format_seconds(r.running_time),
-                    "Running Time (s)": int(r.running_time),
+
                 })
             df = pd.DataFrame(data)
             if df.empty:
                 return df
             # Sort by running time ascending (fastest first)
-            return df.sort_values(by="Running Time (s)", ascending=True).reset_index(drop=True)
-        except Exception:
+            return df.sort_values(by="Running Time", ascending=True).reset_index(drop=True)
+        except Exception as e:
             return pd.DataFrame()
 
     # ----- Commands -----

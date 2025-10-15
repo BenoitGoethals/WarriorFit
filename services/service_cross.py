@@ -49,3 +49,6 @@ class ServiceCross(Service):
 
     async def update_cross(self, cross):
         await self._cross_repo.update_cross(cross)
+
+    async def exist_in_cross(self, serial, cross_id):
+        return await self._cross_repo.exist_in_cross(serial, cross_id)

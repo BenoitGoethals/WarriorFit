@@ -31,6 +31,7 @@ class CrossPage:
                         ui.card_header("Cross"),
                         ui.input_select("cross_id", "Cross", choices=[]),
                         ui.input_action_button("cross_locker", "Select", width="150px"),
+
                         full_screen=False,
                     ),
                     ui.output_ui("runner_card"),
@@ -39,7 +40,7 @@ class CrossPage:
                     ui.card_header("Runners"),
                     ui.output_data_frame("runners_grid"),
                     ui.br(),
-                    ui.input_action_button("runner_delete_btn", "Delete Selected"),
+                    ui.input_action_button("report_lst", "Generate Report"),
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
@@ -61,11 +62,12 @@ class CrossPage:
                 ui.input_text("runner_serialnr", "Serial Number"),
                 ui.input_action_button("runner_search", "Confirm Serial", width="150px"),
                 ui.output_text("runner_military"),
-                ui.input_text("runner_time", "Running time (mm:ss)", placeholder="e.g., 10:45"),
+                ui.input_text("runner_time", "Running time (hh::mm:ss)", placeholder="e.g., 01:10:45"),
                 ui.layout_columns(
                     ui.input_action_button("runner_add_btn", "Add", width="120px"),
                     ui.input_action_button("runner_update_btn", "Update", width="120px"),
                     ui.input_action_button("runner_clear_btn", "Clear Form", width="120px"),
+                    ui.input_action_button("runner_delete_btn", "Delete Selected", width="240px"),
                     col_widths=(4, 4, 4),
                 ),
                 ui.output_text("runner_status"),
@@ -77,13 +79,17 @@ class CrossPage:
         @reactive.event(input.cross_select)
         def on_cross_select():
             val = (input.cross_select() or "").strip()
-            cross_selected_id.set(val)
+            self.selected_cross_id.set(val)
+
+
 
         @reactive.Effect
         @reactive.event(input.cross_locker)
         def on_cross_locker():
             val = (input.cross_id() or "").strip()
             cross_selected_id.set(val)
+            self.selected_cross_id.set(val)
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         def _read_form() -> Dict[str, Any]:
             return {
@@ -96,7 +102,7 @@ class CrossPage:
             session.send_input_message("runner_serialnr", {"value": ""})
             session.send_input_message("runner_time", {"value": ""})
             self.selected_runner_id.set("")
-            status.set("Form cleared.")
+            #status.set("Form cleared.")
 
         async def _refresh_cross_choices():
             crosses = await self.controller.load_crosses()
@@ -105,13 +111,16 @@ class CrossPage:
             selected = cur if cur in items else None
             ui.update_select("cross_id", choices=items, selected=selected)
 
-
+        @reactive.calc
         async def runners_df():
-            _ = self.refresh_tick.get()
+
             cid = self.selected_cross_id.get()
+            _ = self.refresh_tick.get()  # depend on refresh to re-query
+
             if not cid:
                 return pd.DataFrame()
             return await self.controller.list_runners_df(int(cid))
+
 
         @output
         @render.data_frame
@@ -134,6 +143,11 @@ class CrossPage:
                 return "" #f"{sm.rank} {sm.service_number} {sm.first_name} {sm.last_name}"
             except Exception:
                 return "Selected"
+
+        @reactive.calc
+        async def cross_df():
+            _ = self.refresh_tick.get()  # dependency for re-render
+            # ... load and return DataFrame ...
 
         @reactive.Effect
         async def _init():
@@ -189,18 +203,22 @@ class CrossPage:
         @reactive.event(input.runner_add_btn)
         async def _on_add():
             data = _read_form()
-            ok, res = self.controller.validate_form(data)
+            ok, res = await self.controller.validate_form(data)
             if not ok:
                 status.set(res)
                 return
             payload = {**data, **res}
+            # ensure cross id is set
+            if not payload.get("cross_id"):
+                status.set("Select a Cross first.")
+                return
             added = await self.controller.add_runner(int(payload["cross_id"]), payload)
             if not added:
                 status.set(f"Failed to add runner {payload['serialnr']}.")
                 return
+            self.selected_runner_id.set("")
+            self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Added runner {payload['serialnr']}.")
-            self.refresh_tick.set(self.refresh_tick.get() + 1)
-            _clear_form()
 
         @reactive.Effect
         @reactive.event(input.runner_update_btn)
