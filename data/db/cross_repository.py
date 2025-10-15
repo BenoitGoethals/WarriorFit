@@ -149,8 +149,9 @@ class CrossRepository(ABCRepository):
                         val = getattr(r, key, None)
                         if val is not None:
                             setattr(existing_runner, key, val)
-            async with self.SessionLocal() as session:
-                await session.refresh(existing_runner)
+                    # refresh within the same session where the object is persistent
+                    await session.flush()
+                    await session.refresh(existing_runner)
             return existing_runner
         except IntegrityError as e:
             self._logger.error(f"Integrity error updating runner {id}: {str(e)}")

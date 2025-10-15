@@ -42,7 +42,7 @@ class CrossController:
         return f"{int(m)}:{int(s):02d}"
 
 
-    async def validate_form(self, data: Dict[str, Any]) -> Tuple[bool, Dict[str, Any] | str]:
+    async def validate_form(self, data: Dict[str, Any],update=False) -> Tuple[bool, Dict[str, Any] | str]:
         if not (data.get("serialnr") or "").strip():
             return False, "Serial number is required."
         if await self.search_military(data.get("serialnr")) is None:
@@ -50,7 +50,12 @@ class CrossController:
                 False,
                 "Serial number does not exist. Please enter a valid serial number.",
             )
-        if await self._service.exist_in_cross(data.get("serialnr"),data.get("cross_id")):
+        if update:
+           if data.get("serialnr") != data.get("old_serialnr"):
+               if await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):
+                return False, "Serial number already exists."
+
+        elif await self._service.exist_in_cross(data.get("serialnr"),data.get("cross_id")):
             return False, "Serial number already exists."
 
         ok_run, run = CrossController.parse_time_to_seconds(data.get("running_time") or "")
@@ -113,5 +118,5 @@ class CrossController:
         r.running_time = payload["running_time_s"]
         return await self._service.update_runner(int(runner_id), r)
 
-    async def delete_runner(self, cross_id: int, runner_id: int) -> bool:
-        return await self._service.remove_runner_from_cross(int(cross_id), int(runner_id))
+    async def delete_runner(self,  runner_id: int) -> bool:
+        return await self._service.remove_runner_from_cross(runner_id)

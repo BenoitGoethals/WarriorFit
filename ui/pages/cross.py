@@ -191,6 +191,7 @@ class CrossPage:
                     return
                 row = df.iloc[row_idx]
                 self.selected_runner_id.set(str(row["ID"]))
+                self.selected_military.set(await self.controller.search_military(row["Serial"]))
                 serial = str(row.get("Serial", "") or "")
                 run_t = str(row.get("Running Time", "") or "")
                 ui.update_text("runner_serialnr", value=serial)
@@ -228,7 +229,8 @@ class CrossPage:
                 status.set("Select a row first.")
                 return
             data = _read_form()
-            ok, res = self.controller.validate_form(data)
+            data["old_serialnr"] = getattr(self.selected_military.get(), "service_number", None)
+            ok, res = await self.controller.validate_form(data,True)
             if not ok:
                 status.set(res)
                 return
@@ -237,8 +239,10 @@ class CrossPage:
             if not updated:
                 status.set(f"Failed to update runner {payload['serialnr']}.")
                 return
+            self.selected_runner_id.set("")
+            self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Updated runner {payload['serialnr']}.")
-            self.refresh_tick.set(self.refresh_tick.get() + 1)
+          
             _clear_form()
 
         @reactive.Effect
@@ -250,7 +254,7 @@ class CrossPage:
             if not sel or not cid or not rid:
                 status.set("Select a row to delete.")
                 return
-            ok = await self.controller.delete_runner(int(cid), int(rid))
+            ok = await self.controller.delete_runner(int(rid))
             if not ok:
                 status.set("Failed to delete runner.")
                 return

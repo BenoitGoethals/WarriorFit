@@ -41,8 +41,8 @@ class ServiceCross(Service):
         r.cross_id = id_cross
         return await self._cross_repo.add_runner_to_cross(id_cross,r)
 
-    async def update_runner(self, r):
-        return await self._cross_repo.update_runner(r.id, r)
+    async def update_runner(self,id:int, r:Runner)->Runner:
+        return await self._cross_repo.update_runner(id, r)
 
     async def remove_runner_from_cross(self,id)->bool:
         return await self._cross_repo.remove_runner(id)
