@@ -89,12 +89,17 @@ class CrossController:
                 return pd.DataFrame()
             data = []
             for r in cross:
+                runner = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
                 data.append({
                     "Order" : 0,
                     "ID": r.id,
                     "Serial": r.serial_number or "",
                     "Running Time": self.format_seconds(r.running_time),
-                    "Running seconds": (r.running_time)
+                    "Runner Name": runner.first_name+" "+runner.last_name if runner else "",
+                    "Gender": runner.gender if runner else "",
+                    "Age": runner.age_from_birthdate() if runner else "",
+                    "Running seconds": r.running_time,
+                    "Unit": runner.unit if runner else "",
 
                 })
             df = pd.DataFrame(data)
