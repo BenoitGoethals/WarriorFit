@@ -1,8 +1,11 @@
 from __future__ import annotations
+
+from datetime import datetime
 from typing import Optional, Dict, Any, Tuple, List
 
 import pandas as pd
 
+from services.report_generator_pdf import ReportGeneratorPdf
 from services.service_cross import ServiceCross  # assumed service layer for Cross domain
 from services.be_mil_service import BEMILService
 from data.db.db_model import Runner, Cross  # Runner model given in prompt
@@ -12,6 +15,7 @@ class CrossController:
     def __init__(self) -> None:
         self._service = ServiceCross()
         self.be_mil_service = BEMILService()
+        self._pdf_gen = ReportGeneratorPdf()
 
     # ----- Helpers -----
     @staticmethod
@@ -130,3 +134,7 @@ class CrossController:
 
     async def delete_runner(self,  runner_id: int) -> bool:
         return await self._service.remove_runner_from_cross(runner_id)
+
+    async def generate_report_cross(self, cross_id:str):
+        return await self._pdf_gen.generate_run_report("Run report",(int(cross_id)))
+

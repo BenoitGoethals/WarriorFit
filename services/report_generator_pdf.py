@@ -9,6 +9,7 @@ from services.be_mil_service import BEMILService
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from services.report_type import ReportType
+from services.service_cross import ServiceCross
 from services.service_test import ServiceTest
 
 
@@ -16,6 +17,7 @@ class ReportGeneratorPdf:
 
     def __init__(self):
         self._user_service=ServiceTest()
+        self._cross_service=ServiceCross()
         self.be_mil_service=BEMILService()
         self.__logger = logging.getLogger(__name__)
 
@@ -31,6 +33,53 @@ class ReportGeneratorPdf:
             return await self.generate_swimming_report(report_name,own_unit,this_year)
         else:
             raise ValueError("Invalid report type")
+    
+    async def generate_run_report(self,report_name:str,cross:int):
+        result = await self._cross_service.get_cross_by_id(cross,lazy=False)
+
+        if not result or not result.runners:
+            return None
+
+        headers = ["order","Serial Number", "Name", "Running Time","Age","Unit"]
+
+        def row_builder(runner: dict) -> List[Any]:
+            return [
+                runner["order"],
+                runner["serial_number"],
+                runner["Name"],
+                self._fmt_time(runner["running_time"]),
+                runner["Age"],
+                runner["Unit"],           
+            ]
+
+        rows = []
+
+        for runner in result.runners:
+            runner_det = await self.be_mil_service.get_be_mil_by_id(runner.serial_number)
+            if runner_det:
+                rows.append({
+                    "order": None,
+                    "serial_number": runner.serial_number or "",
+                    "Name": runner_det.first_name + " " + runner_det.last_name or "",
+                    "running_time": runner.running_time,
+                    "Age": runner_det.age_from_birthdate() or "",
+                    "Unit": runner_det.unit or "",
+                })
+        rows = sorted(rows, key=lambda r: (r.get("running_time") is None, r.get("running_time") or float("inf")))
+        for idx, r in enumerate(rows, start=1):
+            r["order"] = idx
+            
+                
+        
+
+        return self._build_pdf(
+            rows,
+            report_name,
+            f"Cross Report - {result.datetime_start.strftime("%Y-%m-%d %H:%M:%S")}  {len(rows)} runners",
+            "cross_runners",
+            headers,
+            row_builder
+        )
 
     def _output_dir(self) -> str:
         """
@@ -84,7 +133,7 @@ class ReportGeneratorPdf:
         styles = deps["getSampleStyleSheet"]()
         story = [
             deps["Paragraph"](title, styles["Title"]),
-            deps["Paragraph"](datetime.now().strftime("%Y-%m-%d %H:%M"), styles["Normal"]),
+
             deps["Spacer"](1, 12),
         ]
 
@@ -369,9 +418,10 @@ if __name__ == "__main__":
 
     async def main():
         gem = ReportGeneratorPdf()
-        await gem.generate_report("tstasd", ReportType.COMBAT,True,True)
-        await gem.generate_report( "tstwe", ReportType.SWIMMING,True,True)
-        await gem.generate_report( "tstf", ReportType.FUNCTIONAL,True,True)
-        await gem.generate_report( "tstsdf", ReportType.PHEF,True,True)
+        await gem.generate_run_report("run",1)
+      #  await gem.generate_report("tstasd", ReportType.COMBAT,True,True)
+       # await gem.generate_report( "tstwe", ReportType.SWIMMING,True,True)
+       # await gem.generate_report( "tstf", ReportType.FUNCTIONAL,True,True)
+       # await gem.generate_report( "tstsdf", ReportType.PHEF,True,True)
 
     asyncio.run(main())

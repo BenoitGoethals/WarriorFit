@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+from pathlib import Path
 from typing import Dict, Any, Optional
 
 import pandas as pd
@@ -18,7 +20,8 @@ class CrossPage:
         self.selected_cross_id = reactive.Value("")
         self.selected_runner_id = reactive.Value("")
         self.selected_military = reactive.Value(None)
-
+        self._logger=logging.getLogger(__name__)
+        self._last_paths = reactive.Value([])
     NO_SELECTION_MESSAGE = "No row selected"
 
     def get_ui(self):
@@ -41,6 +44,7 @@ class CrossPage:
                     ui.output_data_frame("runners_grid"),
                     ui.br(),
                     ui.input_action_button("report_lst", "Generate Report"),
+                    ui.download_button("download_report_cross_run", "Download", class_="btn-primary"),
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
@@ -261,6 +265,75 @@ class CrossPage:
             status.set("Runner deleted successfully.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             _clear_form()
+
+        @render.download(filename=lambda: "reports_run.zip")
+        def download_report_cross_run():
+            import io
+            import zipfile
+            import asyncio
+            import threading
+            from pathlib import Path
+
+            def run_coro_sync(coro):
+                """
+                Run an async coroutine from sync code.
+
+                - If there's no running loop, use asyncio.run(coro).
+                - If there's an active loop, create a new event loop in a thread and run it there.
+                """
+                try:
+                    # If this raises RuntimeError: no running loop -> we'll use asyncio.run below
+                    running_loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    # No loop running in this thread — safe to use asyncio.run
+                    return asyncio.run(coro)
+                else:
+                    # There's an event loop running in this thread; run the coroutine in a new thread
+                    result_container = {}
+
+                    def _target():
+                        new_loop = asyncio.new_event_loop()
+                        try:
+                            asyncio.set_event_loop(new_loop)
+                            result_container["result"] = new_loop.run_until_complete(coro)
+                        finally:
+                            new_loop.close()
+
+                    t = threading.Thread(target=_target)
+                    t.daemon = True
+                    t.start()
+                    t.join()
+                    return result_container.get("result")
+
+            # Call async controller method in a sync manner
+            try:
+                paths, status_report = run_coro_sync(self.controller.generate_report_cross(cross_selected_id.get()))
+            except Exception:
+                # Log and re-raise or return an empty archive depending on desired behavior
+                self._logger.exception("Failed to generate report (generate_report_cross)")
+                # Option A: re-raise to surface the error
+                raise
+                # Option B: fallback to empty results:
+                # paths, status_report = [], "error"
+            status.set(status_report)
+
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+                for p in paths:
+                    try:
+                        path_obj = Path(p)
+                        if path_obj.is_file():
+                            zf.write(path_obj, arcname=path_obj.name)
+                    except Exception:
+                        self._logger.exception("Failed to add file to zip")
+
+            buf.seek(0)
+            data = buf.read()
+
+            def _iter():
+                yield data
+
+            return _iter()
 
 
 # Expose singleton-style API compatible with app.py import pattern

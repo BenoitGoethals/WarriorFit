@@ -2,7 +2,7 @@ import logging
 from typing import List
 from sqlalchemy import select, insert, exists, and_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 
 from data.db.abc_repository import ABCRepository
 from data.db.db_model import Cross, Runner, CrossRunners  # ensure association table is imported
@@ -14,6 +14,15 @@ class CrossRepository(ABCRepository):
 
     async def get_cross(self, id: int) -> Cross | None:
         query = select(Cross).where(Cross.id == id)
+        results = await self.fetch_and_log(query, "cross")
+        return results[0] if results else None
+
+    async def get_cross_full(self, id: int) -> Cross | None:
+        query = (
+            select(Cross)
+            .options(selectinload(Cross.runners))  # Eager load runners
+            .where(Cross.id == id)
+        )
         results = await self.fetch_and_log(query, "cross")
         return results[0] if results else None
 

@@ -31,8 +31,11 @@ class ServiceCross(Service):
     async def get_all_crosses(self)-> list[Cross]:
         return await self._cross_repo.get_all_cross()
 
-    async def get_cross_by_id(self, id)-> Cross | None:
-        return await self._cross_repo.get_cross(id)
+    async def get_cross_by_id(self, id, lazy=True)-> Cross | None:
+        if lazy:
+            return await self._cross_repo.get_cross(id)
+        else:
+            return await self._cross_repo.get_cross_full(id)
 
     async def get_cross_with_runners(self, id)-> list[Runner]:
         return await self._cross_repo.get_runners_from_a_cross(id)
