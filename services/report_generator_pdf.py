@@ -158,6 +158,7 @@ class ReportGeneratorPdf:
         story.append(tbl)
         doc.build(story)
         self.__logger.info(f"Generating PDF: {output_path}")
+        print(f"******************Generating PDF: {output_path}")
         return output_path
 
     async def generate_phef_report(self, report_name: str,own_unit:bool,this_year:bool):
