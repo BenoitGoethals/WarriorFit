@@ -5,6 +5,7 @@ class TypeFitnessTest(Enum):
     PHEF = "PHEF",
     COMBAT = "COMBAT",
     FUNCTIONAL = "FUNCTIONAL"
+    SWIMMING = "SWIMMING"
 
     def __str__(self):
         return self.value
