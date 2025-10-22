@@ -2,5 +2,6 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/data/scripts/test_data.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/military_api_rest/create_populate.sql" dialect="SQLite" />
   </component>
 </project>

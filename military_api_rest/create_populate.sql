@@ -1,0 +1,121 @@
+CREATE TABLE units
+(
+    id            INTEGER PRIMARY KEY,
+    name          TEXT NOT NULL,
+    base_location TEXT NOT NULL
+);
+
+
+CREATE TABLE service_men
+(
+    id             INTEGER PRIMARY KEY,
+    first_name     TEXT    NOT NULL,
+    last_name      TEXT    NOT NULL,
+    mail           TEXT    NOT NULL,
+    rank           TEXT    NOT NULL,
+    service_number TEXT    NOT NULL UNIQUE,
+    birthdate      TEXT    NOT NULL, -- store as ISO-8601 string (YYYY-MM-DD or with time)
+    gender         TEXT    NOT NULL, -- store enum name/value as TEXT
+    unit_id        INTEGER NOT NULL,
+    para           INTEGER NOT NULL DEFAULT 0,      -- boolean as 0/1
+    ops_test       INTEGER NOT NULL DEFAULT 0,      -- boolean as 0/1
+
+    FOREIGN KEY (unit_id) REFERENCES units (id)
+);
+
+INSERT INTO units (id, name, base_location) VALUES
+(1, '1-3 Bn Lanciers', 'Leopoldsburg'),
+(2, '1 Para', 'Brasschaat'),
+(3, '2 Commando', 'Flawinne'),
+(4, 'Special Operations Regiment', 'Heverlee'),
+(5, 'Medium Brigade Artillerie', 'Brasschaat'),
+(6, 'Genie 4 Compagnie', 'Amay'),
+(7, 'Landcomponent HQ', 'Evere'),
+(8, 'Defence Staff', 'Evere'),
+(9, 'Opleidingscentrum', 'Leopoldsburg'),
+(10, 'Medical Component', 'Neder-Over-Heembeek'),
+(11, 'Luchtcomponent 15 Wing', 'Melsbroek'),
+(12, 'Luchtcomponent 349 Sqn', 'Kleine-Brogel'),
+(13, 'Luchtcomponent 18 Sqn', 'Beauvechain'),
+(14, 'Luchtcomponent 21 Sqn', 'Florennes'),
+(15, 'Luchtcomponent 80 UAV Sqn', 'Florennes'),
+(16, 'Marinecomponent M917', 'Zeebrugge'),
+(17, 'Marinecomponent M923', 'Zeebrugge'),
+(18, 'Marinecomponent A960', 'Zeebrugge'),
+(19, 'Training Command', 'Leopoldsburg'),
+(20, 'Artillerie - Brasschaat', 'Brasschaat'),
+(21 ,'3 Para','Tielen');
+
+INSERT INTO service_men (id, first_name, last_name, mail, rank, service_number, birthdate, gender, unit_id, para,
+                         ops_test)
+VALUES (1, 'Lucas', 'Peeters', 'benoit@albatros.be', 'Sld', 'BE-20250001', '1994-03-12', 'M', 1, 1, 1),
+       (2, 'Emma', 'Dubois', 'benoit@albatros.be', 'Kpl', 'BE-20250002', '1992-07-25', 'F', 1, 0, 1),
+       (3, 'Noah', 'Janssens', 'benoit@albatros.be', 'Sgt', 'BE-20250003', '1989-11-02', 'M', 1, 1, 0),
+       (4, 'Lina', 'Vermeulen', 'benoit@albatros.be', 'Adj', 'BE-20250004', '1985-05-16', 'F', 1, 1, 0),
+       (5, 'Louis', 'Lefebvre', 'benoit@albatros.be', 'SgtMaj', 'BE-20250005', '1987-09-08', 'M', 1, 1, 1),
+       (6, 'Mila', 'Maes', 'benoit@albatros.be', 'Lt', 'BE-20250006', '1996-01-30', 'F', 1, 1, 1),
+       (7, 'Arthur', 'Willems', 'benoit@albatros.be', 'Kpt', 'BE-20250007', '1991-04-11', 'M', 1, 0, 0),
+       (8, 'Zoé', 'Lambert', 'benoit@albatros.be', 'Maj', 'BE-20250008', '1984-02-22', 'F', 1, 1, 1),
+       (9, 'Adam', 'De Smet', 'benoit@albatros.be', 'LtKol', 'BE-20250009', '1979-08-14', 'M', 1, 0, 0),
+       (10, 'Olivia', 'Claes', 'benoit@albatros.be', 'Kol', 'BE-20250010', '1976-12-05', 'F', 1, 0, 0),
+
+       (11, 'Victor', 'Goossens', 'benoit@albatros.be', 'Sld', 'BE-20250011', '1998-06-19', 'M', 2, 1, 1),
+       (12, 'Juliette', 'Simon', 'benoit@albatros.be', 'Kpl', 'BE-20250012', '1995-03-03', 'F', 4, 0, 1),
+       (13, 'Gabriel', 'Declercq', 'benoit@albatros.be', 'Sgt', 'BE-20250013', '1990-10-21', 'M', 5, 0, 1),
+       (14, 'Nora', 'De Ridder', 'benoit@albatros.be', 'Adj', 'BE-20250014', '1986-07-02', 'F', 17, 0, 1),
+       (15, 'Hugo', 'Hermans', 'benoit@albatros.be', 'Lt', 'BE-20250015', '1997-01-09', 'M', 15, 0, 1),
+       (16, 'Camille', 'Dupont', 'benoit@albatros.be', 'Kpt', 'BE-20250016', '1992-09-27', 'F', 13, 0, 1),
+       (17, 'Mathis', 'De Graaf', 'benoit@albatros.be', 'Maj', 'BE-20250017', '1983-04-06', 'M', 1, 0, 0),
+       (18, 'Alice', 'Baudoin', 'benoit@albatros.be', 'LtKol', 'BE-20250018', '1978-11-13', 'F', 7, 0, 0),
+       (19, 'Jules', 'Pauwels', 'benoit@albatros.be', 'Kol', 'BE-20250019', '1975-02-18', 'M', 8, 0, 0),
+       (20, 'Louise', 'Vandenberghe', 'benoit@albatros.be', 'SgtMaj', 'BE-20250020', '1988-12-29', 'F', 9, 0, 0),
+
+       (21, 'Lars', 'Martens', 'benoit@albatros.be', 'Sld', 'BE-20250021', '1999-04-23', 'M', 3, 0, 0),
+       (22, 'Sara', 'De Vos', 'benoit@albatros.be', 'Kpl', 'BE-20250022', '1993-12-02', 'F', 12, 0, 0),
+       (23, 'Thomas', 'De Clercq', 'benoit@albatros.be', 'Sgt', 'BE-20250023', '1991-02-07', 'M', 20, 0, 0),
+       (24, 'Amélie', 'Dumont', 'benoit@albatros.be', 'Adj', 'BE-20250024', '1987-08-15', 'F', 16, 0, 0),
+       (25, 'Elias', 'Wauters', 'benoit@albatros.be', 'Lt', 'BE-20250025', '1996-05-05', 'M', 6, 0, 0),
+       (26, 'Chloé', 'Renard', 'benoit@albatros.be', 'Kpt', 'BE-20250026', '1990-09-12', 'F', 11, 0, 0),
+       (27, 'Rayan', 'Aerts', 'benoit@albatros.be', 'Maj', 'BE-20250027', '1982-01-26', 'M', 7, 0, 0),
+       (28, 'Elise', 'Declerck', 'benoit@albatros.be', 'LtKol', 'BE-20250028', '1979-03-31', 'F', 10, 0, 0),
+       (29, 'Baptiste', 'Verschueren', 'benoit@albatros.be', 'Kol', 'BE-20250029', '1974-07-19', 'M', 8, 0, 0),
+       (30, 'Eva', 'Meunier', 'benoit@albatros.be', 'SgtMaj', 'BE-20250030', '1988-10-28', 'F', 19, 0, 0),
+
+       (31, 'Mohamed', 'El Hadi', 'benoit@albatros.be', 'Sld', 'BE-20250031', '1997-06-14', 'M', 2, 0, 0),
+       (32, 'Charlotte', 'Devos', 'benoit@albatros.be', 'Kpl', 'BE-20250032', '1994-01-18', 'F', 4, 0, 0),
+       (33, 'Nathan', 'Van Damme', 'benoit@albatros.be', 'Sgt', 'BE-20250033', '1990-04-03', 'M', 1, 0, 0),
+       (34, 'Clara', 'Vandamme', 'benoit@albatros.be', 'Adj', 'BE-20250034', '1986-11-22', 'F', 18, 0, 0),
+       (35, 'Simon', 'Vandenbossche', 'benoit@albatros.be', 'Lt', 'BE-20250035', '1995-07-07', 'M', 13, 0, 0),
+       (36, 'Anaïs', 'Moreau', 'benoit@albatros.be', 'Kpt', 'BE-20250036', '1992-02-27', 'F', 14, 0, 0),
+       (37, 'Yanis', 'Verhoeven', 'benoit@albatros.be', 'Maj', 'BE-20250037', '1983-09-09', 'M', 5, 0, 0),
+       (38, 'Manon', 'Peters', 'benoit@albatros.be', 'LtKol', 'BE-20250038', '1978-06-01', 'F', 7, 0, 0),
+       (39, 'Quentin', 'De Wilde', 'benoit@albatros.be', 'Kol', 'BE-20250039', '1975-01-29', 'M', 8, 0, 0),
+       (40, 'Paula', 'Coenen', 'benoit@albatros.be', 'SgtMaj', 'BE-20250040', '1988-05-17', 'F', 6, 0, 0),
+
+       (41, 'Arne', 'Jacobs', 'benoit@albatros.be', 'Sld', 'BE-20250041', '1999-03-08', 'M', 3, 0, 0),
+       (42, 'Inès', 'Masson', 'benoit@albatros.be', 'Kpl', 'BE-20250042', '1993-09-23', 'F', 10, 0, 0),
+       (43, 'Bram', 'Bauwens', 'benoit@albatros.be', 'Sgt', 'BE-20250043', '1989-12-11', 'M', 20, 0, 0),
+       (44, 'Maëlle', 'Lemaire', 'benoit@albatros.be', 'Adj', 'BE-20250044', '1985-04-02', 'F', 17, 0, 0),
+       (45, 'Stijn', 'Leclercq', 'benoit@albatros.be', 'Lt', 'BE-20250045', '1996-08-08', 'M', 12, 0, 0),
+       (46, 'Aline', 'Vervloet', 'benoit@albatros.be', 'Kpt', 'BE-20250046', '1991-01-05', 'F', 9, 0, 0),
+       (47, 'Pieter', 'Rutten', 'benoit@albatros.be', 'Maj', 'BE-20250047', '1984-03-15', 'M', 1, 0, 0),
+       (48, 'Maud', 'De Backer', 'benoit@albatros.be', 'LtKol', 'BE-20250048', '1979-10-06', 'F', 7, 0, 0),
+       (49, 'Olivier', 'Van den Bossche', 'benoit@albatros.be', 'Kol', 'BE-20250049', '1976-02-12', 'M', 8, 0, 0),
+       (50, 'Hélène', 'Gérard', 'benoit@albatros.be', 'SgtMaj', 'BE-20250050', '1987-12-20', 'F', 16, 0, 0);
+-- Select all servicemen with their unit information
+SELECT s.*,
+       u.name as unit_name,
+       u.base_location
+FROM service_men s
+         JOIN units u ON s.unit_id = u.id
+ORDER BY s.id;
+
+
+-- Select servicemen by service number
+SELECT s.*,
+       u.name as unit_name,
+       u.base_location
+FROM service_men s
+         JOIN units u ON s.unit_id = u.id
+WHERE s.service_number = 'BE-20250001'
+ORDER BY s.id;

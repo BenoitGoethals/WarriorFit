@@ -11,29 +11,30 @@ INSERT INTO users (username, email, password_hash, created_at, role, is_active, 
 ('user7', 'user7@example.com', crypt('password7', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN007'),
 ('user8', 'user8@example.com', crypt('password8', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN008'),
 ('user9', 'user9@example.com', crypt('password9', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN009'),
-('user10', 'user10@example.com', crypt('password10', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN010');
+('user10', 'user10@example.com', crypt('password10', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN010'),
+('benoit', 'benoit@example.com', public.crypt('password', public.gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'benoit');
 
-
+INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number)
+VALUES ('pti', 'pti@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI'),
+       ('pti2', 'pti2@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI2'),
+       ('pti3', 'pti3@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI3'),
+       ('pti4', 'pti4@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI4'),
+       ('pti5', 'pti5@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI5'),
+       ('pti6', 'pti6@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI6'),
+       ('pti7', 'pti7@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI7'),
+       ('pti8', 'pti8@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI8'),
+       ('pti9', 'pti9@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI9'),
+       ('pti10', 'pti10@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI10');
 
 -- Test Sessions data
-INSERT INTO test_sessions (serial_number_pti, datetime_start, executed, description, type_test) VALUES
-('PTI-2025-001', '2025-08-06 09:00:00', false, 'Regular fitness evaluation session', 'PHEF'),
-('PTI-2025-002', '2025-08-07 09:00:00', false, 'Combat readiness assessment', 'COMBAT'),
-('PTI-2025-003', '2025-08-08 09:00:00', false, 'Standard physical evaluation', 'PHEF'),
-('PTI-2025-004', '2025-08-09 09:00:00', false, 'Quarterly fitness check', 'PHEF'),
-('PTI-2025-005', '2025-08-10 09:00:00', false, 'Annual physical assessment', 'PHEF'),
-('PTI-2025-006', '2025-08-11 09:00:00', false, 'Regular training evaluation', 'PHEF'),
-('PTI-2025-007', '2025-08-12 09:00:00', false, 'Physical readiness test', 'PHEF'),
-('PTI-2025-008', '2025-08-13 09:00:00', false, 'Standard fitness evaluation', 'PHEF'),
-('PTI-2025-009', '2025-08-14 09:00:00', false, 'Combat fitness assessment', 'COMBAT'),
-('PTI-2025-010', '2025-08-15 09:00:00', false, 'Regular physical test session', 'PHEF'),
-('PTI-2025-011', '2025-08-16 09:00:00', false, 'Monthly fitness evaluation', 'PHEF'),
-('PTI-2025-012', '2025-08-17 09:00:00', false, 'Standard physical test', 'PHEF'),
-('PTI-2025-013', '2025-08-18 09:00:00', false, 'Regular assessment session', 'PHEF'),
-('PTI-2025-014', '2025-08-19 09:00:00', false, 'Fitness qualification test', 'PHEF'),
-('PTI-2025-015', '2025-08-20 09:00:00', false, 'Physical conditioning check', 'PHEF'),
-('PTI-2025-016', '2025-08-21 09:00:00', false, 'Regular evaluation session', 'PHEF'),
-('PTI-2025-017', '2025-08-22 09:00:00', false, 'Standard fitness test', 'PHEF'),
-('PTI-2025-018', '2025-08-23 09:00:00', false, 'Physical performance assessment', 'PHEF'),
-('PTI-2025-019', '2025-08-24 09:00:00', false, 'Combat readiness evaluation', 'COMBAT'),
-('PTI-2025-020', '2025-08-25 09:00:00', false, 'Final fitness session', 'PHEF');
+INSERT INTO test_sessions (serial_number_pti, datetime_start, executed, description, type_test)
+VALUES ('SNPTI', '2025-08-06 09:00:00', false, 'Regular fitness evaluation session', 'PHEF'),
+       ('SNPTI2', '2025-08-07 09:00:00', false, 'Combat readiness assessment', 'COMBAT'),
+       ('SNPTI3', '2025-08-08 09:00:00', false, 'Standard physical evaluation', 'PHEF'),
+       ('SNPTI4', '2025-08-09 09:00:00', false, 'Quarterly fitness check', 'PHEF'),
+       ('SNPTI5', '2025-08-10 09:00:00', false, 'Annual physical assessment', 'PHEF'),
+       ('SNPTI6', '2025-08-11 09:00:00', false, 'Regular training evaluation', 'PHEF'),
+       ('SNPTI7', '2025-08-12 09:00:00', false, 'Physical readiness test', 'PHEF'),
+       ('SNPTI8', '2025-08-13 09:00:00', false, 'Standard fitness evaluation', 'PHEF'),
+       ('SNPTI9', '2025-08-14 09:00:00', false, 'Combat fitness assessment', 'COMBAT')
+

@@ -1,322 +1,419 @@
 from shiny import ui, render, reactive
-from .sessions import get_sessions_store
+import pandas as pd
 
-from ui.services.db_service import DBService
-from ..user_store import UserStore
+from core.service_men import ServiceMen
+from data.db.db_model import TestSession
+from logic.phef_calculator import PhefCalculator
+from services.be_mil_service import BEMILService
 
-db_service = DBService("ui/config/config.yml")
+from ui.controllers.phef_controller import PhefController
+from ui.pages.notify_mail import NotifyMail
 
 
-def get_ui():
-    if UserStore.get_user() :
+class PhefPage:
+    def __init__(self):
+
+        self.refresh_tick = reactive.Value(0)
+        self.be_mil_service = BEMILService()
+        self.selected_military: ServiceMen = None
+        self.selected_session: TestSession = None
+        self.controller = PhefController()
+
+    NO_SELECTION_MESSAGE = "No row selected"
+
+    def get_ui(self):
         return ui.nav_panel(
             "PHEF Tests",
-            ui.h2("🧪 PHEF Tests"),
+            ui.h2("🧪 PHEF Tests "),
             ui.layout_columns(
-                ui.card(
-                    ui.card_header("Add / Edit PHEF Test"),
-                    ui.input_text("ph_serialnr", "Serial Number"),
-                    ui.input_select("ph_session_id", "Session", choices=[]),
-                    ui.output_text("ph_session_date_txt"),
-                    ui.input_text(
-                        "ph_side_bridge",
-                        "Side-bridge time (mm:ss or seconds)",
-                        placeholder="e.g., 2:30 or 150",
+                ui.div(
+                    ui.card(
+                        ui.card_header("Session"),
+                        ui.input_select("ph_session_id", "Session", choices=[]),
+                        full_screen=False,
                     ),
-                    ui.input_text(
-                        "ph_run_2400",
-                        "2400m run time (mm:ss or seconds)",
-                        placeholder="e.g., 10:45 or 645",
+                    ui.card(
+                        ui.input_text("ph_serialnr", "Serial Number"),
+                        ui.input_action_button("ph_search", "Conform Serial", width="150px"),
+                        ui.output_text("ph_miltary"),
+                        ui.layout_columns(
+                            ui.input_text(
+                                "ph_side_bridge_r",
+                                "Side-bridge Right time (mm:ss)",
+                                placeholder="e.g., 2:30",
+                            ),
+                            ui.div("Score :", ui.output_ui("ph_side_bridge_r_score")),
+                            col_widths=(8, 4),
+                        ),
+                        ui.layout_columns(
+                            ui.input_text(
+                                "ph_side_bridge_l",
+                                "Side-bridge time Left (mm:ss)",
+                                placeholder="e.g., 2:30",
+                            ),
+                            ui.div("Score :", ui.output_ui("ph_side_bridge_l_score")),
+                            col_widths=(8, 4),
+                        ),
+                        ui.layout_columns(
+                            ui.input_text(
+                                "ph_run_2400",
+                                "2400m run time (mm:ss)",
+                                placeholder="e.g., 10:45",
+                            ),
+                            ui.div("Score :", ui.output_ui("ph_run_2400_score")),
+                            col_widths=(8, 4),
+                        ),
+                        ui.br(),
+                        ui.layout_columns(
+                            ui.input_action_button("ph_add_btn", "Add",
+                                                   disabled=self.selected_military is None, width="150px"),
+                            ui.input_action_button("ph_update_btn", "Update",
+                                                   disabled=self.selected_military is None, width="150px"),
+                            ui.input_action_button("ph_clear_btn", "Clear Form", width="150px"),
+                            col_widths=(4,),
+                        ),
+                        ui.output_text("ph_status"),
+                        ui.br(),
+                        full_screen=False,
                     ),
-                    ui.br(),
-                    ui.layout_columns(
-                        ui.input_action_button("ph_add_btn", "Add"),
-                        ui.input_action_button("ph_update_btn", "Update"),
-                        ui.input_action_button("ph_clear_btn", "Clear Form"),
-                        col_widths=(3, 3, 3),
-                    ),
-                    ui.br(),
-                    ui.output_text("ph_status"),
-                    full_screen=False,
                 ),
                 ui.card(
-                    ui.card_header("Records"),
-                    ui.output_ui("ph_grid"),
+                    ui.card_header("PHEF Tests (You must pass running and side-bridge tests to have a pass on the PHEF test)"),
+                    ui.output_data_frame("ph_grid"),
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_select("ph_select_id", "Select record", choices=[]),
-                        ui.input_action_button("ph_load_btn", "Load Selected"),
                         ui.input_action_button("ph_delete_btn", "Delete Selected"),
                         col_widths=(6, 3, 3),
                     ),
                     full_screen=False,
                 ),
-                col_widths=(6, 6),
+                col_widths=(4, 8),
             ),
         )
 
-    return None
+    def server(self, input, output, session):
+        # Reactive state
+        ph_side_bridge_r_score_val = reactive.Value("")
+        ph_side_bridge_l_score_val = reactive.Value("")
+        ph_run_2400_score_val = reactive.Value("")
+        military = reactive.Value("No selection")
+        status = reactive.Value("Ready.")
+        selected_session_id = reactive.Value("")
+        selected_phef_id = reactive.Value("")
+
+        # Form helpers
+        def _read_form():
+            return {
+                "serialnr": (input.ph_serialnr() or "").strip(),
+                "session_id": (input.ph_session_id() or "").strip(),
+                "side_bridge_r": (input.ph_side_bridge_r() or "").strip(),
+                "side_bridge_l": (input.ph_side_bridge_l() or "").strip(),
+                "run_2400": (input.ph_run_2400() or "").strip(),
+            }
+
+        def _write_form(rec):
+            session.send_input_message("ph_serialnr", {"value": rec.get("serialnr", "")})
+            session.send_input_message("ph_side_bridge_r", {"value": rec.get("side_bridge_r", "")})
+            session.send_input_message("ph_side_bridge_l", {"value": rec.get("side_bridge_l", "")})
+            session.send_input_message("ph_run_2400", {"value": rec.get("run_2400", "")})
+
+        def _clear_form():
+            _write_form({
+                "serialnr": "",
+                "side_bridge_r": "",
+                "side_bridge_l": "",
+                "run_2400": "",
+            })
+
+        async def _refresh_session_choices():
+            test_sessions = await self.controller.load_sessions()
+            items = {
+                str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
+                for s in (test_sessions or [])
+            }
+            current = (input.ph_session_id() or "").strip()
+            selected = current if current in items else None
+            ui.update_select("ph_session_id", choices=items, selected=selected)
+
+        # Search military
+        @reactive.effect
+        @reactive.event(input.ph_search, ignore_none=False)
+        async def ph_search():
+            if not (input.ph_serialnr() or "").strip():
+                ui.update_action_button("ph_add_btn", disabled=True)
+                ui.update_action_button("ph_update_btn", disabled=True)
+                # Disable inputs via inline JS
+                enable_input_field(True)
+                return
+            val = await self.controller.search_military(input.ph_serialnr() or "")
+            self.selected_military = val
+            if val is None:
+                ui.update_text("ph_serialnr", value="Not found")
+                return
+            military.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
+            ui.update_action_button("ph_add_btn", disabled=False)
+            ui.update_action_button("ph_update_btn", disabled=False)
+            # Enable inputs via inline JS
+            enable_input_field(False)
+
+        @reactive.Effect
+        @reactive.event(input.ph_clear_btn)
+        def clear_form():
+            _clear_form()
 
 
-async def server(input, output, session):
-    # Reactive list of dicts: {id, serialnr, session_id, session_date, side_bridge_s, run2400_s}
-    records = reactive.Value(await db_service.get_all_fitness_tests_full())
-    next_id = reactive.Value(1)
-    status = reactive.Value("Ready.")
-
-    sessions_store = get_sessions_store()
-
-    def _parse_time_to_seconds(val: str):
-        """
-        Accepts 'mm:ss' or 'ss' and returns total seconds (int).
-        Returns (ok, seconds or error_message)
-        """
-        txt = (val or "").strip()
-        if not txt:
-            return False, "Time value is required."
-        try:
-            if ":" in txt:
-                parts = txt.split(":")
-                if len(parts) != 2:
-                    return False, "Time must be in mm:ss or seconds."
-                m = int(parts[0])
-                s = int(parts[1])
-                total = m * 60 + s
-            else:
-                total = int(float(txt))
-            if total <= 0:
-                return False, "Time must be positive."
-            return True, int(total)
-        except Exception:
-            return False, "Time must be numeric (mm:ss or seconds)."
-
-    def _format_seconds(sec: int):
-        m = sec // 60
-        s = sec % 60
-        return f"{m}:{s:02d}"
-
-    def _find_session_by_id_str(id_str: str):
-        try:
-            sid = int(id_str)
-        except Exception:
-            return None
-        for s in sessions_store.get():
-            if s["id"] == sid:
-                return s
-        return None
-
-    def _validate(data):
-        if not (data["serialnr"] or "").strip():
-            return False, "Serial number is required."
-        if not (data["session_id"] or "").strip():
-            return False, "Session selection is required."
-        sess = _find_session_by_id_str(data["session_id"])
-        if sess is None:
-            return False, "Selected session does not exist."
-        ok_sb, sb = _parse_time_to_seconds(data["side_bridge"])
-        if not ok_sb:
-            return False, f"Side-bridge: {sb}"
-        ok_run, run = _parse_time_to_seconds(data["run_2400"])
-        if not ok_run:
-            return False, f"2400m run: {run}"
-        return True, {"side_bridge_s": sb, "run2400_s": run, "session_date": sess["date"], "session_id_int": sess["id"]}
-
-    def _read_form():
-        return {
-            "serialnr": (input.ph_serialnr() or "").strip(),
-            "session_id": (input.ph_session_id() or "").strip(),
-            "side_bridge": (input.ph_side_bridge() or "").strip(),
-            "run_2400": (input.ph_run_2400() or "").strip(),
-        }
-
-    def _write_form(rec):
-        session.send_input_message("ph_serialnr", {"value": rec.get("serialnr", "")})
-        session.send_input_message("ph_session_id", {"value": "" if rec.get("session_id") is None else str(rec.get("session_id"))})
-        sb_val = rec.get("side_bridge_s")
-        run_val = rec.get("run2400_s")
-        session.send_input_message("ph_side_bridge", {"value": "" if sb_val is None else _format_seconds(sb_val)})
-        session.send_input_message("ph_run_2400", {"value": "" if run_val is None else _format_seconds(run_val)})
-
-    def _clear_form():
-        _write_form({
-            "serialnr": "",
-            "session_id": None,
-            "side_bridge_s": None,
-            "run2400_s": None
-        })
-        _update_session_date_text(None)
-
-    def _refresh_session_choices():
-        sess = sessions_store[0]
-        choices = {
-            str(s["id"]): f'{s["id"]}: {s["type"]} ({s["date"]})'
-            for s in sess
-        }
-        session.send_input_message("ph_session_id", {"choices": choices})
-
-    def _refresh_record_select():
-        choices = {
-            str(r["id"]): f'{r["id"]}: {r["serialnr"]} / Session {r["session_id"]} ({r["session_date"]})'
-            for r in records.get()
-        }
-        session.send_input_message("ph_select_id", {"choices": choices, "selected": None})
-
-    def _to_table(items):
-        header = ui.tags.tr(
-            ui.tags.th("ID"),
-            ui.tags.th("Serial"),
-            ui.tags.th("Session ID"),
-            ui.tags.th("Session Date"),
-            ui.tags.th("Side-bridge"),
-            ui.tags.th("2400m Run"),
-        )
-        rows = []
-        for r in items:
-            rows.append(
-                ui.tags.tr(
-                    ui.tags.td(str(r["id"])),
-                    ui.tags.td(r["serialnr"]),
-                    ui.tags.td(str(r["session_id"])),
-                    ui.tags.td(str(r["session_date"]) if r.get("session_date") else ""),
-                    ui.tags.td(_format_seconds(r["side_bridge_s"])),
-                    ui.tags.td(_format_seconds(r["run2400_s"])),
-                )
+        def enable_input_field(enable: bool):
+            enable = "false" if not enable else "true"
+            ui.insert_ui(
+                selector="body",
+                where="beforeEnd",
+                ui=ui.tags.script(f"""
+                            (function(){{
+                              const ids = ['ph_run_2400','ph_run_2400_input','ph_side_bridge_r','ph_side_bridge_r_input','ph_side_bridge_l','ph_side_bridge_l_input'];
+                              for (const id of ids) {{
+                                const el = document.getElementById(id);
+                                if (el) el.disabled = {enable};
+                              }}
+                            }})();
+                            """),
             )
-        body = (
-            ui.tags.tbody(*rows)
-            if rows
-            else ui.tags.tbody(ui.tags.tr(ui.tags.td({"colspan": "6"}, "No records yet.")))
-        )
-        return ui.tags.table({"class": "table table-striped table-sm"}, ui.tags.thead(header), body)
 
-    def _update_session_date_text(session_id_str):
-        sess = _find_session_by_id_str(session_id_str) if session_id_str else None
-        date_txt = f"Session date: {sess['date']}" if sess else "Session date: —"
-        session.send_input_message("ph_session_date_txt", {"value": date_txt})
+        # Status outputs
+        @output
+        @render.text
+        def ph_status():
+            return status.get()
 
-    @output
-    @render.text
-    def ph_status():
-        return status.get()
+        @output
+        @render.text
+        def ph_miltary():
+            return military.get()
 
-    @output
-    @render.text
-    def ph_session_date_txt():
-        # default text before selection
-        sess = _find_session_by_id_str(input.ph_session_id())
-        return f"Session date: {sess['date']}" if sess else "Session date: —"
+        # Score outputs
+        @output
+        @render.ui
+        def ph_side_bridge_r_score():
+            text = str(ph_side_bridge_r_score_val.get())
+            try:
+                num = float(ph_side_bridge_r_score_val.get())
+            except (TypeError, ValueError):
+                num = None
+            color = "red" if (num is not None and num < 10) else "green"
+            return ui.span(text, style=f"color: {color};")
 
-    @output
-    @render.ui
-    def ph_grid():
+        @output
+        @render.ui
+        def ph_side_bridge_l_score():
+            text = str(ph_side_bridge_l_score_val.get())
+            try:
+                num = float(ph_side_bridge_l_score_val.get())
+            except (TypeError, ValueError):
+                num = None
+            color = "red" if (num is not None and num < 10) else "green"
+            return ui.span(text, style=f"color: {color};")
 
-        return _to_table(records.get())
+        @output
+        @render.text
+        def ph_run_2400_score():
+            text = str(ph_run_2400_score_val.get())
+            try:
+                num = float(ph_run_2400_score_val.get())
+            except (TypeError, ValueError):
+                num = None
+            color = "red" if (num is not None and num < 10) else "green"
+            return ui.span(text, style=f"color: {color};")
 
-    @reactive.Effect
-    def _init():
-        _refresh_session_choices()
-        _refresh_record_select()
+        # Live score calculations
+        @reactive.Effect
+        @reactive.event(input.ph_side_bridge_r)
+        def _on_side_bridge_r_change():
+            raw = (input.ph_side_bridge_r() or "").strip()
+            ok, val = self.controller.parse_time_to_seconds(raw)
+            if not ok or not self.selected_military:
+                ph_side_bridge_r_score_val.set("")
+                return
+            try:
+                score = PhefCalculator.side_bridge_result(
+                    val,
+                    self.selected_military.age_from_birthdate(),
+                    self.selected_military.gender,
+                )
+            except Exception:
+                score = ""
+            ph_side_bridge_r_score_val.set(score)
 
-    # Rebuild session choices whenever the sessions store changes
-    @reactive.Effect
-    def _watch_sessions():
-        _ = sessions_store.get()
-        _refresh_session_choices()
-        _update_session_date_text(input.ph_session_id())
+        @reactive.Effect
+        @reactive.event(input.ph_side_bridge_l)
+        def _on_side_bridge_l_change():
+            raw = (input.ph_side_bridge_l() or "").strip()
+            ok, val = self.controller.parse_time_to_seconds(raw)
+            if not ok or not self.selected_military:
+                ph_side_bridge_l_score_val.set("")
+                return
+            try:
+                score = PhefCalculator.side_bridge_result(
+                    val,
+                    self.selected_military.age_from_birthdate(),
+                    self.selected_military.gender,
+                )
+            except Exception:
+                score = ""
+            ph_side_bridge_l_score_val.set(score)
 
-    # Update session date text when user changes the session selection
-    @reactive.Effect
-    def _on_session_change():
-        _ = input.ph_session_id()
-        _update_session_date_text(input.ph_session_id())
+        @reactive.Effect
+        @reactive.event(input.ph_run_2400)
+        def _on_run_change():
+            raw = (input.ph_run_2400() or "").strip()
+            ok, val = self.controller.parse_time_to_seconds(raw)
+            if not ok or not self.selected_military:
+                ph_run_2400_score_val.set("")
+                return
+            try:
+                score = PhefCalculator.running_result(
+                    val,
+                    self.selected_military.age_from_birthdate(),
+                    self.selected_military.gender,
+                )
+            except Exception:
+                score = ""
+            ph_run_2400_score_val.set(score)
 
-    @reactive.Effect
-    @reactive.event(input.ph_add_btn)
-    def _on_add():
-        data = _read_form()
-        ok, res = _validate(data)
-        if not ok:
-            status.set(res)
-            return
-        new_id = next_id.get()
-        next_id.set(new_id + 1)
-        record = {
-            "id": new_id,
-            "serialnr": data["serialnr"],
-            "session_id": res["session_id_int"],
-            "session_date": res["session_date"],
-            "side_bridge_s": res["side_bridge_s"],
-            "run2400_s": res["run2400_s"],
-        }
-        records.set(records.get() + [record])
-        status.set(f"Added PHEF test #{new_id} for {record['serialnr']} in session {record['session_id']}.")
-        _refresh_record_select()
-        _clear_form()
+        # Data
+        @reactive.calc
+        async def sessions_phef__data():
+            _ = self.refresh_tick.get()
+            session_id = selected_session_id.get()
+            if not session_id:
+                return pd.DataFrame()
+            sess_date = self.selected_session.datetime_start if self.selected_session else None
+            return await self.controller.list_phef_df(int(session_id), session_date=sess_date)
 
-    @reactive.Effect
-    @reactive.event(input.ph_load_btn)
-    def _on_load():
-        sel = input.ph_select_id()
-        if not sel:
-            status.set("Select a record to load.")
-            return
-        sel_id = int(sel)
-        rec = next((r for r in records.get() if r["id"] == sel_id), None)
-        if not rec:
-            status.set("Selected record not found.")
-            return
-        _write_form(rec)
-        _update_session_date_text(str(rec.get("session_id")))
-        status.set(f"Loaded record #{sel_id}.")
+        @output
+        @render.data_frame
+        async def ph_grid():
+            df = await sessions_phef__data()
+            df = self.controller.decorate_grid(df)
+            return render.DataGrid(df, filters=False, selection_mode="rows")
 
-    @reactive.Effect
-    @reactive.event(input.ph_update_btn)
-    def _on_update():
-        sel = input.ph_select_id()
-        if not sel:
-            status.set("Select a record to update.")
-            return
-        sel_id = int(sel)
-        data = _read_form()
-        ok, res = _validate(data)
-        if not ok:
-            status.set(res)
-            return
-        current = records.get()
-        idx = next((i for i, r in enumerate(current) if r["id"] == sel_id), None)
-        if idx is None:
-            status.set("Selected record not found.")
-            return
-        current[idx] = {
-            "id": sel_id,
-            "serialnr": data["serialnr"],
-            "session_id": res["session_id_int"],
-            "session_date": res["session_date"],
-            "side_bridge_s": res["side_bridge_s"],
-            "run2400_s": res["run2400_s"],
-        }
-        records.set(current[:])
-        status.set(f"Updated record #{sel_id}.")
-        _refresh_record_select()
+        # Init and session selection
+        @reactive.Effect
+        async def _init():
+            await _refresh_session_choices()
 
-    @reactive.Effect
-    @reactive.event(input.ph_delete_btn)
-    def _on_delete():
-        sel = input.ph_select_id()
-        if not sel:
-            status.set("Select a record to delete.")
-            return
-        sel_id = int(sel)
-        current = records.get()
-        if not any(r["id"] == sel_id for r in current):
-            status.set("Selected record not found.")
-            return
-        records.set([r for r in current if r["id"] != sel_id])
-        status.set(f"Deleted record #{sel_id}.")
-        _refresh_record_select()
+        @reactive.Effect
+        async def _on_session_change():
+            val = (input.ph_session_id() or "").strip()
+            selected_session_id.set(val)
+            if val:
+                self.selected_session = await self.controller.get_session_by_id(int(val))
 
-    @reactive.Effect
-    @reactive.event(input.ph_clear_btn)
-    def _on_clear():
-        _clear_form()
-        status.set("Form cleared.")
+        # Row selection
+        @reactive.Effect
+        @reactive.event(input.ph_grid_selected_rows)
+        async def _on_ph_row_selected():
+            try:
+                sel = input.ph_grid_selected_rows()
+                if not sel:
+                    status.set(self.NO_SELECTION_MESSAGE)
+                    return
+                row_idx = sel[0]
+                df = await sessions_phef__data()
+                if row_idx < 0 or row_idx >= len(df):
+                    status.set(self.NO_SELECTION_MESSAGE)
+                    return
+                row = df.iloc[row_idx]
+                selected_phef_id.set(row["ID"] or "")
+                selected_session_id.set(input.ph_session_id() or "")
+                serial = str(row.get("Serial", "") or "")
+                self.selected_military = await self.controller.search_military(serial)
+                ui.update_text("ph_serialnr", value=serial)
+                ui.update_text("ph_side_bridge_l", value=row.get("Sidebridge L", ""))
+                ui.update_text("ph_side_bridge_r", value=row.get("Sidebridge R", row.get("Sidebridge R ", "")))
+                ui.update_text("ph_run_2400", value=row.get("runningTime", ""))
+                status.set(f"Selected PHEF: {serial}")
+            except Exception as e:
+                status.set(f"Selection error: {e}")
+
+        # CRUD
+        def _validate(data):
+            return self.controller.validate_form(data)
+
+        @reactive.Effect
+        @reactive.event(input.ph_add_btn)
+        async def _on_add():
+            data = _read_form()
+            ok, res = _validate(data)
+            if not ok:
+                status.set(res)
+                return
+            payload = {
+                "id": data["session_id"],
+                "serialnr": data["serialnr"],
+                "side_bridge_r_s": res["side_bridge_r_s"],
+                "side_bridge_l_s": res["side_bridge_l_s"],
+                "run2400_s": res["run2400_s"],
+            }
+            added = await self.controller.add_phef(int(payload["id"]), payload)
+            if not added:
+                status.set(f"Failed to add PHEF test for {payload['serialnr']} in session {str(payload['id'])}.")
+                return
+            if self.selected_military and getattr(self.selected_military, "mail", None) and self.selected_session:
+                body = self.controller.build_email_body(self.selected_military, self.selected_session, payload)
+                await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+            status.set(f"Added PHEF test for {payload['serialnr']} in session {str(payload['id'])}.")
+            _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.ph_update_btn)
+        async def _on_update():
+            data = _read_form()
+            ok, res = _validate(data)
+            if not ok:
+                status.set(res)
+                return
+            payload = {**data, **res}
+            updated = await self.controller.update_phef(int(selected_phef_id.get()), payload)
+            if not updated:
+                status.set(
+                    f"Failed to update PHEF test for {payload['serialnr']} in session {str(payload['session_id'])}."
+                )
+                return
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+            status.set(
+                f"Updated PHEF test for {payload['serialnr']} in session {str(payload['session_id'])}."
+            )
+            _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.ph_delete_btn)
+        async def _on_delete():
+            sel = input.ph_grid_selected_rows()
+            sel_session_id = input.ph_session_id()
+            if not sel or not sel_session_id:
+                status.set("Select a row to delete.")
+                return
+            ok = await self.controller.delete_phef(int(sel_session_id), int(selected_phef_id.get()))
+            if not ok:
+                status.set(f"Failed to delete PHEF test for record ID {sel[0]}.")
+                return
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+            try:
+                df = await sessions_phef__data()
+                row_idx = sel[0]
+                row = df.iloc[row_idx]
+                status.set(f"PHEF test for record ID {row['ID']} deleted successfully.")
+            except Exception:
+                status.set("Invalid selection.")
+
+
+# Public API
+_page = PhefPage()
+
+
+def get_ui():
+    return _page.get_ui()
+
+
+def server(input, output, session):
+    _page.server(input, output, session)

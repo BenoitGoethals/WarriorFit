@@ -1,3 +1,4 @@
+from numpy import integer
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
 
 from sqlalchemy import (
@@ -46,9 +47,7 @@ class AuditLog(Base):
 
 
 class User(Base):
-
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
@@ -63,10 +62,9 @@ class User(Base):
 
 class FitnessTest(Base):
     __tablename__ = "fitness_tests"
-
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    serial_number = Column(String(50), unique=True, nullable=True)
-    passed = Column(Boolean, default=False, nullable=False)
+    serial_number = Column(String(50), unique=False, nullable=True)
+
 
 
     # Add discriminator column for inheritance
@@ -78,25 +76,28 @@ class FitnessTest(Base):
     }
 
     def __repr__(self):
-        return f"<FitnessTest(id={self.id}, serial_number={self.serial_number}, passed={self.passed})>"
+        return f"<FitnessTest(id={self.id}, serial_number={self.serial_number}, )>"
 
     def __str__(self):
-        return f"FitnessTest(id={self.id}, serial_number={self.serial_number}, passed={self.passed})"
+        return f"FitnessTest(id={self.id}, serial_number={self.serial_number}, )"
 
 class PhefTest(FitnessTest):
     __tablename__ = "phef_tests"
     id = Column(Integer, ForeignKey('fitness_tests.id'), primary_key=True)
     running_time = Column(Float, nullable=False)
-    planking_time = Column(Float, nullable=False)
+    sideBridge_r = Column(Float, nullable=False)
+    sideBridge_l = Column(Float, nullable=False)
+    pointBridge_r = Column(Integer, nullable=False)
+    pointBridge_l = Column(Integer, nullable=False)
+    pointsRunning = Column(Integer, nullable=False)
     __mapper_args__ = {
         'polymorphic_identity': 'phef_test'
     }
 
     def __repr__(self):
-        return f"<PhefTest(id={self.id}, running_time={self.running_time}, planking_time={self.planking_time})>"
+        return f"<PhefTest(id={self.id}, running_time={self.running_time}, sideBridge_r={self.sideBridge_r}, sideBridge_l={self.sideBridge_l})>"
     def __str__(self):
-        return f"PhefTest(id={self.id}, running_time={self.running_time}, planking_time={self.planking_time})"
-
+        return f"PhefTest(id={self.id}, running_time={self.running_time}, sideBridge_r={self.sideBridge_r}, sideBridge_l={self.sideBridge_l})"
 
 class FunctionalTest(FitnessTest):
     __tablename__ = "functional_tests"
@@ -144,7 +145,7 @@ class TestSession(Base):
     __tablename__ = "test_sessions"
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    serial_number_pti = Column(String(50), unique=True, nullable=True)
+    serial_number_pti = Column(String(50), unique=False, nullable=True)
     datetime_start = Column(TIMESTAMP, nullable=False)
     executed = Column(Boolean, default=False, nullable=False)
     description = Column(String(255), nullable=True)
@@ -170,8 +171,29 @@ class SessionFitnessTests(Base):
     session_id = Column(Integer, ForeignKey('test_sessions.id'), primary_key=True)
     fitness_test_id = Column(Integer, ForeignKey('fitness_tests.id'), primary_key=True)
 
+#CROSS
+
+class Cross(Base):
+    __tablename__ = "cross"
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    datetime_start = Column(TIMESTAMP, nullable=False)
+    distance = Column(Float, nullable=False)
+    executed = Column(Boolean, default=False, nullable=False)
+    description = Column(String(255), nullable=True)
+
+    runners = relationship("Runner", secondary="cross_runners", back_populates="crosses")
 
 
+class Runner(Base):
+    __tablename__ = "runners"
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    serial_number = Column(String(50), unique=False, nullable=True)
+    running_time = Column(Float, nullable=False)
+
+    crosses = relationship("Cross", secondary="cross_runners", back_populates="runners")
 
 
-
+class CrossRunners(Base):
+    __tablename__ = "cross_runners"
+    cross_id = Column(Integer, ForeignKey('cross.id'), primary_key=True)
+    runner_id = Column(Integer, ForeignKey('runners.id'), primary_key=True)
