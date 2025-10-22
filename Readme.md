@@ -46,7 +46,7 @@ Dit systeem moet:
 9. Automatische e-mailnotificaties van testresultaten.  
 10. HRM-notificatie van uitgevoerde testen.  
 11. Dashboard met de fysieke toestand van de eenheid.
-
+![uml.jpg](uml.jpg)
 ### Buiten scope
 - Integratie met andere Defensiebrede IT-systemen buiten HRM.  
 - Mobiele applicatie (fase 2 mogelijk).  
