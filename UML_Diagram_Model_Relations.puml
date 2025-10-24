@@ -1,0 +1,222 @@
+@startuml
+skinparam packageStyle rectangle
+set namespaceSeparator .
+
+package alembic {
+  class Env
+}
+
+package config {
+  class ApplicationConfig
+  class SmtpConfig
+}
+
+package core {
+  class Gender
+  class Role
+  class Unit
+  class ServiceMen
+  class TypeFitnessTest
+}
+
+package data.db as db {
+  class Base
+  class AuditLog
+  class User
+  class TestSession
+  class FitnessTest
+  class PhefTest
+  class FunctionalTest
+  class CombatTestParatrooper
+  class CombatSwimmingTest
+  class SessionFitnessTests
+  class Cross
+  class Runner
+  class CrossRunners
+}
+
+package logic {
+  class Singleton
+  class PhefCalculator
+  class FunctionalCalculator
+  class DataCollector
+}
+
+package military_api_rest as api {
+  class ServiceMenApi
+  class DbServiceServiceMen
+}
+
+package security {
+  class Auth
+  class Token
+  class TokenData
+}
+
+package services {
+  class Service
+  class ServiceTest
+  class ServiceCross
+  class UserService
+  class BEMILService
+  class MailService
+  class ReportGeneratorCsv
+  class ReportGeneratorPdf
+  class ReportType
+}
+
+package ui.controllers as uic {
+  class SessionsController
+  class PhefController
+  class FunctionalController
+  class CombatController
+  class SwimmingController
+  class CrossController
+  class CrossPlanningController
+  class DashboardController
+  class DashboardOwnUnitController
+  class IndTestShowController
+  class OwnUnitController
+  class UserManagementController
+  class SettingsController
+  class ReportsController
+}
+
+package ui.pages as uip {
+  class App
+  class DashboardPage
+  class ReportsPage
+  class SettingsPage
+  class CombatPage
+  class CrossPage
+  class CrossPlanningPage
+  class FunctionalPage
+  class PhefPage
+  class SwimTestPage
+  class OwnUnitPage
+  class DashboardOwnUnitPage
+  class IndTestShowPage
+  class UserManagementPage
+  class NotifyMail
+}
+
+package utils {
+  class Os
+}
+
+' Inheritance
+db.FitnessTest <|-- db.PhefTest
+db.FitnessTest <|-- db.FunctionalTest
+db.FitnessTest <|-- db.CombatTestParatrooper
+db.FitnessTest <|-- db.CombatSwimmingTest
+
+' Data relationships
+db.TestSession "1" -- "0..*" db.FitnessTest : fitness_tests
+db.TestSession "0..*" -- "0..*" db.FitnessTest : SessionFitnessTests
+db.Cross "1" -- "0..*" db.Runner : runners
+db.Runner "0..*" -- "0..*" db.Cross : CrossRunners
+
+' Enums to models
+core.Role ..> db.User
+core.TypeFitnessTest ..> db.TestSession
+
+' API and external
+services.BEMILService ..> api.ServiceMenApi
+api.ServiceMenApi ..> api.DbServiceServiceMen
+api.DbServiceServiceMen ..> core.ServiceMen
+core.ServiceMen ..> core.Unit
+core.ServiceMen ..> core.Gender
+
+' Services to models
+services.ServiceTest ..> db.TestSession
+services.ServiceTest ..> db.FitnessTest
+services.ServiceTest ..> db.PhefTest
+services.ServiceTest ..> db.FunctionalTest
+services.ServiceTest ..> db.CombatTestParatrooper
+services.ServiceTest ..> db.CombatSwimmingTest
+services.ServiceCross ..> db.Cross
+services.ServiceCross ..> db.Runner
+services.UserService ..> db.User
+
+' Reports and mail
+services.ReportGeneratorCsv ..> services.ServiceTest
+services.ReportGeneratorCsv ..> services.BEMILService
+services.ReportGeneratorCsv ..> logic.PhefCalculator
+services.ReportGeneratorPdf ..> services.ServiceTest
+services.ReportGeneratorPdf ..> services.ServiceCross
+services.ReportGeneratorPdf ..> services.BEMILService
+services.MailService ..> config.ApplicationConfig
+services.MailService ..> utils.Os
+
+' Security
+security.Auth ..> services.UserService
+security.TokenData ..> security.Token
+
+' Calculators
+logic.PhefCalculator ..> core.Gender
+logic.FunctionalCalculator ..> core.Gender
+logic.DataCollector ..> services.ServiceTest
+logic.DataCollector ..> services.BEMILService
+
+' UI controllers to services
+uic.SessionsController ..> services.ServiceTest
+uic.PhefController ..> services.ServiceTest
+uic.PhefController ..> services.BEMILService
+uic.FunctionalController ..> services.ServiceTest
+uic.FunctionalController ..> services.BEMILService
+uic.CombatController ..> services.ServiceTest
+uic.CombatController ..> services.BEMILService
+uic.SwimmingController ..> services.ServiceTest
+uic.SwimmingController ..> services.BEMILService
+uic.CrossController ..> services.ServiceCross
+uic.CrossController ..> services.BEMILService
+uic.CrossPlanningController ..> services.ServiceCross
+uic.DashboardController ..> services.ServiceTest
+uic.DashboardController ..> services.BEMILService
+uic.DashboardOwnUnitController ..> services.ServiceTest
+uic.DashboardOwnUnitController ..> services.BEMILService
+uic.IndTestShowController ..> logic.DataCollector
+uic.IndTestShowController ..> services.BEMILService
+uic.OwnUnitController ..> services.BEMILService
+uic.UserManagementController ..> services.UserService
+uic.SettingsController ..> config.ApplicationConfig
+uic.ReportsController ..> services.ReportGeneratorCsv
+uic.ReportsController ..> services.ReportGeneratorPdf
+
+' UI pages to controllers (explicit instead of wildcard)
+uip.App ..> uic.SessionsController : mounts/uses
+uip.App ..> uic.PhefController : mounts/uses
+uip.App ..> uic.FunctionalController : mounts/uses
+uip.App ..> uic.CombatController : mounts/uses
+uip.App ..> uic.SwimmingController : mounts/uses
+uip.App ..> uic.CrossController : mounts/uses
+uip.App ..> uic.CrossPlanningController : mounts/uses
+uip.App ..> uic.DashboardController : mounts/uses
+uip.App ..> uic.DashboardOwnUnitController : mounts/uses
+uip.App ..> uic.IndTestShowController : mounts/uses
+uip.App ..> uic.OwnUnitController : mounts/uses
+uip.App ..> uic.UserManagementController : mounts/uses
+uip.App ..> uic.SettingsController : mounts/uses
+uip.App ..> uic.ReportsController : mounts/uses
+
+' UI page -> controller pairings
+uip.DashboardPage ..> uic.DashboardController
+uip.DashboardOwnUnitPage ..> uic.DashboardOwnUnitController
+uip.ReportsPage ..> uic.ReportsController
+uip.SettingsPage ..> uic.SettingsController
+uip.CombatPage ..> uic.CombatController
+uip.CrossPage ..> uic.CrossController
+uip.CrossPlanningPage ..> uic.CrossPlanningController
+uip.FunctionalPage ..> uic.FunctionalController
+uip.PhefPage ..> uic.PhefController
+uip.SwimTestPage ..> uic.SwimmingController
+uip.OwnUnitPage ..> uic.OwnUnitController
+uip.IndTestShowPage ..> uic.IndTestShowController
+uip.UserManagementPage ..> uic.UserManagementController
+uip.NotifyMail ..> services.MailService
+
+' App wiring
+uip.App ..> services.UserService
+uip.App ..> config.ApplicationConfig
+
+@enduml
