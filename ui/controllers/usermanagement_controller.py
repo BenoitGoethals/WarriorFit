@@ -25,18 +25,17 @@ class UserForm:
 class UserManagementController:
     EMAIL_REGEX = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
     def __init__(self,):
-        # If your DBService requires a config path, adjust here
         self._service =  UserService()
         self.selected_user=None
-
-
 
     @staticmethod
     def role_choices() -> List[str]:
         try:
             return [r.value for r in Role]
-        except Exception:
+        except AttributeError:
             return [str(r) for r in Role]
+        except Exception as exc:
+            raise RuntimeError("Failed to build role choices") from exc
 
     async def list_users_df(self) -> pd.DataFrame:
         users = await self._service.get_all_users()
