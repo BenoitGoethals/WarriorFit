@@ -1,14 +1,8 @@
 # Python
 from __future__ import annotations
-
-from typing import Optional
-
 import pandas as pd
 from shiny import ui, render, reactive
-
-
 from ui.controllers.usermanagement_controller import UserManagementController, UserForm
-
 
 class UserManagementPage:
     COLUMN_SERIAL = "Serial"
@@ -19,7 +13,7 @@ class UserManagementPage:
         self.status = reactive.Value("Ready.")
         self.refresh_tick = reactive.Value(0)
         self.selected_serial = reactive.Value(None)
-        self.selected_id = reactive.Value(None)
+        self.selected_id = reactive.Value(0)
 
     def get_ui(self):
         return ui.nav_panel(
@@ -61,14 +55,14 @@ class UserManagementPage:
             ),
         )
 
-    def _read_form(self, input) -> UserForm:
+    def _read_form(self, input_form) -> UserForm:
         return UserForm(
-            serial=(input.um_serial() or "").strip(),
-            username=(input.um_username() or "").strip(),
-            password=(input.um_password() or "").strip(),
-            email=(input.um_email() or "").strip(),
-            role=(input.um_role() or "").strip(),
-            is_active=(input.um_is_active())
+            serial=(input_form.um_serial() or "").strip(),
+            username=(input_form.um_username() or "").strip(),
+            password=(input_form.um_password() or "").strip(),
+            email=(input_form.um_email() or "").strip(),
+            role=(input_form.um_role() or "").strip(),
+            is_active=(input_form.um_is_active())
 
         )
 
@@ -82,7 +76,7 @@ class UserManagementPage:
 
     def _clear_form(self, session):
         self.selected_serial.set(None)
-        self.selected_id.set(None)
+        #self.selected_id.set(0)
         self._write_form(session, {"serial": "", "username": "", "password": "", "email": "", "role": "", "is_active": ""})
 
     def server(self, input, output, session):
@@ -100,7 +94,6 @@ class UserManagementPage:
         @render.data_frame
         async def um_grid():
             df = await users_list()
-            # Hide sensitive/internal columns
             to_drop = [c for c in ["Password", "ID"] if c in df.columns]
             if to_drop:
                 df = df.drop(columns=to_drop)
@@ -120,12 +113,8 @@ class UserManagementPage:
             serial = row[self.COLUMN_SERIAL]
             self.selected_serial.set(serial)
             self.controller.set_selected_user(UserForm(serial=row[self.COLUMN_SERIAL], username=row.get("Username", ""), email=row.get("Email", ""), role=row.get("Role", ""),password=row.get("Password", ""), is_active=row.get("Active", "")))
-
-
-
             self.selected_id.set(row.get("ID"))
             self.status.set(f"Selected user '{serial}'.")
-            # Pre-fill form (note: we do not reveal real password; keep hashed in df if needed)
             self._write_form(
                 session,
                 {
