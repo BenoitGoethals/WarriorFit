@@ -1,0 +1,34 @@
+@startuml
+title Rapportage & Dashboard - WARRIORFIT
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecasePadding 10
+
+actor PTI
+actor Commandant
+actor Systeem
+
+package "Rapportage" {
+  usecase "PHEF-score berekenen" as UC005
+  usecase "PDF rapport genereren" as UC006
+  usecase "Rapport verzenden via mail" as UC007
+}
+
+package "Dashboard & Jaarstatus" {
+  usecase "Dashboard eigen eenheid" as UC012
+  usecase "Status lopend jaar" as UC014
+}
+
+PTI --> UC005
+PTI --> UC006
+PTI --> UC007
+PTI --> UC012
+PTI --> UC014
+
+Commandant --> UC012
+Commandant --> UC014
+
+Systeem --> UC005
+Systeem --> UC006
+Systeem --> UC007
+@enduml

@@ -1,0 +1,50 @@
+@startuml
+actor "Beheerder" as Admin
+participant "Web UI" as UI
+participant "API Gateway" as API
+participant "Authenticatie Service" as Auth
+participant "Gebruikersservice" as UserSvc
+participant "Mailservice" as MailSvc
+participant "HRM-systeem" as HRM
+
+== Start ==
+Admin -> UI: Voert gebruikersgegevens in\n(username, email, password, role, serial_number)
+UI -> API: Stuurt aanvraag voor nieuwe gebruiker
+
+== Validatie ==
+API -> Auth: Controleer of Admin deze rol mag toekennen
+Auth --> API: Toegang toegestaan of geweigerd
+
+alt Rol niet toegestaan
+    API --> UI: Foutmelding "Onvoldoende rechten"
+else Rol toegestaan
+    API -> UserSvc: Controleer of gebruikersnaam uniek is
+    UserSvc --> API: Resultaat (uniek / bestaat al)
+
+    alt Gebruikersnaam bestaat al
+        API --> UI: Foutmelding "Gebruikersnaam bestaat al"
+    else Gebruikersnaam uniek
+        API -> UserSvc: Valideer invoer (email, wachtwoordregels, nummerformaat)
+        UserSvc --> API: Validatie OK
+
+        == Gebruiker aanmaken ==
+        API -> UserSvc: Maak nieuwe gebruiker aan met rol en serienummer
+        UserSvc --> API: Gebruiker aangemaakt (status: “niet geverifieerd”)
+
+        == Post-processing ==
+        API -> MailSvc: Verstuur verificatiemail
+
+        alt HRM bevestigt serienummer
+            HRM --> API: OK
+        else HRM verwerpt serienummer
+            HRM --> API: Foutmelding (niet gevonden / ongeldig)
+            API -> MailSvc: Meld fout aan beheerder
+        end
+
+        API --> UI: Bevestiging “Gebruiker succesvol aangemaakt”
+        UI --> Admin : Show lijst Gebruikers
+    end
+end
+
+
+@enduml

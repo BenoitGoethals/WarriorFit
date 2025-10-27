@@ -43,6 +43,7 @@ class UserManagementPage:
                         "Role",
                         choices=self.controller.role_choices(),
                     ),
+                    ui.input_checkbox("um_is_active", "Active"),
                     ui.br(),
                     ui.layout_columns(
                         ui.input_action_button("um_create_btn", "Create"),
@@ -67,6 +68,8 @@ class UserManagementPage:
             password=(input.um_password() or "").strip(),
             email=(input.um_email() or "").strip(),
             role=(input.um_role() or "").strip(),
+            is_active=(input.um_is_active() or "").strip(),
+
         )
 
     def _write_form(self, session, u: dict):
@@ -75,11 +78,12 @@ class UserManagementPage:
         session.send_input_message("um_password", {"value": u.get("password", "")})
         session.send_input_message("um_email", {"value": u.get("email", "")})
         session.send_input_message("um_role", {"value": u.get("role", "")})
+        session.send_input_message("um_is_active", {"value": u.get("is_active", "")})
 
     def _clear_form(self, session):
         self.selected_serial.set(None)
         self.selected_id.set(None)
-        self._write_form(session, {"serial": "", "username": "", "password": "", "email": "", "role": ""})
+        self._write_form(session, {"serial": "", "username": "", "password": "", "email": "", "role": "", "is_active": ""})
 
     def server(self, input, output, session):
         @output
@@ -115,7 +119,7 @@ class UserManagementPage:
             row = df.iloc[row_idx]
             serial = row[self.COLUMN_SERIAL]
             self.selected_serial.set(serial)
-            self.controller.set_selected_user(UserForm(serial=row[self.COLUMN_SERIAL], username=row.get("Username", ""), email=row.get("Email", ""), role=row.get("Role", ""),password=row.get("Password", "")))
+            self.controller.set_selected_user(UserForm(serial=row[self.COLUMN_SERIAL], username=row.get("Username", ""), email=row.get("Email", ""), role=row.get("Role", ""),password=row.get("Password", ""), is_active=row.get("Active", "")))
 
 
 
@@ -130,6 +134,7 @@ class UserManagementPage:
                     "password": "",  # do not pre-fill password for security
                     "email": row.get("Email", ""),
                     "role": row.get("Role", ""),
+                    "is_active": (bool(row.get("Active")) if pd.notna(row.get("Active")) else False),
                 },
             )
             return serial

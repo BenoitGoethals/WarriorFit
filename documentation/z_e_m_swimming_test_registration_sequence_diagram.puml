@@ -1,0 +1,47 @@
+@startuml
+title WarriorFit - Sequence Diagram: ZEM/Swimming testregistratie
+
+actor PTI
+participant "UI (Shiny)" as UI
+participant "Test Controller" as C
+participant "Validatie/Businesslogica" as BL
+database "PostgreSQL (lokale DB)" as DB
+participant "Mail Service (SMTP)" as Mail
+participant "HRM REST API" as HRM
+
+== 1. Sessie selectie en identificatie ==
+PTI -> UI : Selecteer testsessie
+PTI -> UI : Voer stamnummer in
+UI -> C : submit(stamnummer, sessieId)
+
+== 2-3. Validatie stamnummer en ophalen militair ==
+C -> BL : validateSerial(stamnummer)
+BL -> DB : SELECT militair WHERE stamnummer
+DB --> BL : militairgegevens (of not found)
+BL --> C : validatie OK + militairgegevens
+C --> UI : Toon militairgegevens
+
+== 4. Invoer testdata (ZEM/Swimming) ==
+PTI -> UI : Voer ZEM/Swimming testdata in
+UI -> C : submitTestData("ZEM", sessieId, stamnummer, testdata)
+
+== 5. Validatie testdata ==
+C -> BL : validateTestData("ZEM", testdata, militair)
+BL --> C : validatie OK + berekende scores/normalisatie
+C --> UI : Validatiefeedback (OK)
+
+== 6. Persistente opslag ==
+C -> DB : INSERT testresultaat(ZEM) + koppel aan testsessie
+DB --> C : bevestiging (id)
+
+== 7. Resultaatcommunicatie ==
+C -> BL : computeSummary("ZEM", resultaat)
+BL -> Mail : sendResultMail(email, samenvatting)
+Mail --> C : sent OK
+
+== 8. Publicatie naar HRM ==
+C -> HRM : POST /hrm/tests {type:"ZEM", stamnummer, testresultaat}
+HRM --> C : 200 OK (of foutcode)
+C --> UI : Toon synchronisatie status
+
+@enduml

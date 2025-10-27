@@ -18,6 +18,7 @@ class UserForm:
     password: str
     email: str
     role: str
+    is_active: str
 
 
 class UserManagementController:
@@ -100,7 +101,7 @@ class UserManagementController:
         user.password_hash = Auth.hash_password(form.password)
         user.email = form.email
         user.role = form.role
-        user.is_active = True
+        user.is_active = form.is_active
         return await self._service.add_user(user)
 
     async def update_user(self, user_id: int, form: UserForm) -> bool:
@@ -111,6 +112,7 @@ class UserManagementController:
         user.password_hash = Auth.hash_password(form.password)
         user.email = form.email
         user.role = form.role
+        user.is_active = form.is_active
         updated = await self._service.update_user(user_id, user)
         return bool(updated)
 
