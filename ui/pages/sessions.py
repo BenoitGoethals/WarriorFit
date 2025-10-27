@@ -23,14 +23,11 @@ class SessionsPage:
 
         self.be_mil_service = BEMILService()
         self.refresh_tick = reactive.Value(0)
-        self.selected_id = reactive.Value(None)
-        # Hold the currently selected row (as a dict) for reuse by update/delete
+        self.selected_id = reactive.Value(0)
         self.selected_row: Optional[Dict[str, Any]] = None
-        # Controller
         self.controller = SessionsController()
 
     def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
-        # Ensure required fields and valid type
         if not data["datetime_start"]:
             return False, "Date and time are required."
         if not (data["type_test"] or "").strip():
@@ -44,7 +41,7 @@ class SessionsPage:
         Track the selected grid row.
         - row: a dictionary with keys like ID, Type, Start, Serial PTI, Executed, Description
         """
-        # Keep both an ID and the full row payload for later use
+
         self.selected_row = {
             "ID": row.get("ID"),
             "Type": row.get("Type"),
@@ -53,10 +50,8 @@ class SessionsPage:
             "Executed": row.get("Executed"),
             "Description": row.get("Description"),
         }
-        # Sync the reactive ID for any reactive dependencies
         self.selected_id.set(self.selected_row["ID"])
 
-    # ---------- UI ----------
     def get_ui(self):
         return ui.nav_panel(
             "Sessions",
@@ -80,13 +75,11 @@ class SessionsPage:
                     ui.br(),
                     ui.output_text("se_status"),
                     ui.output_text("selected_session"),
-
                     full_screen=False,
                 ),
                 ui.card(
                     ui.card_header("Sessions"),
                     ui.output_data_frame("se_grid"),
-
                     ui.layout_columns(
                         ui.input_action_button("se_delete_btn", "Delete Selected"),
                         col_widths=(6, 3, 3),
@@ -97,10 +90,8 @@ class SessionsPage:
             ),
         )
 
-    # ---------- Server ----------
+
     def server(self, input, output, session):
-        # Stored as list of dicts with TestSession attributes:
-        # {id, serial_number_pti, datetime_start, executed, description, type_test}
         sessions = reactive.Value([])
         next_id = reactive.Value(1)
         status = reactive.Value("Ready.")
@@ -108,9 +99,7 @@ class SessionsPage:
         async def all_pti() -> List[str]:
             return await self.controller.get_all_pti_serials()
 
-        # Populate the Serial Number select once the page/server mounts
         async def _populate_pti_choices():
-            # Plain async function that can be awaited from anywhere
             try:
                 choices = await all_pti()
                 ui.update_select("se_serial", choices=choices, selected=None)
@@ -119,7 +108,6 @@ class SessionsPage:
 
         @reactive.Effect
         async def _populate_pti_choices_effect():
-            # Effect to populate choices on startup
             await _populate_pti_choices()
 
         async def _load_initial():
@@ -157,7 +145,6 @@ class SessionsPage:
             )
 
         def _read_form() -> Dict[str, Any]:
-            # Combine date + time into a single datetime
             dt_date = input.se_date()
             dt_time = input.se_time()
             dt = None
@@ -193,16 +180,14 @@ class SessionsPage:
             session.send_input_message("se_description", {"value": rec.get("description", "") or ""})
 
         async def _clear_form():
-            # Refresh PTI choices and reset the form fields
             await _populate_pti_choices()
             ui.update_date("se_date", label="Date", value=None)
             ui.update_text("se_time", value="09:00")
             ui.update_select("se_type", choices=self.SESSION_TYPES)
             ui.update_checkbox("se_executed", value=False)
             ui.update_text_area("se_description", value="")
-            # Reset tracked selection
             self.selected_row = None
-            self.selected_id.set(None)
+            self.selected_id.set(0)
 
         async def _refresh_select():
             items = sessions.get() or []
@@ -220,7 +205,6 @@ class SessionsPage:
 
         @reactive.calc
         async def session_list():
-            # Make this calc depend on refresh_tick so it re-runs after add/update/delete
             _ = self.refresh_tick.get()
             return await self.controller.list_sessions_df()
 
@@ -264,7 +248,7 @@ class SessionsPage:
             ui.update_checkbox("se_executed", value=(str(row["Executed"]).strip().lower() == "yes"))
             ui.update_text_area("se_description", value=str(row["Description"]))
 
-            # Track full selection for update/delete flows
+
             self._set_selected({
                 "ID": row["ID"],
                 "Type": row["Type"],
@@ -308,26 +292,12 @@ class SessionsPage:
                     ]
                 )
                 status.set("Session added successfully.")
-                try:
-                    recipients = await self.controller.recipients_for_unit()
-                    if recipients:
-                        html = self.controller.build_added_html(added)
-                        self.controller.send_html(
-                            subject="New Fitness Test Session Added",
-                            html_body=html,
-                            to=recipients,
-                            invite=True,
-                            start_dt=added.datetime_start,
-                            end_dt=added.datetime_start + datetime.timedelta(hours=2),
-                            organizer_name=added.serial_number_pti,
-                        )
-                except Exception as e:
-                    print(f"Error sending email: {str(e)}")
+
             except Exception as e:
                 status.set(f"Error adding session: {str(e)}")
                 return
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            self.selected_id.set(None)
+            self.selected_id.set(0)
             await _clear_form()
 
         @reactive.Effect
@@ -362,17 +332,11 @@ class SessionsPage:
             if not updated_ok:
                 status.set("Failed to update session.")
                 return
-            try:
-                # Build a TestSession-like object for email content preview
-                ts = await self.controller.get_session_by_id(sel_id)
-                if ts:
-                    recipients = await self.controller.recipients_for_unit()
-                    if recipients:
-                        html = self.controller.build_updated_html(ts)
-                        self.controller.send_html(subject="update Fitness Test Session updated", html_body=html, to=recipients)
-            except Exception as e:
-                print(f"Error sending email: {str(e)}")
+
             status.set(f"Updated session #{sel_id}.")
+            self.selected_id.set(0)
+            await _refresh_select()
+            await _clear_form()
             self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
@@ -382,22 +346,13 @@ class SessionsPage:
             if not selected_id:
                 status.set("Select a session to delete.")
                 return
-            ts = await self.controller.get_session_by_id(int(selected_id))
             ok = await self.controller.delete_session(int(selected_id))
             if not ok:
                 status.set("Failed to delete session.")
                 return
-            try:
-                if ts:
-                    recipients = await self.controller.recipients_for_unit()
-                    if recipients:
-                        html = self.controller.build_deleted_html(ts)
-                        self.controller.send_html(subject="Deleted Fitness Test Session deleted", html_body=html, to=recipients)
-            except Exception as e:
-                print(f"Error sending email: {str(e)}")
             status.set(f"Deleted session #{selected_id}.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            self.selected_id.set(None)
+            self.selected_id.set(0)
             await _refresh_select()
             await _clear_form()
 
@@ -407,35 +362,9 @@ class SessionsPage:
             await _clear_form()
             status.set("Form cleared.")
 
-    async def _send_mail_bulk(self,*,body:str,subject:str,invite:bool=False, start_dt:datetime.datetime=None,end_dt:datetime.datetime=None,coach:str=None):
-        recipients: list[str] = [r.mail for r in await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)]
-        if recipients:
-            mail_sessions_add = {
-                "subject": subject,
-                "html_body": body
-                ,
-                "from_email": ApplicationConfig().mail_server.sender_email,
-                "to": recipients
-            }
-            try:
-                MailService().send_html(**mail_sessions_add)
-                if invite:
-                    MailService().send_with_calendar_invite(
-                        to=recipients,
-                        subject="Fitness Assessment Invite",
-                        html_body="Fitness Session scheduled for today. Please join the session at the following URL:",
-                        start=start_dt,
-                        end=end_dt,
-                        organizer_email=ApplicationConfig().mail_server.sender_email,
-                        organizer_name=coach,
-                        location="Gym Hall",
-                )
-            except Exception as e:
-                print(f"Error sending email: {str(e)}")
-                return
 
 
-# Optional: keep backward-compatible module-level functions
+
 _page_instance: Optional[SessionsPage] = None
 
 

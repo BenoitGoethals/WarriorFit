@@ -48,15 +48,15 @@ class SessionsController:
         ts.datetime_start = payload["datetime_start"]
         ts.executed = bool(payload["executed"])
         ts.description = payload["description"]
-        # payload["type_test"] is a string name
         try:
             ts.type_test = getattr(TypeFitnessTest, str(payload["type_test"]).upper())
         except Exception:
             ts.type_test = TypeFitnessTest.PHEF
-        return await self._service.add_test_session(ts)
+        sess= await self._service.add_test_session(ts)
+        await self._send_html(subject=f"Fitness {ts.type_test.name} session added",html_body=self._build_added_html(sess),start_dt=sess.datetime_start,end_dt=sess.datetime_start+datetime.timedelta(hours=2),organizer_name=sess.serial_number_pti,invite=True,)
+        return sess
 
     async def update_session(self, sel_id: int, payload: Dict[str, Any]) -> bool:
-        # Accepts string name for type_test for convenience
         try:
             enum_type = getattr(TypeFitnessTest, str(payload["type_test"]).upper())
         except Exception:
@@ -69,19 +69,31 @@ class SessionsController:
             executed=bool(payload["executed"]),
             description=payload["description"],
         )
-        return await self._service.update_test_session(data)
+        sess= await self._service.update_test_session(data)
+
+        await self._send_html(subject=f"Update Fitness {sess.type_test.name} session added", html_body=self._build_updated_html(sess),
+                              start_dt=sess.datetime_start, end_dt=sess.datetime_start + datetime.timedelta(hours=2),
+                              organizer_name=sess.serial_number_pti, invite=True, )
+        return sess
 
     async def delete_session(self, sel_id: int) -> bool:
-        return await self._service.delete_test_session(sel_id)
+        sess = await self._service.get_test_session_by_id(sel_id)
+        success= await self._service.delete_test_session(sel_id)
 
-    async def get_session_by_id(self, sel_id: int) -> Optional[TestSession]:
+        await self._send_html(subject=f"Delete Fitness {sess.type_test.name} session added",
+                              html_body=self._build_deleted_html(sess),
+                              start_dt=sess.datetime_start, end_dt=sess.datetime_start + datetime.timedelta(hours=2),
+                              organizer_name=sess.serial_number_pti, invite=False, )
+        return success
+
+    async def get_session_by_id(self, sel_id: int|None) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(sel_id)
 
-    # Mail helpers
-    async def recipients_for_unit(self) -> list[str]:
+
+    async def _recipients_for_unit(self) -> list[str]:
         return [r.mail for r in await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)]
 
-    def build_added_html(self, ts: TestSession) -> str:
+    def _build_added_html(self, ts: TestSession) -> str:
         status_text = "Executed" if ts.executed else "Planned"
         dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
         desc = ts.description or "No description provided"
@@ -97,7 +109,7 @@ class SessionsController:
             <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
         """
 
-    def build_updated_html(self, ts: TestSession) -> str:
+    def _build_updated_html(self, ts: TestSession) -> str:
         status_text = "Executed" if ts.executed else "Planned"
         dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
         desc = ts.description or "No description provided"
@@ -114,7 +126,7 @@ class SessionsController:
             <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
         """
 
-    def build_deleted_html(self, ts: TestSession) -> str:
+    def _build_deleted_html(self, ts: TestSession) -> str:
         status_text = "Executed" if ts.executed else "Planned"
         dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
         desc = ts.description or "No description provided"
@@ -130,20 +142,23 @@ class SessionsController:
             <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
         """
 
-    def send_html(self, *, subject: str, html_body: str, to: list[str], invite: bool = False,
+
+
+
+    async def _send_html(self, *, subject: str, html_body: str,  invite: bool = False,
                   start_dt: datetime.datetime | None = None, end_dt: datetime.datetime | None = None,
                   organizer_name: str | None = None):
         MailService().send_html(
             subject=subject,
             html_body=html_body,
             from_email=ApplicationConfig().mail_server.sender_email,
-            to=to,
+            to=await self._recipients_for_unit(),
         )
         if invite:
             MailService().send_with_calendar_invite(
-                to=to,
+                to=await self._recipients_for_unit(),
                 subject="Fitness Assessment Invite",
-                html_body="Fitness Session scheduled for today. Please join the session at the following URL:",
+                html_body="Fitness Session scheduled",
                 start=start_dt,
                 end=end_dt,
                 organizer_email=ApplicationConfig().mail_server.sender_email,
