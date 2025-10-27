@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from config.appliccation_config import ApplicationConfig
+from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from logic.phef_calculator import PhefCalculator
@@ -23,17 +24,30 @@ class DashboardOwnUnitController:
         self._service = ServiceTest()
         self.be_mil_service = BEMILService()
         self.unit_name=ApplicationConfig().own_unit
+        self._mils=None
+        self._all_military_own_unit=None
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:
         try:
-            people = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
-            return {p.service_number for p in (people or [])}
+            if self._mils is None:
+                people = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
+                self._mils= {p.service_number for p in (people or [])}
+            return self._mils
         except Exception as e:
             return set()
+    async def _get_all_military_own_unit(self) -> dict[str,ServiceMen]:
+        try:
+            if self._all_military_own_unit is None:
+                data = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
+                self._all_military_own_unit= {s.service_number:s for s in data}
+            return self._all_military_own_unit
+        except Exception as e:
+            return {}
 
     async def phef_total_score(self, test: PhefTest) -> float:
-        val = await self.be_mil_service.get_be_mil_by_id(test.serial_number or "")
+        mils:dict[str,ServiceMen] = await self._get_all_military_own_unit()
+        val:ServiceMen = mils.get(test.serial_number)
         age = val.age_from_birthdate()
         gender = val.gender
         score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, age, gender)
