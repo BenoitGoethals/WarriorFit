@@ -68,7 +68,7 @@ class UserManagementPage:
             password=(input.um_password() or "").strip(),
             email=(input.um_email() or "").strip(),
             role=(input.um_role() or "").strip(),
-            is_active=(input.um_is_active() or "").strip(),
+            is_active=(input.um_is_active())
 
         )
 
@@ -131,7 +131,7 @@ class UserManagementPage:
                 {
                     "serial": row[self.COLUMN_SERIAL],
                     "username": row.get("Username", ""),
-                    "password": "",  # do not pre-fill password for security
+                    "password": row.get("Password", ""),
                     "email": row.get("Email", ""),
                     "role": row.get("Role", ""),
                     "is_active": (bool(row.get("Active")) if pd.notna(row.get("Active")) else False),
