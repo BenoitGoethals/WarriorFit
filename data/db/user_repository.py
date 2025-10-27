@@ -14,7 +14,6 @@ class UserRepository(ABCRepository):
         super().__init__()
         self.__logger = logging.getLogger(__name__)
     async def add_user(self, user: User) -> Optional[User]:
-
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
@@ -33,7 +32,7 @@ class UserRepository(ABCRepository):
     async def user_mail_exist(self,mail:str)->bool:
         query = select(User).where(User.email==mail)
         results = await self.fetch_and_log(query, "user")
-        return len(results)>0
+        return results is not None
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
         """
@@ -77,15 +76,15 @@ class UserRepository(ABCRepository):
                     if not existing_user:
                         self.__logger.error(f"User with ID {id} not found.")
                         return None
-
-                    # Update fields
                     existing_user.username = user.username
                     existing_user.password_hash = user.password_hash
                     existing_user.email = user.email
                     existing_user.role = user.role
+                    existing_user.serial_number = user.serial_number
+                    existing_user.is_active = user.is_active
 
-                    await session.flush()  # Ensure changes are applied
-                    await session.refresh(existing_user)  # Refresh to get updated data
+                    await session.flush()
+                    await session.refresh(existing_user)
                     return existing_user
 
         except IntegrityError as e:
