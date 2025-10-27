@@ -1,6 +1,7 @@
 # Python
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
@@ -22,10 +23,13 @@ class UserForm:
 
 
 class UserManagementController:
+    EMAIL_REGEX = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
     def __init__(self,):
         # If your DBService requires a config path, adjust here
         self._service =  UserService()
         self.selected_user=None
+
+
 
     @staticmethod
     def role_choices() -> List[str]:
@@ -60,6 +64,9 @@ class UserManagementController:
         exists = await self._service.serial_exists(form.serial.strip())
         mail_unique = await self._service.user_mail_exist(form.email)
         user_name_exist = await self._service.get_user_by_username(form.username)
+        is_email_well_formed = self.EMAIL_REGEX.match(form.email) is not None
+        if not is_email_well_formed:
+            return False, "Invalid email address."
         if is_update:
             if form.serial.strip() != (self.selected_user.serial or "") and exists:
                 return False, f"Serial '{form.serial}' already exists."
@@ -104,7 +111,7 @@ class UserManagementController:
         user.is_active = form.is_active
         return await self._service.add_user(user)
 
-    async def update_user(self, user_id: int, form: UserForm) -> bool:
+    async def update_user(self, user_id: int|None, form: UserForm) -> bool:
         user = User()
         user.id = user_id
         user.serial_number = form.serial
@@ -116,5 +123,5 @@ class UserManagementController:
         updated = await self._service.update_user(user_id, user)
         return bool(updated)
 
-    async def delete_user_by_serial(self, serial: str) -> bool:
+    async def delete_user_by_serial(self, serial: str|None) -> bool:
         return await self._service.delete_user_by_serial(serial)
