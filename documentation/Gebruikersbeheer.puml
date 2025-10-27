@@ -1,0 +1,31 @@
+@startuml
+title Gebruikersbeheer - WARRIORFIT
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecasePadding 10
+skinparam actorMargin 40
+
+actor Admin
+
+package "Gebruikersbeheer" {
+  usecase "Gebruiker aanmaken" as UC011
+  usecase "Gebruiker overzicht" as UC0111
+  usecase "Gebruiker bijwerken" as UC0112
+  usecase "Gebruiker verwijderen" as UC0113
+  usecase "Rollen beheren" as UC0114
+  usecase "Wachtwoord reset" as UC0115
+  usecase "Activeren / deactiveren" as UC0116
+  usecase "Audit log bekijken" as UC0117
+  usecase "2FA instellen" as UC0118
+}
+
+Admin --> UC011
+Admin --> UC0111
+Admin --> UC0112
+Admin --> UC0113
+Admin --> UC0114
+Admin --> UC0115
+Admin --> UC0116
+Admin --> UC0117
+Admin --> UC0118
+@enduml

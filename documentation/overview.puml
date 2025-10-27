@@ -1,0 +1,36 @@
+@startuml
+title WARRIORFIT  Architectuur
+
+package "UI-laag" {
+    [Shiny Frontend]
+}
+
+package "Controller-laag" {
+    [Controllers]
+}
+
+package "Service-laag" {
+    [Business Logic]
+    [PHEF Berekeningen]
+    [Validatie]
+}
+
+package "Repository-laag" {
+    [Database Access]
+    [PostgreSQL Database]
+}
+
+package "Externe Services" {
+    [PDF Generator (ReportLab)]
+    [Mailservice (SMTP)]
+}
+
+' Relaties
+[Shiny Frontend] --> [Controllers] : Gebruikersinteracties
+[Controllers] --> [Business Logic] : Requests
+[Business Logic] --> [Database Access] : Data ophalen/opslaan
+[Business Logic] --> [PDF Generator (ReportLab)] : Rapporten genereren
+[Business Logic] --> [Mailservice (SMTP)] : Rapporten verzenden
+[Database Access] --> [PostgreSQL Database] : SQL Queries
+
+@enduml
