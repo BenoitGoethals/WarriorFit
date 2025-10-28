@@ -76,7 +76,7 @@ class FitnessWarriorApp:
             "Reports": reports.server,
             "Settings": settings.server,
             "Own Unit": own_unit.server,
-            "Own Dashboard" : dashboard_own_unit.server,
+            "Dashboard" : dashboard_own_unit.server,
             "Individual" : ind_test_show.server
         }
         mounted = reactive.Value(set())
@@ -97,12 +97,8 @@ class FitnessWarriorApp:
     @staticmethod
     def server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
-
         user_service = UserService()
-
-
         FitnessWarriorApp.register_pages_server(input, output, session)
-
         status_text = reactive.Value("")
         login_user_text = reactive.Value("")
         nav_version = reactive.Value(0)
@@ -116,6 +112,15 @@ class FitnessWarriorApp:
                 _safe_panel(combat_test.get_ui()),
                 _safe_panel(functional_test.get_ui()),
                 _safe_panel(swim_test.get_ui()),
+            ]
+            items = [c for c in items if c is not None]
+            return ui.nav_menu("Test", *items)
+
+        def _build_cross_menu() -> ui.nav_menu:
+            items = [
+                _safe_panel(cross_planning.get_ui()),
+                _safe_panel(cross.get_ui()),
+
             ]
             items = [c for c in items if c is not None]
             return ui.nav_menu("Test", *items)
@@ -145,36 +150,36 @@ class FitnessWarriorApp:
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
 
-            nav_items.extend(
-                [i for i in [_safe_panel(dashboard_own_unit.get_ui()),
-                             _safe_panel(own_unit.get_ui()), ] if i is not None]
-            )
+
             admin_menu = _build_admin_menu(role)
             if role is Role.ADMIN:
                 if admin_menu is not None:
-                    nav_items.append(_safe_panel(cross_planning.get_ui()))
-                    nav_items.append(_safe_panel(cross.get_ui()))
+                    nav_items.append(dashboard_own_unit.get_ui())
+                    nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(ind_test_show.get_ui()))
                     nav_items.append(_safe_panel(reports.get_ui()))
                     nav_items.append(_safe_panel((sessions.get_ui())))
+                    nav_items.append(_build_cross_menu())
                     nav_items.append(admin_menu)
-            elif role is Role.USER:
+            elif role is Role.GUEST:
                 nav_items.append(_safe_panel(own_unit.get_ui()))
                 nav_items.append(_safe_panel(ind_test_show.get_ui()))
             elif role is Role.PTI:
+                nav_items.append(dashboard_own_unit.get_ui())
+                nav_items.append(own_unit.get_ui())
                 nav_items.append(_safe_panel(ind_test_show.get_ui()))
                 nav_items.append(_build_test_menu())
+                nav_items.append(_build_cross_menu())
                 nav_items.append(_safe_panel(reports.get_ui()))
-                nav_items.append(admin_menu)
-                nav_items.append(_safe_panel(cross_planning.get_ui()))
-                nav_items.append(_safe_panel(cross.get_ui()))
             elif role is Role.APTI:
+                nav_items.append(dashboard_own_unit.get_ui())
+                nav_items.append(own_unit.get_ui())
                 nav_items.append(_safe_panel(ind_test_show.get_ui()))
                 nav_items.append(_build_test_menu())
+                nav_items.append(_safe_panel((sessions.get_ui())))
                 nav_items.append(_safe_panel(reports.get_ui()))
-                nav_items.append(_safe_panel(cross_planning.get_ui()))
-                nav_items.append(_safe_panel(cross.get_ui()))
+                nav_items.append(_build_cross_menu())
             elif role is Role.PLANNER:
                 nav_items.append(_safe_panel((sessions.get_ui())))
 

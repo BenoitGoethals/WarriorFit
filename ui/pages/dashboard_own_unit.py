@@ -17,7 +17,7 @@ class DashboardOwnUnitPage:
 
     def get_ui(self):
         return ui.nav_panel(
-            "Own Dashboard",
+            "Dashboard",
             ui.h2(f"📊 {self.controller.unit_name} Dashboard " + str(datetime.now().year)),
             ui.br(),
             ui.layout_columns(
