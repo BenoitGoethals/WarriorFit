@@ -1,0 +1,76 @@
+@startuml
+title WarriorFit - Rollen ↔ Modules (Component / Access view)
+skinparam componentStyle rectangle
+
+' --- Roles (as components for clarity) ---
+component "Planner (role)" as Planner <<role>>
+component "PTI (role)" as PTI <<role>>
+component "APTI (role)" as APTI <<role>>
+component "Deelnemer (role)" as Deelnemer <<role>>
+component "Administrator (role)" as Admin <<role>>
+component "Guest (role)\n(S3/S1/Coy Comd)" as Guest <<role>>
+component "Systeem (background)\n(automatische processen)" as System <<background>>
+
+' --- Application Modules / Menus ---
+component "Dashboard Module" as M_Dashboard
+component "Sessies Module" as M_Sessies
+component "PTI-Planning Module" as M_PTI_Planning
+component "Resultaten Module" as M_Resultaten
+component "Deelnemers Module" as M_Deelnemers
+component "Gebruikersbeheer Module" as M_Gebruikers
+component "Systeeminstellingen Module" as M_Settings
+component "Rapporten & Export Module" as M_Rapport
+component "Zoeken & Filter Module" as M_Zoeken
+component "Audit & Logging Module" as M_Audit
+component "Background Jobs" as M_Background
+
+' --- Sensitive note ---
+note left of M_Resultaten
+  PHEF-testresultaten zijn statutair
+  en gevoelige data — toegang strikt
+  rol-gebaseerd en gelogd.
+end note
+
+' --- Role to Module connections (uses / accesses) ---
+Planner --> M_Dashboard
+Planner --> M_Sessies
+Planner --> M_PTI_Planning
+Planner --> M_Rapport
+
+PTI --> M_Dashboard
+PTI --> M_Sessies
+PTI --> M_Resultaten
+PTI --> M_Rapport
+
+APTI --> M_Dashboard
+APTI --> M_Resultaten
+APTI --> M_Deelnemers
+APTI --> M_Rapport
+
+Deelnemer --> M_Dashboard
+Deelnemer --> M_Resultaten
+Deelnemer --> M_Rapport
+
+Admin --> M_Dashboard
+Admin --> M_Gebruikers
+Admin --> M_Settings
+Admin --> M_Audit
+Admin --> M_Rapport
+
+Guest --> M_Dashboard
+Guest --> M_Resultaten
+Guest --> M_Rapport
+Guest --> M_Zoeken
+
+System --> M_Background
+System --> M_Resultaten
+System --> M_Rapport
+System --> M_Audit
+
+' --- Module dependencies (example) ---
+M_Sessies ..> M_Resultaten : creates/consumes
+M_Rapport ..> M_Background : delegates generation
+M_Gebruikers ..> M_Audit : logs changes
+M_Settings ..> M_Background : config for jobs
+
+@enduml
