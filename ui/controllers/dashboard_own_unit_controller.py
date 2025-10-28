@@ -17,8 +17,16 @@ from services.service_test import ServiceTest
 
 class DashboardOwnUnitController:
     """
-    Dashboard controller focused on a single 'own unit'.
-    Provides pre-aggregated stats, charts HTML, and tables for the page.
+    Manages data and interactions for the dashboard related to the own unit's personnel
+    statistics, fitness test results, and visual representations. This class is designed
+    to query and process data specific to the user's unit from defined services, including
+    test results and personnel information.
+
+    :ivar be_mil_service: Service responsible for managing military personnel data.
+    :type be_mil_service: BEMILService
+
+    :ivar unit_name: The name of the unit for which statistics and data are managed.
+    :type unit_name: str
     """
     def __init__(self) -> None:
         self._service = ServiceTest()
@@ -26,9 +34,21 @@ class DashboardOwnUnitController:
         self.unit_name=ApplicationConfig().own_unit
         self._mils=None
         self._all_military_own_unit=None
+        self._results_tests_for_unit:dict[str,list[Any]]={}
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:
+        """
+        Asynchronously fetches and returns a set of unique serial numbers associated
+        with the owning unit. If the serial numbers are already cached, it retrieves
+        them from the stored data; otherwise, it queries the external service to update
+        the cache.
+
+        :raises Exception: If an error occurs during the external service call.
+
+        :return: A set of unique serial numbers associated with the owning unit.
+        :rtype: set[str]
+        """
         try:
             if self._mils is None:
                 people = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
@@ -37,6 +57,20 @@ class DashboardOwnUnitController:
         except Exception as e:
             return set()
     async def _get_all_military_own_unit(self) -> dict[str,ServiceMen]:
+        """
+        Fetches all servicemen belonging to the current unit asynchronously.
+
+        This method fetches the details of all servicemen from a specific unit using
+        an external service. It caches the result after the first fetch and returns
+        the cached data on subsequent calls.
+
+        :raises Exception: If an error occurs during the fetching of servicemen.
+
+        :return: A dictionary where keys are the service numbers (str) of servicemen
+            and values are `ServiceMen` objects representing detailed servicemen
+            information.
+        :rtype: dict[str, ServiceMen]
+        """
         try:
             if self._all_military_own_unit is None:
                 data = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
@@ -55,28 +89,42 @@ class DashboardOwnUnitController:
         score_run = PhefCalculator.running_result(test.running_time, age, gender)
         return (score_run * (50 / 20)) + ((score_r + score_l) * (25 / 20))
 
-    # ---------- fetch all tests by type but filtered to own unit ----------
+
     async def _tests_for_unit(self, t: TypeFitnessTest) -> List[Any]:
-        sessions = await self._service.get_all_test_sessions()
-        sessions.sort(
-            key=lambda x: x.datetime_start,
-            reverse=True,
-        )
-        serials = await self.own_unit_serials()
-        results: List[Any] = []
-        for sess in sessions:
-            if t == TypeFitnessTest.PHEF:
-                tests = await self._service.get_all_phef(sess.id)
-            elif t == TypeFitnessTest.COMBAT:
-                tests = await self._service.get_all_combat_test(sess.id)
-            elif t == TypeFitnessTest.FUNCTIONAL:
-                tests = await self._service.get_all_functional_test(sess.id)
-            elif t == TypeFitnessTest.SWIMMING:
-                tests = await self._service.get_all_combat_swimming_test(sess.id)
-            else:
-                tests = []
-            results.extend([t for t in tests if getattr(t, "serial_number", None) in serials])
-        return results
+        """
+        Fetches all test results for a specific unit fitness test type asynchronously.
+
+        This method retrieves all test sessions, sorts them by their start date
+        in descending order, and fetches test results of the specified type for
+        the sessions. It filters the results to include only those associated
+        with the serial numbers relevant to the unit. If the test results for
+        the specified type are already cached, they are returned directly.
+
+        :param t: The type of fitness test for which results are to be retrieved.
+        :type t: TypeFitnessTest
+        :return: A list of filtered test results associated with the specified fitness test type.
+        :rtype: List[Any]
+        """
+        key = t.name
+        if key not in self._results_tests_for_unit:
+            sessions = await self._service.get_all_test_sessions()
+            sessions.sort(key=lambda x: x.datetime_start, reverse=True)
+            serials = await self.own_unit_serials()
+            results: List[Any] = []
+            for sess in sessions:
+                if t == TypeFitnessTest.PHEF:
+                    tests = await self._service.get_all_phef(sess.id)
+                elif t == TypeFitnessTest.COMBAT:
+                    tests = await self._service.get_all_combat_test(sess.id)
+                elif t == TypeFitnessTest.FUNCTIONAL:
+                    tests = await self._service.get_all_functional_test(sess.id)
+                elif t == TypeFitnessTest.SWIMMING:
+                    tests = await self._service.get_all_combat_swimming_test(sess.id)
+                else:
+                    tests = []
+                results.extend([test for test in tests if getattr(test, "serial_number", None) in serials])
+            self._results_tests_for_unit[key] = results
+        return self._results_tests_for_unit.get(key, [])
 
     # ---------- top-cards ----------
     async def personnel_stats(self) -> Dict[str, Any]:
