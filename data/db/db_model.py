@@ -23,27 +23,19 @@ class AuditLog(Base):
     """
     Represents an audit log for tracking user actions on various entities.
     """
-
     __tablename__ = "audit_logs"
-
-    # Columns
     id = Column(
         Integer, primary_key=True, autoincrement=True, nullable=False
-    )  # Change from UUID to Integer
+    )
     user_id = Column(
         Integer, ForeignKey("users.id"), nullable=False
-    )  # Change type to Integer to match User.id
-    action = Column(String(50), nullable=False)  # e.g., "create", "update", "delete"
-    entity_type = Column(String(50), nullable=False)  # e.g., "Mission"
-    entity_id = Column(String(50), nullable=False)  # ID of the entity being acted upon
-    details = Column(JSON, nullable=True)  # Optional JSON for additional data
-    ip_address = Column(String(45), nullable=True)  # IPv4/IPv6 format for user's IP
-    user_agent = Column(Text, nullable=True)  # Info about browser/device
+    )
+    action = Column(String(50), nullable=False)
+    details = Column(JSON, nullable=True)
+    ip_address = Column(String(45), nullable=True)
     created_at = Column(
         DateTime, default=func.now(), nullable=False
-    )  # Timestamp of the action
-    # Relationship with User
-
+    )
 
 
 class User(Base):

@@ -1,4 +1,5 @@
 import logging
+from typing import Optional, List
 
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,6 +15,7 @@ class ABCRepository:
 
     def __init__(self):
         # Configure logging
+
         self.setup_logger()
         self._be_mil_service = BEMILService()
 
@@ -140,21 +142,16 @@ class ABCRepository:
             self,
             user_id: int,
             action: str,
-            entity_type: str,
-            entity_id: str,
             details: dict = None,
             ip_address: str = None,
-            user_agent: str = None,
+
     ):
 
         audit_log = AuditLog(
             user_id=user_id,
             action=action,
-            entity_type=entity_type,
-            entity_id=entity_id,
             details=details,
             ip_address=ip_address,
-            user_agent=user_agent,
         )
 
         async with self.SessionLocal() as session:
@@ -169,4 +166,22 @@ class ABCRepository:
             except Exception as e:
 
                 self.__logger.error(f"Failed to deactivate subscriptions: {e}")
+
+    async def get_all_audit_logs(self, limit: Optional[int] = None, offset: int = 0) -> List[AuditLog]:
+        """
+        Returns all AuditLog entries ordered by created_at desc.
+        Optional pagination via limit/offset.
+        """
+        stmt = select(AuditLog).order_by(AuditLog.created_at.desc())
+        if limit is not None:
+            stmt = stmt.limit(limit).offset(offset)
+
+        async with self.SessionLocal() as session:
+            try:
+                result = await session.execute(stmt)
+                logs = result.scalars().all()
+                return list(logs)
+            except Exception as e:
+                self.__logger.error(f"get_all_audit_logs failed: {e}")
+                return []
 
