@@ -5,7 +5,7 @@ from data.db.db_model import Role
 from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
-from .pages import dashboard, reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
+from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
     cross_planning
 from .pages import usermangement
 from .pages import phef
@@ -73,7 +73,6 @@ class FitnessWarriorApp:
             "Functional Tests": functional_test.server,
             "Swimming Tests": swim_test.server,
             "Sessions": sessions.server,
-            "Dashboard": dashboard.server,
             "Reports": reports.server,
             "Settings": settings.server,
             "Own Unit": own_unit.server,
@@ -145,8 +144,7 @@ class FitnessWarriorApp:
             user = _get_session_user()
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
-            nav_items.append(_safe_panel(cross_planning.get_ui()))
-            nav_items.append(_safe_panel(cross.get_ui()))
+
             nav_items.extend(
                 [i for i in [_safe_panel(dashboard_own_unit.get_ui()),
                              _safe_panel(own_unit.get_ui()), ] if i is not None]
@@ -154,11 +152,11 @@ class FitnessWarriorApp:
             admin_menu = _build_admin_menu(role)
             if role is Role.ADMIN:
                 if admin_menu is not None:
-
+                    nav_items.append(_safe_panel(cross_planning.get_ui()))
+                    nav_items.append(_safe_panel(cross.get_ui()))
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(ind_test_show.get_ui()))
                     nav_items.append(_safe_panel(reports.get_ui()))
-                    nav_items.append(_safe_panel(dashboard.get_ui()))
                     nav_items.append(_safe_panel((sessions.get_ui())))
                     nav_items.append(admin_menu)
             elif role is Role.USER:
@@ -167,16 +165,17 @@ class FitnessWarriorApp:
             elif role is Role.PTI:
                 nav_items.append(_safe_panel(ind_test_show.get_ui()))
                 nav_items.append(_build_test_menu())
-                nav_items.append(_safe_panel(dashboard.get_ui()))
                 nav_items.append(_safe_panel(reports.get_ui()))
                 nav_items.append(admin_menu)
+                nav_items.append(_safe_panel(cross_planning.get_ui()))
+                nav_items.append(_safe_panel(cross.get_ui()))
             elif role is Role.APTI:
                 nav_items.append(_safe_panel(ind_test_show.get_ui()))
                 nav_items.append(_build_test_menu())
-                nav_items.append(_safe_panel(dashboard.get_ui()))
                 nav_items.append(_safe_panel(reports.get_ui()))
+                nav_items.append(_safe_panel(cross_planning.get_ui()))
+                nav_items.append(_safe_panel(cross.get_ui()))
             elif role is Role.PLANNER:
-                nav_items.append(_safe_panel(dashboard.get_ui()))
                 nav_items.append(_safe_panel((sessions.get_ui())))
 
             nav_items.append(ui.nav_spacer())
