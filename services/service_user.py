@@ -1,12 +1,10 @@
 """
 User database service class for managing user-related database operations.
 """
-from appdirs import user_log_dir
-
 from data.db.user_repository import UserRepository
 from logic.singleton import Singleton
 from services.service import Service
-from utils.Os import Os
+
 
 
 class UserService(Service,metaclass=Singleton):
@@ -15,8 +13,6 @@ class UserService(Service,metaclass=Singleton):
     """
     def __init__(self):
         super().__init__()
-
-        self._user_repo = UserRepository()
 
 
     async def check_user(self, username_login, password_login):
@@ -35,16 +31,23 @@ class UserService(Service,metaclass=Singleton):
         return await self._user_repo.user_mail_exist(email)
 
     async def add_user(self, user):
-        return await self._user_repo.add_user(user)
+        user= await self._user_repo.add_user(user)
+        if user:
+            await self.add_audit_log(details=f"User {user.username} added",action="add")
+        return user
 
     async def update_user(self, user_id, user):
-        return await self._user_repo.update_user(user_id, user)
+        user= await self._user_repo.update_user(user_id, user)
+        if user:
+            await self.add_audit_log(details=f"User {user.username} updated",action="update")
+        return user
 
     async def delete_user_by_serial(self, serial):
-        return await self._user_repo.delete_user_by_serial(serial)
+        is_deleted= await self._user_repo.delete_user_by_serial(serial)
+        if is_deleted:
+            await self.add_audit_log(details=f"User {serial} deleted",action="delete")
+        return is_deleted
 
-    async def add_audit_log(self,user_id,details,action):
-        return await self._user_repo.create_audit_log(user_id=user_id,details=details,ip_address=Os.what_is_my_ip(),action=action)
 
 
 
