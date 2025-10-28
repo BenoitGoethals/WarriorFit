@@ -177,6 +177,7 @@ class UserManagementPage:
             self.status.set(f"Deleted user '{sel_serial}'.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_serial.set(None)
+            self._clear_form(session)
 
         @reactive.Effect
         @reactive.event(input.um_clear_btn)

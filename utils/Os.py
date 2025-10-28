@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Any
 from pythonping import ping
+import socket
+
 
 class Os:
 
@@ -31,3 +33,20 @@ class Os:
             raise e
 
         return response.success()
+    
+    
+    @staticmethod
+    def what_is_my_ip() -> str:
+        """
+        Returns the local IP address of the machine.
+        """
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception as e:
+            raise Exception(f"Failed to get IP address: {str(e)}")
+
+
