@@ -13,6 +13,7 @@ from sqlalchemy.orm import joinedload  # add selectin_polymorphic
 from sqlalchemy.orm import selectinload, selectin_polymorphic
 
 from config.appliccation_config import ApplicationConfig
+from data.db.user_repository import UserRepository
 from logic.singleton import Singleton
 from data.db.db_model import (
     AuditLog,
@@ -25,6 +26,7 @@ from data.db.db_model import (
     CombatSwimmingTest,
 )
 from services.be_mil_service import BEMILService
+from ui.user_store import UserStore
 from utils.Os import Os
 
 
@@ -32,7 +34,7 @@ class Service(ABC):
     NO_ENTITY_FOUND_MSG = "No {entity} found."
 
     def __init__(self, file_name: str = None):
-
+        self._user_repo = UserRepository()
         self._be_mil_service = BEMILService()
 
         self.__logger = logging.getLogger(__name__)
@@ -47,6 +49,12 @@ class Service(ABC):
         self.SessionLocal = async_sessionmaker(
             bind=async_engine, expire_on_commit=False, class_=AsyncSession
         )
+
+
+    async def add_audit_log(self,details,action):
+        user_id = getattr(UserStore.get_user(), "id", None)
+        return await self._user_repo.create_audit_log(user_id=user_id,details=details,ip_address=Os.what_is_my_ip(),action=action)
+
 
 
 
