@@ -1,9 +1,12 @@
 """
 User database service class for managing user-related database operations.
 """
+from appdirs import user_log_dir
+
 from data.db.user_repository import UserRepository
 from logic.singleton import Singleton
 from services.service import Service
+from utils.Os import Os
 
 
 class UserService(Service,metaclass=Singleton):
@@ -14,6 +17,7 @@ class UserService(Service,metaclass=Singleton):
         super().__init__()
 
         self._user_repo = UserRepository()
+
 
     async def check_user(self, username_login, password_login):
         return await self._user_repo.check_user(username_login, password_login)
@@ -38,6 +42,10 @@ class UserService(Service,metaclass=Singleton):
 
     async def delete_user_by_serial(self, serial):
         return await self._user_repo.delete_user_by_serial(serial)
+
+    async def add_audit_log(self,user_id,details,action):
+        return await self._user_repo.create_audit_log(user_id=user_id,details=details,ip_address=Os.what_is_my_ip(),action=action)
+
 
 
 
