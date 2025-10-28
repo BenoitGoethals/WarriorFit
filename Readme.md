@@ -1,113 +1,210 @@
-# 🪖 Project WARRIORFIT  
-**Digitalisering van de Fysische Militaire Testen op niveau SOR-eenheid**
+# 🛡️ WARRIORFIT  
+### Digitalisering van de Fysische Militaire Testen op niveau SOR-eenheid  
+**Auteur:** Goethals Benoit  
+**Academiejaar:** 2025–2026  
 
 ---
 
-## 1. Titel van het project
-**Digitalisering van de Fysische Militaire Testen op niveau SOR-eenheid**  
-**Projectnaam:** WARRIORFIT
+## 📘 Inhoudstafel
+1. [Aanleiding / Probleemstelling](#-aanleiding--probleemstelling)
+2. [Doelstelling](#-doelstelling)
+3. [Overzicht PHEF](#-phef)
+4. [Andere Testen](#-andere-testen)
+5. [Scope & Use Cases](#-scope--use-cases)
+6. [Functionele Requirements](#-functionele-requirements)
+7. [Niet-Functionele Requirements](#-niet-functionele-requirements)
+8. [Definition of Done (DoD)](#-definition-of-done-dod)
+9. [Projectfasering](#-projectfasering)
+10. [Risico’s](#-risicos)
+11. [Frameworks & Packages](#-frameworks--packages)
+12. [Prototype Idee UX](#-prototype-idee-ux)
 
 ---
 
-## 2. Aanleiding / Probleemstelling
-Elke eenheid binnen Defensie beschikt over een **cel Fysieke Training**, met als doel militairen fysiek voor te bereiden op operationele inzet.  
-Elke militair moet jaarlijks de **PHEF** (Physical Health Evaluation Form) afleggen.  
-Daarnaast bestaan er bijkomende **functionele testen** voor gevechtseenheden, en voor de paracommando’s de **gevechtstesten**.
+## 🎯 Aanleiding / Probleemstelling
+Elke eenheid binnen Defensie beschikt over een **cel fysieke training** met als doel militairen optimaal fysiek voor te bereiden op operationele inzet.  
+Jaarlijks moet elke militair de **PHEF** (Physical Fitness Evaluation Defence) afleggen. Daarnaast voeren gevechtseenheden **functionele** en **gevechtsproeven** uit, terwijl paracommando’s extra **gevechtstesten** moeten doorstaan.
 
-Het huidige beheer van deze testen verloopt grotendeels manueel, wat leidt tot:
-- inefficiënt beheer van testresultaten,  
-- beperkte opvolging van testmomenten,  
-- en vertragingen in communicatie naar HRM.
+Momenteel verloopt dit grotendeels manueel — wat zorgt voor inefficiëntie, fouten en administratieve vertraging.
 
 ---
 
-## 3. Doelstelling
-Het doel van dit project is het ontwikkelen van een **digitaal beheersysteem** voor de cel fysieke testen van een SOR-eenheid.  
-Dit systeem moet:
-
-- Het beheer van alle fysieke testen voor eigen personeel centraliseren.  
-- Automatisch notificaties sturen via e-mail naar personeel voor aankomende testmomenten.  
-- Automatisch testresultaten verzenden naar HRM.  
-- Een duidelijk dashboard bieden over de fysieke toestand van de eenheid.
+## 🧭 Doelstelling
+Ontwikkel een **digitaal platform** voor de SOR-eenheid waarmee de cel fysieke training:
+- PHEF-, gevecht-, zwem- en functionele testen kan **beheren en registreren**.  
+- **Automatische notificaties** kan verzenden voor geplande testmomenten.  
+- **PDF-rapporten en e-mails** kan genereren voor HRM en militairen.  
+- De **status van fysieke paraatheid** van het personeel kan opvolgen via een dashboard.  
 
 ---
 
-## 4. Scope
+## 💪 PHEF
+De **PHEF-test** vormt de officiële fysieke evaluatie binnen Defensie.  
+Ze beoordeelt **kracht, uithouding en functionele geschiktheid** volgens leeftijd, geslacht en functiecategorie.
 
-### Binnen scope
-1. Beheer van gebruikers en toegangsrechten.  
-2. Registreren en beheren van testsessies en testmomenten.  
-3. Registreren en beheren van **PHEF-testen**.  
-4. Registreren en beheren van **functionele testen**.  
-5. Registreren en beheren van **gevechtstesten**.  
-6. Analyse van testresultaten (geslaagd/gefaald).  
-7. Opvolging van militairen die hun testen nog moeten afleggen.  
-8. Beheer van de eenheid en subgroepen (“cross”).  
-9. Automatische e-mailnotificaties van testresultaten.  
-10. HRM-notificatie van uitgevoerde testen.  
-11. Dashboard met de fysieke toestand van de eenheid.
+### 🧩 Samenstelling
+1. **Core-stabiliteitstest:** Left & Right Side Bridge  
+2. **Loopproef:** 2400 meter  
 
-### Buiten scope
-- Integratie met andere Defensiebrede IT-systemen buiten HRM.  
-- Mobiele applicatie (fase 2 mogelijk).  
-- AI-gestuurde prestatieanalyse.
+### 📊 Berekening
+| Onderdeel | Max punten | Min. vereiste | Opmerkingen |
+|------------|-------------|----------------|--------------|
+| Zijbrug L/R | 20 (elk) | 10/20 per zijde | Beide herleid naar 20 |
+| Loop 2400 m | 20 | 10/20 |  |
+| **Totaal** | **40** | **Geslaagd vanaf 50% per deel** |  |
 
----
-
-## 5. Resultaten (Deliverables)
-**1. Analyse Dossier**
-- User stories  
-- Functionele en niet-functionele requirements  
-
-**2. Werkende Webapplicatie**
-- Front-end: Dashboard en beheermodules  
-- Back-end: Database, API en mailingservice  
-- Rapportagefunctie (export naar PDF / Excel)  
-- HRM-integratie
+🏅 **Brevetten:**
+- Goud: 40/40  
+- Zilver: 36–39/40  
+- Brons: 32–35/40  
 
 ---
 
-## 6. Betrokkenen en Verantwoordelijkheden
+## 🪖 Andere Testen
 
-| Rol              | Naam / Functie                      |
-|------------------|-------------------------------------|
-| **Projectleider** | Benoit I                            |
-| **Opdrachtgever** | Hoofd Logistiek                     |
-| **Gebruikers**    | Compagnie logistiek personeel        |
-| **Ontwikkelaars** | IT-team / NGO-donoren               |
+### ⚔️ Gevechtstesten
+- Speedmars 16 km (120 min, gevechtsuitrusting + wapen + webbing 3kg)  
+- Koordenpiste & hindernissenparcours  
+> Vereist: **GO** op elk onderdeel
 
----
+### 🌊 Gevechtszwemmen
+- 100 m zwemmen in gevechtskledij met wapen & bottines  
+> Vereist: **GO/NGO**
 
-## 7. Planning (Globaal)
-| Fase | Beschrijving | Deadline |
-|------|---------------|----------|
-| Analysefase | Opstellen van requirements en user stories | ULT |
-| Ontwikkeling | Implementatie van de webapplicatie | ULT |
-| Testfase | Functionele en gebruikersacceptatietesten | ULT |
-| Oplevering | Productie en training gebruikers | ULT |
-
-*(ULT = exacte datum nog te bepalen)*
+### 🏋️ Functionele Testen
+- Optrekken  
+- Sit-ups  
+- Pompen  
+> Vereist: **GO** op elk onderdeel  
 
 ---
 
-## 8. Risico’s
-- Gebrek aan betrouwbare data → gebruik van **fictieve datasets** in testfase.  
-- Onvoldoende betrokkenheid gebruikers tijdens testfase.  
-- Vertraagde communicatie met HRM.  
-- Beperkte IT-ondersteuning op locatie.  
+## 🧩 Scope & Use Cases
+
+### Hoofdfunctionaliteiten
+1. Gebruikersbeheer (Admin, PTI, Planner, Militair)  
+2. Beheer van testmomenten & sessies  
+3. Registratie van PHEF-, Functionele-, Gevechts- en Zwemtesten  
+4. Automatische berekening & rapportering  
+5. Mailnotificaties en HRM-integratie  
+6. Dashboards & rapportexport (PDF/CSV)  
 
 ---
 
-## 9. Technische Richtlijnen (optioneel)
-- **Framework:** Python (FastAPI / Flask / Shiny for Python)  
-- **Database:** PostgreSQL / SQLite (ontwikkelingsfase)  
-- **Frontend:** HTML / Tailwind / Vue / Shiny UI  
-- **Deployment:** Docker / lokale server  
+## ⚙️ Functionele Requirements
+
+| Nr | Requirement | Beschrijving |
+|----|--------------|--------------|
+| FR1 | Gebruikersauthenticatie | Login via beveiligd formulier (JWT + bcrypt) |
+| FR2 | Gebruikersbeheer | CRUD-acties op gebruikers |
+| FR3 | Dashboard | Persoonlijk overzicht van testen, resultaten en planning |
+| FR4 | Testregistratie | Invoer van fysieke testresultaten via UI |
+| FR5 | Scoreberekening | Automatische berekening en GO/NGO-status |
+| FR6 | PDF-rapporten | Individuele/groepsrapporten met resultaten |
+| FR7 | Mailverzending | Automatische e-mails met resultaten |
+| FR8 | Databaseopslag | Alle data persistent in PostgreSQL |
+| FR9 | Filtering & zoekfuncties | Op naam, eenheid, testtype, datum |
+| FR10 | Audit logging | Historiek van acties per gebruiker |
+| FR12 | Export | CSV/Excel-export van resultaten |
+| FR13 | Notificatiesysteem | Herinneringen en updates via mail |
+| FR14 | Identiteitscontrole | Verificatie via HRM REST API |
+| FR15 | API-toegang | Beveiligde externe API voor data-uitwisseling |
 
 ---
 
-## 10. Licentie
-© 2025 – Project WARRIORFIT.  
-Interne toepassing binnen Defensie – niet voor extern gebruik.
+## 🧱 Niet-Functionele Requirements
+
+### 💻 Technologie
+- **UI:** Shiny for Python  
+- **API:** FastAPI  
+- **Database:** PostgreSQL  
+- **ORM:** SQLAlchemy + Alembic  
+- **Beveiliging:** bcrypt, JWT, rolgebaseerde autorisatie  
+- **Export:** ReportLab (PDF), OpenPyXL (Excel)  
+
+### 🔐 Beveiliging
+- HTTPS/TLS-versleuteling  
+- Geen plaintext wachtwoorden  
+- Logging van kritieke acties  
+
+### 🧩 Onderhoud & Kwaliteit
+- Gelaagde architectuur (UI → Controllers → Services → Repositories)  
+- Linting (Black) + Testing (pytest)  
+- Migratiebeheer met Alembic  
+
+### 🧠 Usability
+- Intuïtieve UI met duidelijke feedback  
+- Rolgebaseerde menu’s  
+- Toegankelijk voor moderne browsers  
 
 ---
+
+## ✅ Definition of Done (DoD)
+- Analyse- en architectuurdossier  
+- Werkende webapplicatie  
+- Authenticatie & autorisatie  
+- Beheer van alle testtypes  
+- Dashboard met status eenheid  
+- Rapporten (PDF/CSV)  
+- Notificatiesysteem & HRM-koppeling  
+
+---
+
+## 📅 Projectfasering
+
+### **Fase 1 — Initiatie & Projectletter (Nov 2025)**
+- Projectafbakening en visie  
+- Opstart van backlog en repository  
+
+### **Fase 2 — Architectuur & Structuur (Jan 2026)**
+- Technische basis, lagenstructuur en UML  
+- Werkende skeleton-project  
+
+### **Fase 3 — Ontwikkeling & Iteraties (Jan–Juni 2026)**
+- Incrementele opleveringen via Agile sprints  
+
+### **Fase 4 — Test & Validatie (Juni 2026)**
+- Acceptatietests en bugfixing  
+
+### **Fase 5 — Oplevering & Demo (Juni 2026)**
+- Einddemo en overdracht aan eindgebruikers  
+
+---
+
+## ⚠️ Risico’s
+- Onvoldoende data → fictieve datasets  
+- Onvoldoende kennis van specifieke packages  
+- Tijdgebrek  
+- HRM REST-koppeling onbeschikbaar  
+
+---
+
+## 🧰 Frameworks & Packages
+
+| Categorie | Packages |
+|------------|-----------|
+| **Web & UI** | `FastAPI`, `shiny` |
+| **Database** | `SQLAlchemy`, `PostgreSQL`, `Alembic` |
+| **Beveiliging** | `bcrypt`, `passlib`, `python-jose`, `pyjwt` |
+| **Data & Analyse** | `pandas`, `numpy`, `plotly` |
+| **Export & Rapporten** | `reportlab`, `openpyxl` |
+| **Testing & Tools** | `pytest`, `black` |
+
+---
+
+## 🧠 Prototype Idee UX
+Het **WARRIORFIT-dashboard** biedt:
+- Overzicht van geplande testen  
+- Grafieken met prestaties over tijd  
+- Lijst van militairen per status (geslaagd/niet geslaagd)  
+- Snelkoppelingen voor rapporten en exports  
+
+---
+
+## 🏁 Conclusie
+> **WARRIORFIT** vormt een moderne, veilige en efficiënte oplossing voor het digitaliseren van fysieke testen binnen Defensie.  
+Het project integreert **Shiny for Python**, **FastAPI**, **PostgreSQL** en **secure automation** om operationele paraatheid en databetrouwbaarheid te versterken.
+
+---
+
+
