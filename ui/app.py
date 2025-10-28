@@ -12,6 +12,7 @@ from .pages import phef
 from .pages import sessions
 from .pages import functional_test
 from .pages import swim_test
+from .user_store import UserStore
 
 
 class FitnessWarriorApp:
@@ -123,7 +124,7 @@ class FitnessWarriorApp:
 
             ]
             items = [c for c in items if c is not None]
-            return ui.nav_menu("Test", *items)
+            return ui.nav_menu("Cross", *items)
 
         def _build_admin_menu(role: Optional[Role]) -> Optional[ui.nav_menu]:
             if role != Role.ADMIN:
@@ -154,7 +155,7 @@ class FitnessWarriorApp:
             admin_menu = _build_admin_menu(role)
             if role is Role.ADMIN:
                 if admin_menu is not None:
-                    nav_items.append(dashboard_own_unit.get_ui())
+                    nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
                     nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(ind_test_show.get_ui()))
@@ -230,12 +231,16 @@ class FitnessWarriorApp:
             try:
                 if await user_service.check_user(username_login, password_login):
                     user = await user_service.get_user_by_username(username_login)
+                    from .user_store import UserStore
+                    UserStore.set_user(user)
+                    await user_service.add_audit_log(f"User {username_login} logged in", "login")
                     _set_session_user(user)
                     login_user_text.set(f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}")
                     status_text.set("")
                     ui.modal_remove()
                     nav_version.set(nav_version.get() + 1)
                     logger.info(f"User {username_login} logged in successfully")
+
                 else:
                     status_text.set("Invalid username or password.")
             except Exception as e:
