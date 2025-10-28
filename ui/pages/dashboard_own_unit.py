@@ -54,7 +54,7 @@ class DashboardOwnUnitPage:
             ui.br(),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Test Type Distribution (Own Unit)"),
+                    ui.card_header("Test Type ; (Own Unit)"),
                     ui.output_ui("own_unit_test_distribution_chart"),
                     full_screen=True,
                 ),
