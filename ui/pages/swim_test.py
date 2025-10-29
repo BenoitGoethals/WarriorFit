@@ -158,7 +158,7 @@ class SwimTestPage:
         async def swim_grid():
             df = await sessions_swim_data()
             df = self.controller.decorate_grid(df)
-            return render.DataGrid(df, filters=False, selection_mode="rows")
+            return render.DataGrid(df, filters=False, selection_mode="rows", width="100%",)
 
         @reactive.Effect
         async def _init():

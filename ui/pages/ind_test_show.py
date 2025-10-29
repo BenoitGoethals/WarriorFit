@@ -94,6 +94,7 @@ class IndTestShowPage:
                 filters=False,
                 selection_mode="none",
                 width="100%",
+                
             )
 
 _page = IndTestShowPage()

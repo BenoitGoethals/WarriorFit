@@ -154,6 +154,7 @@ class CrossPlanningPage:
                 selection_mode="rows",
                 filters=False,
                 row_selection_mode="single",
+                width="100%",
             )
 
         # Row selection -> populate form

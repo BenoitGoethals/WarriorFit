@@ -293,7 +293,7 @@ class PhefPage:
         async def ph_grid():
             df = await sessions_phef__data()
             df = self.controller.decorate_grid(df)
-            return render.DataGrid(df, filters=False, selection_mode="rows")
+            return render.DataGrid(df, filters=False, selection_mode="rows",width="100%")
 
         # Init and session selection
         @reactive.Effect
