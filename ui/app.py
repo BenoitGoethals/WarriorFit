@@ -6,7 +6,7 @@ from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events
+    cross_planning, calendar_events, auditlog_events
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
@@ -70,6 +70,7 @@ class FitnessWarriorApp:
         from shiny import reactive
         servers_by_tab = {
             "Cross Planning": cross_planning.server,
+            "Audit Logs": auditlog_events.server,
             "Cross": cross.server,
             "User Management": usermangement.server,
             "PHEF Tests": phef.server,
@@ -84,6 +85,7 @@ class FitnessWarriorApp:
             "Individual": ind_test_show.server,
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
+
         }
         mounted = reactive.Value(set())
 
@@ -155,8 +157,10 @@ class FitnessWarriorApp:
             if role != Role.ADMIN:
                 return None
             admin_children = [
+                _safe_panel(auditlog_events.get_ui()),
                 _safe_panel(usermangement.get_ui()),
                 _safe_panel(settings.get_ui()),
+
             ]
             admin_children = [c for c in admin_children if c is not None]
             return ui.nav_menu("Admin", *admin_children) if admin_children else None
