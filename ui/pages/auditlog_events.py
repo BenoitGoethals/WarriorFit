@@ -4,23 +4,28 @@ from shiny import ui, render, reactive
 
 class AuditLogEventsPage:
     def __init__(self) -> None:
+        self.refresh_tick = reactive.Value(0)
         self.ctrl = AuditLogEventsController()
 
     def get_ui(self):
-        # Tab title must match the key used in app.register_pages_server: "Audit Logs"
         return ui.nav_panel(
             "Audit Logs",
             ui.h2("Audit Logs"),
             ui.card(
                 ui.card_header("Audit Logs"),
-                    ui.output_data_frame("au_grid", ),
+                ui.input_action_button("au_refresh", "Refresh"),
+                ui.output_data_frame("au_grid"),
                 full_screen=False,
             ),
-
         )
 
     def server(self, input, output, session):
-      
+
+        @reactive.calc
+        def _tick():
+            input.au_refresh()
+            return self.refresh_tick.get()
+
         @reactive.calc
         async def au_df():
             try:
@@ -32,14 +37,14 @@ class AuditLogEventsPage:
         @output
         @render.data_frame
         async def au_grid():
+            _ = _tick()
             df = await au_df()
-            df = df.drop(columns=["ID"])
-            return render.DataGrid(
-                df,
-                filters=True,
-                selection_mode="rows",
-                width="100%",
-            )
+            return render.DataGrid(df, filters=True, selection_mode="rows",width="100%")
+
+        @reactive.Effect
+        @reactive.event(input.au_refresh)
+        def _on_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
 # Expose singleton-style API compatible with app.py import pattern
 _page = AuditLogEventsPage()
