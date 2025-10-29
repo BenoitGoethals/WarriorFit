@@ -97,7 +97,7 @@ class UserManagementPage:
             to_drop = [c for c in ["Password", "ID"] if c in df.columns]
             if to_drop:
                 df = df.drop(columns=to_drop)
-            return render.DataGrid(df, filters=True, selection_mode="rows")
+            return render.DataGrid(df, filters=True, selection_mode="rows", width="100%")
 
         @output
         @render.text

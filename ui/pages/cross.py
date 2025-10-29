@@ -130,7 +130,7 @@ class CrossPage:
         @render.data_frame
         async def runners_grid():
             df = await runners_df()
-            return render.DataGrid(df, filters=False, selection_mode="rows")
+            return render.DataGrid(df, filters=False, selection_mode="rows", width="100%",)
 
         @output
         @render.text

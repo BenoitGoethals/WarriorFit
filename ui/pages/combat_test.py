@@ -46,8 +46,6 @@ class CombatPage:
                                 ui.input_checkbox(
                                     "combat_obstacle",
                                     "Obstacle course",
-
-
                                 ),
 
                                 ui.div("Score :", ui.output_ui("combat_obstacle_score")),
@@ -58,7 +56,6 @@ class CombatPage:
                                 ui.input_checkbox(
                                     "combat_robe",
                                     "Robe Cours",
-
                                 ),
                                 ui.div("Score :", ui.output_ui("combat_robe_score")),
                                 col_widths=(8, 4),
@@ -69,7 +66,6 @@ class CombatPage:
                                     "combat_speedmars",
                                     "Speedmars time (mm:ss)",
                                     placeholder="e.g., 10:45 ",
-
                                 ),
                                 ui.div("Score :", ui.output_ui("combat_speedmars_score")),
                                 col_widths=(8, 4),
@@ -248,6 +244,7 @@ class CombatPage:
                 df,
                 filters=False,
                 selection_mode="rows",
+                width="100%",
             )
 
         @reactive.Effect
