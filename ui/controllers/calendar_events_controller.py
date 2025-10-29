@@ -19,15 +19,26 @@ class CalendarEventsController:
             session_date=session.datetime_start
             if session.type_test == TypeFitnessTest.PHEF or session.type_test == TypeFitnessTest.FUNCTIONAL:
                 x=3
+                color_bg, color_border, color_text = "#28a745", "#28a745", "white"
             elif session.type_test == TypeFitnessTest.COMBAT:
                 x=5
+                color_bg, color_border, color_text = "#dc3545", "#dc3545", "white"
             else:
                 x=1
+                color_bg, color_border, color_text = "#6c757d", "#6c757d", "white"
             session_date_end = session_date + datetime.timedelta(hours=x)
-            # {"id": "id1_allday", "title": "Event 1", "start": "2023-07-03", "end": "2023-07-05"},
-            events_to_post.append({"id": session.id, "title": session.type_test.name,
+            if session.serial_number_pti:
+                pti=session.serial_number_pti
+            else:
+                pti="N/A"
+
+            events_to_post.append({"id": session.id, "title": session.type_test.name + "  PTI : "+pti ,
                                    "start": session.datetime_start.strftime("%Y-%m-%dT%H:%M:%S"),
-                                   "end": session_date_end.strftime("%Y-%m-%dT%H:%M:%S")})
+                                   "end": session_date_end.strftime("%Y-%m-%dT%H:%M:%S"),
+                                   "backgroundColor": color_bg,
+                                   "borderColor": color_border,
+                                   "textColor": color_text,
+                                   })
         
         crosses=await self._service_cross.get_all_crosses()
         for cross in crosses:
