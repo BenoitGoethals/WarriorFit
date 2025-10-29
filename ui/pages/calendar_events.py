@@ -38,6 +38,10 @@ class CalendarPage:
                 {
                     "initialView": "timeGridWeek",
                     "initialDate": datetime.datetime.now().strftime("%Y-%m-%d"),
+                    "locale": "en-gb",  # 24h
+                    "timeZone": "local",
+                    "slotLabelFormat": {"hour": "2-digit", "minute": "2-digit", "hour12": False},
+                    "eventTimeFormat": {"hour": "2-digit", "minute": "2-digit", "hour12": False},
                     "editable": False,
                     "selectable": True,
                     "events": await self._controller.events()
