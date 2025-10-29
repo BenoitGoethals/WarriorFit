@@ -6,7 +6,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from data.db.abc_repository import ABCRepository
-from data.db.db_model import User
+from data.db.db_model import User, AuditLog
 
 
 class UserRepository(ABCRepository):
@@ -33,6 +33,13 @@ class UserRepository(ABCRepository):
         query = select(User).where(User.email==mail)
         results = await self.fetch_and_log(query, "user")
         return results is not None
+
+
+    async def get_user_by_id(self,id_unique:int)->Optional[User]:
+        query = select(User).where(User.id==id_unique)
+        results = await self.fetch_and_log(query, "user")
+        return results[0] if results else None
+
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
         """
@@ -238,3 +245,14 @@ class UserRepository(ABCRepository):
         except SQLAlchemyError as e:
             self.__logger.error(f"Database error updating user {id}: {str(e)}")
             return None
+
+    async def get_audit_logs(self)->list[AuditLog]:
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    query = select(AuditLog)
+                    results = await self.fetch_and_log(query, "audit_logs")
+                    return results if results else []
+        except Exception as e:
+                    self.__logger.error(f"Error fetching audit logs: {str(e)}")
+                    return []

@@ -55,6 +55,9 @@ class Service(ABC):
         user_id = getattr(UserStore.get_user(), "id", None)
         return await self._user_repo.create_audit_log(user_id=user_id,details=details,ip_address=Os.what_is_my_ip(),action=action)
 
+    async def get_audit_logs(self):
+        return await self._user_repo.get_audit_logs()
+
 
 
 

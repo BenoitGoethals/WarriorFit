@@ -1,0 +1,51 @@
+from ui.controllers.auditlog_events_controller import AuditLogEventsController
+import pandas as pd
+from shiny import ui, render, reactive
+
+class AuditLogEventsPage:
+    def __init__(self) -> None:
+        self.ctrl = AuditLogEventsController()
+
+    def get_ui(self):
+        # Tab title must match the key used in app.register_pages_server: "Audit Logs"
+        return ui.nav_panel(
+            "Audit Logs",
+            ui.h2("Audit Logs"),
+            ui.card(
+                ui.card_header("Audit Logs"),
+                    ui.output_data_frame("au_grid", ),
+                full_screen=False,
+            ),
+
+        )
+
+    def server(self, input, output, session):
+      
+        @reactive.calc
+        async def au_df():
+            try:
+                df: pd.DataFrame = await self.ctrl.list_audit_logs_df()
+                return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
+            except Exception as e:
+                return pd.DataFrame({"Error": [str(e)]})
+
+        @output
+        @render.data_frame
+        async def au_grid():
+            df = await au_df()
+            df = df.drop(columns=["ID"])
+            return render.DataGrid(
+                df,
+                filters=True,
+                selection_mode="rows",
+                width="100%",
+            )
+
+# Expose singleton-style API compatible with app.py import pattern
+_page = AuditLogEventsPage()
+
+def get_ui():
+    return _page.get_ui()
+
+def server(input, output, session):
+    _page.server(input, output, session)
