@@ -91,9 +91,9 @@ class DashboardOwnUnitPage:
                     ui.output_data_frame("own_unit_failed_all_grid"),
                     full_screen=True,
                 ),
-            ),
-            ui.br(),
+            )
         )
+
 
     def _ui_stats_card(self, total_text: str, total_value: int | float, sub_value: str | None, sub_label: str, sub_class: str):
         return ui.div(
@@ -171,9 +171,15 @@ class DashboardOwnUnitPage:
         async def own_unit_recent_sessions_table():
             _ = self.refresh_tick.get()
             try:
-                return await self.controller.recent_sessions_df()
+                df = await self.controller.recent_sessions_df()
             except Exception:
-                return pd.DataFrame()
+                df = pd.DataFrame()
+            return render.DataGrid(
+                df if isinstance(df, pd.DataFrame) else pd.DataFrame(),
+                filters=False,
+                selection_mode="none",
+                width="100%",
+            )
 
         @output
         @render.ui
@@ -192,18 +198,30 @@ class DashboardOwnUnitPage:
         async def own_unit_failed_phef_grid():
             _ = self.refresh_tick.get()
             try:
-                return await self.controller.failed_phef_df()
+                df = await self.controller.failed_phef_df()
             except Exception:
-                return pd.DataFrame(columns=["Type", "Serial", "Reason"])
+                df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            return render.DataGrid(
+                df if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
+                filters=False,
+                selection_mode="none",
+                width="100%",
+            )
 
         @output
         @render.data_frame
         async def own_unit_failed_all_grid():
             _ = self.refresh_tick.get()
             try:
-                return await self.controller.failed_all_df()
+                df = await self.controller.failed_all_df()
             except Exception:
-                return pd.DataFrame(columns=["Type", "Serial", "Reason"])
+                df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            return render.DataGrid(
+                df if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
+                filters=False,
+                selection_mode="none",
+                width="100%",
+            )
 
 
 # Public API
