@@ -6,12 +6,13 @@ from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning
+    cross_planning, calendar_events
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
 from .pages import functional_test
 from .pages import swim_test
+
 from .user_store import UserStore
 
 
@@ -19,7 +20,6 @@ class FitnessWarriorApp:
     APP_TITLE = "Fitness Warrior"
     DEFAULT_PORT = 8000
     LOGIN_MODAL_SIZE = "m"
-
 
     @classmethod
     def _create_logger_formatter(cls) -> logging.Formatter:
@@ -59,7 +59,10 @@ class FitnessWarriorApp:
     @staticmethod
     def build_app_ui():
         return ui.page_fillable(
+
             ui.output_ui("main_nav_container"),
+
+
         )
 
     @staticmethod
@@ -77,8 +80,10 @@ class FitnessWarriorApp:
             "Reports": reports.server,
             "Settings": settings.server,
             "Own Unit": own_unit.server,
-            "Dashboard" : dashboard_own_unit.server,
-            "Individual" : ind_test_show.server
+            "Dashboard": dashboard_own_unit.server,
+            "Individual": ind_test_show.server,
+            # Calendar server mounted independently (modal lives outside navbar)
+            "CalendarEvents": calendar_events.server,
         }
         mounted = reactive.Value(set())
 
@@ -87,13 +92,15 @@ class FitnessWarriorApp:
             try:
                 active = input.main_nav()
             except Exception:
-                return
-            if not active:
-                return
+                active = None
             already = mounted.get()
-            if active in servers_by_tab and active not in already:
+            if active and active in servers_by_tab and active not in already:
                 servers_by_tab[active](input, output, session)
                 mounted.set({*already, active})
+            # Ensure calendar server is mounted so modal UI works even if no tab selected
+            if "CalendarEvents" not in mounted.get():
+                servers_by_tab["CalendarEvents"](input, output, session)
+                mounted.set({*mounted.get(), "CalendarEvents"})
 
     @staticmethod
     def server(input: Any, output: Any, session: Any) -> None:
@@ -104,7 +111,26 @@ class FitnessWarriorApp:
         login_user_text = reactive.Value("")
         nav_version = reactive.Value(0)
 
-        def _safe_panel(panel: Optional[Any]) -> Optional[Any]:
+        # Open/close Calendar modal from app-level button
+        @reactive.Effect
+        @reactive.event(input.open_calendar_modal_global)
+        def _open_calendar_modal():
+            ui.modal_show(
+                ui.modal(
+                    calendar_events.get_ui(),
+                    title="Calendar",
+                    easy_close=True,
+                    size="xl",
+                    footer=ui.input_action_button("close_calendar_modal_global", "Close"),
+                )
+            )
+
+        @reactive.Effect
+        @reactive.event(input.close_calendar_modal_global)
+        def _close_calendar_modal():
+            ui.modal_remove()
+
+        def _safe_panel(panel: Optional[Any]) -> Optional[ui.Tag]:
             return panel if panel is not None else None
 
         def _build_test_menu() -> ui.nav_menu:
@@ -121,7 +147,6 @@ class FitnessWarriorApp:
             items = [
                 _safe_panel(cross_planning.get_ui()),
                 _safe_panel(cross.get_ui()),
-
             ]
             items = [c for c in items if c is not None]
             return ui.nav_menu("Cross", *items)
@@ -151,10 +176,10 @@ class FitnessWarriorApp:
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
 
-
             admin_menu = _build_admin_menu(role)
             if role is Role.ADMIN:
                 if admin_menu is not None:
+                    # Calendar removed from navbar; use global button + modal
                     nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
                     nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())
@@ -190,6 +215,7 @@ class FitnessWarriorApp:
                     ui.div(ui.output_text("login_user"), style="display: flex; align-items: center; height: 100%;")
                 )
             )
+            nav_items.append(ui.nav_control(ui.input_action_button("open_calendar_modal_global", "Open Calendar", class_="btn btn-primary")))
             nav_items.append(ui.nav_control(ui.input_action_button("logout_btn", "Logout")))
             nav_items = [i for i in nav_items if i is not None]
             return ui.page_navbar(*nav_items, id="main_nav")
@@ -240,7 +266,6 @@ class FitnessWarriorApp:
                     ui.modal_remove()
                     nav_version.set(nav_version.get() + 1)
                     logger.info(f"User {username_login} logged in successfully")
-
                 else:
                     status_text.set("Invalid username or password.")
             except Exception as e:
@@ -266,9 +291,8 @@ class FitnessWarriorApp:
                 ui.notification_show("You have been logged out.", type="message")
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
 
-        # ===== Auto-logout after 10 minutes of inactivity (no ui.now) =====
         import time
-        INACTIVITY_LIMIT_SECONDS = 600  # 10 minutes
+        INACTIVITY_LIMIT_SECONDS = 600
         last_activity = reactive.Value(time.time())
 
         @output
@@ -307,7 +331,7 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _auto_logout_timer():
-            reactive.invalidate_later(5)  # check every 5s
+            reactive.invalidate_later(5)
             user = _get_session_user()
             if not user:
                 return
@@ -318,6 +342,5 @@ class FitnessWarriorApp:
                 ui.notification_show("You were logged out due to 10 minutes of inactivity.", type="warning")
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
 
-# Initialize logging once at import and expose ASGI app
 FitnessWarriorApp.setup_logger()
 app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server)

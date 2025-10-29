@@ -2112,6 +2112,18 @@ wheels = [
 ]
 
 [[package]]
+name = "shiny-calendar"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "shiny" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/05/43/b6f8240a45e4f709956e41310760c20aa84c3f5c228405cbe19fe12150bc/shiny_calendar-0.2.0.tar.gz", hash = "sha256:7ef37fe1a7a1997f0e1f2d74c72ce9554eab7bda5031786953a82ea9520b198c", size = 156315, upload-time = "2024-12-23T16:08:53.497Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/b6/ea70150c467e3b25d0838794b192e5ddc5ceeabdb15f2968a676ad19a5d9/shiny_calendar-0.2.0-py3-none-any.whl", hash = "sha256:de4c5914861e817c4204ff55c9a9a800b14612e534ac4fcd41427e94f3eeca6a", size = 122454, upload-time = "2024-12-23T16:08:50.319Z" },
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2357,6 +2369,7 @@ dependencies = [
     { name = "reportlab" },
     { name = "rsconnect-python" },
     { name = "shiny" },
+    { name = "shiny-calendar" },
     { name = "sqlalchemy" },
 ]
 
@@ -2387,6 +2400,7 @@ requires-dist = [
     { name = "reportlab", specifier = ">=4.4.4" },
     { name = "rsconnect-python", specifier = ">=1.27.1" },
     { name = "shiny", specifier = ">=1.4.0" },
+    { name = "shiny-calendar", specifier = ">=0.2.0" },
     { name = "sqlalchemy", specifier = ">=2.0.43" },
 ]
 
