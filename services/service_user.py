@@ -48,6 +48,9 @@ class UserService(Service,metaclass=Singleton):
             await self.add_audit_log(details=f"User {serial} deleted",action="delete")
         return is_deleted
 
+    async def get_user_by_id(self, id):
+        return await self._user_repo.get_user_by_id(id)
+
 
 
 
