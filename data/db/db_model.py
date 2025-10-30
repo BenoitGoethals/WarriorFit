@@ -57,8 +57,6 @@ class FitnessTest(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     serial_number = Column(String(50), unique=False, nullable=True)
 
-
-
     # Add discriminator column for inheritance
     type = Column(String(50))
 
@@ -164,7 +162,6 @@ class SessionFitnessTests(Base):
     fitness_test_id = Column(Integer, ForeignKey('fitness_tests.id'), primary_key=True)
 
 #CROSS
-
 class Cross(Base):
     __tablename__ = "cross"
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
