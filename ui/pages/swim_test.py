@@ -180,6 +180,8 @@ class SwimTestPage:
                 if not sel:
                     status.set(self.NO_SELECTION_MESSAGE)
                     return
+                ui.update_action_button("swim_add_btn", disabled=True)
+                ui.update_action_button("swim_update_btn", disabled=True)
                 row_idx = sel[0]
                 df = await sessions_swim_data()
                 if row_idx < 0 or row_idx >= len(df):
