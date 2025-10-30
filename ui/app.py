@@ -143,7 +143,7 @@ class FitnessWarriorApp:
                 _safe_panel(swim_test.get_ui()),
             ]
             items = [c for c in items if c is not None]
-            return ui.nav_menu("Test", *items)
+            return ui.nav_menu("Psychical Tests", *items)
 
         def _build_cross_menu() -> ui.nav_menu:
             items = [
@@ -151,7 +151,7 @@ class FitnessWarriorApp:
                 _safe_panel(cross.get_ui()),
             ]
             items = [c for c in items if c is not None]
-            return ui.nav_menu("Cross", *items)
+            return ui.nav_menu("Cross/Runs", *items)
 
         def _build_admin_menu(role: Optional[Role]) -> Optional[ui.nav_menu]:
             if role != Role.ADMIN:
