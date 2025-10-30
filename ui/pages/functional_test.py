@@ -51,6 +51,10 @@ class FunctionalPage:
                             ui.div("Score :", ui.output_ui("functional_pull_ups_score")),
                             col_widths=(8, 4),
                         ),
+                        ui.layout_columns(
+                            ui.div("Score :", ui.output_ui("functional_total_score")),
+                            col_widths=(8, 4),
+                        ),
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button("functional_add_btn", "Add",
@@ -200,6 +204,18 @@ class FunctionalPage:
                 num = None
             color = "red" if (num is not None and num < 20) else "green"
             return ui.span(str(num), style=f"color: {color};")
+
+        @output
+        @render.text
+        def ph_total_score():
+            try:
+                side = float(ph_side_bridge_r_score_val.get()) + float(ph_side_bridge_l_score_val.get())
+                run = float(ph_run_2400_score_val.get())
+                if side < 20 or run < 10:
+                    return ui.span(str(side) + " FAILED", style="color: red; font-weight: bold;")
+                return ui.span(str(side) + " PASSED", style="color: green; font-weight: bold;")
+            except (TypeError, ValueError):
+                return ui.span("")
 
         @reactive.Effect
         @reactive.event(input.functional_push_ups)
