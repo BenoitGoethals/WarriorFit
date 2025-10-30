@@ -63,6 +63,10 @@ class PhefPage:
                             ui.div("Score :", ui.output_ui("ph_run_2400_score")),
                             col_widths=(8, 4),
                         ),
+                        ui.layout_columns(
+                            ui.div("Score :", ui.output_ui("ph_total_score")),
+                            col_widths=(8, 4),
+                        ),
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button("ph_add_btn", "Add",
@@ -150,7 +154,7 @@ class PhefPage:
             if val is None:
                 ui.update_text("ph_serialnr", value="Not found")
                 return
-            military.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
+            military.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name} {val.gender} {val.age_from_birthdate()} years old")
             ui.update_action_button("ph_add_btn", disabled=False)
             ui.update_action_button("ph_update_btn", disabled=False)
             # Enable inputs via inline JS
@@ -222,6 +226,19 @@ class PhefPage:
                 num = None
             color = "red" if (num is not None and num < 10) else "green"
             return ui.span(text, style=f"color: {color};")
+
+        @output
+        @render.text
+        def ph_total_score():
+            try:
+                side =float(ph_side_bridge_r_score_val.get())+float(ph_side_bridge_l_score_val.get())
+                run = float(ph_run_2400_score_val.get())
+                if side < 20 or run < 10:
+                    return ui.span(str(side) + " FAILED", style="color: red; font-weight: bold;")
+                return ui.span(str(side) + " PASSED", style="color: green; font-weight: bold;")
+            except (TypeError, ValueError):
+                return ui.span("")
+
 
         # Live score calculations
         @reactive.Effect
@@ -316,6 +333,9 @@ class PhefPage:
                 if not sel:
                     status.set(self.NO_SELECTION_MESSAGE)
                     return
+                ui.update_action_button("ph_add_btn", disabled=True)
+                ui.update_action_button("ph_update_btn", disabled=True)
+                enable_input_field(False)
                 row_idx = sel[0]
                 df = await sessions_phef__data()
                 if row_idx < 0 or row_idx >= len(df):
@@ -403,6 +423,7 @@ class PhefPage:
                 row_idx = sel[0]
                 row = df.iloc[row_idx]
                 status.set(f"PHEF test for record ID {row['ID']} deleted successfully.")
+                _clear_form()
             except Exception:
                 status.set("Invalid selection.")
 
