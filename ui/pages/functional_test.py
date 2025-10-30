@@ -51,6 +51,10 @@ class FunctionalPage:
                             ui.div("Score :", ui.output_ui("functional_pull_ups_score")),
                             col_widths=(8, 4),
                         ),
+                        ui.layout_columns(
+                            ui.div("Score :", ui.output_ui("functional_total_score")),
+                            col_widths=(8, 4),
+                        ),
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button("functional_add_btn", "Add",
@@ -201,6 +205,40 @@ class FunctionalPage:
             color = "red" if (num is not None and num < 20) else "green"
             return ui.span(str(num), style=f"color: {color};")
 
+        def _calculate_total_score(push_ups, sit_ups, pull_ups)->bool:
+            try:
+                push_ups_score = FunctionalCalculator.get_score_pushup(
+                    self.selected_military.gender,
+                    self.selected_military.age_from_birthdate(),
+                    int(push_ups),
+                )
+                sit_ups_score = FunctionalCalculator.get_score_situp(
+                    self.selected_military.gender,
+                    self.selected_military.age_from_birthdate(),
+                    int(sit_ups),
+                )
+                pull_ups_score = FunctionalCalculator.get_score_pullup(
+                    self.selected_military.gender,
+                    self.selected_military.age_from_birthdate(),
+                    int(pull_ups),
+                )
+                return push_ups_score>10 or sit_ups_score>10 + pull_ups_score>10
+            except (TypeError, ValueError):
+                return False
+
+
+        @output
+        @render.text
+        def functional_total_score():
+            if self.selected_military:
+                try:
+                    if _calculate_total_score(functional_score_push_ups_val.get(), functional_score_sit_ups_val.get(), functional_score_pull_ups_val.get()):
+                        return ui.span("PASSED", style="color: green; font-weight: bold;")
+                    return ui.span( " FAILED", style="color: red; font-weight: bold;")
+                except (TypeError, ValueError):
+                    return ui.span("")
+            return ui.span("")
+
         @reactive.Effect
         @reactive.event(input.functional_push_ups)
         def on_push_ups_change():
@@ -267,6 +305,8 @@ class FunctionalPage:
                 if not sel:
                     status.set(self.NO_SELECTION_MESSAGE)
                     return
+                ui.update_action_button("functional_add_btn", disabled=True)
+                ui.update_action_button("functional_update_btn", disabled=True)
                 row_idx = sel[0]
                 df = await sessions_functional_data()
                 if row_idx < 0 or row_idx >= len(df):
