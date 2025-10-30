@@ -30,7 +30,7 @@ class Os:
         try:
             response = ping(host, count=2, timeout=1)
         except Exception as e:
-            raise e
+            return False
 
         return response.success()
     

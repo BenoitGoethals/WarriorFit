@@ -63,7 +63,7 @@ class ServiceTest(Service):
     async def update_test_session(self, data):
         updated= await self._test_repo.update_test_session(data)
         if updated:
-            await self.add_audit_log(details=f"Test session {data.id}  {updated.type_test}updated",action="update")
+            await self.add_audit_log(details=f"Test session {data.id}  {updated}updated",action="update")
         return updated
 
     async def delete_test_session(self, sel_id):
