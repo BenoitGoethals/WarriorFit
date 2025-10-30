@@ -361,7 +361,7 @@ class CombatPage:
             _clear_form()
 
         @reactive.Effect
-        @reactive.event(input.ph_delete_btn)
+        @reactive.event(input.combat_delete_btn)
         async def _on_delete():
             sel = input.combat_grid_selected_rows()
             sel_session_id = input.combat_session_id()
@@ -379,6 +379,7 @@ class CombatPage:
                 status.set(f"Combat test for record ID {row['ID']} deleted successfully.")
             except Exception:
                 status.set("Invalid selection.")
+            _clear_form()
 
         @reactive.Effect
         @reactive.event(input.combat_clear_btn)
