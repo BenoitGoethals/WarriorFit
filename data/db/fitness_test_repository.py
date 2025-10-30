@@ -67,7 +67,7 @@ class FitnessTestRepository(ABCRepository):
                     await session.refresh(test)
                 return list(tests) if tests else None
 
-    async def update_test_session(self, test_session: TestSession):
+    async def update_test_session(self, test_session: TestSession)->TestSession | None:
         """
         Updates an existing test session in the database.
 
@@ -93,7 +93,7 @@ class FitnessTestRepository(ABCRepository):
 
     async def add_fitness_test_to_TestSession(
             self, test_session_id: int, fitness_test: FitnessTest
-    ) -> type[TestSession] | None:
+    ) -> TestSession | None:
         """
         Adds a fitness test to an existing test session in the database.
 
