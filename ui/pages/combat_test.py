@@ -48,8 +48,7 @@ class CombatPage:
                                     "Obstacle course",
                                 ),
 
-                                ui.div("Score :", ui.output_ui("combat_obstacle_score")),
-                                col_widths=(8, 4),
+                               
                             ),
 
                             ui.layout_columns(
@@ -57,8 +56,7 @@ class CombatPage:
                                     "combat_robe",
                                     "Robe Cours",
                                 ),
-                                ui.div("Score :", ui.output_ui("combat_robe_score")),
-                                col_widths=(8, 4),
+
                             ),
 
                             ui.layout_columns(
@@ -68,6 +66,10 @@ class CombatPage:
                                     placeholder="e.g., 10:45 ",
                                 ),
                                 ui.div("Score :", ui.output_ui("combat_speedmars_score")),
+                                col_widths=(8, 4),
+                            ),
+                            ui.layout_columns(
+                                ui.div("Score :", ui.output_ui("combat_total_score")),
                                 col_widths=(8, 4),
                             ),
                             ui.br(),
@@ -86,7 +88,7 @@ class CombatPage:
                         ),
                     ),
                     ui.card(
-                        ui.card_header("Combat Tests"),
+                        ui.card_header("Combat Tests  (To pass the combat test, you must pass all test)"),
                         ui.output_data_frame("combat_grid"),
                         ui.br(),
                         ui.layout_columns(
@@ -209,6 +211,17 @@ class CombatPage:
             color = "red" if (num is not None and num < 10) else "green"
             return ui.span(text, style=f"color: {color};")
 
+        @output
+        @render.text
+        def combat_total_score():
+            try:
+                speedmars = combat_score_speedmars_val.get()
+                if speedmars == "Passes" and input.combat_robe() and input.combat_obstacle():
+                    return ui.span("Passed", style="color: green; font-weight: bold;")
+                return ui.span("Failed", style="color: red; font-weight: bold;")
+            except (TypeError, ValueError):
+                return ui.span("")
+
         @reactive.Effect
         @reactive.event(input.combat_speedmars)
         def combat_speedmars():
@@ -266,6 +279,8 @@ class CombatPage:
                 if not sel:
                     status.set(self.NO_SELECTION_MESSAGE)
                     return
+                ui.update_action_button("combat_add_btn", disabled=True)
+                ui.update_action_button("combat_update_btn", disabled=True)
                 row_idx = sel[0]
                 df = await sessions_combat__data()
                 if row_idx < 0 or row_idx >= len(df):
