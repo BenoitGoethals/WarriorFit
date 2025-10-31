@@ -373,13 +373,11 @@ class PhefPage:
                 "side_bridge_l_s": res["side_bridge_l_s"],
                 "run2400_s": res["run2400_s"],
             }
-            added = await self.controller.add_phef(int(payload["id"]), payload)
+            added = await self.controller.add_phef(int(payload["id"]), payload,self.selected_military,self.selected_session)
             if not added:
                 status.set(f"Failed to add PHEF test for {payload['serialnr']} in session {str(payload['id'])}.")
                 return
-            if self.selected_military and getattr(self.selected_military, "mail", None) and self.selected_session:
-                body = self.controller.build_email_body(self.selected_military, self.selected_session, payload)
-                await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
+
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Added PHEF test for {payload['serialnr']} in session {str(payload['id'])}.")
             _clear_form()
