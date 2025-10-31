@@ -101,14 +101,14 @@ class FunctionalController:
         return out
 
     # ----- Commands (only here) -----
-    async def add_functional(self, session_id: int, payload: Dict[str, Any]) -> Optional[FunctionalTest]:
+    async def add_functional(self, session_id: int, payload: Dict[str, Any],session:TestSession,military:ServiceMen) -> Optional[FunctionalTest]:
         ft = FunctionalTest()
         ft.test_session_id = int(session_id)
         ft.serial_number = payload["serialnr"]
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]
         ft.pull_ups = payload["pull_ups"]
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), ft)
+        return await self._service.add_fitness_test_to_TestSession(int(session_id), ft,session=session,military=military)
 
     async def update_functional(self, functional_id: int, payload: Dict[str, Any]) -> Optional[FunctionalTest]:
         ft = FunctionalTest()
@@ -123,46 +123,3 @@ class FunctionalController:
     async def delete_functional(self, session_id: int, functional_id: int) -> bool:
         return await self._service.delete_fitness_test_from_test_session(int(session_id), int(functional_id))
 
-    # ----- Presentation (mail body only here) -----
-    def build_email_body(self, sm: ServiceMen, session: TestSession, record: Dict[str, Any]) -> str:
-        gender = self.normalize_gender(sm.gender)
-        age = sm.age_from_birthdate()
-        push_score = FunctionalCalculator.get_score_pushup(gender, age, record['push_ups'])
-        sit_score = FunctionalCalculator.get_score_situp(gender, age, record['sit_ups'])
-        pull_score = FunctionalCalculator.get_score_pullup(gender, age, record['pull_ups'])
-        total_pct = ((push_score + sit_score + pull_score) / 60) * 100
-        return f"""
-            Dear {sm.rank} {sm.first_name} {sm.last_name},
-            <br><br>
-            Your functional test results from {session.datetime_start.strftime('%Y-%m-%d')} are:
-            <br><br>
-            <table border="1" cellpadding="5" style="border-collapse: collapse;">
-                <tr>
-                    <th>Exercise</th>
-                    <th>Repetitions</th>
-                    <th>Score</th>
-                </tr>
-                <tr>
-                    <td>Push-ups</td>
-                    <td>{record['push_ups']}</td>
-                    <td>{push_score}</td>
-                </tr>
-                <tr>
-                    <td>Sit-ups</td>
-                    <td>{record['sit_ups']}</td>
-                    <td>{sit_score}</td>
-                </tr>
-                <tr>
-                    <td>Pull-ups</td>
-                    <td>{record['pull_ups']}</td>
-                    <td>{pull_score}</td>
-                </tr>
-                <tr>
-                    <td colspan="2"><strong>Total Score</strong></td>
-                    <td><strong>{total_pct:.2f}%</strong></td>
-                </tr>
-            </table>
-            <br><br>
-            Best regards,<br>
-            Fitness Test System
-            """

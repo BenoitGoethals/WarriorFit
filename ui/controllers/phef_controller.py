@@ -153,7 +153,7 @@ class PhefController:
         return out
 
     # ----- Commands -----
-    async def add_phef(self, session_id: int, payload: Dict[str, Any]) -> Optional[PhefTest]:
+    async def add_phef(self, session_id: int, payload: Dict[str, Any], military: ServiceMen | None, session: TestSession | None) -> Optional[PhefTest]:
         p = PhefTest()
         p.test_session_id = int(session_id)
         p.serial_number = payload["serialnr"]
@@ -163,7 +163,7 @@ class PhefController:
         p.pointBridge_r = 0
         p.pointBridge_l = 0
         p.pointsRunning = 0
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), p)
+        return await self._service.add_fitness_test_to_TestSession(int(session_id), p,military,session)
 
     async def update_phef(self, phef_id: int, payload: Dict[str, Any]) -> Optional[PhefTest]:
         p = PhefTest()
@@ -180,59 +180,3 @@ class PhefController:
 
     async def delete_phef(self, session_id: int, phef_id: int) -> bool:
         return await self._service.delete_fitness_test_from_test_session(int(session_id), int(phef_id))
-
-    # ----- Presentation: mail HTML -----
-    def build_email_body(self, sm: ServiceMen, session: TestSession, payload: Dict[str, Any]) -> str:
-        age = sm.age_from_birthdate() if session is None else sm.age_from_birthdate_and_session_date(session.datetime_start)
-        run = PhefCalculator.running_result(payload["run2400_s"], age, sm.gender)
-        sbr = PhefCalculator.side_bridge_result(payload["side_bridge_r_s"], age, sm.gender)
-        sbl = PhefCalculator.side_bridge_result(payload["side_bridge_l_s"], age, sm.gender)
-        total = (run * (50 / 20.0)) + ((sbr + sbl) * (25 / 20.0))
-        return f"""
-            <h2>PHEF Test Results</h2>
-            <table style="border-collapse: collapse; width: 100%;">
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Service Member Information</th>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Service Member:</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{sm.rank} {sm.service_number}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Name:</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{sm.first_name} {sm.last_name}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Test Date:</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime('%Y-%m-%d') if session else '-'}</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Test Results</th>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Running (2400m)</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">
-                        Time: {self.format_seconds(payload["run2400_s"])}<br>
-                        Score: {run}/20
-                    </td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Side Bridge Right</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">
-                        Time: {self.format_seconds(payload["side_bridge_r_s"])}<br>
-                        Score: {sbr}/20
-                    </td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Side Bridge Left</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">
-                        Time: {self.format_seconds(payload["side_bridge_l_s"])}<br>
-                        Score: {sbl}/20
-                    </td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Total Score</th>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">{total:.1f}/100</th>
-                </tr>
-            </table>
-        """

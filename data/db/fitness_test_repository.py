@@ -97,7 +97,7 @@ class FitnessTestRepository(ABCRepository):
         """
         Adds a fitness test to an existing test session in the database.
 
-        :param test_session_id: The ID of the test session to which the fitness test will be added.
+        :param test_session_id: The ID of the test session to which the fitness test will be added.S
         :type test_session_id: int
         :param fitness_test: The fitness test object to be added.
         :type fitness_test: FitnessTest
