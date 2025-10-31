@@ -317,27 +317,16 @@ class CombatPage:
                 "combat_robe": res["combat_robe"],
                 "combat_speedmars": res["combat_speedmars"],
             }
-            added = await self.controller.add_combat(int(record["id"]), record)
+            added = await self.controller.add_combat(int(record["id"]), record, session=self.selected_session,military=self.selected_military)
             if not added:
                 status.set(f"Failed to add Combat test for {record['serialnr']} in session {str(record['id'])}.")
                 return
-            body = self.controller.build_email_body(record)
-            if self.selected_military and getattr(self.selected_military, "mail", None):
-                await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])
             status.set(f"Added Combat test for {record['serialnr']} in session {str(record['id'])}.")
             _clear_form()
 
-        def _build_combat_from_form(payload: dict) -> CombatTestParatrooper:
-            cp = CombatTestParatrooper()
-            cp.id = selected_combat_id.get()
-            cp.test_session_id = int(payload["session_id"])
-            cp.serial_number = payload["serialnr"]
-            cp.running_time = payload["combat_speedmars"]
-            cp.obstacle_passed = payload["combat_obstacle"]
-            cp.rope_passed = payload["combat_robe"]
-            return cp
+
 
         @reactive.Effect
         @reactive.event(input.combat_update_btn)

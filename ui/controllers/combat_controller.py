@@ -6,7 +6,7 @@ import html
 
 from core.type_fitness_test import TypeFitnessTest
 from core.service_men import ServiceMen
-from data.db.db_model import CombatTestParatrooper
+from data.db.db_model import CombatTestParatrooper, TestSession
 from services.be_mil_service import BEMILService
 from services.service_test import ServiceTest
 
@@ -106,14 +106,14 @@ class CombatController:
         return df2
 
     # ----- Commands -----
-    async def add_combat(self, session_id: int, payload: Dict[str, Any]) -> Optional[CombatTestParatrooper]:
+    async def add_combat(self, session_id: int, payload: Dict[str, Any],session:TestSession,military:ServiceMen) -> Optional[CombatTestParatrooper]:
         cp = CombatTestParatrooper()
         cp.test_session_id = int(session_id)
         cp.serial_number = payload["serialnr"]
         cp.running_time = payload["combat_speedmars"]
         cp.rope_passed = payload["combat_robe"]
         cp.obstacle_passed = payload["combat_obstacle"]
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), cp)
+        return await self._service.add_fitness_test_to_TestSession(int(session_id), cp,session=session,military=military)
 
     async def update_combat(self, combat_id: int, payload: Dict[str, Any]) -> Optional[CombatTestParatrooper]:
         cp = CombatTestParatrooper()
@@ -129,49 +129,7 @@ class CombatController:
         return await self._service.delete_fitness_test_from_test_session(int(session_id), int(combat_id))
 
     # ----- Presentation bits -----
-    @staticmethod
-    def build_email_body(record: Dict[str, Any]) -> str:
-        return html.escape(f"""
-        <table border="1" style="border-collapse: collapse; width: 100%;">
-            <thead>
-                <tr style="background-color: #f2f2f2;">
-                    <th style="padding: 8px; text-align: left;">Test Component</th>
-                    <th style="padding: 8px; text-align: left;">Result</th>
-                    <th style="padding: 8px; text-align: left;">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding: 8px;">Obstacle Course</td>
-                    <td style="padding: 8px;">{str(record['combat_obstacle'])}</td>
-                    <td style="padding: 8px; color: {'green' if record['combat_obstacle'] else 'red'}">
-                        {'PASSED' if record['combat_obstacle'] else 'FAILED'}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px;">Rope Course</td>
-                    <td style="padding: 8px;">{str(record['combat_robe'])}</td>
-                    <td style="padding: 8px; color: {'green' if record['combat_robe'] else 'red'}">
-                        {'PASSED' if record['combat_robe'] else 'FAILED'}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px;">Speed March</td>
-                    <td style="padding: 8px;">{CombatController.format_seconds(record['combat_speedmars'])}</td>
-                    <td style="padding: 8px; color: {'green' if record['combat_speedmars'] <= 2400 else 'red'}">
-                        {'PASSED' if record['combat_speedmars'] <= 2400 else 'FAILED'}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px; font-weight: bold;">Overall Result</td>
-                    <td style="padding: 8px;"></td>
-                    <td style="padding: 8px; color: {'green' if (record['combat_obstacle'] and record['combat_robe'] and record['combat_speedmars'] <= 2400) else 'red'}; font-weight: bold">
-                        {'PASSED' if (record['combat_obstacle'] and record['combat_robe'] and record['combat_speedmars'] <= 2400) else 'FAILED'}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        """)
+
 
     async def get_test_session_by_id(self, param):
         return await self._service.get_test_session_by_id(param)
