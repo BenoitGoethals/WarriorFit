@@ -12,10 +12,6 @@ from services.service import Service
 from ui.pages.notify_mail import NotifyMail
 
 
-class TestService:
-    pass
-
-
 class ServiceTest(Service):
     def __init__(self):
         super().__init__()
@@ -106,7 +102,7 @@ class ServiceTest(Service):
 
 
 
-    # ----- Presentation: mail HTML -----
+
     def build_email_body_phef(self, sm: ServiceMen, session: TestSession, payload:PhefTest) -> str:
         age = sm.age_from_birthdate() if session is None else sm.age_from_birthdate_and_session_date(session.datetime_start)
         run = PhefCalculator.running_result(payload.running_time, age, sm.gender)
@@ -162,7 +158,7 @@ class ServiceTest(Service):
             </table>
         """
 
-    # ----- Presentation: mail HTML -----
+
     @staticmethod
     def build_email_body_swim(sm: ServiceMen, session: TestSession, payload: CombatSwimmingTest) -> str:
         passed = payload.swim_paased
@@ -192,7 +188,7 @@ class ServiceTest(Service):
             </table>
         """
 
-        # ----- Presentation (mail body only here) -----
+
 
     def build_email_body_functional(self, sm: ServiceMen, session: TestSession, test: FunctionalTest) -> str:
 
