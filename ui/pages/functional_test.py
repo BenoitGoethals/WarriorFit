@@ -345,14 +345,10 @@ class FunctionalPage:
                 "pull_ups": res["pull_ups"],
             }
 
-            added_functional = await self.controller.add_functional(int(record["id"]), record)
+            added_functional = await self.controller.add_functional(int(record["id"]), record,session=self.selected_session,military=self.selected_military)
             if not added_functional:
                 status.set(f"Failed to add Functional test for {record['serialnr']} in session {record['id']}.")
                 return
-
-            if self.selected_military and getattr(self.selected_military, "mail", None) and self.selected_session:
-                body = self.controller.build_email_body(self.selected_military, self.selected_session, record)
-                await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [record])

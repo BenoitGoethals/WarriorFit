@@ -72,12 +72,12 @@ class SwimmingController:
         return out
 
     # ----- Commands -----
-    async def add_swim(self, session_id: int, payload: Dict[str, Any]) -> Optional[CombatSwimmingTest]:
+    async def add_swim(self, session_id: int, payload: Dict[str, Any],session:TestSession,military:ServiceMen) -> Optional[CombatSwimmingTest]:
         st = CombatSwimmingTest()
         st.test_session_id = int(session_id)
         st.serial_number = payload["serialnr"]
         st.swim_paased = bool(payload["swim_passed"])
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), st)
+        return await self._service.add_fitness_test_to_TestSession(int(session_id), st,session=session,military=military)
 
     async def update_swim(self, swim_id: int, payload: Dict[str, Any]) -> Optional[CombatSwimmingTest]:
         st = CombatSwimmingTest()
@@ -90,32 +90,3 @@ class SwimmingController:
     async def delete_swim(self, session_id: int, swim_id: int) -> bool:
         return await self._service.delete_fitness_test_from_test_session(int(session_id), int(swim_id))
 
-    # ----- Presentation: mail HTML -----
-    @staticmethod
-    def build_email_body(sm: ServiceMen, session: TestSession, payload: Dict[str, Any]) -> str:
-        passed = bool(payload.get("swim_passed"))
-        result = "PASSED" if passed else "FAILED"
-        color = "green" if passed else "red"
-        return f"""
-            <h2>Swimming Test Result</h2>
-            <table style="border-collapse: collapse; width: 100%;">
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Service Member</th>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Identity</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{sm.rank} {sm.service_number} - {sm.first_name} {sm.last_name}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Test Date</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime('%Y-%m-%d')}</td>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Result</th>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;"><strong>Status</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px; color: {color}; font-weight: bold;">{result}</td>
-                </tr>
-            </table>
-        """

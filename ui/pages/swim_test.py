@@ -217,14 +217,10 @@ class SwimTestPage:
                 "serialnr": data["serialnr"],
                 "swim_passed": res["swim_passed"],
             }
-            added = await self.controller.add_swim(int(payload["id"]), payload)
+            added = await self.controller.add_swim(int(payload["id"]), payload,session=self.selected_session,military=self.selected_military)
             if not added:
                 status.set(f"Failed to add Swimming test for {payload['serialnr']} in session {str(payload['id'])}.")
                 return
-
-            if self.selected_military and getattr(self.selected_military, "mail", None) and self.selected_session:
-                body = self.controller.build_email_body(self.selected_military, self.selected_session, payload)
-                await NotifyMail().send_mail(body=body, subject="Result Test", to=self.selected_military.mail)
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             records.set(records.get() + [payload])
