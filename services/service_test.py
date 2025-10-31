@@ -57,7 +57,7 @@ class ServiceTest(Service):
     async def add_test_session(self, ts):
         added_test:TestSession= await self._test_repo.add_test_session(ts)
         if added_test:
-            await self.add_audit_log(details=f"Test session {ts.id} {added_test.type_test} added",action="add")
+            await self.add_audit_log(details=f"Test session {ts.id} {added_test.type_test.name} added",action="add")
         return added_test
 
     async def update_test_session(self, data):

@@ -20,11 +20,8 @@ class SessionsPage:
     NO_SELECTION_MESSAGE = "No row selected"
 
     def __init__(self, ) -> None:
-
         self.be_mil_service = BEMILService()
         self.refresh_tick = reactive.Value(0)
-        self.selected_id = reactive.Value(0)
-        self.selected_row: Optional[Dict[str, Any]] = None
         self.controller = SessionsController()
 
     def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
@@ -36,21 +33,7 @@ class SessionsPage:
             return False, "Invalid session type."
         return True, "OK"
 
-    def _set_selected(self, row: Dict[str, Any]) -> None:
-        """
-        Track the selected grid row.
-        - row: a dictionary with keys like ID, Type, Start, Serial PTI, Executed, Description
-        """
 
-        self.selected_row = {
-            "ID": row.get("ID"),
-            "Type": row.get("Type"),
-            "Start": row.get("Start"),
-            "Serial PTI": row.get("Serial PTI"),
-            "Executed": row.get("Executed"),
-            "Description": row.get("Description"),
-        }
-        self.selected_id.set(self.selected_row["ID"])
 
     def get_ui(self):
         return ui.nav_panel(
@@ -95,7 +78,7 @@ class SessionsPage:
         sessions = reactive.Value([])
         next_id = reactive.Value(1)
         status = reactive.Value("Ready.")
-
+        selected_session_id = reactive.Value("")
         async def all_pti() -> List[str]:
             return await self.controller.get_all_pti_serials()
 
@@ -187,7 +170,7 @@ class SessionsPage:
             ui.update_checkbox("se_executed", value=False)
             ui.update_text_area("se_description", value="")
             self.selected_row = None
-            self.selected_id.set(0)
+
 
         async def _refresh_select():
             items = sessions.get() or []
@@ -216,7 +199,7 @@ class SessionsPage:
             return render.DataGrid(
                 df,
                 filters=True,
-                selection_mode="rows",
+                selection_mode="row",
                 width="100%",
             )
 
@@ -231,7 +214,7 @@ class SessionsPage:
             if row_idx < 0 or row_idx >= len(df):
                 return self.NO_SELECTION_MESSAGE
             row = df.iloc[row_idx]
-
+            selected_session_id.set(row["ID"] or "")
             choices = await all_pti()
             serial = str(row["Serial PTI"])
             ui.update_select("se_serial", choices=choices, selected=serial)
@@ -249,14 +232,6 @@ class SessionsPage:
             ui.update_text_area("se_description", value=str(row["Description"]))
 
 
-            self._set_selected({
-                "ID": row["ID"],
-                "Type": row["Type"],
-                "Start": row["Start"],
-                "Serial PTI": row["Serial PTI"],
-                "Executed": row["Executed"],
-                "Description": row["Description"],
-            })
 
             return f"Selected session ID: {row['ID']}"
 
@@ -278,26 +253,12 @@ class SessionsPage:
                 if not added:
                     status.set("Failed to add session.")
                     return
-                self.refresh_tick = reactive.Value(0)
-                next_id.set(next_id.get() + 1)
-                sessions.set(
-                    sessions.get() + [
-                        {
-                            "id": added.id,
-                            "serial_number_pti": added.serial_number_pti,
-                            "datetime_start": added.datetime_start,
-                            "executed": added.executed,
-                            "description": added.description,
-                        }
-                    ]
-                )
-                status.set("Session added successfully.")
 
             except Exception as e:
                 status.set(f"Error adding session: {str(e)}")
                 return
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            self.selected_id.set(0)
+            status.set("Session added successfully.")
             await _clear_form()
 
         @reactive.Effect
@@ -318,23 +279,18 @@ class SessionsPage:
         @reactive.Effect
         @reactive.event(input.se_update_btn)
         async def _on_update():
-            sel_row = self.selected_row
-            if not sel_row or not sel_row.get("ID"):
-                status.set("Select a session to update.")
-                return
-            sel_id = int(sel_row["ID"])
             payload = _read_form()
             ok, msg = self._validate(payload)
             if not ok:
                 status.set(msg)
                 return
-            updated_ok = await self.controller.update_session(sel_id, payload)
+            updated_ok = await self.controller.update_session(int(selected_session_id.get()), payload)
             if not updated_ok:
                 status.set("Failed to update session.")
                 return
 
-            status.set(f"Updated session #{sel_id}.")
-            self.selected_id.set(0)
+
+
             await _refresh_select()
             await _clear_form()
             self.refresh_tick.set(self.refresh_tick.get() + 1)
@@ -342,17 +298,16 @@ class SessionsPage:
         @reactive.Effect
         @reactive.event(input.se_delete_btn)
         async def _on_delete():
-            selected_id = self.selected_id.get()
+            selected_id = input.se_grid_selected_rows()[0]
             if not selected_id:
                 status.set("Select a session to delete.")
                 return
-            ok = await self.controller.delete_session(int(selected_id))
+            ok = await self.controller.delete_session(int(selected_session_id.get()))
             if not ok:
                 status.set("Failed to delete session.")
                 return
             status.set(f"Deleted session #{selected_id}.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            self.selected_id.set(0)
             await _refresh_select()
             await _clear_form()
 
