@@ -18,9 +18,9 @@ class OwnUnitPage:
 
     def get_ui(self):
         return ui.nav_panel(
-            "Own Unit",
+            "Status Unit",
             ui.card(
-                ui.card_header(f"Servicemen - {self.controller.unit_name}"),
+                ui.card_header(f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"),
                 ui.input_action_button("refresh_servicemen", "Refresh"),
                 ui.output_data_frame("servicemen_grid"),
                 full_screen=True,

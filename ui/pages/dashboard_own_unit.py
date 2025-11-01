@@ -39,11 +39,11 @@ class DashboardOwnUnitPage:
                     ui.output_ui("own_unit_combat_stats"),
                     class_="text-center",
                 ),
-                ui.card(
-                    ui.card_header("💪 Functional Tests", class_="bg-warning text-white"),
-                    ui.output_ui("own_unit_functional_stats"),
-                    class_="text-center",
-                ),
+                # ui.card(
+                #     ui.card_header("💪 Functional Tests", class_="bg-warning text-white"),
+                #     ui.output_ui("own_unit_functional_stats"),
+                #     class_="text-center",
+                # ),
                 ui.card(
                     ui.card_header("🏊 Swimming Tests", class_="bg-info text-white"),
                     ui.output_ui("own_unit_swimming_stats"),
@@ -132,12 +132,12 @@ class DashboardOwnUnitPage:
             stats = await self.controller.combat_stats()
             return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
-        @output
-        @render.ui
-        async def own_unit_functional_stats():
-            _ = self.refresh_tick.get()
-            stats = await self.controller.functional_stats()
-            return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
+        # @output
+        # @render.ui
+        # async def own_unit_functional_stats():
+        #     _ = self.refresh_tick.get()
+        #     stats = await self.controller.functional_stats()
+        #     return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
         @output
         @render.ui
