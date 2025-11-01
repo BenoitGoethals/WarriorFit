@@ -27,8 +27,8 @@ class ServiceTest(Service):
     async def get_all_phef(self, id):
         return await self._test_repo.get_all_phef(id,)
 
-    async def get_all_phef_mil(self, id):
-        return await self._test_repo.get_all_phef(id, current_year=True,)
+    async def get_all_phef_mil(self, serial)->list[PhefTest]:
+        return await self._test_repo.get_all_phef_from_mil(serial, current_year=True,)
 
 
     async def get_all_combat_swimming_test(self, id):

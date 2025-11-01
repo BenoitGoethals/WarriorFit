@@ -199,6 +199,16 @@ class PhefCalculator:
         return minuten * 60 + seconden
 
 
+    @staticmethod
+    def calculate_phef_score(running_time: float|str, side_time_l: float|str, side_time_r: float|str , age: int, gender: Gender|str)->tuple[float, float,float,float ,bool]:
+        running_score = PhefCalculator.running_result(running_time, age, gender)
+        side_l_score = PhefCalculator.side_bridge_result(side_time_l, age, gender)
+        side_r_score = PhefCalculator.side_bridge_result(side_time_r, age, gender)
+        total_score = running_score + side_l_score + side_r_score
+        passed = running_score >= 10 and side_l_score >= 10 and side_r_score >= 10
+        return running_score, side_l_score, side_r_score, total_score,passed
+
+
 
 assert PhefCalculator.running_result(571, 20, Gender.MALE) == 20
 assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 20, Gender.FEMALE) == 18

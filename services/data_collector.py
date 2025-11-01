@@ -2,6 +2,7 @@ import pandas as pd
 
 from config.appliccation_config import ApplicationConfig
 from core.type_fitness_test import TypeFitnessTest
+from data.db.db_model import PhefTest
 from logic.phef_calculator import PhefCalculator
 from logic.singleton import Singleton
 from services.be_mil_service import BEMILService
@@ -117,22 +118,25 @@ class DataCollector(metaclass=Singleton):
 
 
     async def collect_all_mil_from_own_unit_not_executed_phefs(self) -> pd.DataFrame:
-        milseries = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
         rows = []
-        for m in milseries:
-            mil = await self._service.get_all_phef(m.id)
-            if not mil:
+        for m in mil_series:
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
+
+            passed=any([(PhefCalculator.calculate_phef_score(mil.running_time, mil.sideBridge_l, mil.sideBridge_r, m.age_from_birthdate(), m.gender)[4]) for mil in mils])
+            if not passed:
                 continue
             rows.append({
-                "Serial": mil.serial_number,
-                "Name": mil.name,
-                "Gender": mil.gender,
-                "Age": mil.age_from_birthdate(),
-                "Date": "-" if mil.datetime_start is None else mil.datetime_start.strftime("%Y-%m-%d %H:%M"),
+                "Serial": m.service_number,
+                "Name": m.first_name + " " + m.last_name,
+                "Gender": m.gender,
+                "Age": m.age_from_birthdate(),
+                "Para" : m.para,
+
             })
         if not rows:
             return pd.DataFrame(
-                columns=["Serial", "Name", "Gender", "Age", "Date"])
+                columns=["Serial", "Name", "Gender", "Age","Para"])
         rows.sort(key=lambda r: r["Name"])
         return pd.DataFrame(rows)
 
