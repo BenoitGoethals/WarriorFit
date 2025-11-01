@@ -6,7 +6,7 @@ from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events
+    cross_planning, calendar_events, auditlog_events, status_tests
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
@@ -70,6 +70,7 @@ class FitnessWarriorApp:
         from shiny import reactive
         servers_by_tab = {
             "Cross Planning": cross_planning.server,
+            "PHEF Failed": status_tests.server,
             "Audit Logs": auditlog_events.server,
             "Cross": cross.server,
             "User Management": usermangement.server,
@@ -85,6 +86,7 @@ class FitnessWarriorApp:
             "Individual": ind_test_show.server,
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
+
 
         }
         mounted = reactive.Value(set())
@@ -137,6 +139,7 @@ class FitnessWarriorApp:
 
         def _build_test_menu() -> ui.nav_menu:
             items = [
+                _safe_panel(status_tests.get_ui()),
                 _safe_panel(phef.get_ui()),
                 _safe_panel(combat_test.get_ui()),
                 _safe_panel(functional_test.get_ui()),

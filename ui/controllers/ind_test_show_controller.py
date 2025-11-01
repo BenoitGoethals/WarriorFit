@@ -1,20 +1,13 @@
 # Python
 from __future__ import annotations
 
-from typing import Optional
 import pandas as pd
 
-from logic.data_collector import DataCollector
+from services.data_collector import DataCollector
 from services.be_mil_service import BEMILService
 
 
-
 class IndTestShowController:
-    """
-    Controller for Individual Test History page.
-    - Search serviceman by serial
-    - Collect tests for a serial as DataFrame
-    """
 
     def __init__(self):
         self.be_mil = BEMILService()

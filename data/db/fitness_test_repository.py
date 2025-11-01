@@ -457,7 +457,7 @@ class FitnessTestRepository(ABCRepository):
             )
             return []
 
-    async def get_all_phef(self, session_id: int) -> List[PhefTest]:
+    async def get_all_phef(self, session_id: int,current_year=False) -> List[PhefTest]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
         """
@@ -734,4 +734,23 @@ class FitnessTestRepository(ABCRepository):
             ]
         except (SQLAlchemyError, Exception) as e:
             self.__logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
+            return []
+
+    async def get_all_phef_from_mil(self, serial, current_year) -> List[PhefTest]:
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():  # Add transaction context
+                    if current_year:
+                        end, start = await self.running_year()
+                        query = select(PhefTest).where(PhefTest.serial_number == serial).where(TestSession.datetime_start.between(start, end))
+                    else :
+                        query = (
+                            select(PhefTest)
+                            .where(PhefTest.serial_number == serial)
+                        )
+                    result = await session.execute(query)
+                    phef_tests = result.scalars().all()
+                    return list(phef_tests) if phef_tests else []
+        except (SQLAlchemyError, Exception) as e:
+            self.__logger.error(f"Error fetching PHEF tests for military unit {serial}: {str(e)}")
             return []
