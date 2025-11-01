@@ -81,7 +81,7 @@ class FitnessWarriorApp:
             "Sessions": sessions.server,
             "Reports": reports.server,
             "Settings": settings.server,
-            "Own Unit": own_unit.server,
+            "Status Unit": own_unit.server,
             "Dashboard": dashboard_own_unit.server,
             "Individual": ind_test_show.server,
             # Calendar server mounted independently (modal lives outside navbar)
@@ -139,11 +139,12 @@ class FitnessWarriorApp:
 
         def _build_test_menu() -> ui.nav_menu:
             items = [
-                _safe_panel(status_tests.get_ui()),
                 _safe_panel(phef.get_ui()),
                 _safe_panel(combat_test.get_ui()),
                 _safe_panel(functional_test.get_ui()),
                 _safe_panel(swim_test.get_ui()),
+                _safe_panel(ind_test_show.get_ui()),
+                _safe_panel(status_tests.get_ui()),
             ]
             items = [c for c in items if c is not None]
             return ui.nav_menu("Psychical Tests", *items)
@@ -190,7 +191,6 @@ class FitnessWarriorApp:
                     nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
                     nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())
-                    nav_items.append(_safe_panel(ind_test_show.get_ui()))
                     nav_items.append(_safe_panel(reports.get_ui()))
                     nav_items.append(_safe_panel((sessions.get_ui())))
                     nav_items.append(_build_cross_menu())
@@ -201,14 +201,13 @@ class FitnessWarriorApp:
             elif role is Role.PTI:
                 nav_items.append(dashboard_own_unit.get_ui())
                 nav_items.append(own_unit.get_ui())
-                nav_items.append(_safe_panel(ind_test_show.get_ui()))
+
                 nav_items.append(_build_test_menu())
                 nav_items.append(_build_cross_menu())
                 nav_items.append(_safe_panel(reports.get_ui()))
             elif role is Role.APTI:
                 nav_items.append(dashboard_own_unit.get_ui())
                 nav_items.append(own_unit.get_ui())
-                nav_items.append(_safe_panel(ind_test_show.get_ui()))
                 nav_items.append(_build_test_menu())
                 nav_items.append(_safe_panel((sessions.get_ui())))
                 nav_items.append(_safe_panel(reports.get_ui()))
