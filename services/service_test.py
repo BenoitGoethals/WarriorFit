@@ -285,3 +285,9 @@ class ServiceTest(Service):
                </tbody>
            </table>
            """
+
+    async def get_all_combat_test_mil(self, service_number):
+        return await self._test_repo.get_all_combat_from_mil(service_number, current_year=True, )
+
+    async def get_all_combat_test_swim(self, service_number):
+        return await self._test_repo.get_all_swim_from_mil(service_number, current_year=True, )

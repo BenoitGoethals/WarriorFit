@@ -123,6 +123,30 @@ class DataCollector(metaclass=Singleton):
         for m in mil_series:
             mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
 
+
+            if len(mils)==0:
+                rows.append({
+                    "Serial": m.service_number,
+                    "Name": m.first_name + " " + m.last_name,
+                    "Gender": m.gender,
+                    "Age": m.age_from_birthdate(),
+                    "Para" : m.para,
+
+                })
+        if not rows:
+            return pd.DataFrame(
+                columns=["Serial", "Name", "Gender", "Age","Para"])
+        rows.sort(key=lambda r: r["Name"])
+        return pd.DataFrame(rows)
+
+
+
+    async def collect_all_mil_from_own_unit_failed_phefs(self) -> pd.DataFrame:
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        rows = []
+        for m in mil_series:
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
+
             passed=any([(PhefCalculator.calculate_phef_score(mil.running_time, mil.sideBridge_l, mil.sideBridge_r, m.age_from_birthdate(), m.gender)[4]) for mil in mils])
             if not passed:
                 continue
