@@ -70,7 +70,7 @@ class FitnessWarriorApp:
         from shiny import reactive
         servers_by_tab = {
             "Cross Planning": cross_planning.server,
-            "PHEF Failed": status_tests.server,
+            "PHEF Not done": status_tests.server,
             "Audit Logs": auditlog_events.server,
             "Cross": cross.server,
             "User Management": usermangement.server,

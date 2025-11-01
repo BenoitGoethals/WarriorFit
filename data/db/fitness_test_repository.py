@@ -876,3 +876,43 @@ class FitnessTestRepository(ABCRepository):
         except (SQLAlchemyError, Exception) as e:
             self.__logger.error(f"Error fetching PHEF tests for military unit {serial}: {str(e)}")
             return []
+
+    async def get_all_combat_from_mil(self, service_number, current_year)-> List[CombatTestParatrooper]:
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():  # Add transaction context
+                    if current_year:
+                        end, start = await self.running_year()
+                        query = select(CombatTestParatrooper).where(PhefTest.serial_number == service_number).where(
+                            TestSession.datetime_start.between(start, end))
+                    else:
+                        query = (
+                            select(PhefTest)
+                            .where(PhefTest.serial_number == service_number)
+                        )
+                    result = await session.execute(query)
+                    phef_tests = result.scalars().all()
+                    return list(phef_tests) if phef_tests else []
+        except (SQLAlchemyError, Exception) as e:
+            self.__logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
+            return []
+
+    async def get_all_swim_from_mil(self, service_number, current_year)->List[CombatSwimmingTest]:
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():  # Add transaction context
+                    if current_year:
+                        end, start = await self.running_year()
+                        query = select(CombatSwimmingTest).where(PhefTest.serial_number == service_number).where(
+                            TestSession.datetime_start.between(start, end))
+                    else:
+                        query = (
+                            select(PhefTest)
+                            .where(PhefTest.serial_number == service_number)
+                        )
+                    result = await session.execute(query)
+                    phef_tests = result.scalars().all()
+                    return list(phef_tests) if phef_tests else []
+        except (SQLAlchemyError, Exception) as e:
+            self.__logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
+            return []

@@ -16,9 +16,9 @@ class StatusTests:
 
     def get_ui(self):
         return ui.nav_panel(
-            "PHEF Failed",
+            "PHEF Not done",
             ui.card(
-                ui.card_header(f"List of Military that did not pass PHEF test from current year {datetime.datetime.now().year} - {self._controller.unit_name}"),
+                ui.card_header(f"List of Military who did NOT executed PHEF test from current year {datetime.datetime.now().year} - {self._controller.unit_name}"),
                 ui.input_action_button("refresh_own_unit_status_grid", "Refresh"),
                 ui.output_data_frame("own_unit_status_grid"),
                 full_screen=False,
