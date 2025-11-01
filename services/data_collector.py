@@ -21,7 +21,7 @@ class DataCollector(metaclass=Singleton):
         rows: list[dict] = []
 
         # PHEF
-        phef_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF,True)
+        phef_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.PHEF, True)
         for sess in phef_sessions or []:
             phef_tests = await self._service.get_all_phef(sess.id)
             for t in phef_tests or []:
@@ -48,7 +48,7 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Functional
-        func_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.FUNCTIONAL,True)
+        func_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.FUNCTIONAL, True)
         for sess in func_sessions or []:
             func_tests = await self._service.get_all_functional_test(sess.id)
             for t in func_tests or []:
@@ -70,7 +70,7 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Combat
-        combat_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT,True)
+        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT, True)
         for sess in combat_sessions or []:
             tests = await self._service.get_all_combat_test(sess.id)
             for t in tests or []:
@@ -92,7 +92,7 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Swimming
-        swim_sessions = await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.SWIMMING,True)
+        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.SWIMMING, True)
         for sess in swim_sessions or []:
             tests = await self._service.get_all_combat_swimming_test(sess.id)
             for t in tests or []:

@@ -78,7 +78,7 @@ class ReportGeneratorCsv:
             failed: List[dict] = []
             passed: List[dict] = []
 
-            sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitnessTest(
+            sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
                 TypeFitnessTest.PHEF, this_year=this_year
             )
             if own_unit:
@@ -147,7 +147,7 @@ class ReportGeneratorCsv:
         failed: List[dict] = []
         passed: List[dict] = []
 
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitnessTest(
+        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
             TypeFitnessTest.PHEF, this_year=this_year
         )
         if own_unit:
@@ -194,7 +194,7 @@ class ReportGeneratorCsv:
         failed: List[dict] = []
         passed: List[dict] = []
 
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitnessTest(
+        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
             TypeFitnessTest.COMBAT, this_year=this_year
         )
         if own_unit:
@@ -240,7 +240,7 @@ class ReportGeneratorCsv:
     async def generate_swimming_report(self, report_name: str,own_unit:bool,this_year:bool):
         failed: List[dict] = []
         passed: List[dict] = []
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitnessTest(
+        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
             TypeFitnessTest.SWIMMING, this_year=this_year
         )
         if own_unit:
