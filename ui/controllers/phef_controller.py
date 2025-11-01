@@ -76,7 +76,7 @@ class PhefController:
 
     # ----- Queries -----
     async def load_sessions(self):
-        return await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.PHEF,True)
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.PHEF, True)
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -163,7 +163,7 @@ class PhefController:
         p.pointBridge_r = 0
         p.pointBridge_l = 0
         p.pointsRunning = 0
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), p,military,session)
+        return await self._service.add_fitness_test_to_testSession(int(session_id), p,military,session)
 
     async def update_phef(self, phef_id: int, payload: Dict[str, Any]) -> Optional[PhefTest]:
         p = PhefTest()

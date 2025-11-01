@@ -22,7 +22,6 @@ class BEMILService(metaclass=Singleton):
                 response = await client.get(f"{BASE_URL}/service-men/unit/{unit_name}")
                 response.raise_for_status()  # raises error if status != 200
                 resp= response.json()
-                # Map API responses (dicts) into the pydantic response model we actually receive
                 return  [ServiceMen(**item) for item in resp]
             except httpx.HTTPStatusError as e:
                 self.__logger.error(f"Error fetching BEMILs from unit {unit_name}: {e}")

@@ -4,8 +4,20 @@ from datetime import date, datetime
 
 
 class PhefCalculator:
+    """
+    A utility class for calculating physical exercise scores based on various datasets.
 
+    This class provides mechanisms for determining scores for physical fitness tests,
+    including the 'side bridge' test. The scores are derived from preloaded datasets
+    that vary by age group and gender.
 
+    :ivar _running_data: Preloaded dataset containing running test scores based on
+                         age group, gender, and other factors.
+    :type _running_data: pandas.DataFrame
+    :ivar _side_bridge_data: Preloaded dataset containing side bridge test scores
+                             based on age group, gender, and other factors.
+    :type _side_bridge_data: pandas.DataFrame
+    """
     _running_data = pd.DataFrame(
         {
             "Score": list(range(20, -1, -1)),
@@ -100,10 +112,25 @@ class PhefCalculator:
     @classmethod
     def side_bridge_result(cls, side_time: float|str, age: int, gender: Gender)->int:
         """
-                Geef tijd (bv. '1'30'), leeftijd (int), gender (Gender) en krijg quoteringscore terug.
-                """
-        # tijd in seconden
+        Calculates the result of the side bridge test based on the provided time, age, and gender.
+        The method determines the age group and gender category to match the corresponding score in
+        the dataset. If no match is found where the provided time is greater than or equal to the
+        threshold, the score defaults to 0.
 
+        :param side_time: The time in seconds or string format for the side bridge test.
+                          If a string, it will be converted into seconds.
+        :type side_time: float | str
+
+        :param age: The age of the individual performing the test.
+        :type age: int
+
+        :param gender: The gender of the individual performing the test, which must be
+                       a value of the Gender enum or a valid gender identifier such as "M" or "F".
+        :type gender: Gender
+
+        :return: Returns an integer score for the test result based on the corresponding dataset.
+        :rtype: int
+        """
         if side_time is None:
             return 0
         elif isinstance(side_time, str):
@@ -142,14 +169,18 @@ class PhefCalculator:
     @classmethod
     def running_result(cls, running_time: float|str, age: int, gender: Gender|str)->int:
         """
-               Berekent score voor 2400m PHEF-test.
+        Determines the running score based on the provided running time, age, and gender. The method calculates the age
+        category, resolves the column name based on gender and age category, and compares the running time against timing norms
+        from a preloaded dataset to return a corresponding score. If the running time does not match any criteria, a default
+        score of zero will be returned.
 
-               :param leeftijd: Leeftijd in jaren
-               :param geslacht: 'm' of 'v'
-               :param tijd: Tijd als 'MM:SS'
-               :return: Score tussen 0 en 20
-               """
-
+        :param running_time: The running time as a string (formatted time) or as a numerical value (seconds).
+        :param age: The age of the individual, used to determine the age category. Must be a positive integer.
+        :param gender: Gender of the individual, provided as a Gender enum instance or as a string ("M" for male or "F" for female).
+        :return: An integer representing the score of the individual based on running norms.
+        :raises TypeError: If the running_time is neither a float, int, nor a properly formatted string.
+        :raises ValueError: If no norms are available for the resolved column corresponding to the age and gender.
+        """
         if gender == Gender.MALE or gender == "M":
             kolom = "m"
         elif gender == Gender.FEMALE or gender == "F":
@@ -201,6 +232,27 @@ class PhefCalculator:
 
     @staticmethod
     def calculate_phef_score(running_time: float|str, side_time_l: float|str, side_time_r: float|str , age: int, gender: Gender|str)->tuple[float, float,float,float ,bool]:
+        """
+        Calculate the Physical Health Evaluation and Fitness (PHEF) score based on running time,
+        side bridge times, age, and gender. The function evaluates an individual's fitness level
+        by calculating scores for running and side bridge performance, then determines
+        if a passing threshold is met.
+
+        :param running_time: Running performance time in seconds or as a string
+        :param side_time_l: Side bridge time for the left side in seconds or as a string
+        :param side_time_r: Side bridge time for the right side in seconds or as a string
+        :param age: Age of the individual
+        :param gender: Gender of the individual
+
+        :return: A tuple containing the following:
+            - running_score (float): Score calculated for the running performance.
+            - side_l_score (float): Score for the left-side bridge performance.
+            - side_r_score (float): Score for the right-side bridge performance.
+            - total_score (float): Cumulative score for the three tests.
+            - passed (bool): A boolean indicating whether the individual has passed
+              based on the minimum required scores for each evaluation.
+
+        """
         running_score = PhefCalculator.running_result(running_time, age, gender)
         side_l_score = PhefCalculator.side_bridge_result(side_time_l, age, gender)
         side_r_score = PhefCalculator.side_bridge_result(side_time_r, age, gender)
