@@ -457,7 +457,7 @@ class FitnessTestRepository(ABCRepository):
             )
             return []
 
-    async def get_all_phef(self, session_id: int) -> List[PhefTest]:
+    async def get_all_phef(self, session_id: int,current_year=False) -> List[PhefTest]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
         """

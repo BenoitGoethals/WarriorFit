@@ -1,11 +1,10 @@
-# Python
 from __future__ import annotations
 
 from typing import List, Dict, Any, Optional
 import pandas as pd
 
 from config.appliccation_config import ApplicationConfig
-from logic.data_collector import DataCollector
+from services.data_collector import DataCollector
 from services.be_mil_service import BEMILService
 
 
