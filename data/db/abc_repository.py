@@ -1,10 +1,8 @@
 import logging
 from typing import Optional, List
-
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-
 from config.appliccation_config import ApplicationConfig
 from data.db.db_model import AuditLog
 from services.be_mil_service import BEMILService
@@ -146,7 +144,18 @@ class ABCRepository:
             ip_address: str = None,
 
     ):
+        """
+        Creates an audit log entry in the database. The function records the provided data
+        such as user identifier, action performed, optional details, and the IP address.
+        This operation is performed asynchronously, ensuring the audit log is both added
+        and refreshed in the database session.
 
+        :param user_id: Identifier of the user associated with the action
+        :param action: Description of the action performed by the user
+        :param details: Optional dictionary containing additional details about the action
+        :param ip_address: Optional string containing the IP address associated with the action
+        :return: The created audit log entry
+        """
         audit_log = AuditLog(
             user_id=user_id,
             action=action,
@@ -185,3 +194,25 @@ class ABCRepository:
                 self.__logger.error(f"get_all_audit_logs failed: {e}")
                 return []
 
+    async def get_audit_logs(self) -> list[AuditLog]:
+        """
+        Fetches and returns a list of audit logs from the database. The method performs
+        an asynchronous database query to retrieve all available audit log entries. If
+        an error occurs during the operation, the method logs it and returns an empty list.
+
+        :raises Exception: If an error occurs during the database operation,
+                           it logs the error internally.
+
+        :return: A list of AuditLog objects if the query is successful,
+                 otherwise an empty list.
+        :rtype: list[AuditLog]
+        """
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    query = select(AuditLog)
+                    results = await self.fetch_and_log(query, "audit_logs")
+                    return results if results else []
+        except Exception as e:
+            self.__logger.error(f"Error fetching audit logs: {str(e)}")
+            return []

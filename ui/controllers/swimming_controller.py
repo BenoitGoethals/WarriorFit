@@ -31,7 +31,7 @@ class SwimmingController:
 
     # ----- Queries -----
     async def load_sessions(self):
-        return await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.SWIMMING,True)
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.SWIMMING, True)
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -77,7 +77,7 @@ class SwimmingController:
         st.test_session_id = int(session_id)
         st.serial_number = payload["serialnr"]
         st.swim_paased = bool(payload["swim_passed"])
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), st,session=session,military=military)
+        return await self._service.add_fitness_test_to_testSession(int(session_id), st,session=session,military=military)
 
     async def update_swim(self, swim_id: int, payload: Dict[str, Any]) -> Optional[CombatSwimmingTest]:
         st = CombatSwimmingTest()

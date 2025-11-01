@@ -64,7 +64,7 @@ class CombatController:
 
     # ----- Queries -----
     async def load_sessions(self):
-        return await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.COMBAT,True)
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT, True)
 
     async def search_military(self, serialnr: str) -> Optional[ServiceMen]:
         serial = (serialnr or "").strip()
@@ -113,7 +113,7 @@ class CombatController:
         cp.running_time = payload["combat_speedmars"]
         cp.rope_passed = payload["combat_robe"]
         cp.obstacle_passed = payload["combat_obstacle"]
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), cp,session=session,military=military)
+        return await self._service.add_fitness_test_to_testSession(int(session_id), cp,session=session,military=military)
 
     async def update_combat(self, combat_id: int, payload: Dict[str, Any]) -> Optional[CombatTestParatrooper]:
         cp = CombatTestParatrooper()

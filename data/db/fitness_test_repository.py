@@ -153,7 +153,7 @@ class FitnessTestRepository(ABCRepository):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def get_all_test_sessions_type_fitnessTest(self, typetest: TypeFitnessTest, this_year: bool = True) -> List[
+    async def get_all_test_sessions_type_fitness_test(self, typetest: TypeFitnessTest, this_year: bool = True) -> List[
         TestSession]:
         """
         Fetches all test sessions from the database.
@@ -214,6 +214,17 @@ class FitnessTestRepository(ABCRepository):
         return results if results else []
 
     async def delete_all_test_sessions(self):
+        """
+        Deletes all records from the TestSession table.
+
+        This method executes a deletion query on the TestSession table, removes
+        all records, and commits the transaction. It handles potential exceptions
+        arising from database operations and logs the respective outcomes.
+
+        :raises SQLAlchemyError: If an SQLAlchemy-related exception occurs during
+                                 query execution or commit.
+        :raises Exception: If an unexpected error occurs.
+        """
         query = delete(TestSession)
         try:
             async with self.SessionLocal() as session:
@@ -274,7 +285,7 @@ class FitnessTestRepository(ABCRepository):
                         TestSession.datetime_start.between(
                             datetime(year, 1, 1), datetime(year, 12, 31, 23, 59, 59)
                         ),
-                        FitnessTest.passed == passed,
+
                     )
                 )
                 result = await session.execute(query)
@@ -385,13 +396,20 @@ class FitnessTestRepository(ABCRepository):
             )
             return False
 
-    async def get_all_fitness_tests(self) -> list[FitnessTest]:
+    async def get_all_fitness_tests(self,current_year=True) -> list[FitnessTest]:
         """
         Fetches all fitness tests.
 
         :return: A list of FitnessTest objects (base or subtype instances).
         """
-        query = select(FitnessTest)
+
+        if current_year:
+            end, start = await self.running_year()
+            query =select(FitnessTest).where(
+                TestSession.datetime_start.between(start, end))
+        else:
+            query = select(FitnessTest)
+
         results = await self.fetch_and_log(query, "fitness tests")
         return results if results else []
 
@@ -405,8 +423,9 @@ class FitnessTestRepository(ABCRepository):
         """
         try:
             async with self.SessionLocal() as session:
-                # Load related sessions and ensure polymorphic subtypes are populated
-                query = select(FitnessTest).options(
+                end, start = await self.running_year()
+                query = select(FitnessTest).where(
+                TestSession.datetime_start.between(start, end)).options(
                     selectin_polymorphic(FitnessTest,
                                          [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]),
                     selectinload(FitnessTest.test_sessions)
@@ -436,8 +455,9 @@ class FitnessTestRepository(ABCRepository):
         """
         try:
             async with self.SessionLocal() as session:
-                # Load related sessions and ensure polymorphic subtypes are populated
-                query = select(FitnessTest).options(
+                end, start = await self.running_year()
+                query = select(FitnessTest).where(
+                TestSession.datetime_start.between(start, end)).options(
                     selectin_polymorphic(FitnessTest,
                                          [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]),
                     selectinload(FitnessTest.test_sessions)
@@ -457,18 +477,27 @@ class FitnessTestRepository(ABCRepository):
             )
             return []
 
-    async def get_all_phef(self, session_id: int,current_year=False) -> List[PhefTest]:
+    async def get_all_phef(self, session_id: int,current_year=True) -> List[PhefTest]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
         """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context
-                    query = (
-                        select(TestSession)
-                        .where(TestSession.id == session_id)
-                        .options(selectinload(TestSession.fitness_tests))
-                    )
+                    if current_year:
+                        end, start = await self.running_year()
+                        query = (
+                            select(TestSession)
+                            .where(TestSession.id == session_id).where(
+                            TestSession.datetime_start.between(start, end))
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
+                    else:
+                        query = (
+                            select(TestSession)
+                            .where(TestSession.id == session_id)
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
                     result = await session.execute(query)
                     test_session = result.unique().scalar_one_or_none()
 
@@ -487,18 +516,27 @@ class FitnessTestRepository(ABCRepository):
             self.__logger.error(f"Database error fetching PHEF tests: {str(e)}")
             return []
 
-    async def get_all_combat_test(self, session_id: int) -> List[CombatTestParatrooper]:
+    async def get_all_combat_test(self, session_id: int,current_year=True) -> List[CombatTestParatrooper]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
         """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context
-                    query = (
-                        select(TestSession)
-                        .where(TestSession.id == session_id)
-                        .options(selectinload(TestSession.fitness_tests))
-                    )
+                    if current_year:
+                        end, start = await self.running_year()
+                        query = (
+                            select(TestSession)
+                            .where(TestSession.id == session_id).where(
+                            TestSession.datetime_start.between(start, end))
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
+                    else:
+                        query = (
+                            select(TestSession)
+                            .where(TestSession.id == session_id)
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
                     result = await session.execute(query)
                     test_session = result.unique().scalar_one_or_none()
 
@@ -648,18 +686,26 @@ class FitnessTestRepository(ABCRepository):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def get_all_functional_test(self, session_id) -> list[FunctionalTest]:
+    async def get_all_functional_test(self, session_id,current_year=True) -> list[FunctionalTest]:
         """
               Fetch all PhefTest entities with their related TestSession objects.
               """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context
-                    query = (
-                        select(TestSession)
-                        .where(TestSession.id == session_id)
-                        .options(selectinload(TestSession.fitness_tests))
-                    )
+                    if current_year:
+                        end, start = await self.running_year()
+                        query = (
+                            select(TestSession)
+                            .where(TestSession.id == session_id).where(
+                                TestSession.datetime_start.between(start, end))
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
+                    else:
+                        query = (
+                            select(TestSession)
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
                     result = await session.execute(query)
                     test_session = result.unique().scalar_one_or_none()
 
@@ -678,15 +724,39 @@ class FitnessTestRepository(ABCRepository):
             self.__logger.error(f"Database error fetching Functional tests: {str(e)}")
             return []
 
-    async def get_all_combat_swimming_test(self, session_id) -> list[CombatSwimmingTest]:
+    async def get_all_combat_swimming_test(self, session_id,current_year=True) -> list[CombatSwimmingTest]:
+        """
+        Retrieves all combat swimming test records associated with a given session ID. The records can
+        be filtered based on whether they belong to the current running year or not. The function
+        leverages asynchronous mechanisms to interact with the database and ensures proper management of
+        database sessions and transactions. In case no records match the criteria or an error occurs
+        during the process, an empty list will be returned.
+
+        :param session_id: The identifier of the test session to query.
+        :type session_id: int or str
+        :param current_year: A flag indicating whether to filter test sessions for the current year.
+        :type current_year: bool, optional
+        :return: A list of CombatSwimmingTest instances matching the criteria. Returns an empty list if
+            no matching records are found or an error occurs.
+        :rtype: list[CombatSwimmingTest]
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context
-                    query = (
-                        select(TestSession)
-                        .where(TestSession.id == session_id)
-                        .options(selectinload(TestSession.fitness_tests))
-                    )
+                    if current_year:
+                        end, start = await self.running_year()
+                        query = (
+                            select(TestSession)
+                            .where(TestSession.id == session_id).where(
+                                TestSession.datetime_start.between(start, end))
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
+                    else:
+                        query = (
+                            select(TestSession)
+                            .where(TestSession.id == session_id)
+                            .options(selectinload(TestSession.fitness_tests))
+                        )
                     result = await session.execute(query)
                     test_session = result.unique().scalar_one_or_none()
 
@@ -706,6 +776,23 @@ class FitnessTestRepository(ABCRepository):
             return []
 
     async def get_all_fitness_tests_from_military_units(self, unit: str) -> List[FitnessTest]:
+        """
+        Fetches all fitness tests associated with a specific military unit.
+
+        This asynchronous method retrieves all the fitness tests that are linked
+        to the military personnel belonging to the given unit. It achieves this
+        by first fetching all military personnel in the specified unit and then
+        filtering the fitness tests based on their association with the identified
+        personnel. If no personnel or fitness tests are found, an empty list is
+        returned.
+
+        :param unit: The name or identifier of the military unit to query fitness
+            tests for.
+        :type unit: str
+        :return: A list of fitness tests associated with the given unit, or an
+            empty list if none are found.
+        :rtype: List[FitnessTest]
+        """
         try:
             mils = await self._be_mil_service.get_all_be_mil_from_unit(unit)
             fit_tests = await self.get_all_fitness_tests_full()
@@ -716,9 +803,26 @@ class FitnessTestRepository(ABCRepository):
             self.__logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
             return []
 
-    async def get_all_fitness_tests_from_military_units_TypeFitnessTest(self, unit: str,
-                                                                        fitness_type: TypeFitnessTest) -> List[
+    async def get_all_fitness_tests_from_military_units_type_fitness_test(self, unit: str,
+                                                                          fitness_type: TypeFitnessTest) -> List[
         FitnessTest | PhefTest | FunctionalTest | CombatTestParatrooper | CombatSwimmingTest]:
+        """
+        Fetches all fitness tests of a specific type for a given military unit.
+
+        This method retrieves all test records of a specific fitness test type associated
+        with the service numbers of personnel belonging to the specified military unit.
+        It fetches the military personnel information and test sessions that correspond
+        to the type of fitness test provided. If no relevant data is found, an empty
+        list will be returned.
+
+        :param unit: The identifier of the military unit.
+        :type unit: str
+        :param fitness_type: The specific type of fitness tests to retrieve.
+        :type fitness_type: TypeFitnessTest
+        :return: A list of fitness tests corresponding to the provided type and military unit.
+        :rtype: List[FitnessTest | PhefTest | FunctionalTest | CombatTestParatrooper |
+            CombatSwimmingTest]
+        """
         try:
             mils = await self._be_mil_service.get_all_be_mil_from_unit(unit)
             sessions: List[TestSession] = await self.get_all_test_sessions_type_fitnessTest_full(fitness_type)
@@ -737,6 +841,24 @@ class FitnessTestRepository(ABCRepository):
             return []
 
     async def get_all_phef_from_mil(self, serial, current_year) -> List[PhefTest]:
+        """
+        Fetch all PHEF tests for a given serial from the database.
+
+        This asynchronous method retrieves PHEF (Pulmonary Health Evaluation Form) tests
+        based on the provided serial and the optional current_year flag. If current_year
+        is True, it fetches tests within the current year using the `running_year` method
+        to calculate the start and end dates. Otherwise, it retrieves all tests matching
+        the specific serial number. The method handles both successful retrieval and
+        error scenarios, logging any issues encountered during execution.
+
+        :param serial: The serial number to filter PHEF tests.
+        :type serial: str
+        :param current_year: Flag to indicate whether to filter tests for the current year.
+        :type current_year: bool
+        :return: A list of PhefTest objects matching the filter criteria or an empty list
+            if no matches are found.
+        :rtype: List[PhefTest]
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context

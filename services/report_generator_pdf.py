@@ -172,7 +172,7 @@ class ReportGeneratorPdf:
         async def _collect_rows(own_unit:bool,this_year:bool) -> tuple[List[dict], List[dict]]:
             failed: List[dict] = []
             passed: List[dict] = []
-            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
+            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitness_test(
                 TypeFitnessTest.PHEF,this_year=this_year
             )
             if own_unit:
@@ -249,7 +249,7 @@ class ReportGeneratorPdf:
         async def _collect_rows(own_unit:bool,this_year:bool) -> Tuple[List[dict], List[dict]]:
             try:
                 failed, passed = [], []
-                sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
+                sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitness_test(
                     TypeFitnessTest.PHEF, this_year=this_year
                 )
                 if own_unit:
@@ -313,7 +313,7 @@ class ReportGeneratorPdf:
 
         async def _collect_rows(own_unit:bool,this_year:bool) -> Tuple[List[dict], List[dict]]:
             failed, passed = [], []
-            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
+            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitness_test(
                 TypeFitnessTest.COMBAT, this_year=this_year
             )
             if own_unit:
@@ -370,7 +370,7 @@ class ReportGeneratorPdf:
 
         async def _collect_rows(own_unit:bool,this_year:bool) -> Tuple[List[dict], List[dict]]:
             failed, passed = [], []
-            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitnessTest(
+            sessions: List[TestSession] = await self._user_service.get_all_test_sessions_type_fitness_test(
                 TypeFitnessTest.SWIMMING, this_year=this_year
             )
             if own_unit:
