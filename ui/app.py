@@ -70,6 +70,7 @@ class FitnessWarriorApp:
         from shiny import reactive
         servers_by_tab = {
             "Cross Planning": cross_planning.server,
+            "PHEF Failed": status_tests.server,
             "Audit Logs": auditlog_events.server,
             "Cross": cross.server,
             "User Management": usermangement.server,
@@ -85,7 +86,7 @@ class FitnessWarriorApp:
             "Individual": ind_test_show.server,
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
-            "Unit Phef": status_tests.server,
+
 
         }
         mounted = reactive.Value(set())
