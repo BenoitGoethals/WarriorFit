@@ -45,7 +45,7 @@ class FunctionalController:
 
     # ----- Queries (only here) -----
     async def load_sessions(self):
-        return await self._service.get_all_test_sessions_type_fitnessTest(TypeFitnessTest.FUNCTIONAL,True)
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.FUNCTIONAL, True)
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -108,7 +108,7 @@ class FunctionalController:
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]
         ft.pull_ups = payload["pull_ups"]
-        return await self._service.add_fitness_test_to_TestSession(int(session_id), ft,session=session,military=military)
+        return await self._service.add_fitness_test_to_testSession(int(session_id), ft,session=session,military=military)
 
     async def update_functional(self, functional_id: int, payload: Dict[str, Any]) -> Optional[FunctionalTest]:
         ft = FunctionalTest()

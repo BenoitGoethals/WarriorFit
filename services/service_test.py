@@ -34,13 +34,13 @@ class ServiceTest(Service):
     async def get_all_combat_swimming_test(self, id):
         return await self._test_repo.get_all_combat_swimming_test(id)
 
-    async def get_all_test_sessions_type_fitnessTest(self, type_test, this_year):
-        return await self._test_repo.get_all_test_sessions_type_fitnessTest(type_test, True)
+    async def get_all_test_sessions_type_fitness_test(self, type_test, this_year):
+        return await self._test_repo.get_all_test_sessions_type_fitness_test(type_test, True)
 
     async def get_all_test_sessions(self):
         return await self._test_repo.get_all_test_sessions()
 
-    async def add_fitness_test_to_TestSession(self, param, test:FitnessTest,military:ServiceMen=None,session:TestSession=None):
+    async def add_fitness_test_to_testSession(self, param, test:FitnessTest,military:ServiceMen=None,session:TestSession=None):
         add_test= await self._test_repo.add_fitness_test_to_TestSession(param, test)
         body=""
         if add_test:

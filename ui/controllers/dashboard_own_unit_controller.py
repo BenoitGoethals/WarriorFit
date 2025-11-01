@@ -80,6 +80,19 @@ class DashboardOwnUnitController:
             return {}
 
     async def phef_total_score(self, test: PhefTest) -> float:
+        """
+        Calculate the total PHEF (Physical Fitness Evaluation Framework) score for a given test.
+
+        The method computes a military personnel’s PHEF total score using results for running time
+        and side bridge exercises (left and right). Scores are adjusted based on the individual's
+        age and gender. The final score is derived using weighted calculations for running and
+        side bridge results.
+
+        :param test: Test data containing the side bridge, running time, and serial number details.
+        :type test: PhefTest
+        :return: The total calculated PHEF score as a float.
+        :rtype: float
+        """
         mils:dict[str,ServiceMen] = await self._get_all_military_own_unit()
         val:ServiceMen = mils.get(test.serial_number)
         age = val.age_from_birthdate()
@@ -128,6 +141,15 @@ class DashboardOwnUnitController:
 
     # ---------- top-cards ----------
     async def personnel_stats(self) -> Dict[str, Any]:
+        """
+        Gathers and returns statistical information about personnel based on their unit's PHEF
+        (Physical Health Evaluation and Fitness) test results. The statistics include the total
+        number of personnel, the count of individuals who passed or failed the tests, and a
+        formatted subtitle providing a quick summary.
+
+        :return: A dictionary containing personnel statistics and related details.
+        :rtype: Dict[str, Any]
+        """
         serials = await self.own_unit_serials()
         phef_tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
         passed = failed = 0
@@ -144,6 +166,19 @@ class DashboardOwnUnitController:
         return {"total": len(serials), "sub_value": subtitle, "sub_label": "PHEF Passed | Failed", "sub_class": "text-secondary"}
 
     async def phef_stats(self) -> Dict[str, Any]:
+        """
+        Calculate and return PHEF test statistics.
+
+        This method retrieves all PHEF tests for a given unit, calculates the total
+        number of tests and determines how many of those tests have a passing score.
+        The pass rate is evaluated and returned along with the total counts in a
+        formatted dictionary.
+
+        :return: A dictionary containing the total number of tests, pass rate (as a
+            percentage), a label for the pass rate, and a CSS class indicating success
+            for UI purposes.
+        :rtype: Dict[str, Any]
+        """
         tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
         total_tests = len(tests)
         passed = 0
