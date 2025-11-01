@@ -6,7 +6,7 @@ from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events
+    cross_planning, calendar_events, auditlog_events, status_tests
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
@@ -85,6 +85,7 @@ class FitnessWarriorApp:
             "Individual": ind_test_show.server,
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
+            "Unit Phef": status_tests.server,
 
         }
         mounted = reactive.Value(set())
@@ -137,6 +138,7 @@ class FitnessWarriorApp:
 
         def _build_test_menu() -> ui.nav_menu:
             items = [
+                _safe_panel(status_tests.get_ui()),
                 _safe_panel(phef.get_ui()),
                 _safe_panel(combat_test.get_ui()),
                 _safe_panel(functional_test.get_ui()),
