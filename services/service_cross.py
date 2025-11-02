@@ -81,8 +81,18 @@ class ServiceCross(Service):
     async def exist_in_cross(self, serial, cross_id):
         return await self._cross_repo.exist_in_cross(serial, cross_id)
 
-    async def get_average(self)->float:
-        all_cross:list[Cross]= await self._cross_repo.get_all_cross(lazy=False)
+
+    async def get_cross_stats(self):
+                all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
+                if len(all_cross)>0:
+                    return (await self.get_average(all_cross), await self.get_gap_time(all_cross),
+                            await self.get_best_time(all_cross),await self.get_age_group(all_cross),
+                            await self.get_gender_time(all_cross))
+                else:
+                    return None
+
+
+    async def get_average(self,all_cross)->float:
         average=0.0
         for cross in all_cross:
             for runner in cross.runners:
@@ -92,8 +102,8 @@ class ServiceCross(Service):
 
 
 
-    async def get_gap_time(self):
-        all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
+    async def get_gap_time(self,all_cross):
+
         worst_time = float('-inf')
         best_time = float('inf')
 
@@ -106,8 +116,8 @@ class ServiceCross(Service):
 
         return worst_time - best_time if worst_time != float('-inf') and best_time != float('inf') else 0.0
 
-    async def get_best_time(self):
-        all_cross:list[Cross]= await self._cross_repo.get_all_cross(lazy=False)
+    async def get_best_time(self,all_cross):
+
         best_time=0.0
         for cross in all_cross:
             for runner in cross.runners:
@@ -116,13 +126,8 @@ class ServiceCross(Service):
         return best_time
 
 
-    async def get_age_group(self):
-        """
-        Calculate the average age of all runners across all crosses.
-        Returns:
-            float: The average age of runners, or 0.0 if no runners found.
-        """
-        all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
+    async def get_age_group(self,all_cross):
+
         age:dict={}
         #group first runners age group by 5 years group getting from self.be_mil_service.get_be_mil_by_id(runner.serial_number)
         for x in all_cross:
@@ -136,8 +141,7 @@ class ServiceCross(Service):
         return age
 
 
-    async def get_gender_time(self)-> tuple[floating[Any], floating[Any]]:
-        all_cross:list[Cross]= await self._cross_repo.get_all_cross(lazy=False)
+    async def get_gender_time(self,all_cross)-> tuple[floating[Any], floating[Any]]:
         all_runners_f=[]
         all_runners_m=[]
         for cross in all_cross:

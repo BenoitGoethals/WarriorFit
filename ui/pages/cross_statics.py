@@ -1,4 +1,4 @@
-from shiny import ui, render
+from shiny import ui, render, reactive
 
 from services.service_cross import ServiceCross
 from ui.controllers.cross_statics_controller import CrossStaticsController
@@ -51,6 +51,9 @@ class CrossStaticsPage:
         )
 
     def server(self, input, output, session):
+        @reactive.Effect
+        async def _init():
+            await self._controller.load()
 
         @output
         @render.ui
