@@ -1,7 +1,13 @@
+from typing import Any, Coroutine
+
+from numpy import floating
+from numpy.ma.extras import average
 from watchfiles import awatch
 
+from core.service_men import ServiceMen
 from data.db.cross_repository import CrossRepository
 from data.db.db_model import Cross,Runner
+from services.be_mil_service import BEMILService
 from services.service import Service
 
 
@@ -9,6 +15,7 @@ class ServiceCross(Service):
     def __init__(self):
         super().__init__()
         self._cross_repo = CrossRepository()
+        self.be_mil_service = BEMILService()
 
     async def get_runner(self,  runner_id)-> Runner | None:
         return await self._cross_repo.get_runner(runner_id)
@@ -73,3 +80,76 @@ class ServiceCross(Service):
 
     async def exist_in_cross(self, serial, cross_id):
         return await self._cross_repo.exist_in_cross(serial, cross_id)
+
+    async def get_average(self)->float:
+        all_cross:list[Cross]= await self._cross_repo.get_all_cross(lazy=False)
+        average=0.0
+        for cross in all_cross:
+            for runner in cross.runners:
+                average+=runner.running_time
+        average=average/len(all_cross)
+        return average
+
+
+
+    async def get_gap_time(self):
+        all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
+        worst_time = float('-inf')
+        best_time = float('inf')
+
+        for cross in all_cross:
+            for runner in cross.runners:
+                if runner.running_time > worst_time:
+                    worst_time = runner.running_time
+                if runner.running_time < best_time:
+                    best_time = runner.running_time
+
+        return worst_time - best_time if worst_time != float('-inf') and best_time != float('inf') else 0.0
+
+    async def get_best_time(self):
+        all_cross:list[Cross]= await self._cross_repo.get_all_cross(lazy=False)
+        best_time=0.0
+        for cross in all_cross:
+            for runner in cross.runners:
+                if runner.running_time>best_time:
+                    best_time=runner.running_time
+        return best_time
+
+
+    async def get_age_group(self):
+        """
+        Calculate the average age of all runners across all crosses.
+        Returns:
+            float: The average age of runners, or 0.0 if no runners found.
+        """
+        all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
+        age:dict={}
+        #group first runners age group by 5 years group getting from self.be_mil_service.get_be_mil_by_id(runner.serial_number)
+        for x in all_cross:
+            for y in x.runners:
+                service_man: ServiceMen = await self.be_mil_service.get_be_mil_by_id(y.serial_number)
+                age_s=service_man.age_from_birthdate()
+                if age_s not in age:
+                    age[age_s]=1
+                else:
+                    age[age_s]+=1
+        return age
+
+
+    async def get_gender_time(self)-> tuple[floating[Any], floating[Any]]:
+        all_cross:list[Cross]= await self._cross_repo.get_all_cross(lazy=False)
+        all_runners_f=[]
+        all_runners_m=[]
+        for cross in all_cross:
+            for runner in cross.runners:
+                service_man:ServiceMen=await self.be_mil_service.get_be_mil_by_id(runner.serial_number)
+                if service_man.gender=="F":
+                    all_runners_f.append(runner.running_time)
+                else:
+                    all_runners_m.append(runner.running_time)
+
+        return average(all_runners_f) if all_runners_f else 0.0, average(all_runners_m) if all_runners_m else 0.0
+
+
+
+

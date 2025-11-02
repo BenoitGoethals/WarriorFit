@@ -50,7 +50,7 @@ class CrossRepository(ABCRepository):
         results = await self.fetch_and_log(query, "cross")
         return results[0] if results else None
 
-    async def get_all_cross(self) -> List[Cross]:
+    async def get_all_cross(self,lazy=True) -> List[Cross]:
         """
         Asynchronously retrieves all `Cross` objects from the database.
 
@@ -66,7 +66,11 @@ class CrossRepository(ABCRepository):
         :return: A list of `Cross` objects or an empty list if no data is found.
         :rtype: List[Cross]
         """
-        query = select(Cross)
+        # if lazy is False, eagerly load all runners for all crosses
+        if not lazy:
+            query = select(Cross).options(selectinload(Cross.runners))
+        else:
+            query = select(Cross)
         results = await self.fetch_and_log(query, "crosses")
         return results if results else []
 
