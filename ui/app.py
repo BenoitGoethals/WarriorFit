@@ -6,7 +6,7 @@ from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events, status_tests
+    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
@@ -86,6 +86,7 @@ class FitnessWarriorApp:
             "Individual": ind_test_show.server,
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
+            "Cross Statics": cross_statics.server
 
 
         }
@@ -151,6 +152,7 @@ class FitnessWarriorApp:
 
         def _build_cross_menu() -> ui.nav_menu:
             items = [
+                _safe_panel(cross_statics.get_ui()),
                 _safe_panel(cross_planning.get_ui()),
                 _safe_panel(cross.get_ui()),
             ]
