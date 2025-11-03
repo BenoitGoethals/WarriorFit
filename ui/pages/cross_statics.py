@@ -1,12 +1,15 @@
+import pandas as pd
 from shiny import ui, render, reactive
 
 from services.service_cross import ServiceCross
 from ui.controllers.cross_statics_controller import CrossStaticsController
+from utils.formaters import Formatter
 
 
 class CrossStaticsPage:
     def __init__(self):
         self._controller = CrossStaticsController()
+        self.refresh_tick = reactive.Value(0)
 
     def get_ui(self):
         return ui.nav_panel(
@@ -30,7 +33,6 @@ class CrossStaticsPage:
                         ui.output_ui("cross_gap"),
                     ),
 
-
                 ),
                 ui.card(
                     ui.card_header("2. Breakdowns based on demographics", class_="bg-success text-white"),
@@ -42,9 +44,27 @@ class CrossStaticsPage:
                         ui.strong("Gender M / F averages: "),
                         ui.output_ui("cross_gender"),
                     ),
+
                 ),
-                col_widths=[3, 3,],
+
+                col_widths=[3, 3,4]),
+                ui.layout_columns(
+                    ui.card(
+                        ui.card_header("3. Best 10 all 5M", class_="bg-success text-white"),
+                        ui.div(
+                            ui.output_data_frame("best_10_all_grid")
+                        ),
+                    ),
+                    ui.layout_columns(
+                        ui.card(
+                            ui.card_header("3. Best 10 all 10 km", class_="bg-success text-white"),
+                            ui.div(
+                                ui.output_data_frame("best_10_all_grid_10")
+                            ),
+                        ),
+                ),
             ),
+
 
 
 
@@ -59,7 +79,47 @@ class CrossStaticsPage:
         @render.ui
         async def cross_average_time():
             average = await self._controller.get_average_time()
-            return ui.p(f"{format_time(average)}")
+            return ui.p(f"{Formatter.format_time(average)}")
+
+        @output
+        @render.data_frame
+        async def best_10_all_grid():
+            df = None
+           # _ = self.refresh_tick.get()
+            try:
+                dfc = await self._controller.best_10_all_df()
+                df = dfc[5]
+            except Exception:
+                print("Error fetching data")
+               # df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            if df is None:
+                df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            return render.DataGrid(
+                df, # if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
+                filters=False,
+                selection_mode="none",
+                width="100%",
+            )
+
+        @output
+        @render.data_frame
+        async def best_10_all_grid_10():
+            df = None
+            # _ = self.refresh_tick.get()
+            try:
+                dfc = await self._controller.best_10_all_df()
+                df = dfc[10]
+            except Exception:
+                print("Error fetching data")
+            # df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            if df is None:
+                df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            return render.DataGrid(
+                df,  # if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
+                filters=False,
+                selection_mode="none",
+                width="100%",
+            )
 
 
 
@@ -67,33 +127,30 @@ class CrossStaticsPage:
         @render.ui
         async def cross_best_time():
             average = await self._controller.get_best_time()
-            return ui.p(f"{format_time(average)}")
+            return ui.p(f"{Formatter.format_time(average)}")
 
         @output
         @render.ui
         async def cross_gap():
             average = await self._controller.get_gap_time()
-            return ui.p(f"{format_time(average)}")
+            return ui.p(f"{Formatter.format_time(average)}")
 
         @output
         @render.ui
         async def cross_age_group():
-            ages = await self._controller.get_age_group()
-            return ui.p(f"{ages}")
+            ages:dict[int,int] = await self._controller.get_age_group()
+            uv_p=ui.p(f"Age Group")
+            for key,value in ages.items():
+               uv_p.append(ui.p(f"Age {key} - Count {value}"))
+            return uv_p
 
         @output
         @render.ui
         async def cross_gender():
             average_f,average_m = await self._controller.get_gender_time()
-            return ui.p(F" F {format_time(average_f)} / M {format_time(average_m)}")
+            return ui.p(F" F {Formatter.format_time(average_f)}  /  M {Formatter.format_time(average_m)}")
 
-        def format_time(seconds):
-            if seconds is None:
-                return "-"
-            hours = int(seconds // 3600)
-            minutes = int((seconds % 3600) // 60)
-            seconds = int(seconds % 60)
-            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
 
 _page = CrossStaticsPage()
 
