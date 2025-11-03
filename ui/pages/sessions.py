@@ -38,7 +38,7 @@ class SessionsPage:
     def get_ui(self):
         return ui.nav_panel(
             "Sessions",
-            ui.h2("📅 Test Sessions"),
+            ui.h2("📅 Fitness Test Sessions"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Create / Edit Session"),
@@ -46,7 +46,7 @@ class SessionsPage:
                     ui.input_date("se_date", "Date"),
                     ui.input_text("se_time", "Time (HH:MM)", placeholder="HH:MM", value="09:00"),
                     ui.input_select("se_type", "Type", choices=self.SESSION_TYPES),
-                    ui.input_checkbox("se_executed", "Executed", value=False),
+                    ui.input_checkbox("se_canceled", "Canceled", value=False),
                     ui.input_text_area("se_description", "Description", rows=3, width="400px"),
                     ui.br(),
                     ui.layout_columns(
@@ -93,39 +93,39 @@ class SessionsPage:
         async def _populate_pti_choices_effect():
             await _populate_pti_choices()
 
-        async def _load_initial():
-            items = await self.controller.list_sessions()
-
-            def _to_dict_session(r: Any) -> Dict[str, Any]:
-                return {
-                    "id": getattr(r, "id", None),
-                    "serial_number_pti": getattr(r, "serial_number_pti", None),
-                    "datetime_start": getattr(r, "datetime_start", None),
-                    "executed": bool(getattr(r, "executed", False)),
-                    "description": getattr(r, "description", None),
-                    "type_test": getattr(getattr(r, "type_test", None), "name", getattr(r, "type_test", None)),
-                }
-
-            converted = [_to_dict_session(r) for r in items]
-            sessions.set(converted)
-            try:
-                max_id = max((rec["id"] for rec in converted if rec["id"] is not None), default=0)
-            except ValueError:
-                max_id = 0
-            next_id.set(max_id + 1)
-            return pd.DataFrame(
-                [
-                    {
-                        "ID": r.get("id", ""),
-                        "Type": r.get("type_test", "") or "",
-                        "Start": r.get("datetime_start", "") or "",
-                        "Description": r.get("description", "") or "",
-                        "Serial PTI": r.get("serial_number_pti", "") or "",
-                        "Executed": "Yes" if r.get("executed", False) else "No",
-                    }
-                    for r in converted
-                ]
-            )
+        # async def _load_initial():
+        #     items = await self.controller.list_sessions()
+        #
+        #     def _to_dict_session(r: Any) -> Dict[str, Any]:
+        #         return {
+        #             "id": getattr(r, "id", None),
+        #             "serial_number_pti": getattr(r, "serial_number_pti", None),
+        #             "datetime_start": getattr(r, "datetime_start", None),
+        #             "canceled": bool(getattr(r, "canceled", False)),
+        #             "description": getattr(r, "description", None),
+        #             "type_test": getattr(getattr(r, "type_test", None), "name", getattr(r, "type_test", None)),
+        #         }
+        #
+        #     converted = [_to_dict_session(r) for r in items]
+        #     sessions.set(converted)
+        #     try:
+        #         max_id = max((rec["id"] for rec in converted if rec["id"] is not None), default=0)
+        #     except ValueError:
+        #         max_id = 0
+        #     next_id.set(max_id + 1)
+        #     return pd.DataFrame(
+        #         [
+        #             {
+        #                 "ID": r.get("id", ""),
+        #                 "Type": r.get("type_test", "") or "",
+        #                 "Start": r.get("datetime_start", "") or "",
+        #                 "Description": r.get("description", "") or "",
+        #                 "Serial PTI": r.get("serial_number_pti", "") or "",
+        #                 "canceled": "Yes" if r.get("canceled", False) else "No",
+        #             }
+        #             for r in converted
+        #         ]
+        #     )
 
         def _read_form() -> Dict[str, Any]:
             dt_date = input.se_date()
@@ -146,7 +146,7 @@ class SessionsPage:
             return {
                 "serial_number_pti": (input.se_serial() or "").strip() or None,
                 "datetime_start": dt,
-                "executed": bool(input.se_executed()),
+                "canceled": bool(input.se_canceled()),
                 "description": (input.se_description() or "").strip() or None,
                 "type_test": (input.se_type() or "").strip(),
             }
@@ -159,7 +159,7 @@ class SessionsPage:
             session.send_input_message("se_date", {"value": dt_date})
             session.send_input_message("se_time", {"value": dt_time})
             session.send_input_message("se_type", {"value": rec.get("type_test", "")})
-            session.send_input_message("se_executed", {"value": bool(rec.get("executed", False))})
+            session.send_input_message("se_canceled", {"value": bool(rec.get("canceled", False))})
             session.send_input_message("se_description", {"value": rec.get("description", "") or ""})
 
         async def _clear_form():
@@ -167,7 +167,7 @@ class SessionsPage:
             ui.update_date("se_date", label="Date", value=None)
             ui.update_text("se_time", value="09:00")
             ui.update_select("se_type", choices=self.SESSION_TYPES)
-            ui.update_checkbox("se_executed", value=False)
+            ui.update_checkbox("se_canceled", value=False)
             ui.update_text_area("se_description", value="")
             self.selected_row = None
 
@@ -208,11 +208,13 @@ class SessionsPage:
         async def selected_session():
             sel = input.se_grid_selected_rows()  # list of row indices
             if not sel:
-                return self.NO_SELECTION_MESSAGE
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
             row_idx = sel[0]
-            df = await _load_initial()
+            df = await session_list()
             if row_idx < 0 or row_idx >= len(df):
-                return self.NO_SELECTION_MESSAGE
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
             row = df.iloc[row_idx]
             selected_session_id.set(row["ID"] or "")
             choices = await all_pti()
@@ -228,16 +230,12 @@ class SessionsPage:
                            value=start_dt.strftime("%H:%M") if getattr(start_dt, "strftime", None) else "09:00")
             type_raw = str(row["Type"]).strip()
             ui.update_select("se_type", choices=self.SESSION_TYPES, selected=type_raw)
-            ui.update_checkbox("se_executed", value=(str(row["Executed"]).strip().lower() == "yes"))
+            ui.update_checkbox("se_canceled", value=(str(row["Canceled"]).strip().lower() == "yes"))
             ui.update_text_area("se_description", value=str(row["Description"]))
-
-
-
             return f"Selected session ID: {row['ID']}"
 
         @reactive.Effect
         async def _init_select():
-            await _load_initial()
             await _refresh_select()
 
         @reactive.Effect
@@ -253,7 +251,6 @@ class SessionsPage:
                 if not added:
                     status.set("Failed to add session.")
                     return
-
             except Exception as e:
                 status.set(f"Error adding session: {str(e)}")
                 return
@@ -288,9 +285,6 @@ class SessionsPage:
             if not updated_ok:
                 status.set("Failed to update session.")
                 return
-
-
-
             await _refresh_select()
             await _clear_form()
             self.refresh_tick.set(self.refresh_tick.get() + 1)
