@@ -137,7 +137,7 @@ class TestSession(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     serial_number_pti = Column(String(50), unique=False, nullable=True)
     datetime_start = Column(TIMESTAMP, nullable=False)
-    executed = Column(Boolean, default=False, nullable=False)
+    canceled = Column(Boolean, default=False, nullable=False)
     description = Column(String(255), nullable=True)
     type_test = Column(Enum(TypeFitnessTest), default=TypeFitnessTest.PHEF , nullable=False)
 
@@ -149,10 +149,10 @@ class TestSession(Base):
     )
 
     def __repr__(self):
-        return f"<TestSession(id={self.id}, serial_number_pti={self.serial_number_pti}, datetime_start={self.datetime_start}, executed={self.executed})>"
+        return f"<TestSession(id={self.id}, serial_number_pti={self.serial_number_pti}, datetime_start={self.datetime_start}, executed={self.canceled})>"
 
     def __str__(self):
-        return f"TestSession(id={self.id}, serial_number_pti={self.serial_number_pti}, datetime_start={self.datetime_start}, executed={self.executed})"
+        return f"TestSession(id={self.id}, serial_number_pti={self.serial_number_pti}, datetime_start={self.datetime_start}, executed={self.canceled})"
 
 
 # Create association table for many-to-many relationship
