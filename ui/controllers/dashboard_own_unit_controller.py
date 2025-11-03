@@ -1,17 +1,14 @@
 from __future__ import annotations
 from typing import Optional, List, Dict, Any
-
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-
 from config.appliccation_config import ApplicationConfig
 from core.service_men import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
-
 from services.service_test import ServiceTest
 
 
@@ -272,7 +269,7 @@ class DashboardOwnUnitController:
                     "Date": sess.datetime_start.strftime("%Y-%m-%d %H:%M"),
                     "Type": sess.type_test.name,
                     "PTI": sess.serial_number_pti or "N/A",
-                    "Status": "✅ Executed" if sess.executed else "⏳ Pending",
+                    "Status": "❌ Canceled" if sess.canceled else "⏳ Planned",
                     "Description": sess.description or "",
                 })
             if len(rows) >= 10:

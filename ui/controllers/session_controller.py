@@ -32,11 +32,11 @@ class SessionsController:
                     "Start": str(r.datetime_start),
                     "Description": r.description,
                     "Serial PTI": r.serial_number_pti,
-                    "Executed": "Yes" if r.executed else "No",
+                    "Canceled": "Yes" if r.canceled else "No",
                 }
                 for r in items
             ]
-        )
+        ).sort_values(by="Start", ascending=True)
 
     async def get_all_pti_serials(self) -> List[str]:
         pts = await self._service.get_all_pti()
@@ -46,7 +46,7 @@ class SessionsController:
         ts = TestSession()
         ts.serial_number_pti = payload["serial_number_pti"]
         ts.datetime_start = payload["datetime_start"]
-        ts.executed = bool(payload["executed"])
+        ts.canceled = bool(payload["canceled"])
         ts.description = payload["description"]
         try:
             ts.type_test = getattr(TypeFitnessTest, str(payload["type_test"]).upper())
@@ -66,7 +66,7 @@ class SessionsController:
             type_test=enum_type,
             serial_number_pti=payload["serial_number_pti"],
             datetime_start=payload["datetime_start"],
-            executed=bool(payload["executed"]),
+            canceled=bool(payload["canceled"]),
             description=payload["description"],
         )
         sess= await self._service.update_test_session(data)
@@ -94,7 +94,7 @@ class SessionsController:
         return [r.mail for r in await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)]
 
     def _build_added_html(self, ts: TestSession) -> str:
-        status_text = "Executed" if ts.executed else "Planned"
+        status_text = "Canceled" if ts.canceled else "Planned"
         dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
         desc = ts.description or "No description provided"
         return f"""
@@ -110,7 +110,7 @@ class SessionsController:
         """
 
     def _build_updated_html(self, ts: TestSession) -> str:
-        status_text = "Executed" if ts.executed else "Planned"
+        status_text = "Canceled" if ts.canceled else "Planned"
         dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
         desc = ts.description or "No description provided"
         typ = ts.type_test.name if hasattr(ts.type_test, "name") else str(ts.type_test)
@@ -127,7 +127,7 @@ class SessionsController:
         """
 
     def _build_deleted_html(self, ts: TestSession) -> str:
-        status_text = "Executed" if ts.executed else "Planned"
+        status_text = "Canceled" if ts.canceled else "Planned"
         dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
         desc = ts.description or "No description provided"
         return f"""
