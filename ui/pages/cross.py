@@ -53,8 +53,8 @@ class CrossPage:
 
     def server(self, input, output, session):
         status = reactive.Value("Ready.")
-
         cross_selected_id = reactive.Value("")  # or None
+
 
         @output
         @render.ui
