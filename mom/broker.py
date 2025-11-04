@@ -1,18 +1,64 @@
+import time
+from http.server import HTTPServer
+
 from mom.message import Message
+from mom.message_stack import MessageStack
+import httpx  # added
+
+from utils.Os import Os
 
 
 class Broker:
-    """A class representing a message broker for MOM."""
-    ...
+
+    def __init__(self,url:str):
+        self._msg_queue = MessageStack()
+        self._url=url
+        self._running=True
 
     def send_message(self, message):
         if not isinstance(message, Message):
             raise TypeError("message must be an instance of Message")
+        self._msg_queue.push_message(message)
 
 
-    def post_message(self, message):
-        if not isinstance(message, Message):
-            raise TypeError("message must be an instance of Message")
+
+
+    async def _send_message_to_hr(self, message)->dict|None:
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(self._url, json=message.to_dict())
+                response.raise_for_status()
+                return response.json()
+
+        except Exception as e:
+            print(f"Error sending message to HR: {e}")
+
+
+    async def start(self):
+        while self._running:
+            check_a_live=Os.is_alive(self._url)
+            time.sleep(1)
+            if check_a_live:
+                message = self._msg_queue.pop_message()
+                if message:
+                    response=await self._send_message_to_hr(message)
+                    if response["success"]:
+                        print("Message sent successfully to HR")
+                        self._msg_queue.delete_message(message)
+                    else:
+                        print("Message failed to send to HR")
+
+
+    def stop(self):
+        self._running=False
+
+
+
+if __name__=="__main__":
+    broker=Broker("http://localhost:8000/api/v1/hr/message")
+    broker.start()
+
+
 
 
 
