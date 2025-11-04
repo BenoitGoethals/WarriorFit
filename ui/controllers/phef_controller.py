@@ -160,9 +160,6 @@ class PhefController:
         p.running_time = payload["run2400_s"]
         p.sideBridge_r = payload["side_bridge_r_s"]
         p.sideBridge_l = payload["side_bridge_l_s"]
-        p.pointBridge_r = 0
-        p.pointBridge_l = 0
-        p.pointsRunning = 0
         return await self._service.add_fitness_test_to_testSession(int(session_id), p,military,session)
 
     async def update_phef(self, phef_id: int, payload: Dict[str, Any]) -> Optional[PhefTest]:
@@ -173,9 +170,6 @@ class PhefController:
         p.running_time = payload["run2400_s"]
         p.sideBridge_r = payload["side_bridge_r_s"]
         p.sideBridge_l = payload["side_bridge_l_s"]
-        p.pointBridge_r = 0
-        p.pointBridge_l = 0
-        p.pointsRunning = 0
         return await self._service.update_fitness_test(int(phef_id), p)
 
     async def delete_phef(self, session_id: int, phef_id: int) -> bool:
