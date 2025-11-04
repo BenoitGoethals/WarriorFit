@@ -63,8 +63,8 @@ if __name__ == "__main__":
     asyncio.run(broker.start())
     broker.send_message(Message(content=PhefTest(
         serial_number="BE-20250001",
-        running_time=0.0,
-        sideBridge_r=0.0,
-        sideBridge_l=0.0,
+        running_time=2.0,
+        sideBridge_r=2.0,
+        sideBridge_l=20.0,
 
     )))
