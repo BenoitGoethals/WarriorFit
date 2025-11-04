@@ -77,9 +77,7 @@ class PhefTest(FitnessTest):
     running_time = Column(Float, nullable=False)
     sideBridge_r = Column(Float, nullable=False)
     sideBridge_l = Column(Float, nullable=False)
-    pointBridge_r = Column(Integer, nullable=False)
-    pointBridge_l = Column(Integer, nullable=False)
-    pointsRunning = Column(Integer, nullable=False)
+
     __mapper_args__ = {
         'polymorphic_identity': 'phef_test'
     }
