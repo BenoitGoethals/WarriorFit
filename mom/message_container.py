@@ -1,3 +1,4 @@
+import logging
 import os
 
 from mom.message import Message
@@ -23,8 +24,9 @@ class MessageContainer:
         self._lock = threading.Lock()
         self._db_path = Path(db_path)
         self._init_db()
+        self._logger = logging.getLogger(__name__)
 
-    # Public methods (kept)
+
     def push_message(self, message: Message) -> int:
         if not isinstance(message, Message):
             raise TypeError("message must be an instance of Message")
@@ -106,14 +108,12 @@ class MessageContainer:
             result = cursor.fetchone()
 
             if result:
-                print(f"Table '{table_name}' exists in the database.")
                 exists = True
             else:
-                print(f"Table '{table_name}' does NOT exist in the database.")
                 exists = False
 
         except sqlite3.Error as e:
-            print(f"SQLite error: {e}")
+            self._logger.error(f"SQLite error: {e}")
             exists = False
 
         finally:
