@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/c48ea3bc-bad9-4572-babf-0282d650ad9c/console.sql" value="c48ea3bc-bad9-4572-babf-0282d650ad9c" />
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/cde6c0b1-cf69-4070-aae9-897c0a7c8319/console.sql" value="cde6c0b1-cf69-4070-aae9-897c0a7c8319" />
     <file url="file://$PROJECT_DIR$/data/scripts/test_data.sql" value="55b0ca6b-8e0d-494b-bfd4-f53b0fcf6ecd" />
     <file url="file://$PROJECT_DIR$/military_api_rest/create_populate.sql" value="c48ea3bc-bad9-4572-babf-0282d650ad9c" />
   </component>
