@@ -8,7 +8,7 @@ import queue
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Tuple
-
+import json
 
 
 class MessageContainer:
@@ -31,9 +31,10 @@ class MessageContainer:
         if not isinstance(message, Message):
             raise TypeError("message must be an instance of Message")
         with self._lock:
-            db_id = self._save_message_sqlite(str(message.content), getattr(message, "timestamp", None))
+            db_id = self._save_message_sqlite(message.to_json(), getattr(message, "timestamp", None))
             setattr(message, "_db_id", db_id)
             self._messages.put(message)
+            print("put message in queue")
             return db_id
 
     def get_message(self) -> Optional[Message]:
@@ -44,7 +45,7 @@ class MessageContainer:
                 if not row:
                     return None
                 msg_id, content, ts = row
-                msg = Message(content=content)
+                msg = Message(content=json.loads(content))
                 msg.timestamp = self._parse_ts(ts)
                 setattr(msg, "_db_id", msg_id)
                 self._messages.put(msg)
@@ -64,7 +65,7 @@ class MessageContainer:
             if db_id is not None:
                 db_removed = self._delete_message_sqlite_by_id(int(db_id))
             else:
-                db_removed = self._delete_message_sqlite_by_signature(str(message.content), message.timestamp)
+                db_removed = self._delete_message_sqlite_by_signature(json.dumps(message.content.__dict__), message.timestamp)
             return removed_mem or db_removed
 
     # Internal: DB setup and operations
