@@ -1,8 +1,5 @@
-import html
-from typing import Dict, Any
-
 from core.Gender import Gender
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from data.db.db_model import TestSession, FitnessTest, PhefTest, CombatSwimmingTest, FunctionalTest, \
     CombatTestParatrooper
 from data.db.fitness_test_repository import FitnessTestRepository

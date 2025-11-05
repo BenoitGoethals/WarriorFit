@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Optional, Dict, Any
 import pandas as pd
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import CombatSwimmingTest, TestSession
 from services.be_mil_service import BEMILService

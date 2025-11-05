@@ -1,10 +1,9 @@
-from typing import Any, Coroutine, List
+from typing import Any
 
 from numpy import floating
 from numpy.ma.extras import average
-from watchfiles import awatch
 
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from data.db.cross_repository import CrossRepository
 from data.db.db_model import Cross, Runner
 from services.be_mil_service import BEMILService

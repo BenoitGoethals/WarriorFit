@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from config.appliccation_config import ApplicationConfig
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
+from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
 from logic.phef_calculator import PhefCalculator
 from services.be_mil_service import BEMILService
 from services.service_test import ServiceTest

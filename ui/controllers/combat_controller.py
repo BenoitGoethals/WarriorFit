@@ -2,10 +2,9 @@ from __future__ import annotations
 from typing import Tuple, Dict, Any, Optional
 
 import pandas as pd
-import html
 
 from core.type_fitness_test import TypeFitnessTest
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from data.db.db_model import CombatTestParatrooper, TestSession
 from services.be_mil_service import BEMILService
 from services.service_test import ServiceTest
