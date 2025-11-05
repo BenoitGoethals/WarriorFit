@@ -8,6 +8,8 @@ from data.db.db_model import TestSession, FitnessTest, PhefTest, CombatSwimmingT
 from data.db.fitness_test_repository import FitnessTestRepository
 from logic.Functional_calculator import FunctionalCalculator
 from logic.phef_calculator import PhefCalculator
+from mom.broker import Broker
+from mom.message import Message
 from services.service import Service
 from ui.pages.notify_mail import NotifyMail
 
@@ -16,6 +18,7 @@ class ServiceTest(Service):
     def __init__(self):
         super().__init__()
         self._test_repo=FitnessTestRepository()
+        self._broker=Broker()
 
 
     async def get_all_combat_test(self, id):
@@ -56,6 +59,9 @@ class ServiceTest(Service):
             if body:
                 await NotifyMail().send_mail(body=body, subject="Result Test", to=military.mail)
             await self.add_audit_log(details=f"Fitness test {test.serial_number} {test.type} added to test session {param}",action="add")
+            if not self._broker.is_running:
+                self._broker.start()
+            self._broker.send_message(message=Message(content=test))
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
@@ -105,7 +111,7 @@ class ServiceTest(Service):
 
 
 
-    def build_email_body_phef(self, sm: ServiceMen, session: TestSession, payload:PhefTest) -> str:
+    def build_email_body_phef(self, sm: ServiceMen, session: TestSession, payload:PhefTest|FitnessTest) -> str:
         age = sm.age_from_birthdate() if session is None else sm.age_from_birthdate_and_session_date(session.datetime_start)
         run = PhefCalculator.running_result(payload.running_time, age, sm.gender)
         sbr = PhefCalculator.side_bridge_result(payload.sideBridge_r, age, sm.gender)
@@ -162,7 +168,7 @@ class ServiceTest(Service):
 
 
     @staticmethod
-    def build_email_body_swim(sm: ServiceMen, session: TestSession, payload: CombatSwimmingTest) -> str:
+    def build_email_body_swim(sm: ServiceMen, session: TestSession, payload: CombatSwimmingTest|FitnessTest) -> str:
         passed = payload.swim_paased
         result = "PASSED" if passed else "FAILED"
         color = "green" if passed else "red"
@@ -192,7 +198,7 @@ class ServiceTest(Service):
 
 
 
-    def build_email_body_functional(self, sm: ServiceMen, session: TestSession, test: FunctionalTest) -> str:
+    def build_email_body_functional(self, sm: ServiceMen, session: TestSession, test: FunctionalTest|FitnessTest) -> str:
 
         def normalize_gender(g: Gender | str) -> Gender:
             if isinstance(g, str):
@@ -243,7 +249,7 @@ class ServiceTest(Service):
 
 
 
-    def build_email_body_combat(self,test: CombatTestParatrooper) -> str:
+    def build_email_body_combat(self,test: CombatTestParatrooper|FitnessTest) -> str:
         return f"""
            <table border="1" style="border-collapse: collapse; width: 100%;">
                <thead>
