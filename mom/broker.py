@@ -13,14 +13,20 @@ from utils.Os import Os
 
 class Broker:
 
-    def __init__(self, url: str):
+    def __init__(self, url: str="http://127.0.0.1:8005/api/v1/phef/test"):
+
         self._msg_queue = MessageContainer()
         self._url = url
         self._running = True
         self._logger = logging.getLogger(__name__)
         self._thread: threading.Thread | None = None
 
-    def send_message(self, message):
+
+    @property
+    def is_running(self):
+        return self._running
+
+    def send_message(self, message:Message):
         if not isinstance(message, Message):
             raise TypeError("message must be an instance of Message")
         self._msg_queue.push_message(message)
