@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date, datetime
 from typing import List, Optional
 
 from sqlalchemy import (
@@ -9,11 +10,12 @@ from sqlalchemy import (
     Boolean,
     Float,
     Text,
-    func,
+    func, UniqueConstraint, Date, Enum,
 )
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+from core.Gender import Gender
 from core.role import Role
 from core.type_fitness_test import TypeFitnessTest
 
@@ -203,3 +205,73 @@ class CrossRunners(Base):
 
     cross_id: Mapped[int] = mapped_column(ForeignKey("cross.id"), primary_key=True)
     runner_id: Mapped[int] = mapped_column(ForeignKey("runners.id"), primary_key=True)
+
+
+class Unit(Base):
+    __tablename__ = "units"
+    __table_args__ = (
+        UniqueConstraint("name", name="uq_units_name"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    base_location: Mapped[str] = mapped_column(String(150), nullable=False)
+
+    def __repr__(self) -> str:
+        return f"Unit(id={self.id}, name='{self.name}', base_location='{self.base_location}')"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.base_location})"
+
+
+class ServiceMen(Base):
+    __tablename__ = "service_men"
+    __table_args__ = (
+        UniqueConstraint("service_number", name="uq_service_men_service_number"),
+        UniqueConstraint("mail", name="uq_service_men_mail"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    first_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    mail: Mapped[str] = mapped_column(String(120), nullable=False)
+    rank: Mapped[str] = mapped_column(String(50), nullable=False)
+    service_number: Mapped[str] = mapped_column(String(50), nullable=False)
+    birthdate: Mapped[date] = mapped_column(Date, nullable=False)
+    gender: Mapped[Gender] = mapped_column(Enum(Gender), nullable=False)
+
+    # Ref naar Unit i.p.v. Enum
+    unit_id: Mapped[int] = mapped_column(ForeignKey("units.id"), nullable=False, index=True)
+    unit: Mapped["Unit"] = relationship("Unit", backref="servicemen")
+
+    para: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    ops_test: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    @property
+    def age(self) -> int:
+        return self.age_from_birthdate()
+
+    def age_from_birthdate(self) -> int:
+        if isinstance(self.birthdate, str):
+            d = datetime.strptime(self.birthdate, "%Y-%m-%d").date()
+        elif isinstance(self.birthdate, datetime):
+            d = self.birthdate.date()
+        else:
+            d = self.birthdate
+        today = date.today()
+        return today.year - d.year - ((today.month, today.day) < (d.month, d.day))
+
+    def age_from_birthdate_and_session_date(self, date_session: date) -> int:
+        if isinstance(self.birthdate, str):
+            b = datetime.strptime(self.birthdate, "%Y-%m-%d").date()
+        elif isinstance(self.birthdate, datetime):
+            b = self.birthdate.date()
+        else:
+            b = self.birthdate
+        return date_session.year - b.year - ((date_session.month, date_session.day) < (b.month, b.day))
+
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}  {self.mail}"
+
+    def __repr__(self) -> str:
+        return f"{self.first_name} {self.last_name}  {self.mail}"
