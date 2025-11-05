@@ -1,8 +1,6 @@
 import pandas as pd
-from numpy.ma.extras import average
-from shiny import reactive
 
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from data.db.db_model import Runner
 from services.be_mil_service import BEMILService
 from services.service_cross import ServiceCross

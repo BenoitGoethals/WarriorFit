@@ -1,11 +1,8 @@
 import logging
-from functools import cache
 
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from logic.singleton import Singleton
 import httpx
-
-from military_api_rest.service_men_api import ServiceMenResponse
 
 BASE_URL = "http://127.0.0.1:8001"
 

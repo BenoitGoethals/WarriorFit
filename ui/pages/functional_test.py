@@ -1,13 +1,12 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
-from core.service_men import ServiceMen
-from data.db.db_model import FunctionalTest, TestSession
+from military_api_rest.service_men_be import ServiceMen
+from data.db.db_model import TestSession
 from logic.Functional_calculator import FunctionalCalculator
 from services.be_mil_service import BEMILService
 
 from ui.controllers.functional_controller import FunctionalController
-from ui.pages.notify_mail import NotifyMail
 
 
 class FunctionalPage:

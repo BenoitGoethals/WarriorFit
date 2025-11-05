@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional
 import pandas as pd
 
 from config.appliccation_config import ApplicationConfig
-from core.service_men import ServiceMen
+from military_api_rest.service_men_be import ServiceMen
 from data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest
 from logic.phef_calculator import PhefCalculator
 from services.data_collector import DataCollector

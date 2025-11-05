@@ -3,9 +3,10 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from core.service_men import ServiceMen
-from core.unit import Unit
+from military_api_rest.service_men_be import ServiceMenBE
+
 from military_api_rest.db_service_service_men import DbServiceServiceMen
+from military_api_rest.unit_be import UnitBE
 
 
 class ServiceMenResponse(BaseModel):
@@ -44,7 +45,7 @@ class ServiceMenApi:
     def _add_routes(self):
         @self.app.get("/service-men/{service_number}", response_model=ServiceMenResponse)
         async def get_service_man(service_number: str):
-            data: List[ServiceMen] = await self.db_service.get_service_men_by_service_number(service_number)
+            data: List[ServiceMenBE] = await self.db_service.get_service_men_by_service_number(service_number)
             if not data:
                 raise HTTPException(status_code=404, detail="Service member not found")
             return ServiceMenResponse(
@@ -61,7 +62,7 @@ class ServiceMenApi:
             )
         @self.app.get("/service-men/unit/{unit_name}", response_model=List[ServiceMenResponse])
         async def get_all_service_men_from_unit(unit_name:str):
-            data: List[ServiceMen] = await self.db_service.all_service_men_from_a_unit(unit_name)
+            data: List[ServiceMenBE] = await self.db_service.all_service_men_from_a_unit(unit_name)
             if not data:
                 raise HTTPException(status_code=404, detail="Service member not found")
             return [ServiceMenResponse(
@@ -79,7 +80,7 @@ class ServiceMenApi:
 
         @self.app.get("/units", response_model=List[UnitResponse])
         async def get_all_units():
-            data: List[Unit] = await self.db_service.get_all_units()
+            data: List[UnitBE] = await self.db_service.get_all_units()
             if not data:
                 raise HTTPException(status_code=404, detail="Service member not found")
             else:
