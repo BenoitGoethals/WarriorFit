@@ -7,7 +7,6 @@ import pandas as pd
 from shiny import ui, render, reactive
 
 
-from services.be_mil_service import BEMILService
 from ui.controllers.ind_test_show_controller import IndTestShowController
 
 

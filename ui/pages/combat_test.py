@@ -1,16 +1,10 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
-from core.service_men import ServiceMen
-from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import TestSession, CombatTestParatrooper
-from services.be_mil_service import BEMILService
 
+from data.db.db_model import TestSession, ServiceMen
 
 from ui.controllers.combat_controller import CombatController
-from ui.pages.notify_mail import NotifyMail
-
-import html
 
 
 class CombatPage:

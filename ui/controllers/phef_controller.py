@@ -3,11 +3,12 @@ from typing import Optional, Dict, Any, Tuple
 
 import pandas as pd
 
-from core.service_men import ServiceMen
+
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import PhefTest, TestSession
+from data.db.db_model import PhefTest, TestSession, ServiceMen
 from logic.phef_calculator import PhefCalculator
-from services.be_mil_service import BEMILService
+
+from services.military_service import MilitaryService
 
 from services.service_test import ServiceTest
 
@@ -21,7 +22,7 @@ class PhefController:
     """
     def __init__(self) -> None:
         self._service = ServiceTest()
-        self.be_mil_service =BEMILService()
+        self.be_mil_service =MilitaryService()
 
     # ----- Helpers -----
     @staticmethod
@@ -85,14 +86,14 @@ class PhefController:
         serial = (serialnr or "").strip()
         if not serial:
             return None
-        return await self.be_mil_service.get_be_mil_by_id(serial)
+        return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def list_phef_df(self, session_id: int, session_date=None) -> pd.DataFrame:
         try:
             phef_tests = await self._service.get_all_phef(int(session_id))
             data = []
             for r in phef_tests:
-                sm = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
+                sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if sm is None:
                     continue
                 age = sm.age_from_birthdate() if session_date is None else sm.age_from_birthdate_and_session_date(session_date)

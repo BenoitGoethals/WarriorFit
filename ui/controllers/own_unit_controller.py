@@ -4,11 +4,12 @@ from typing import List, Dict, Any, Optional
 import pandas as pd
 
 from config.appliccation_config import ApplicationConfig
-from core.service_men import ServiceMen
-from data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest
+
+from data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen
 from logic.phef_calculator import PhefCalculator
 from services.data_collector import DataCollector
-from services.be_mil_service import BEMILService
+
+from services.military_service import MilitaryService
 from services.service_test import ServiceTest
 
 
@@ -20,8 +21,8 @@ class OwnUnitController:
     - Fetch tests for a selected serviceman
     """
 
-    def __init__(self, mil_service: Optional[BEMILService] = None):
-        self._mil_service = mil_service or BEMILService()
+    def __init__(self, mil_service: Optional[MilitaryService] = None):
+        self._mil_service = mil_service or MilitaryService()
         self.unit_name: str = ApplicationConfig().own_unit
         self._data_collector = DataCollector()
         self._service = ServiceTest()

@@ -1,14 +1,15 @@
-import datetime
-
 from logic.singleton import Singleton
-from core.service_men import ServiceMen
+
 from core.Gender import Gender
 import datetime
+
+from military_api_rest.service_men_be import ServiceMenBE
+
 
 class DefenseExternalService(metaclass=Singleton):
 
     service_men_dict = {
-        "SN100001": ServiceMen(
+        "SN100001": ServiceMenBE(
             id=1,
             first_name="Thomas",
             last_name="Peeters",
@@ -18,7 +19,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="1-3 Bn Lanciers",
         ),
-        "SN100002": ServiceMen(
+        "SN100002": ServiceMenBE(
             id=2,
             first_name="Julie",
             last_name="Dubois",
@@ -28,7 +29,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="1-3 Bn Lanciers",
         ),
-        "SN100003": ServiceMen(
+        "SN100003": ServiceMenBE(
             id=3,
             first_name="Kevin",
             last_name="Van Damme",
@@ -38,7 +39,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="1-3 Bn Lanciers",
         ),
-        "SN100004": ServiceMen(
+        "SN100004": ServiceMenBE(
             id=4,
             first_name="Emma",
             last_name="Janssens",
@@ -48,7 +49,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="Bataillon Carabiniers Prince Baudouin - Grenadiers",
         ),
-        "SN100005": ServiceMen(
+        "SN100005": ServiceMenBE(
             id=5,
             first_name="Lucas",
             last_name="Maes",
@@ -58,7 +59,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="1-3 Bn Lanciers",
         ),
-        "SN100006": ServiceMen(
+        "SN100006": ServiceMenBE(
             id=6,
             first_name="Sarah",
             last_name="De Vos",
@@ -68,7 +69,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="1-3 Bn Lanciers",
         ),
-        "SN100007": ServiceMen(
+        "SN100007": ServiceMenBE(
             id=7,
             first_name="Nicolas",
             last_name="Lambert",
@@ -78,7 +79,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="1-3 Bn Lanciers",
         ),
-        "SN100008": ServiceMen(
+        "SN100008": ServiceMenBE(
             id=8,
             first_name="Laura",
             last_name="Willems",
@@ -88,7 +89,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="3e Parachutistes",
         ),
-        "SN100009": ServiceMen(
+        "SN100009": ServiceMenBE(
             id=9,
             first_name="Mathias",
             last_name="Claes",
@@ -98,7 +99,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="Special Forces Group",
         ),
-        "SN100010": ServiceMen(
+        "SN100010": ServiceMenBE(
             id=10,
             first_name="Sophie",
             last_name="Martens",
@@ -108,7 +109,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="Brigade Légère",
         ),
-        "SN100011": ServiceMen(
+        "SN100011": ServiceMenBE(
             id=11,
             first_name="David",
             last_name="Vermeer",
@@ -118,7 +119,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="Régiment de Génie",
         ),
-        "SN100012": ServiceMen(
+        "SN100012": ServiceMenBE(
             id=12,
             first_name="Charlotte",
             last_name="Wouters",
@@ -128,7 +129,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="Marine Component",
         ),
-        "SN100013": ServiceMen(
+        "SN100013": ServiceMenBE(
             id=13,
             first_name="Simon",
             last_name="De Smet",
@@ -138,7 +139,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="Composante Air",
         ),
-        "SN100014": ServiceMen(
+        "SN100014": ServiceMenBE(
             id=14,
             first_name="Alice",
             last_name="Verhoeven",
@@ -148,7 +149,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="Composante Médicale",
         ),
-        "SN100015": ServiceMen(
+        "SN100015": ServiceMenBE(
             id=15,
             first_name="Maxime",
             last_name="Leroy",
@@ -158,7 +159,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="Composante Terre",
         ),
-        "SN100016": ServiceMen(
+        "SN100016": ServiceMenBE(
             id=16,
             first_name="Eva",
             last_name="Jacobs",
@@ -168,7 +169,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="ISTAR Battalion",
         ),
-        "SN100017": ServiceMen(
+        "SN100017": ServiceMenBE(
             id=17,
             first_name="Arthur",
             last_name="Mertens",
@@ -178,7 +179,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="Bataillon QG",
         ),
-        "SN100018": ServiceMen(
+        "SN100018": ServiceMenBE(
             id=18,
             first_name="Léa",
             last_name="Dupont",
@@ -188,7 +189,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.FEMALE,
             unit="Bataillon Logistics",
         ),
-        "SN100019": ServiceMen(
+        "SN100019": ServiceMenBE(
             id=19,
             first_name="Vincent",
             last_name="Gerard",
@@ -198,7 +199,7 @@ class DefenseExternalService(metaclass=Singleton):
             gender=Gender.MALE,
             unit="Medium Brigade",
         ),
-        "SN100020": ServiceMen(
+        "SN100020": ServiceMenBE(
             id=20,
             first_name="Marie",
             last_name="Thijs",

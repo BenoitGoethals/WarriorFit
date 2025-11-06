@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import Optional, Dict, Any
 import pandas as pd
-from core.service_men import ServiceMen
+
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import CombatSwimmingTest, TestSession
-from services.be_mil_service import BEMILService
+from data.db.db_model import CombatSwimmingTest, TestSession, ServiceMen
+
+from services.military_service import MilitaryService
 from services.service_test import ServiceTest
 
 
@@ -17,7 +18,7 @@ class SwimmingController:
     """
     def __init__(self,) -> None:
         self._service = ServiceTest()
-        self.be_mil_service =  BEMILService()
+        self.be_mil_service =  MilitaryService()
 
     # ----- Validation -----
     @staticmethod
@@ -40,14 +41,14 @@ class SwimmingController:
         serial = (serialnr or "").strip()
         if not serial:
             return None
-        return await self.be_mil_service.get_be_mil_by_id(serial)
+        return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def list_swim_df(self, session_id: int) -> pd.DataFrame:
         try:
             swim_tests = await self._service.get_all_combat_swimming_test(int(session_id))
             rows = []
             for r in swim_tests or []:
-                sm = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
+                sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if not sm:
                     continue
                 rows.append({

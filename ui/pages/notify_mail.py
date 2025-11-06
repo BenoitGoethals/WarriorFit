@@ -2,13 +2,15 @@ import logging
 
 from config.appliccation_config import ApplicationConfig
 from logic.singleton import Singleton
-from services.be_mil_service import BEMILService
+
 from services.mail_service import MailService
+from services.military_service import MilitaryService
+
 
 class NotifyMail(metaclass=Singleton):
 
     def __init__(self, ):
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
         self.logger = logging.getLogger(__name__)
 
     async def send_mail(self, *, body: str, subject: str,to:str):
