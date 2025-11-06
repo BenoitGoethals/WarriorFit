@@ -228,7 +228,7 @@ class ServiceMen(Base):
     __tablename__ = "service_men"
     __table_args__ = (
         UniqueConstraint("service_number", name="uq_service_men_service_number"),
-        UniqueConstraint("mail", name="uq_service_men_mail"),
+     #   UniqueConstraint("mail", name="uq_service_men_mail"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)

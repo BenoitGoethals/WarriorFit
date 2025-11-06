@@ -1,12 +1,11 @@
 from typing import Any
-
 from numpy import floating
 from numpy.ma.extras import average
 
-from military_api_rest.service_men_be import ServiceMen
+from core.Gender import Gender
 from data.db.cross_repository import CrossRepository
-from data.db.db_model import Cross, Runner
-from services.be_mil_service import BEMILService
+from data.db.db_model import Cross, Runner, ServiceMen
+from services.military_service import MilitaryService
 from services.service import Service
 
 
@@ -14,7 +13,7 @@ class ServiceCross(Service):
     def __init__(self):
         super().__init__()
         self._cross_repo = CrossRepository()
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
 
     async def get_runner(self, runner_id) -> Runner | None:
         return await self._cross_repo.get_runner(runner_id)
@@ -122,26 +121,38 @@ class ServiceCross(Service):
         return best_time
 
     async def get_age_group(self, all_cross):
+        age_groups: dict[str, int] = {}
 
-        age: dict = {}
-        #group first runners age group by 5 years group getting from self.be_mil_service.get_be_mil_by_id(runner.serial_number)
-        for x in all_cross:
-            for y in x.runners:
-                service_man: ServiceMen = await self.be_mil_service.get_be_mil_by_id(y.serial_number)
-                age_s = service_man.age_from_birthdate()
-                if age_s not in age:
-                    age[age_s] = 1
-                else:
-                    age[age_s] += 1
-        return age
+        def bucket(age: int) -> str:
+            if age < 18: return "<18"
+            if age <= 25: return "18-25"
+            if age <= 35: return "26-35"
+            if age <= 45: return "36-45"
+            if age <= 56: return "46-56"
+            return "57+"
+
+        missing: list[str] = []
+        for cross in all_cross:
+            for r in getattr(cross, "runners", []):
+                sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
+                if sm is None:
+                    missing.append(r.serial_number)
+                    continue
+                try:
+                    g = bucket(sm.age_from_birthdate())
+                    age_groups[g] = age_groups.get(g, 0) + 1
+                except Exception:
+                    missing.append(r.serial_number)
+
+        return age_groups
 
     async def get_gender_time(self, all_cross) -> tuple[floating[Any], floating[Any]]:
         all_runners_f = []
         all_runners_m = []
         for cross in all_cross:
             for runner in cross.runners:
-                service_man: ServiceMen = await self.be_mil_service.get_be_mil_by_id(runner.serial_number)
-                if service_man.gender == "F":
+                service_man: ServiceMen = await self.be_mil_service.get_servicemen_by_serial(runner.serial_number)
+                if service_man.gender == Gender.F:
                     all_runners_f.append(runner.running_time)
                 else:
                     all_runners_m.append(runner.running_time)
@@ -166,3 +177,5 @@ class ServiceCross(Service):
             top_runners_by_distance[distance] = top_runners_by_distance[distance][:10]
 
         return top_runners_by_distance
+
+

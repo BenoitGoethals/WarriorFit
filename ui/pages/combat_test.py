@@ -1,8 +1,8 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
-from military_api_rest.service_men_be import ServiceMen
-from data.db.db_model import TestSession
+
+from data.db.db_model import TestSession, ServiceMen
 
 from ui.controllers.combat_controller import CombatController
 

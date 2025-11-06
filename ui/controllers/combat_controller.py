@@ -4,16 +4,17 @@ from typing import Tuple, Dict, Any, Optional
 import pandas as pd
 
 from core.type_fitness_test import TypeFitnessTest
-from military_api_rest.service_men_be import ServiceMen
-from data.db.db_model import CombatTestParatrooper, TestSession
-from services.be_mil_service import BEMILService
+
+from data.db.db_model import CombatTestParatrooper, TestSession, ServiceMen
+
+from services.military_service import MilitaryService
 from services.service_test import ServiceTest
 
 
 class CombatController:
     def __init__(self) -> None:
         self._service = ServiceTest()
-        self.be_mil_service =BEMILService()
+        self.be_mil_service =MilitaryService()
 
     # ----- Helpers -----
     @staticmethod
@@ -69,14 +70,14 @@ class CombatController:
         serial = (serialnr or "").strip()
         if not serial:
             return None
-        return await self.be_mil_service.get_be_mil_by_id(serial)
+        return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def list_combat_tests_df(self, session_id: int) -> pd.DataFrame:
         try:
             combat_tests = await self._service.get_all_combat_test(int(session_id))
             data = []
             for r in combat_tests:
-                sm = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
+                sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if sm is None:
                     continue
                 total = self.overall_passed(r.obstacle_passed, r.rope_passed, r.running_time)

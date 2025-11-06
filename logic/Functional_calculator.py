@@ -42,7 +42,7 @@ class FunctionalCalculator:
 
     @staticmethod
     def _sex_key(gender: Gender) -> str:
-        return "male" if gender == Gender.MALE else "female"
+        return "male" if gender == Gender.M else "female"
 
     def _adjusted_max(self, age_group: str, gender: Gender, test: str) -> int:
         base = self.BASE_MAX[self._sex_key(gender)][test]
@@ -105,7 +105,7 @@ class FunctionalCalculator:
         for test in tests:
             rows = []
             idx = []
-            for sex in (Gender.MALE, Gender.FEMALE):
+            for sex in (Gender.M, Gender.F):
                 for age_group in self.AGE_GROUPS.keys():
                     row = [self.reps_for_score_nonlinear(s, age_group, sex, test) for s in self.SCORES]
                     rows.append(row)

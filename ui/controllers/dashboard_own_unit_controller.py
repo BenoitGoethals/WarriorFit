@@ -4,30 +4,20 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from config.appliccation_config import ApplicationConfig
-from military_api_rest.service_men_be import ServiceMen
+
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
+from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen
 from logic.phef_calculator import PhefCalculator
-from services.be_mil_service import BEMILService
+
+from services.military_service import MilitaryService
 from services.service_test import ServiceTest
 
 
 class DashboardOwnUnitController:
-    """
-    Manages data and interactions for the dashboard related to the own unit's personnel
-    statistics, fitness test results, and visual representations. This class is designed
-    to query and process data specific to the user's unit from defined services, including
-    test results and personnel information.
 
-    :ivar be_mil_service: Service responsible for managing military personnel data.
-    :type be_mil_service: BEMILService
-
-    :ivar unit_name: The name of the unit for which statistics and data are managed.
-    :type unit_name: str
-    """
     def __init__(self) -> None:
         self._service = ServiceTest()
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
         self.unit_name=ApplicationConfig().own_unit
         self._mils=None
         self._all_military_own_unit=None

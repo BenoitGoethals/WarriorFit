@@ -4,13 +4,13 @@ import datetime
 from typing import Optional
 from shiny import ui, render, reactive
 
-from services.be_mil_service import BEMILService
+from services.military_service import MilitaryService
 from ui.controllers.status_tests_controller import StatusTestsController
 
 
 class StatusTests:
-    def __init__(self, mil_service: Optional[BEMILService] = None):
-        self._controller:StatusTestsController = StatusTestsController(mil_service or BEMILService())
+    def __init__(self, mil_service: Optional[MilitaryService] = None):
+        self._controller:StatusTestsController = StatusTestsController(mil_service or MilitaryService())
         self.refresh_tick = reactive.Value(0)
         self._selected_serial = reactive.Value(None)
 

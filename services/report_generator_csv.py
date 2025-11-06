@@ -3,13 +3,11 @@ import logging
 import os
 from datetime import datetime
 from typing import Any, Callable, List, Optional
-
 from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, TestSession
 from logic.phef_calculator import PhefCalculator
-from services.be_mil_service import BEMILService
-
 from config.appliccation_config import ApplicationConfig
 from core.type_fitness_test import TypeFitnessTest
+from services.military_service import MilitaryService
 
 from services.report_type import ReportType
 from services.service_test import ServiceTest
@@ -17,7 +15,7 @@ from services.service_test import ServiceTest
 
 class ReportGeneratorCsv:
     def __init__(self):
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
         self._service= ServiceTest()
         self.__logger = logging.getLogger(__name__)
 
@@ -89,10 +87,13 @@ class ReportGeneratorCsv:
                     if own_unit:
                         if not test.serial_number in [s.service_number for s in mils]:
                             continue
-                    sm = await self.be_mil_service.get_be_mil_by_id(test.serial_number)
+                    sm = await self.be_mil_service.get_servicemen_by_serial(test.serial_number, lazy=False)
+                    self.__logger.info(
+                        f"PHEF test: {test.serial_number} - {sm.first_name} {sm.last_name} - {sm.age_from_birthdate()} years old"
+                    )
                     score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, sm.age_from_birthdate(), sm.gender)
                     score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, sm.age_from_birthdate(), sm.gender)
-                    score_run = score_l = PhefCalculator.running_result(test.pointsRunning, sm.age_from_birthdate(),
+                    score_run = score_l = PhefCalculator.running_result(test.running_time, sm.age_from_birthdate(),
                                                                         sm.gender)
                     total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
                     row = {

@@ -5,7 +5,8 @@ from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest
 from logic.phef_calculator import PhefCalculator
 from logic.singleton import Singleton
-from services.be_mil_service import BEMILService
+
+from services.military_service import MilitaryService
 from services.service_test import ServiceTest
 
 
@@ -13,7 +14,7 @@ class DataCollector(metaclass=Singleton):
 
     def __init__(self):
         self._service = ServiceTest()
-        self.be_mil = BEMILService()
+        self.be_mil = MilitaryService()
 
 
     async def collect_tests_for_serial(self,serial: str) -> pd.DataFrame:
@@ -28,7 +29,7 @@ class DataCollector(metaclass=Singleton):
                 if getattr(t, "serial_number", "") != serial:
                     continue
                 # compute detailed scores
-                mil = await self.be_mil.get_be_mil_by_id(serial)
+                mil = await self.be_mil.get_servicemen_by_serial(serial)
                 if not mil:
                     continue
                 age = mil.age_from_birthdate_and_session_date(sess.datetime_start)

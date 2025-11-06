@@ -4,16 +4,16 @@ from __future__ import annotations
 import pandas as pd
 
 from services.data_collector import DataCollector
-from services.be_mil_service import BEMILService
+from services.military_service import MilitaryService
 
 
 class IndTestShowController:
 
     def __init__(self):
-        self.be_mil = BEMILService()
+        self.be_mil = MilitaryService()
 
     async def find_military(self, serial: str):
-        return await self.be_mil.get_be_mil_by_id(serial)
+        return await self.be_mil.get_servicemen_by_serial(serial)
 
     async def collect_tests_df(self, serial: str) -> pd.DataFrame:
         try:

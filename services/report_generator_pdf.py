@@ -4,10 +4,9 @@ from datetime import datetime
 from typing import List, Tuple, Optional, Callable, Any
 from logic.phef_calculator import PhefCalculator
 from config.appliccation_config import ApplicationConfig
-from services.be_mil_service import BEMILService
-
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
+from services.military_service import MilitaryService
 from services.report_type import ReportType
 from services.service_cross import ServiceCross
 from services.service_test import ServiceTest
@@ -18,7 +17,7 @@ class ReportGeneratorPdf:
     def __init__(self):
         self._user_service=ServiceTest()
         self._cross_service=ServiceCross()
-        self.be_mil_service=BEMILService()
+        self.be_mil_service=MilitaryService()
         self.__logger = logging.getLogger(__name__)
 
     async def generate_report(self,  report_name: str, report_type: ReportType,own_unit:bool,this_year:bool):
@@ -55,7 +54,7 @@ class ReportGeneratorPdf:
         rows = []
 
         for runner in result.runners:
-            runner_det = await self.be_mil_service.get_be_mil_by_id(runner.serial_number)
+            runner_det = await self.be_mil_service.get_servicemen_by_serial(runner.serial_number,lazy=False)
             if runner_det:
                 rows.append({
                     "order": None,
@@ -184,10 +183,10 @@ class ReportGeneratorPdf:
                         if not test.serial_number in [s.service_number for s in mils]:
                             continue
 
-                    sm=await self.be_mil_service.get_be_mil_by_id(test.serial_number)
+                    sm=await self.be_mil_service.get_servicemen_by_serial(test.serial_number,lazy=False)
                     score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, sm.age_from_birthdate(), sm.gender)
                     score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, sm.age_from_birthdate(), sm.gender)
-                    score_run =  score_l = PhefCalculator.running_result(test.pointsRunning, sm.age_from_birthdate(), sm.gender)
+                    score_run =  score_l = PhefCalculator.running_result(test.running_time, sm.age_from_birthdate(), sm.gender)
                     total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
                     row = {
                         "session_id": sess.id,

@@ -5,12 +5,12 @@ import pandas as pd
 
 from config.appliccation_config import ApplicationConfig
 from services.data_collector import DataCollector
-from services.be_mil_service import BEMILService
+from services.military_service import MilitaryService
 
 
 class StatusTestsController:
-    def __init__(self, mil_service: Optional[BEMILService] = None):
-        self._mil_service = mil_service or BEMILService()
+    def __init__(self, mil_service: Optional[MilitaryService] = None):
+        self._mil_service = mil_service or MilitaryService()
         self.data_collector = DataCollector()
         self.unit_name: str = ApplicationConfig().own_unit
 
