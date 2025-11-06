@@ -1,10 +1,6 @@
-import html
-from typing import Dict, Any
-
 from core.Gender import Gender
-from core.service_men import ServiceMen
 from data.db.db_model import TestSession, FitnessTest, PhefTest, CombatSwimmingTest, FunctionalTest, \
-    CombatTestParatrooper
+    CombatTestParatrooper, ServiceMen
 from data.db.fitness_test_repository import FitnessTestRepository
 from logic.Functional_calculator import FunctionalCalculator
 from logic.phef_calculator import PhefCalculator
@@ -202,7 +198,7 @@ class ServiceTest(Service):
 
         def normalize_gender(g: Gender | str) -> Gender:
             if isinstance(g, str):
-                return Gender.MALE if g.lower().startswith("m") else Gender.FEMALE
+                return Gender.M if g.lower().startswith("m") else Gender.F
             return g
 
         gender = normalize_gender(sm.gender)

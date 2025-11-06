@@ -1,12 +1,12 @@
 import datetime
 
 from core.Gender import Gender
-from core.unit import Unit
+from military_api_rest.unit_be import UnitBE
 
 
-class ServiceMen:
+class ServiceMenBE:
     def __init__(self,*, id: int=0,first_name:str, last_name: str, mail:str, rank: str, service_number: str,
-                 birthdate: datetime.datetime, gender: Gender, unit: Unit, para:bool=False, ops_test:bool=False):
+                 birthdate: datetime.datetime, gender: Gender, unit: UnitBE, para:bool=False, ops_test:bool=False):
         self.id:int = id
         self.first_name:str = first_name
         self.last_name:str = last_name
@@ -15,7 +15,7 @@ class ServiceMen:
         self.service_number:str = service_number
         self.birthdate:datetime.datetime = birthdate
         self.gender:Gender = gender
-        self.unit:Unit = unit
+        self.unit:UnitBE = unit
         self.para:bool = para
         self.ops_test:bool = ops_test
 

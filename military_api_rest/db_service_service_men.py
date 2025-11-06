@@ -2,9 +2,10 @@ import sqlite3
 import asyncio
 import logging
 from core.Gender import Gender
-from core.service_men import ServiceMen
-from core.unit import Unit
+
 from logic.singleton import Singleton
+from military_api_rest.service_men_be import ServiceMenBE
+from military_api_rest.unit_be import UnitBE
 
 logger = logging.getLogger(__name__)
 if not logger.handlers:
@@ -50,7 +51,7 @@ class DbServiceServiceMen(metaclass=Singleton):
             logger.error(f"SQLite connection error: {e}")
             raise
 
-    async def get_all_service_men(self) -> list[ServiceMen]:
+    async def get_all_service_men(self) -> list[ServiceMenBE]:
         try:
             loop = asyncio.get_running_loop()
             def _work():
@@ -66,9 +67,9 @@ class DbServiceServiceMen(metaclass=Singleton):
             logger.info(f"Fetched {len(rows)} service men")
             service_mens = []
             for row in rows:
-                sm = ServiceMen(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
+                sm = ServiceMenBE(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
                                 gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
-                                unit=Unit(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
+                                unit=UnitBE(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
                                 para=row[8], ops_test=row[9],mail=row[3])
                 service_mens.append(sm)
             return service_mens
@@ -79,7 +80,7 @@ class DbServiceServiceMen(metaclass=Singleton):
             logger.error(f"Runtime error in get_all_service_men: {e}")
             return []
 
-    async def get_service_men_by_service_number(self, service: str)->list[ServiceMen]:
+    async def get_service_men_by_service_number(self, service: str)->list[ServiceMenBE]:
         if service is None:
             logger.warning("get_service_men_by_service_number called with None service number")
             return None
@@ -103,9 +104,9 @@ class DbServiceServiceMen(metaclass=Singleton):
             logger.info(f"Fetched {len(rows)} service men for service_number={service}")
             service_mens = []
             for row in rows:
-                sm = ServiceMen(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
+                sm = ServiceMenBE(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
                                 gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
-                                unit=Unit(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
+                                unit=UnitBE(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
                                 para=row[8], ops_test=row[9], mail=row[3])
                 service_mens.append(sm)
             return service_mens
@@ -132,7 +133,7 @@ class DbServiceServiceMen(metaclass=Singleton):
             logger.info(f"Fetched {len(rows)} units")
             units = []
             for row in rows:
-                unit = Unit(id=row[0], name=row[1], base_location=row[2])
+                unit = UnitBE(id=row[0], name=row[1], base_location=row[2])
                 units.append(unit)
             return units
         except sqlite3.Error as e:
@@ -163,9 +164,9 @@ class DbServiceServiceMen(metaclass=Singleton):
             logger.info(f"Fetched {len(rows)} service men for unit='{unit}'")
             service_mens = []
             for row in rows:
-                sm = ServiceMen(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
+                sm = ServiceMenBE(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
                                 gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
-                                unit=Unit(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
+                                unit=UnitBE(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
                                 para=row[8], ops_test=row[9], mail=row[3])
                 service_mens.append(sm)
             return service_mens

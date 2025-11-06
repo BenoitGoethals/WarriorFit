@@ -138,9 +138,9 @@ class PhefCalculator:
         elif not isinstance(side_time, (int, float)):
             raise TypeError(f"Tijd moet een int of float zijn, niet {type(side_time)}")
 
-        if gender == Gender.MALE or gender == "M":
+        if gender == Gender.M or gender == "M":
             kolom = "m"
-        elif gender == Gender.FEMALE or gender == "F":
+        elif gender == Gender.F or gender == "F":
             kolom = "v"
         else:
             return 0
@@ -181,9 +181,9 @@ class PhefCalculator:
         :raises TypeError: If the running_time is neither a float, int, nor a properly formatted string.
         :raises ValueError: If no norms are available for the resolved column corresponding to the age and gender.
         """
-        if gender == Gender.MALE or gender == "M":
+        if gender == Gender.M or gender == "M":
             kolom = "m"
-        elif gender == Gender.FEMALE or gender == "F":
+        elif gender == Gender.F or gender == "F":
             kolom = "v"
         else:
             return 0
@@ -262,21 +262,21 @@ class PhefCalculator:
 
 
 
-assert PhefCalculator.running_result(571, 20, Gender.MALE) == 20
-assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 20, Gender.FEMALE) == 18
-assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 43, Gender.MALE) == 14
+assert PhefCalculator.running_result(571, 20, Gender.M) == 20
+assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 20, Gender.F) == 18
+assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 43, Gender.M) == 14
 
-assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.MALE) == 14
-assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.FEMALE) == 16
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.M) == 14
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.F) == 16
 
-assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.MALE) == 10
-assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.FEMALE) == 12
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.M) == 10
+assert PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.F) == 12
 
-assert PhefCalculator.running_result("11:15", 20, Gender.FEMALE) == 18
-assert PhefCalculator.running_result("11:15", 43, Gender.MALE) == 14
+assert PhefCalculator.running_result("11:15", 20, Gender.F) == 18
+assert PhefCalculator.running_result("11:15", 43, Gender.M) == 14
 
-assert PhefCalculator.side_bridge_result("1:20", 44, Gender.MALE) == 14
-assert PhefCalculator.side_bridge_result("1:20", 44, Gender.FEMALE) == 16
+assert PhefCalculator.side_bridge_result("1:20", 44, Gender.M) == 14
+assert PhefCalculator.side_bridge_result("1:20", 44, Gender.F) == 16
 
-assert PhefCalculator.side_bridge_result("1:05", 35, Gender.MALE) == 10
-assert PhefCalculator.side_bridge_result("1:05", 35, Gender.FEMALE) == 12
+assert PhefCalculator.side_bridge_result("1:05", 35, Gender.M) == 10
+assert PhefCalculator.side_bridge_result("1:05", 35, Gender.F) == 12

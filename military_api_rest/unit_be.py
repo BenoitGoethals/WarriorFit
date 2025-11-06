@@ -1,4 +1,4 @@
-class Unit:
+class UnitBE:
     """
     Represents a military unit with a name and base location.
     """
@@ -12,7 +12,7 @@ class Unit:
         return f"Unit(id={self.id}, name='{self.name}', base_location='{self.base_location}')"
 
     def __eq__(self, other):
-        if not isinstance(other, Unit):
+        if not isinstance(other, UnitBE):
             return NotImplemented
         return (
             self.id == other.id

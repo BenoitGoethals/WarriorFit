@@ -27,7 +27,8 @@ VALUES ('pti', 'pti@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI
        ('pti10', 'pti10@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI10');
 
 -- Test Sessions data
-INSERT INTO test_sessions (serial_number_pti, datetime_start, executed, description, type_test)
+-- Column name changed from executed -> canceled to match SQLAlchemy model
+INSERT INTO test_sessions (serial_number_pti, datetime_start, canceled, description, type_test)
 VALUES ('SNPTI', '2025-08-06 09:00:00', false, 'Regular fitness evaluation session', 'PHEF'),
        ('SNPTI2', '2025-08-07 09:00:00', false, 'Combat readiness assessment', 'COMBAT'),
        ('SNPTI3', '2025-08-08 09:00:00', false, 'Standard physical evaluation', 'PHEF'),

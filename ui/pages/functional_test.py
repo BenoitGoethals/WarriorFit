@@ -1,20 +1,19 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
-from core.service_men import ServiceMen
-from data.db.db_model import FunctionalTest, TestSession
+from data.db.db_model import TestSession, ServiceMen
 from logic.Functional_calculator import FunctionalCalculator
-from services.be_mil_service import BEMILService
+
+from services.military_service import MilitaryService
 
 from ui.controllers.functional_controller import FunctionalController
-from ui.pages.notify_mail import NotifyMail
 
 
 class FunctionalPage:
     def __init__(self,):
 
         self.refresh_tick = reactive.Value(0)
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
         self.controller = FunctionalController()

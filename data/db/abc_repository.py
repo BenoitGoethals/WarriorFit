@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from config.appliccation_config import ApplicationConfig
 from data.db.db_model import AuditLog
-from services.be_mil_service import BEMILService
+
 from utils.Os import Os
 
 
@@ -15,7 +15,7 @@ class ABCRepository:
         # Configure logging
 
         self.setup_logger()
-        self._be_mil_service = BEMILService()
+
 
         logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
         self.__logger = logging.getLogger(__name__)

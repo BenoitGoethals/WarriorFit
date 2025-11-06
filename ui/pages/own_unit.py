@@ -6,13 +6,13 @@ from typing import Optional
 import pandas as pd
 from shiny import ui, render, reactive
 
-from services.be_mil_service import BEMILService
+from services.military_service import MilitaryService
 from ui.controllers.own_unit_controller import OwnUnitController
 
 
 class OwnUnitPage:
-    def __init__(self, mil_service: Optional[BEMILService] = None):
-        self.controller = OwnUnitController(mil_service or BEMILService())
+    def __init__(self, mil_service: Optional[MilitaryService] = None):
+        self.controller = OwnUnitController(mil_service or MilitaryService())
         self.refresh_tick = reactive.Value(0)
         self._selected_serial = reactive.Value(None)
 

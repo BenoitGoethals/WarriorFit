@@ -1,10 +1,9 @@
 import pandas as pd
-from numpy.ma.extras import average
-from shiny import reactive
 
-from core.service_men import ServiceMen
-from data.db.db_model import Runner
-from services.be_mil_service import BEMILService
+
+from data.db.db_model import Runner, ServiceMen
+
+from services.military_service import MilitaryService
 from services.service_cross import ServiceCross
 from utils.formaters import Formatter
 
@@ -12,7 +11,7 @@ from utils.formaters import Formatter
 class CrossStaticsController:
     def __init__(self, ) -> None:
         self._service = ServiceCross()
-        self._mil_service = BEMILService()
+        self._mil_service = MilitaryService()
         self._stats = None
 
     async def load(self):
@@ -39,7 +38,7 @@ class CrossStaticsController:
         for key, value in data.items():  # Added .items()
             data_p = []
             for runner in value:
-                service_men: ServiceMen = await self._mil_service.get_be_mil_by_id(runner.serial_number)
+                service_men: ServiceMen = await self._mil_service.get_servicemen_by_serial(runner.serial_number)
                 data_p.append({
                     'serial_number': runner.serial_number,
                     'rank': service_men.rank,

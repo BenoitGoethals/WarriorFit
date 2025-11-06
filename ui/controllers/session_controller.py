@@ -4,8 +4,9 @@ from data.db.db_model import TestSession
 import datetime
 import pandas as pd
 from core.type_fitness_test import TypeFitnessTest
-from services.be_mil_service import BEMILService
+
 from services.mail_service import MailService
+from services.military_service import MilitaryService
 from services.service_test import ServiceTest
 
 
@@ -16,7 +17,7 @@ class SessionsController:
     """
     def __init__(self, ):
         self._service = ServiceTest()
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
 
     # Data fetchers
     async def list_sessions(self) -> list[TestSession]:

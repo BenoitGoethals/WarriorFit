@@ -1,7 +1,7 @@
 """
 User database service class for managing user-related database operations.
 """
-from data.db.user_repository import UserRepository
+
 from logic.singleton import Singleton
 from services.service import Service
 

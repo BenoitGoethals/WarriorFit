@@ -1,12 +1,10 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
-from core.service_men import ServiceMen
-from data.db.db_model import TestSession
-from services.be_mil_service import BEMILService
+
+from data.db.db_model import TestSession, ServiceMen
 
 from ui.controllers.swimming_controller import SwimmingController
-from ui.pages.notify_mail import NotifyMail
 
 
 class SwimTestPage:
