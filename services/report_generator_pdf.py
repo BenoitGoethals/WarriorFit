@@ -186,7 +186,7 @@ class ReportGeneratorPdf:
                     sm=await self.be_mil_service.get_servicemen_by_serial(test.serial_number,lazy=False)
                     score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, sm.age_from_birthdate(), sm.gender)
                     score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, sm.age_from_birthdate(), sm.gender)
-                    score_run =  score_l = PhefCalculator.running_result(test.running_time, sm.age_from_birthdate(), sm.gender)
+                    score_run =   PhefCalculator.running_result(test.running_time, sm.age_from_birthdate(), sm.gender)
                     total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
                     row = {
                         "session_id": sess.id,
