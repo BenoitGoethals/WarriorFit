@@ -1,10 +1,10 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
-from military_api_rest.service_men_be import ServiceMen
-from data.db.db_model import TestSession
+from data.db.db_model import TestSession, ServiceMen
 from logic.phef_calculator import PhefCalculator
-from services.be_mil_service import BEMILService
+
+from services.military_service import MilitaryService
 
 from ui.controllers.phef_controller import PhefController
 
@@ -13,7 +13,7 @@ class PhefPage:
     def __init__(self):
 
         self.refresh_tick = reactive.Value(0)
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
         self.selected_military: ServiceMen = None
         self.selected_session: TestSession = None
         self.controller = PhefController()

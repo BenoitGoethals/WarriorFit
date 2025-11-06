@@ -7,9 +7,8 @@ from shiny import reactive, ui, render
 from config.appliccation_config import ApplicationConfig
 from core.role import Role
 from core.type_fitness_test import TypeFitnessTest
-from services.be_mil_service import BEMILService
+from services.military_service import MilitaryService
 
-from services.mail_service import MailService
 from ui.controllers.session_controller import SessionsController
 
 
@@ -20,7 +19,7 @@ class SessionsPage:
     NO_SELECTION_MESSAGE = "No row selected"
 
     def __init__(self, ) -> None:
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
         self.refresh_tick = reactive.Value(0)
         self.controller = SessionsController()
 

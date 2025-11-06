@@ -2,11 +2,12 @@ from __future__ import annotations
 from typing import Optional, Dict, Any, Tuple
 import pandas as pd
 from core.Gender import Gender
-from military_api_rest.service_men_be import ServiceMen
+
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import FunctionalTest, TestSession
+from data.db.db_model import FunctionalTest, TestSession, ServiceMen
 from logic.Functional_calculator import FunctionalCalculator
-from services.be_mil_service import BEMILService
+from services.military_service import MilitaryService
+
 from services.service_test import ServiceTest
 
 
@@ -19,13 +20,13 @@ class FunctionalController:
     """
     def __init__(self, ) -> None:
         self._service = ServiceTest()
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
 
     # ----- Helpers -----
     @staticmethod
     def normalize_gender(g: Gender | str) -> Gender:
         if isinstance(g, str):
-            return Gender.MALE if g.lower().startswith("m") else Gender.FEMALE
+            return Gender.M if g.lower().startswith("m") else Gender.F
         return g
 
     @staticmethod
@@ -54,14 +55,14 @@ class FunctionalController:
         serial = (serialnr or "").strip()
         if not serial:
             return None
-        return await self.be_mil_service.get_be_mil_by_id(serial)
+        return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def list_functional_tests_df(self, session_id: int) -> pd.DataFrame:
         try:
             rows = await self._service.get_all_functional_test(int(session_id))
             data = []
             for r in rows:
-                sm = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
+                sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if not sm:
                     continue
                 gender = self.normalize_gender(sm.gender)

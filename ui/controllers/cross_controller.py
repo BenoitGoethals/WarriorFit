@@ -5,16 +5,17 @@ from typing import Optional, Dict, Any, Tuple, List
 
 import pandas as pd
 
+from services.military_service import MilitaryService
 from services.report_generator_pdf import ReportGeneratorPdf
 from services.service_cross import ServiceCross  # assumed service layer for Cross domain
-from services.be_mil_service import BEMILService
+
 from data.db.db_model import Runner, Cross  # Runner model given in prompt
 
 
 class CrossController:
     def __init__(self) -> None:
         self._service = ServiceCross()
-        self.be_mil_service = BEMILService()
+        self.be_mil_service = MilitaryService()
         self._pdf_gen = ReportGeneratorPdf()
 
     # ----- Helpers -----
@@ -84,7 +85,7 @@ class CrossController:
         # Optional lookup; runners store serial_number, so we may look up a soldier for UI convenience
         if not (serialnr or "").strip():
             return None
-        return await self.be_mil_service.get_be_mil_by_id(serialnr.strip())
+        return await self.be_mil_service.get_servicemen_by_serial(serialnr.strip())
 
     async def list_runners_df(self, cross_id: int) -> pd.DataFrame:
         try:
@@ -93,7 +94,7 @@ class CrossController:
                 return pd.DataFrame()
             data = []
             for r in cross:
-                runner = await self.be_mil_service.get_be_mil_by_id(r.serial_number)
+                runner = await self.be_mil_service.get_servicemen_by_serial(r.serial_number,lazy=False)
                 data.append({
                     "Order" : 0,
                     "ID": r.id,

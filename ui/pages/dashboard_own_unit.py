@@ -3,9 +3,6 @@ from datetime import datetime
 from shiny import ui, render, reactive
 import pandas as pd
 
-from services.be_mil_service import BEMILService
-from services.service_test import ServiceTest
-
 from ui.controllers.dashboard_own_unit_controller import DashboardOwnUnitController
 
 
