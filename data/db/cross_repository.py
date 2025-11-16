@@ -281,7 +281,6 @@ class CrossRepository(ABCRepository):
                         val = getattr(r, key, None)
                         if val is not None:
                             setattr(existing_runner, key, val)
-                    # refresh within the same session where the object is persistent
                     await session.flush()
                     await session.refresh(existing_runner)
             return existing_runner

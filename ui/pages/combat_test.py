@@ -34,15 +34,13 @@ class CombatPage:
 
                             ui.input_text("combat_serialnr", "Serial Number"),
                             ui.input_action_button("combat_search", "Conform Serial", width="150px"),
-                            ui.output_text("combat_miltary", ),
+                            ui.output_text("combat_military", ),
 
                             ui.layout_columns(
                                 ui.input_checkbox(
                                     "combat_obstacle",
                                     "Obstacle course",
-                                ),
-
-                               
+                                ),                               
                             ),
 
                             ui.layout_columns(
@@ -50,7 +48,6 @@ class CombatPage:
                                     "combat_robe",
                                     "Robe Cours",
                                 ),
-
                             ),
 
                             ui.layout_columns(
@@ -98,9 +95,7 @@ class CombatPage:
 
     def server(self, input, output, session):
         # Reactive state
-        records = reactive.Value([])
-        combat_score_obstacle_val = reactive.Value(False)
-        combat_score_robe_val = reactive.Value(False)
+        records = reactive.Value([])        
         combat_score_speedmars_val = reactive.Value("")
 
         # If you also want to prevent any code reacting to changes while locked:
@@ -117,7 +112,6 @@ class CombatPage:
         selected_session_id = reactive.Value("")
         selected_combat_id = reactive.Value("")
 
-        # Use controller helpers
         def _parse_time_to_seconds(val: str):
             return self.controller.parse_time_to_seconds(val)
 
@@ -190,7 +184,7 @@ class CombatPage:
 
         @output
         @render.text
-        def combat_miltary():
+        def combat_military():
             return military.get()
 
         @output
@@ -238,8 +232,7 @@ class CombatPage:
                 return pd.DataFrame()
             try:
                 return await self.controller.list_combat_tests_df(int(session_id))
-            except Exception as e:
-                print(f"Error fetching Combat data: {e}")
+            except Exception:
                 return pd.DataFrame()
 
         @output
@@ -369,7 +362,7 @@ class CombatPage:
         def _on_clear():
             _clear_form()
             status.set("Form cleared.")
-# Public API: keep same signatures
+
 _page = CombatPage()
 
 

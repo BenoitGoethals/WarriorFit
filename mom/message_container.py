@@ -81,7 +81,7 @@ class MessageContainer:
             conn = sqlite3.connect(self._db_path)
             conn.close()
 
-        if not self._checktable(self._db_path):
+        if not self._check_table(self._db_path):
             with self._conn() as conn:         
                 conn.execute(
                     """
@@ -94,7 +94,7 @@ class MessageContainer:
                 )
                 conn.commit()
 
-    def _checktable(self,db_path, table_name="messages"):    
+    def _check_table(self,db_path, table_name="messages"):
         con=None
         try:
             # Connect to the database
