@@ -1,20 +1,18 @@
 from __future__ import annotations
+
+import logging
 from typing import Tuple, Dict, Any, Optional
-
 import pandas as pd
-
 from core.type_fitness_test import TypeFitnessTest
-
 from data.db.db_model import CombatTestParatrooper, TestSession, ServiceMen
-
 from services.military_service import MilitaryService
 from services.service_test import ServiceTest
-
 
 class CombatController:
     def __init__(self) -> None:
         self._service = ServiceTest()
         self.be_mil_service =MilitaryService()
+        self._logger=logging.getLogger(__name__)
 
     # ----- Helpers -----
     @staticmethod
@@ -45,8 +43,7 @@ class CombatController:
         return f"{int(m)}:{int(s):02d}"
 
     @staticmethod
-    def overall_passed(obstacle_passed: bool, rope_passed: bool, running_time_s: int) -> bool:
-        # Business rule: <= 7200s (placeholder threshold)
+    def overall_passed(obstacle_passed: bool, rope_passed: bool, running_time_s: int) -> bool:       
         return obstacle_passed and rope_passed and running_time_s <= 7200
 
     @staticmethod
@@ -62,12 +59,12 @@ class CombatController:
             "combat_robe": bool(data.get("combat_robe")),
         }
 
-    # ----- Queries -----
+   
     async def load_sessions(self):
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT, True)
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT)
 
-    async def search_military(self, serialnr: str) -> Optional[ServiceMen]:
-        serial = (serialnr or "").strip()
+    async def search_military(self, serial_nr: str) -> Optional[ServiceMen]:
+        serial = (serial_nr or "").strip()
         if not serial:
             return None
         return await self.be_mil_service.get_servicemen_by_serial(serial)
@@ -91,8 +88,15 @@ class CombatController:
                     "Totale Score": "Passed" if total else "Failed",
                 })
             return pd.DataFrame(data)
-        except Exception as e:
+        except (ValueError, TypeError) as e:
+            self._logger.error(f"Error in list_combat_tests_df: {e}")
             return pd.DataFrame()
+        except AttributeError as e:
+            self._logger.error(f"Error in list_combat_tests_df: {e}")
+            return pd.DataFrame()
+        except Exception as e:
+           self._logger.error(f"Error in list_combat_tests_df: {e}")
+           return pd.DataFrame()
 
     @staticmethod
     def decorate_grid(df: pd.DataFrame) -> pd.DataFrame:
@@ -128,8 +132,6 @@ class CombatController:
     async def delete_combat(self, session_id: int, combat_id: int) -> bool:
         return await self._service.delete_fitness_test_from_test_session(int(session_id), int(combat_id))
 
-    # ----- Presentation bits -----
-
-
+  
     async def get_test_session_by_id(self, param):
         return await self._service.get_test_session_by_id(param)

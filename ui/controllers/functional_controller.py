@@ -46,7 +46,7 @@ class FunctionalController:
 
     # ----- Queries (only here) -----
     async def load_sessions(self):
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.FUNCTIONAL, True)
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.FUNCTIONAL)
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))

@@ -2,22 +2,24 @@ import csv
 import logging
 import os
 from datetime import datetime
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Generator
 from data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, TestSession
 from logic.phef_calculator import PhefCalculator
 from config.appliccation_config import ApplicationConfig
 from core.type_fitness_test import TypeFitnessTest
+from services.generator import GeneratorReport, _output_dir
 from services.military_service import MilitaryService
 
 from services.report_type import ReportType
 from services.service_test import ServiceTest
 
 
-class ReportGeneratorCsv:
+
+
+class ReportGeneratorCsv(GeneratorReport):
     def __init__(self):
-        self.be_mil_service = MilitaryService()
-        self._service= ServiceTest()
-        self.__logger = logging.getLogger(__name__)
+        super().__init__()
+
 
     async def generate_report(self, report_name: str, report_type: ReportType,own_unit:bool,this_year:bool):
         if report_type is ReportType.PHEF:
@@ -30,14 +32,6 @@ class ReportGeneratorCsv:
             return await self.generate_swimming_report(report_name,own_unit,this_year)
         else:
             raise ValueError("Invalid report type")
-
-    def _output_dir(self) -> str:
-        try:
-            # Prefer a dedicated CSV output path if present, else reuse pdf_output_path, else CWD
-            cfg = ApplicationConfig()
-            return getattr(cfg, "csv_output_path", None) or getattr(cfg, "pdf_output_path", None) or os.getcwd()
-        except Exception:
-            return os.getcwd()
 
     @staticmethod
     def _fmt_time(sec: int | float | None) -> str:
@@ -59,7 +53,7 @@ class ReportGeneratorCsv:
             return None
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{report_name}_{file_suffix}_{timestamp}.csv"
-        out_dir = self._output_dir()
+        out_dir = _output_dir()
         os.makedirs(out_dir, exist_ok=True)
         output_path = os.path.join(out_dir, file_name)
 
@@ -73,55 +67,8 @@ class ReportGeneratorCsv:
 
     async def generate_phef_report(self, report_name: str,own_unit:bool,this_year:bool):
         try:
-            failed: List[dict] = []
-            passed: List[dict] = []
 
-            sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-                TypeFitnessTest.PHEF, this_year=this_year
-            )
-            if own_unit:
-                mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
-            for sess in sessions or []:
-                phef_tests: List[PhefTest] = await self._service.get_all_phef(sess.id)
-                for test in phef_tests or []:
-                    if own_unit:
-                        if not test.serial_number in [s.service_number for s in mils]:
-                            continue
-                    sm = await self.be_mil_service.get_servicemen_by_serial(test.serial_number, lazy=False)
-                    self.__logger.info(
-                        f"PHEF test: {test.serial_number} - {sm.first_name} {sm.last_name} - {sm.age_from_birthdate()} years old"
-                    )
-                    score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, sm.age_from_birthdate(), sm.gender)
-                    score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, sm.age_from_birthdate(), sm.gender)
-                    score_run =  PhefCalculator.running_result(test.running_time, sm.age_from_birthdate(),
-                                                                        sm.gender)
-                    total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
-                    row = {
-                        "session_id": sess.id,
-                        "session_date": getattr(sess, "datetime_start", None),
-                        "serial": getattr(test, "serial_number", ""),
-                        "run_score": score_run,
-                        "side_r_score": score_r,
-                        "side_l_score": score_l,
-                        "total": total,
-                        "run_time_s": getattr(test, "running_time", None),
-                        "side_r_s": getattr(test, "sideBridge_r", None),
-                        "side_l_s": getattr(test, "sideBridge_l", None),
-                    }
-                    (passed if total >= 50 else failed).append(row)
-
-            headers = [
-                "Session ID",
-                "Date",
-                "Serial",
-                "Run (pts)",
-                "Side R (pts)",
-                "Side L (pts)",
-                "Total /100",
-                "Run Time",
-                "Side R",
-                "Side L",
-            ]
+            headers,passed,failed = await self.calculate_score(own_unit, this_year)
 
             def row_builder(r: dict) -> List[Any]:
                 return [
@@ -144,37 +91,10 @@ class ReportGeneratorCsv:
             self.__logger.error(f"Error generating PHEF report: {e}")
             return None
 
+
+
     async def generate_functional_report(self, report_name: str,own_unit:bool,this_year:bool):
-        failed: List[dict] = []
-        passed: List[dict] = []
-
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.PHEF, this_year=this_year
-        )
-        if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
-        for sess in sessions or []:
-            tests: List[FunctionalTest] = await self._service.get_all_functional_test(sess.id)
-            for t in tests or []:
-                if own_unit:
-                    if not t.serial_number in [s.service_number for s in mils]:
-                        continue
-                pu = getattr(t, "push_ups", 0) or 0
-                su = getattr(t, "sit_ups", 0) or 0
-                plu = getattr(t, "pull_ups", 0) or 0
-                total = int(pu) + int(su) + int(plu)
-                row = {
-                    "session_id": sess.id,
-                    "session_date": getattr(sess, "datetime_start", None),
-                    "serial": getattr(t, "serial_number", ""),
-                    "push_ups": pu,
-                    "sit_ups": su,
-                    "pull_ups": plu,
-                    "total": total,
-                }
-                (passed if total >= 50 else failed).append(row)
-
-        headers = ["Session ID", "Date", "Serial", "Push-ups", "Sit-ups", "Pull-ups", "Total"]
+        failed, headers, passed = await self.calculate_functional_score(own_unit, this_year)
 
         def row_builder(r: dict) -> List[Any]:
             return [
@@ -191,37 +111,10 @@ class ReportGeneratorCsv:
         passed_path = self._build_csv(passed, report_name, "functional_passed", headers, row_builder)
         return {"failed": failed_path, "passed": passed_path}
 
+
+
     async def generate_combat_report(self, report_name: str,own_unit:bool,this_year:bool):
-        failed: List[dict] = []
-        passed: List[dict] = []
-
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.COMBAT, this_year=this_year
-        )
-        if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
-        for sess in sessions or []:
-            tests: List[CombatTestParatrooper] = await self._service.get_all_combat_test(sess.id)
-            for t in tests or []:
-                if own_unit:
-                    if not t.serial_number in [s.service_number for s in mils]:
-                        continue
-                rope = bool(getattr(t, "rope_passed", False))
-                obstacle = bool(getattr(t, "obstacle_passed", False))
-                run_s = int(getattr(t, "running_time", 0) or 0)
-                is_pass = rope and obstacle and run_s <= 7200
-                row = {
-                    "session_id": sess.id,
-                    "session_date": getattr(sess, "datetime_start", None),
-                    "serial": getattr(t, "serial_number", ""),
-                    "rope": rope,
-                    "obstacle": obstacle,
-                    "run_time_s": run_s,
-                    "result": "Passed" if is_pass else "Failed",
-                }
-                (passed if is_pass else failed).append(row)
-
-        headers = ["Session ID", "Date", "Serial", "Rope", "Obstacle", "Speedmars Time", "Result"]
+        failed, headers, passed = await self.calculate_combat_score(own_unit, this_year)
 
         def row_builder(r: dict) -> List[Any]:
             return [
@@ -238,30 +131,9 @@ class ReportGeneratorCsv:
         passed_path = self._build_csv(passed, report_name, "combat_passed", headers, row_builder)
         return {"failed": failed_path, "passed": passed_path}
 
-    async def generate_swimming_report(self, report_name: str,own_unit:bool,this_year:bool):
-        failed: List[dict] = []
-        passed: List[dict] = []
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.SWIMMING, this_year=this_year
-        )
-        if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
-        for sess in sessions or []:
-            tests: List[CombatSwimmingTest] = await self._service.get_all_combat_swimming_test(sess.id)
-            for t in tests or []:
-                if own_unit:
-                    if not t.serial_number in [s.service_number for s in mils]:
-                        continue
-                ok = bool(getattr(t, "swim_paased", False))
-                row = {
-                    "session_id": sess.id,
-                    "session_date": getattr(sess, "datetime_start", None),
-                    "serial": getattr(t, "serial_number", ""),
-                    "result": "Passed" if ok else "Failed",
-                }
-                (passed if ok else failed).append(row)
 
-        headers = ["Session ID", "Date", "Serial", "Result"]
+    async def generate_swimming_report(self, report_name: str,own_unit:bool,this_year:bool):
+        failed, headers, passed = await self.calculate_swim_score(own_unit, this_year)
 
         def row_builder(r: dict) -> List[Any]:
             return [
@@ -274,6 +146,9 @@ class ReportGeneratorCsv:
         failed_path = self._build_csv(failed, report_name, "swimming_failed", headers, row_builder)
         passed_path = self._build_csv(passed, report_name, "swimming_passed", headers, row_builder)
         return {"failed": failed_path, "passed": passed_path}
+
+
+
 
 if __name__ == "__main__":
     import asyncio

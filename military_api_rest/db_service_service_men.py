@@ -36,6 +36,7 @@ if not logger.handlers:
 
 
 class DbServiceServiceMen(metaclass=Singleton):
+    """#Deprecated Service class for managing DB operations."""
 
     def __init__(self, db_file: str = "military_be.db"):
         self.db_file = db_file
@@ -68,7 +69,7 @@ class DbServiceServiceMen(metaclass=Singleton):
             service_mens = []
             for row in rows:
                 sm = ServiceMenBE(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
-                                gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
+                                gender=Gender.M if row[6] == 'M' else Gender.F,
                                 unit=UnitBE(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
                                 para=row[8], ops_test=row[9],mail=row[3])
                 service_mens.append(sm)
@@ -105,7 +106,7 @@ class DbServiceServiceMen(metaclass=Singleton):
             service_mens = []
             for row in rows:
                 sm = ServiceMenBE(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
-                                gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
+                                gender=Gender.M if row[6] == 'M' else Gender.F,
                                 unit=UnitBE(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
                                 para=row[8], ops_test=row[9], mail=row[3])
                 service_mens.append(sm)
@@ -165,7 +166,7 @@ class DbServiceServiceMen(metaclass=Singleton):
             service_mens = []
             for row in rows:
                 sm = ServiceMenBE(id=row[0], service_number=row[5], last_name=row[2], first_name=row[1], birthdate=row[6],
-                                gender=Gender.MALE if row[6] == 'M' else Gender.FEMALE,
+                                gender=Gender.M if row[6] == 'M' else Gender.F,
                                 unit=UnitBE(id=row[10], name=row[11], base_location=row[12]), rank=row[4],
                                 para=row[8], ops_test=row[9], mail=row[3])
                 service_mens.append(sm)
@@ -178,6 +179,8 @@ class DbServiceServiceMen(metaclass=Singleton):
             return []
 
 
+
+#Deprecated
 if __name__ == "__main__":
     async def _main():
         db = DbServiceServiceMen()

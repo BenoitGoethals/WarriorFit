@@ -1,12 +1,7 @@
-# Python
 from typing import Optional
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware  # NEW
-
-# Do not import ORM classes into API schemas
-# from data.db.db_model import PhefTest
 from mom.message import Message
 
 
@@ -76,14 +71,9 @@ app.add_middleware(
 )
 def receive_message(payload: MessageIn):
     try:
-        # Validate business requirement
         if payload.content.serial_number is None:
             raise HTTPException(status_code=400, detail="Serial number is required")
-
-        # Wrap into internal Message object with DTO, or convert to dict if needed
         msg = Message(content=payload.content)  # Message should accept DTO or dict
-
-        # Example processing/logging
         print(f"Received message: {msg.content.model_dump()}")
 
         return AckResponse(success=True, ack="Message enqueued")

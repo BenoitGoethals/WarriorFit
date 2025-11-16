@@ -1,11 +1,9 @@
 import pandas as pd
-
 from config.appliccation_config import ApplicationConfig
 from core.type_fitness_test import TypeFitnessTest
 from data.db.db_model import PhefTest
 from logic.phef_calculator import PhefCalculator
 from logic.singleton import Singleton
-
 from services.military_service import MilitaryService
 from services.service_test import ServiceTest
 
@@ -22,13 +20,13 @@ class DataCollector(metaclass=Singleton):
         rows: list[dict] = []
 
         # PHEF
-        phef_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.PHEF, True)
+        phef_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.PHEF)
         for sess in phef_sessions or []:
             phef_tests = await self._service.get_all_phef(sess.id)
             for t in phef_tests or []:
                 if getattr(t, "serial_number", "") != serial:
                     continue
-                # compute detailed scores
+
                 mil = await self.be_mil.get_servicemen_by_serial(serial)
                 if not mil:
                     continue
@@ -49,7 +47,7 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Functional
-        func_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.FUNCTIONAL, True)
+        func_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.FUNCTIONAL)
         for sess in func_sessions or []:
             func_tests = await self._service.get_all_functional_test(sess.id)
             for t in func_tests or []:
@@ -71,7 +69,7 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Combat
-        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT, True)
+        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT)
         for sess in combat_sessions or []:
             tests = await self._service.get_all_combat_test(sess.id)
             for t in tests or []:
@@ -93,7 +91,7 @@ class DataCollector(metaclass=Singleton):
                 })
 
         # Swimming
-        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.SWIMMING, True)
+        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.SWIMMING)
         for sess in swim_sessions or []:
             tests = await self._service.get_all_combat_swimming_test(sess.id)
             for t in tests or []:
