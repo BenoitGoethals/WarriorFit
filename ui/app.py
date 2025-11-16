@@ -120,10 +120,29 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.open_calendar_modal_global)
         def _open_calendar_modal():
+            # Force calendar to re-run before showing the modal
+            calendar_events.refresh()
+
             ui.modal_show(
                 ui.modal(
                     calendar_events.get_ui(),
                     title="Calendar",
+                    easy_close=True,
+                    size="xl",
+                    footer=ui.input_action_button("close_calendar_modal_global", "Close"),
+                )
+            )
+
+        @reactive.Effect
+        @reactive.event(input.open_personal_calendar_modal_global)
+        def _open_personal_calendar_modal():
+            # Force personal calendar to re-run before showing the modal
+            calendar_events.refresh()
+
+            ui.modal_show(
+                ui.modal(
+                    calendar_events.get_ui(all_test=False),
+                    title="Personal Calendar",
                     easy_close=True,
                     size="xl",
                     footer=ui.input_action_button("close_calendar_modal_global", "Close"),
@@ -223,6 +242,8 @@ class FitnessWarriorApp:
                     ui.div(ui.output_text("login_user"), style="display: flex; align-items: center; height: 100%;")
                 )
             )
+            nav_items.append(ui.nav_control(
+            ui.input_action_button("open_personal_calendar_modal_global", "Personal Calendar", class_="btn btn-primary")))
             nav_items.append(ui.nav_control(ui.input_action_button("open_calendar_modal_global", "Open Calendar", class_="btn btn-primary")))
             nav_items.append(ui.nav_control(ui.input_action_button("logout_btn", "Logout")))
             nav_items = [i for i in nav_items if i is not None]
