@@ -39,6 +39,10 @@ class ServiceTest(Service):
     async def get_all_test_sessions(self):
         return await self._test_repo.get_all_test_sessions()
 
+
+    async def get_all_test_sessions_for_pti(self,serial_number_pti:str):
+        return await self._test_repo.get_all_test_sessions_for_a_pti(serial_number_pti)
+
     async def add_fitness_test_to_testSession(self, param, test:FitnessTest,military:ServiceMen=None,session:TestSession=None):
         add_test= await self._test_repo.add_fitness_test_to_TestSession(param, test)
         body=""
@@ -293,3 +297,4 @@ class ServiceTest(Service):
 
     async def get_all_combat_test_swim(self, service_number):
         return await self._test_repo.get_all_swim_from_mil(service_number, current_year=True, )
+
