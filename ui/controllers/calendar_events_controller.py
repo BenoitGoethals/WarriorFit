@@ -11,7 +11,7 @@ class CalendarEventsController:
         self._service_test = ServiceTest()
         self._service_cross = ServiceCross()
     
-    async def events(self)-> list:
+    async def events(self,serial_number_pti:str=None)-> list:
         """
         Asynchronously retrieves and processes event data for fitness tests and cross-training sessions.
         This method categorizes sessions by type, calculates their duration, and formats the event
@@ -23,7 +23,10 @@ class CalendarEventsController:
         :rtype: list
         """
         events_to_post=[]
-        sessions=await self._service_test.get_all_test_sessions()
+        if serial_number_pti:
+            sessions=await self._service_test.get_all_test_sessions_for_pti(serial_number_pti)
+        else:
+            sessions=await self._service_test.get_all_test_sessions()
         for session in sessions:
             session_date=session.datetime_start
             if session.type_test == TypeFitnessTest.PHEF or session.type_test == TypeFitnessTest.FUNCTIONAL:

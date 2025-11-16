@@ -153,6 +153,25 @@ class FitnessTestRepository(ABCRepository):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
+
+    async def get_all_test_sessions_for_a_pti(self,serial_number_pti, this_year: bool = True) -> List[TestSession]:
+        """
+        Fetches all test sessions from the database for a particular PTI..
+
+        :return: A list of test session objects.
+        :rtype: List[Any]
+        """
+        if this_year:
+            end, start = await self.running_year()
+            query = (select(TestSession)
+                     .where(TestSession.serial_number_pti == serial_number_pti)
+                     .where(TestSession.datetime_start.between(start, end))
+                     .where(TestSession.datetime_start.between(start, end)))
+        else:
+            query = select(TestSession)
+        results = await self.fetch_and_log(query, "test sessions")
+        return results if results else []
+
     async def get_all_test_sessions_type_fitness_test(self, typetest: TypeFitnessTest, this_year: bool = True) -> List[
         TestSession]:
         """

@@ -4,24 +4,33 @@ from typing import Any, Optional
 from shiny import ui, reactive
 from shiny_calendar import render_shiny_calendar, shiny_calendar, shiny_calendar_call_js_func
 
+from config.appliccation_config import ApplicationConfig
 from ui.controllers.calendar_events_controller import CalendarEventsController
+from ui.user_store import UserStore
 
 
 class CalendarPage:
     TITLE = "Calendar"
+    TITLE_PERSONAL = "Personal Calendar"
 
     def __init__(self) -> None:
-        self._controller =CalendarEventsController()
+        self._controller = CalendarEventsController()
+ 
+        self._all = True
+        # Reactive counter to force calendar refresh when needed
+        self._refresh_counter = reactive.Value(0)
 
-    def get_ui(self):
+    def get_ui(self, all: bool):
         # Plain page content, not a nav panel/tab item
+        self._all = all
         return ui.page_fluid(
             ui.h2(CalendarPage.TITLE),
             ui.page_fillable(
                 ui.layout_columns(
                     ui.card(
-                        ui.card_header(CalendarPage.TITLE),
-
+                        ui.card_header(CalendarPage.TITLE)
+                        if all is True
+                        else ui.card_header(CalendarPage.TITLE_PERSONAL),
                         shiny_calendar("my_calendar"),
                     ),
                     col_widths=(12,),
@@ -33,6 +42,9 @@ class CalendarPage:
     def server(self, input: Any, output: Any, session: Any) -> None:
         @render_shiny_calendar
         async def my_calendar():
+            # Depend on the refresh counter so this is re-run when it changes
+            _ = self._refresh_counter()
+
             # IMPORTANT: Always return a list, not a dict
             return [
                 {
@@ -40,11 +52,23 @@ class CalendarPage:
                     "initialDate": datetime.datetime.now().strftime("%Y-%m-%d"),
                     "locale": "en-gb",  # 24h
                     "timeZone": "local",
-                    "slotLabelFormat": {"hour": "2-digit", "minute": "2-digit", "hour12": False},
-                    "eventTimeFormat": {"hour": "2-digit", "minute": "2-digit", "hour12": False},
+                    "slotLabelFormat": {
+                        "hour": "2-digit",
+                        "minute": "2-digit",
+                        "hour12": False,
+                    },
+                    "eventTimeFormat": {
+                        "hour": "2-digit",
+                        "minute": "2-digit",
+                        "hour12": False,
+                    },
                     "editable": False,
                     "selectable": True,
-                    "events": await self._controller.events()
+                    "events": await self._controller.events(
+                        str(UserStore.get_user().serial_number)
+                    )
+                    if not self._all
+                    else await self._controller.events(),
                 }
             ]
 
@@ -93,11 +117,18 @@ def _get_page() -> CalendarPage:
     return _page_instance
 
 
-def get_ui():
-    # Return plain UI so the caller can place it outside any navset
-    return _get_page().get_ui()
+def get_ui(all_test:bool=True):
+       return _get_page().get_ui(all_test)
 
 
 def server(input, output, session):
     # Properly call the bound instance method
     _get_page().server(input, output, session)
+
+
+def refresh():
+    """
+    Force the calendar to re-evaluate (e.g. when opening the modal/page).
+    """
+    page = _get_page()
+    page._refresh_counter.set(page._refresh_counter() + 1)
