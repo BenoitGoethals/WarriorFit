@@ -1,6 +1,7 @@
 import logging
+from typing import Any, Coroutine
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError
 
 from data.db.abc_repository import ABCRepository
@@ -16,7 +17,7 @@ class MarsRepository(ABCRepository):
     async def get_mars_by_id(self, id_mars: int) -> Mars | None:
         query = select(Mars).where(Mars.id == id_mars)
         results = await self.fetch_and_log(query, "mars_by_id")
-        return results 
+        return results
 
     async def get_all_mars(self) -> list[Mars]:
         query = select(Mars)
@@ -42,24 +43,30 @@ class MarsRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    mars = await session.add(mars)
+                    session.add(mars)
+                    await session.flush()
                     await session.refresh(mars)
                     return mars
         except SQLAlchemyError as e:
-            self.__logger.exception("Failed to create mars")
+            self.__logger.exception(e)
             if session is not None:
                 try:
                     await session.rollback()
+                    return None
                 except Exception as e:
                     self.__logger.exception(e)
+                    return None
 
     async def delete_mars(self, ind_mars):
         session = None
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    await session.delete(ind_mars)
-                    await session.commit()
+                    query = delete(Mars).where(Mars.id == ind_mars)
+                    result = await session.execute(query)
+                    if result.rowcount == 0:
+                        self.__logger.error(f"No mars found with ID {ind_mars}.")
+                        return False
                     return True
         except SQLAlchemyError as e:
             self.__logger.exception("Failed to delete mars")
@@ -71,19 +78,31 @@ class MarsRepository(ABCRepository):
                     self.__logger.exception(e)
                     return False
 
-    async def update_mars(self, id_mars):
+    async def update_mars(self, mars: Mars) -> Mars | None:
         session = None
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    await session.commit()
-                    return True
+                    # First check if the record exists
+                    existing_mars = await session.get(Mars, mars.id)
+                    if not existing_mars:
+                        self.__logger.error(f"No mars found with ID {mars.id}")
+                        return None
+
+                    # Update the existing record
+                    for key, value in mars.__dict__.items():
+                        if not key.startswith('_'):
+                            setattr(existing_mars, key, value)
+
+                    await session.flush()
+                    await session.refresh(existing_mars)
+                    return existing_mars
+
         except SQLAlchemyError as e:
-            self.__logger.exception("Failed to update mars")
+            self.__logger.exception(f"Failed to update mars with ID {mars.id}: {str(e)}")
             if session is not None:
                 try:
                     await session.rollback()
-                    return False
-                except Exception as e:
-                    self.__logger.exception(e)
-                    return False
+                except Exception as rollback_error:
+                    self.__logger.exception(f"Rollback failed: {str(rollback_error)}")
+            return None

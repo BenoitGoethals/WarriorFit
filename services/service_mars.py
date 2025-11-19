@@ -11,16 +11,16 @@ class ServiceMars(Service):
 
 
     async def get_all_mars(self):
-        return self.__repo.get_all_mars()
+        return await self.__repo.get_all_mars()
 
     async def get_mars_by_id(self, ind_id):
-        return self.__repo.get_mars_by_id(ind_id)
+        return await self.__repo.get_mars_by_id(ind_id)
 
     async def add_mars(self, mars):
-        ...
+        return await self.__repo.add_mars(mars)
 
     async def delete_mars(self, ind_mars):
-        ...
+        return await self.__repo.delete_mars(ind_mars)
 
-    async def update_mars(self,id_mars):
-        ...
+    async def update_mars(self,mars):
+        return await self.__repo.update_mars(mars)
