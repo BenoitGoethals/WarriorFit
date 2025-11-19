@@ -5,11 +5,12 @@ import pandas as pd
 
 from config.appliccation_config import ApplicationConfig
 
-from data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen
+from data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, Mars
 from logic.phef_calculator import PhefCalculator
 from services.data_collector import DataCollector
 
 from services.military_service import MilitaryService
+from services.service_mars import ServiceMars
 from services.service_test import ServiceTest
 
 
@@ -26,6 +27,7 @@ class OwnUnitController:
         self.unit_name: str = ApplicationConfig().own_unit
         self._data_collector = DataCollector()
         self._service = ServiceTest()
+        self._service_mars = ServiceMars()
 
     async def fetch_servicemen_df(self) -> pd.DataFrame:
         data = await self._mil_service.get_all_be_mil_from_unit(self.unit_name)
@@ -36,14 +38,15 @@ class OwnUnitController:
                 "Rank": sm.rank,
                 "Last name": sm.last_name,
                 "First name": sm.first_name,
-                "Unit": (getattr(sm.unit, "name", sm.unit) or ""),
+                #"Unit": (getattr(sm.unit, "name", sm.unit) or ""),
                 "Gender": getattr(sm.gender, "value", sm.gender) or "",
                 "Birthdate": (sm.birthdate or ""),
                 "Para": bool(sm.para),
                 "Ops Test": bool(sm.ops_test),
                 "Phef status": "🟢 Passed" if await self._is_passed_phef(sm) else "🔴 Failed",
                 "Combat status": "🟢 Passed" if await self._is_passed_combat(sm) else "🔴 Failed",
-                "Swim status": "🟢 Passed" if await self._is_passed_swim(sm) else "🔴 Failed"
+                "Swim status": "🟢 Passed" if await self._is_passed_swim(sm) else "🔴 Failed",
+                "Mars status": "🟢 Passed" if await self._is_passed_mars(sm) else "🔴 Failed"
             }
             for sm in service_men_list
         ]
@@ -64,6 +67,10 @@ class OwnUnitController:
     async def _is_passed_swim(self,service_men:ServiceMen):
         mils: list[CombatSwimmingTest] = await self._service.get_all_combat_test_swim(service_men.service_number)
         return len([x for x in mils if  x.swim_paased]) > 0
+
+    async def _is_passed_mars(self, sm:ServiceMen):
+        mars:List[Mars] = await self._service_mars.get_mars_from_service_men(sm.service_number)
+        return len([x for x in mars if x.succeeded]) > 0
 
 
 
@@ -91,3 +98,4 @@ class OwnUnitController:
         })
         out = out[["Test Type", "Session", "Status"]].fillna("")
         return out
+

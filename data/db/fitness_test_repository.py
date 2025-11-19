@@ -189,11 +189,7 @@ class FitnessTestRepository(ABCRepository):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def running_year(self) -> tuple[datetime, datetime]:
-        now_year = datetime.now().year
-        start = datetime(now_year, 1, 1)
-        end = datetime(now_year, 12, 31, 23, 59, 59)
-        return end, start
+
 
     async def get_all_test_sessions_type_fitnessTest_full(self, typetest: TypeFitnessTest, this_year: bool = True) -> \
     List[TestSession]:
