@@ -28,19 +28,14 @@ class Service(ABC):
             bind=async_engine, expire_on_commit=False, class_=AsyncSession
         )
 
-
-    async def add_audit_log(self,details,action):
+    async def add_audit_log(self, details, action):
         user_id = getattr(UserStore.get_user(), "id", None)
-        return await self._user_repo.create_audit_log(user_id=user_id,details=details,ip_address=Os.what_is_my_ip(),action=action)
+        return await self._user_repo.create_audit_log(
+            user_id=user_id,
+            details=details,
+            ip_address=Os.what_is_my_ip(),
+            action=action,
+        )
 
     async def get_audit_logs(self):
         return await self._user_repo.get_audit_logs()
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,7 @@
 import enum
 from typing import Optional
 
+
 class ReportType(enum.Enum):
     PHEF = 1
     FUNCTIONAL = 2

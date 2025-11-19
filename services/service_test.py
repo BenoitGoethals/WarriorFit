@@ -1,6 +1,13 @@
 from core.Gender import Gender
-from data.db.db_model import TestSession, FitnessTest, PhefTest, CombatSwimmingTest, FunctionalTest, \
-    CombatTestParatrooper, ServiceMen
+from data.db.db_model import (
+    TestSession,
+    FitnessTest,
+    PhefTest,
+    CombatSwimmingTest,
+    FunctionalTest,
+    CombatTestParatrooper,
+    ServiceMen,
+)
 from data.db.fitness_test_repository import FitnessTestRepository
 from logic.Functional_calculator import FunctionalCalculator
 from logic.phef_calculator import PhefCalculator
@@ -13,9 +20,8 @@ from ui.pages.notify_mail import NotifyMail
 class ServiceTest(Service):
     def __init__(self):
         super().__init__()
-        self._test_repo=FitnessTestRepository()
-        self._broker=Broker()
-
+        self._test_repo = FitnessTestRepository()
+        self._broker = Broker()
 
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)
@@ -24,28 +30,39 @@ class ServiceTest(Service):
         return await self._test_repo.get_all_functional_test(id)
 
     async def get_all_phef(self, id):
-        return await self._test_repo.get_all_phef(id,)
+        return await self._test_repo.get_all_phef(
+            id,
+        )
 
-    async def get_all_phef_mil(self, serial)->list[PhefTest]:
-        return await self._test_repo.get_all_phef_from_mil(serial, current_year=True,)
-
+    async def get_all_phef_mil(self, serial) -> list[PhefTest]:
+        return await self._test_repo.get_all_phef_from_mil(
+            serial,
+            current_year=True,
+        )
 
     async def get_all_combat_swimming_test(self, id):
         return await self._test_repo.get_all_combat_swimming_test(id)
 
-    async def get_all_test_sessions_type_fitness_test(self, type_test,this_year=True):
-        return await self._test_repo.get_all_test_sessions_type_fitness_test(type_test, True)
+    async def get_all_test_sessions_type_fitness_test(self, type_test, this_year=True):
+        return await self._test_repo.get_all_test_sessions_type_fitness_test(
+            type_test, True
+        )
 
     async def get_all_test_sessions(self):
         return await self._test_repo.get_all_test_sessions()
 
-
-    async def get_all_test_sessions_for_pti(self,serial_number_pti:str):
+    async def get_all_test_sessions_for_pti(self, serial_number_pti: str):
         return await self._test_repo.get_all_test_sessions_for_a_pti(serial_number_pti)
 
-    async def add_fitness_test_to_testSession(self, param, test:FitnessTest,military:ServiceMen=None,session:TestSession=None):
-        add_test= await self._test_repo.add_fitness_test_to_TestSession(param, test)
-        body=""
+    async def add_fitness_test_to_testSession(
+        self,
+        param,
+        test: FitnessTest,
+        military: ServiceMen = None,
+        session: TestSession = None,
+    ):
+        add_test = await self._test_repo.add_fitness_test_to_TestSession(param, test)
+        body = ""
         if add_test:
             match test.type:
                 case "phef_test":
@@ -57,50 +74,68 @@ class ServiceTest(Service):
                 case "combat_test":
                     body = self.build_email_body_combat(test)
             if body:
-                await NotifyMail().send_mail(body=body, subject="Result Test", to=military.mail)
-            await self.add_audit_log(details=f"Fitness test {test.serial_number} {test.type} added to test session {param}",action="add")
+                await NotifyMail().send_mail(
+                    body=body, subject="Result Test", to=military.mail
+                )
+            await self.add_audit_log(
+                details=f"Fitness test {test.serial_number} {test.type} added to test session {param}",
+                action="add",
+            )
             if not self._broker.is_running:
                 self._broker.start()
             self._broker.send_message(message=Message(content=test))
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
-        deleted= await self._test_repo.delete_fitness_test_from_test_session(param, param1)
+        deleted = await self._test_repo.delete_fitness_test_from_test_session(
+            param, param1
+        )
         if deleted:
-            await self.add_audit_log(details=f"Fitness test {param1} deleted from test session {param}",action="delete")
+            await self.add_audit_log(
+                details=f"Fitness test {param1} deleted from test session {param}",
+                action="delete",
+            )
         return deleted
 
     async def update_fitness_test(self, param, cp):
-        updated= await self._test_repo.update_fitness_test(param, cp)
+        updated = await self._test_repo.update_fitness_test(param, cp)
         if updated:
-            await self.add_audit_log(details=f"Fitness test {cp.serial_number}  {cp.type} updated in test session {param}",action="update")
+            await self.add_audit_log(
+                details=f"Fitness test {cp.serial_number}  {cp.type} updated in test session {param}",
+                action="update",
+            )
         return updated
 
     async def get_test_session_by_id(self, param):
         return await self._test_repo.get_test_session_by_id(param)
 
     async def add_test_session(self, ts):
-        added_test:TestSession= await self._test_repo.add_test_session(ts)
+        added_test: TestSession = await self._test_repo.add_test_session(ts)
         if added_test:
-            await self.add_audit_log(details=f"Test session {ts.id} {added_test.type_test.name} added",action="add")
+            await self.add_audit_log(
+                details=f"Test session {ts.id} {added_test.type_test.name} added",
+                action="add",
+            )
         return added_test
 
     async def update_test_session(self, data):
-        updated= await self._test_repo.update_test_session(data)
+        updated = await self._test_repo.update_test_session(data)
         if updated:
-            await self.add_audit_log(details=f"Test session {data.id}  {updated}updated",action="update")
+            await self.add_audit_log(
+                details=f"Test session {data.id}  {updated}updated", action="update"
+            )
         return updated
 
     async def delete_test_session(self, sel_id):
-        deleted=  await self._test_repo.delete_test_session(sel_id)
+        deleted = await self._test_repo.delete_test_session(sel_id)
         if deleted:
-            await self.add_audit_log(details=f"Test session {sel_id} deleted",action="delete")
+            await self.add_audit_log(
+                details=f"Test session {sel_id} deleted", action="delete"
+            )
         return deleted
 
     async def get_all_pti(self):
         return await self._test_repo.get_all_pti()
-
-
 
     @staticmethod
     def format_seconds(sec: float | int) -> str:
@@ -108,11 +143,14 @@ class ServiceTest(Service):
         s = int(sec) % 60
         return f"{int(m)}:{int(s):02d}"
 
-
-
-
-    def build_email_body_phef(self, sm: ServiceMen, session: TestSession, payload:PhefTest|FitnessTest) -> str:
-        age = sm.age_from_birthdate() if session is None else sm.age_from_birthdate_and_session_date(session.datetime_start)
+    def build_email_body_phef(
+        self, sm: ServiceMen, session: TestSession, payload: PhefTest | FitnessTest
+    ) -> str:
+        age = (
+            sm.age_from_birthdate()
+            if session is None
+            else sm.age_from_birthdate_and_session_date(session.datetime_start)
+        )
         run = PhefCalculator.running_result(payload.running_time, age, sm.gender)
         sbr = PhefCalculator.side_bridge_result(payload.sideBridge_r, age, sm.gender)
         sbl = PhefCalculator.side_bridge_result(payload.sideBridge_l, age, sm.gender)
@@ -166,9 +204,10 @@ class ServiceTest(Service):
             </table>
         """
 
-
     @staticmethod
-    def build_email_body_swim(sm: ServiceMen, session: TestSession, payload: CombatSwimmingTest|FitnessTest) -> str:
+    def build_email_body_swim(
+        sm: ServiceMen, session: TestSession, payload: CombatSwimmingTest | FitnessTest
+    ) -> str:
         passed = payload.swim_paased
         result = "PASSED" if passed else "FAILED"
         color = "green" if passed else "red"
@@ -196,9 +235,9 @@ class ServiceTest(Service):
             </table>
         """
 
-
-
-    def build_email_body_functional(self, sm: ServiceMen, session: TestSession, test: FunctionalTest|FitnessTest) -> str:
+    def build_email_body_functional(
+        self, sm: ServiceMen, session: TestSession, test: FunctionalTest | FitnessTest
+    ) -> str:
 
         def normalize_gender(g: Gender | str) -> Gender:
             if isinstance(g, str):
@@ -247,9 +286,7 @@ class ServiceTest(Service):
               Fitness Test System
               """
 
-
-
-    def build_email_body_combat(self,test: CombatTestParatrooper|FitnessTest) -> str:
+    def build_email_body_combat(self, test: CombatTestParatrooper | FitnessTest) -> str:
         return f"""
            <table border="1" style="border-collapse: collapse; width: 100%;">
                <thead>
@@ -293,8 +330,13 @@ class ServiceTest(Service):
            """
 
     async def get_all_combat_test_mil(self, service_number):
-        return await self._test_repo.get_all_combat_from_mil(service_number, current_year=True, )
+        return await self._test_repo.get_all_combat_from_mil(
+            service_number,
+            current_year=True,
+        )
 
     async def get_all_combat_test_swim(self, service_number):
-        return await self._test_repo.get_all_swim_from_mil(service_number, current_year=True, )
-
+        return await self._test_repo.get_all_swim_from_mil(
+            service_number,
+            current_year=True,
+        )

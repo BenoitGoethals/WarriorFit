@@ -2,14 +2,18 @@ import logging
 import os
 from abc import ABC
 from typing import List
-
 from config.appliccation_config import ApplicationConfig
 from core.type_fitness_test import TypeFitnessTest
-from data.db.db_model import TestSession, PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest
+from data.db.db_model import (
+    TestSession,
+    PhefTest,
+    FunctionalTest,
+    CombatTestParatrooper,
+    CombatSwimmingTest,
+)
 from logic.phef_calculator import PhefCalculator
 from services.military_service import MilitaryService
 from services.service_test import ServiceTest
-from services.service_user import UserService
 
 
 def _output_dir() -> str:
@@ -23,31 +27,42 @@ class GeneratorReport(ABC):
     def __init__(self):
         self.be_mil_service = MilitaryService()
         self._service = ServiceTest()
-        self._user_service= ServiceTest()
+        self._user_service = ServiceTest()
         self.__logger = logging.getLogger(__name__)
 
     async def calculate_score(self, own_unit, this_year):
         failed: List[dict] = []
         passed: List[dict] = []
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.PHEF, this_year=this_year
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.PHEF, this_year=this_year
+            )
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
             phef_tests: List[PhefTest] = await self._service.get_all_phef(sess.id)
             for test in phef_tests or []:
                 if own_unit:
                     if not test.serial_number in [s.service_number for s in mils]:
                         continue
-                sm = await self.be_mil_service.get_servicemen_by_serial(test.serial_number, lazy=False)
+                sm = await self.be_mil_service.get_servicemen_by_serial(
+                    test.serial_number, lazy=False
+                )
                 self.__logger.info(
                     f"PHEF test: {test.serial_number} - {sm.first_name} {sm.last_name} - {sm.age_from_birthdate()} years old"
                 )
-                score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, sm.age_from_birthdate(), sm.gender)
-                score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, sm.age_from_birthdate(), sm.gender)
-                score_run = PhefCalculator.running_result(test.running_time, sm.age_from_birthdate(),
-                                                          sm.gender)
+                score_r = PhefCalculator.side_bridge_result(
+                    test.sideBridge_r, sm.age_from_birthdate(), sm.gender
+                )
+                score_l = PhefCalculator.side_bridge_result(
+                    test.sideBridge_l, sm.age_from_birthdate(), sm.gender
+                )
+                score_run = PhefCalculator.running_result(
+                    test.running_time, sm.age_from_birthdate(), sm.gender
+                )
                 total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
                 row = {
                     "session_id": sess.id,
@@ -77,18 +92,23 @@ class GeneratorReport(ABC):
         ]
         return headers, passed, failed
 
-
-
     async def calculate_functional_score(self, own_unit, this_year):
         failed: List[dict] = []
         passed: List[dict] = []
 
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.PHEF,this_year=this_year)
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.PHEF, this_year=this_year
+            )
+        )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
-            tests: List[FunctionalTest] = await self._service.get_all_functional_test(sess.id)
+            tests: List[FunctionalTest] = await self._service.get_all_functional_test(
+                sess.id
+            )
             for t in tests or []:
                 if own_unit:
                     if not t.serial_number in [s.service_number for s in mils]:
@@ -108,22 +128,34 @@ class GeneratorReport(ABC):
                 }
                 (passed if total >= 50 else failed).append(row)
 
-        headers = ["Session ID", "Date", "Serial", "Push-ups", "Sit-ups", "Pull-ups", "Total"]
+        headers = [
+            "Session ID",
+            "Date",
+            "Serial",
+            "Push-ups",
+            "Sit-ups",
+            "Pull-ups",
+            "Total",
+        ]
         return failed, headers, passed
 
-
-
-    async def calculate_combat_score(self, own_unit,this_year):
+    async def calculate_combat_score(self, own_unit, this_year):
         failed: List[dict] = []
         passed: List[dict] = []
 
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.COMBAT,this_year=this_year
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.COMBAT, this_year=this_year
+            )
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
-            tests: List[CombatTestParatrooper] = await self._service.get_all_combat_test(sess.id)
+            tests: List[CombatTestParatrooper] = (
+                await self._service.get_all_combat_test(sess.id)
+            )
             for t in tests or []:
                 if own_unit:
                     if not t.serial_number in [s.service_number for s in mils]:
@@ -143,19 +175,33 @@ class GeneratorReport(ABC):
                 }
                 (passed if is_pass else failed).append(row)
 
-        headers = ["Session ID", "Date", "Serial", "Rope", "Obstacle", "Speedmars Time", "Result"]
+        headers = [
+            "Session ID",
+            "Date",
+            "Serial",
+            "Rope",
+            "Obstacle",
+            "Speedmars Time",
+            "Result",
+        ]
         return failed, headers, passed
 
     async def calculate_swim_score(self, own_unit, this_year):
         failed: List[dict] = []
         passed: List[dict] = []
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.SWIMMING,this_year=this_year
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.SWIMMING, this_year=this_year
+            )
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
-            tests: List[CombatSwimmingTest] = await self._service.get_all_combat_swimming_test(sess.id)
+            tests: List[CombatSwimmingTest] = (
+                await self._service.get_all_combat_swimming_test(sess.id)
+            )
             for t in tests or []:
                 if own_unit:
                     if not t.serial_number in [s.service_number for s in mils]:
