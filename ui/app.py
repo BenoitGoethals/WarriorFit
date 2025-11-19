@@ -165,7 +165,9 @@ class FitnessWarriorApp:
                 _safe_panel(functional_test.get_ui()),
                 _safe_panel(swim_test.get_ui()),
                 _safe_panel(ind_test_show.get_ui()),
+                _safe_panel(mars.get_ui()),
                 _safe_panel(status_tests.get_ui()),
+
             ]
             items = [c for c in items if c is not None]
             return ui.nav_menu("Psychical Tests", *items)
@@ -210,7 +212,7 @@ class FitnessWarriorApp:
             if role is Role.ADMIN:
                 if admin_menu is not None:
                     # Calendar removed from navbar; use global button + modal
-                    nav_items.append(_safe_panel(mars.get_ui()))
+
                     nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
                     nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())

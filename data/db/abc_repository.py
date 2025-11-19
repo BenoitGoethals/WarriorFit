@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -216,3 +217,9 @@ class ABCRepository:
         except Exception as e:
             self.__logger.error(f"Error fetching audit logs: {str(e)}")
             return []
+
+    async def running_year(self) -> tuple[datetime, datetime]:
+        now_year = datetime.now().year
+        start = datetime(now_year, 1, 1)
+        end = datetime(now_year, 12, 31, 23, 59, 59)
+        return end, start

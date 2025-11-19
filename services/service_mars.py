@@ -1,3 +1,5 @@
+from config.appliccation_config import ApplicationConfig
+from data.db.db_model import Mars
 from data.db.mars_repository import MarsRepository
 from services.military_service import MilitaryService
 from services.service import Service
@@ -13,8 +15,14 @@ class ServiceMars(Service):
     async def get_all_mars(self):
         return await self.__repo.get_all_mars()
 
+    async def get_all_mars_from_unit(self):
+        return await self.__repo.get_all_mars_by_unit_name(ApplicationConfig().own_unit)
+
     async def get_mars_by_id(self, ind_id):
         return await self.__repo.get_mars_by_id(ind_id)
+
+    async def get_mars_from_service_men(self,serial_number)->list[Mars]:
+        return await self.__repo.get_all_mars_form_service_men(serial_number)
 
     async def add_mars(self, mars):
         return await self.__repo.add_mars(mars)
