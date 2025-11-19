@@ -82,18 +82,17 @@ class MarsRepository(ABCRepository):
         session = None
         try:
             async with self.SessionLocal() as session:
-                async with session.begin():
-                    # First check if the record exists
+                async with session.begin():                  
                     existing_mars = await session.get(Mars, mars.id)
                     if not existing_mars:
                         self.__logger.error(f"No mars found with ID {mars.id}")
                         return None
 
                     # Update the existing record
-                    for key, value in mars.__dict__.items():
-                        if not key.startswith('_'):
-                            setattr(existing_mars, key, value)
-
+                    existing_mars.service_number = mars.service_number
+                    existing_mars.distance = mars.distance
+                    existing_mars.succeeded = mars.succeeded
+                    existing_mars.datetime_executed = mars.datetime_executed
                     await session.flush()
                     await session.refresh(existing_mars)
                     return existing_mars
