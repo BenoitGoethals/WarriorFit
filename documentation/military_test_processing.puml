@@ -1,0 +1,45 @@
+@startuml
+title Zoek militair & verstuur fysieke testen via broker naar HRM API
+
+actor "PTI / Gebruiker" as User
+participant "WarriorFit\nSysteem" as App
+database "Lokale Database" as DB
+participant "GR API" as GR
+participant "Message Broker" as Broker
+participant "HRM API (GR)" as HRM
+
+== Militair opzoeken op serienummer ==
+
+User -> App: Zoek militair(serienummer)
+App -> DB: SELECT militair WHERE service_number
+DB --> App: Militair gevonden / niet gevonden
+
+alt Militair gevonden in lokale DB
+    App --> User: Toon militairgegevens
+else Militair niet gevonden
+    App -> HRM: GET /militair?serviceNumber=...
+    HRM --> App: Militairgegevens (of 404)
+
+    alt Militair gevonden bij HRM API (GR)
+        App -> DB: INSERT militair\n(opgeslagen in lokale DB)
+        DB --> App: OK
+        App --> User: Toon militairgegevens
+    else Militair niet gevonden bij HRM API
+        App --> User: Foutmelding "Militair niet gevonden"
+    end
+end
+
+== Ingeven fysieke testen ==
+
+User -> App: Ingeven fysieke test(en)\n(PHEF / Functional / Combat / Swim)
+App -> DB: INSERT fitness_test,\nTestSession, koppeling met militair
+DB --> App: OK
+
+== Verzenden testresultaten naar HR via broker ==
+
+App -> Broker: Publish TestResultMessage\n(militair + testresultaten)
+Broker -> HRM: Deliver bericht\n(HTTP/REST of ander protocol)
+HRM --> Broker: ACK / Response
+Broker --> App: Bevestiging afgeleverd
+
+@enduml
