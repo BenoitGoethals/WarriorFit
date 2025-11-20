@@ -275,3 +275,18 @@ class ServiceMen(Base):
 
     def __repr__(self) -> str:
         return f"{self.first_name} {self.last_name}  {self.mail}"
+
+
+class Mars(Base):
+    __tablename__ = "mars"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    service_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    distance: Mapped[float] = mapped_column(Float, nullable=True, default=30)
+    succeeded: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    datetime_executed: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
+
+    service_men: Mapped["ServiceMen"] = relationship("ServiceMen",
+                                                     primaryjoin="Mars.service_number==ServiceMen.service_number",
+                                                     foreign_keys=[service_number],
+                                                     backref="mars")
