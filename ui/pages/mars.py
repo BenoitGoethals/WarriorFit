@@ -43,11 +43,7 @@ class MarsPage:
                 ui.card(
                     ui.card_header("Mars Tests  (To pass the mars)"),
                     ui.output_data_frame("mars_grid"),
-                    ui.br(),
-                    ui.layout_columns(
-                        ui.input_action_button("mars_delete_btn", "Delete Selected"),
-                        col_widths=(6, 3, 3),
-                    ),
+
                     full_screen=False,
                 ),
                 col_widths=(4, 8),  # Records occupies ~2/3 width

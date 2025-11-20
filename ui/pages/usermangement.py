@@ -24,7 +24,7 @@ class UserManagementPage:
                     ui.card_header("Users"),
                     ui.output_data_frame("um_grid"),
                     ui.input_action_button("um_delete_btn", "Delete Selected"),
-                    full_screen=False,
+                    full_screen=False, class_="btn-secondary w-100", width="100px"
                 ),
                 ui.card(
                     ui.card_header("Create / Edit User"),
@@ -40,17 +40,18 @@ class UserManagementPage:
                     ui.input_checkbox("um_is_active", "Active"),
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_action_button("um_create_btn", "Create"),
-                        ui.input_action_button("um_update_btn", "Update"),
-                        ui.input_action_button("um_clear_btn", "Clear Form"),
-                        col_widths=(3, 3, 3),
+                        ui.input_action_button("um_create_btn", "Create", class_="btn-primary w-100"),
+                        ui.input_action_button("um_update_btn", "Update", class_="btn-warning w-100"),
+                        ui.input_action_button("um_clear_btn", "Clear Form",  class_="btn-secondary w-100"),
+                        ui.input_action_button("um_delete_btn", "Delete Selected", class_="btn-secondary w-100"),
+                        col_widths=(4,),
                     ),
                     ui.br(),
                     ui.output_text("um_status"),
                     ui.output_text("selected_user"),
                     full_screen=False,
                 ),
-                col_widths=(7, 5),
+                col_widths=(8, 4),
                 id="user_management",
             ),
         )
