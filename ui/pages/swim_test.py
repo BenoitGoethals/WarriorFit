@@ -41,12 +41,13 @@ class SwimTestPage:
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button(
-                                "swim_add_btn", "Add", disabled=self.selected_military is None, width="150px"
+                                "swim_add_btn", "Add", disabled=self.selected_military is None, width="150px", class_="btn-primary w-100"
                             ),
                             ui.input_action_button(
-                                "swim_update_btn", "Update", disabled=self.selected_military is None, width="150px"
+                                "swim_update_btn", "Update", disabled=self.selected_military is None, width="150px", class_="btn-warning w-100"
                             ),
-                            ui.input_action_button("swim_clear_btn", "Clear Form", width="150px"),
+                            ui.input_action_button("swim_clear_btn", "Clear Form", width="150px", class_="btn-secondary w-100"),
+                            ui.input_action_button("swim_delete_btn", "Delete Selected", class_="btn-danger w-100"),
                             col_widths=(4,),
                         ),
                         ui.output_text("swim_status"),
@@ -57,11 +58,7 @@ class SwimTestPage:
                 ui.card(
                     ui.card_header("Swimming Tests"),
                     ui.output_data_frame("swim_grid"),
-                    ui.br(),
-                    ui.layout_columns(
-                        ui.input_action_button("swim_delete_btn", "Delete Selected"),
-                        col_widths=(6, 3, 3),
-                    ),
+
                     full_screen=False,
                 ),
                 col_widths=(4, 8),

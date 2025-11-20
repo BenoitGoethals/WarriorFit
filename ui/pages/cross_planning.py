@@ -34,10 +34,11 @@ class CrossPlanningPage:
 
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_action_button("cr_add_btn", "Add", width="120px"),
-                        ui.input_action_button("cr_update_btn", "Update", width="120px"),
-                        ui.input_action_button("cr_clear_btn", "Clear", width="120px"),
-                        col_widths=(4, 4, 4),
+                        ui.input_action_button("cr_add_btn", "Add", width="120px", class_="btn-primary w-100"),
+                        ui.input_action_button("cr_update_btn", "Update", width="120px", class_="btn-warning w-100"),
+                        ui.input_action_button("cr_clear_btn", "Clear", width="120px", class_="btn-secondary w-100"),
+                        ui.input_action_button("cr_delete_btn", "Delete Selected", width="170px"),
+                        col_widths=(4,),
                     ),
                     ui.output_text("cr_status"),
                     full_screen=False,
@@ -48,11 +49,7 @@ class CrossPlanningPage:
                         ui.output_data_frame("cr_grid"),
 
                     ),
-                    ui.br(),
-                    ui.layout_columns(
-                        ui.input_action_button("cr_delete_btn", "Delete Selected", width="170px"),
-                        col_widths=(6,),
-                    ),
+
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
