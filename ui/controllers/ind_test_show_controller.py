@@ -13,7 +13,7 @@ class IndTestShowController:
         self.be_mil = MilitaryService()
 
     async def find_military(self, serial: str):
-        return await self.be_mil.get_servicemen_by_serial(serial)
+        return await self.be_mil.get_servicemen_by_serial(serial,lazy=False)
 
     async def collect_tests_df(self, serial: str) -> pd.DataFrame:
         try:

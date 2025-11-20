@@ -28,6 +28,7 @@ class IndTestShowPage:
                     ui.card_header("Lookup"),
                     ui.input_text("ind_serial", "Serial number"),
                     ui.input_action_button("ind_search", "Search", width="150px"),
+                    ui.input_action_button("full_report_cy", "Full Report current Year", width="150px"),
                     ui.br(),
                     ui.output_text("ind_status"),
                     ui.hr(),
@@ -38,9 +39,9 @@ class IndTestShowPage:
                 ui.card(
                     ui.card_header("Test history"),
                     ui.output_data_frame("ind_grid"),
-                    full_screen=True,
+                    full_screen=False,
                 ),
-                col_widths=(4, 8),
+                col_widths=(3, 9),
             ),
         )
 
@@ -66,11 +67,11 @@ class IndTestShowPage:
                 df = await self.controller.collect_tests_df(s)
                 self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
                 status.set(f"Loaded {len(self.tests_df.get())} records." if not self.tests_df.get().empty else "No tests found.")
-            except Exception:
+            except Exception as e:
                 self.serial.set("")
                 self.mil_info.set("Not found.")
                 self.tests_df.set(pd.DataFrame())
-                status.set("Serviceman not found.")
+                status.set(e)
 
         @output
         @render.text
