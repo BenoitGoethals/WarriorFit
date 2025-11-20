@@ -28,6 +28,6 @@ class AuditLogEventsController:
                 }
             )
        
-        return pd.DataFrame(rows)
+        return pd.DataFrame(rows).sort_values(by="Created", ascending=False)
 
 
