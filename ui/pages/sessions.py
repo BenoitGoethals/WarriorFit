@@ -49,10 +49,11 @@ class SessionsPage:
                     ui.input_text_area("se_description", "Description", rows=3, width="400px"),
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_action_button("se_add_btn", "Add"),
-                        ui.input_action_button("se_update_btn", "Update"),
-                        ui.input_action_button("se_clear_btn", "Clear Form"),
-                        col_widths=(3, 4, 4),
+                        ui.input_action_button("se_add_btn", "Add", class_="btn-primary w-100"),
+                        ui.input_action_button("se_update_btn", "Update", class_="btn-warning w-100"),
+                        ui.input_action_button("se_clear_btn", "Clear Form", class_="btn-secondary w-100"),
+                        ui.input_action_button("se_delete_btn", "Delete Selected", class_="btn-danger w-100"),
+                        col_widths=(4,),
                     ),
                     ui.br(),
                     ui.output_text("se_status"),
@@ -62,10 +63,6 @@ class SessionsPage:
                 ui.card(
                     ui.card_header("Sessions"),
                     ui.output_data_frame("se_grid"),
-                    ui.layout_columns(
-                        ui.input_action_button("se_delete_btn", "Delete Selected"),
-                        col_widths=(6, 3, 3),
-                    ),
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
