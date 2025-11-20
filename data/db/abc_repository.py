@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import select
+from sqlalchemy import select, DateTime
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from config.appliccation_config import ApplicationConfig
@@ -143,14 +143,13 @@ class ABCRepository:
             action: str,
             details: dict = None,
             ip_address: str = None,
-
     ):
         """
         Creates an audit log entry in the database. The function records the provided data
         such as user identifier, action performed, optional details, and the IP address.
         This operation is performed asynchronously, ensuring the audit log is both added
         and refreshed in the database session.
-
+    
         :param user_id: Identifier of the user associated with the action
         :param action: Description of the action performed by the user
         :param details: Optional dictionary containing additional details about the action
@@ -162,20 +161,47 @@ class ABCRepository:
             action=action,
             details=details,
             ip_address=ip_address,
+            created_at=datetime.now(),
         )
 
-        async with self.SessionLocal() as session:
-            try:
-                async with session.begin():
+        async def create_audit_log(
+                self,
+                user_id: int,
+                action: str,
+                details: dict = None,
+                ip_address: str = None,
+        ):
+            """
+            Creates an audit log entry in the database. The function records the provided data
+            such as user identifier, action performed, optional details, and the IP address.
+            This operation is performed asynchronously, ensuring the audit log is both added
+            and refreshed in the database session.
+        
+            :param user_id: Identifier of the user associated with the action
+            :param action: Description of the action performed by the user
+            :param details: Optional dictionary containing additional details about the action
+            :param ip_address: Optional string containing the IP address associated with the action
+            :return: The created audit log entry
+            """
+            audit_log = AuditLog(
+                user_id=user_id,
+                action=action,
+                details=details,
+                ip_address=ip_address,
+                created_at=datetime.now(),
+            )
+
+            async with self.SessionLocal() as session:
+                try:
                     session.add(audit_log)
                     await session.commit()
                     await session.refresh(audit_log)
-
-                return audit_log
-
-            except Exception as e:
-
-                self.__logger.error(f"Failed to deactivate subscriptions: {e}")
+                    return audit_log
+        
+                except Exception as e:
+                    await session.rollback()
+                    self.__logger.error(f"Failed to create audit log: {e}")
+                    return None
 
     async def get_all_audit_logs(self, limit: Optional[int] = None, offset: int = 0) -> List[AuditLog]:
         """

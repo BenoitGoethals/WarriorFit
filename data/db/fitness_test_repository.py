@@ -300,7 +300,6 @@ class FitnessTestRepository(ABCRepository):
                         TestSession.datetime_start.between(
                             datetime(year, 1, 1), datetime(year, 12, 31, 23, 59, 59)
                         ),
-
                     )
                 )
                 result = await session.execute(query)

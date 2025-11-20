@@ -54,8 +54,7 @@ class DataCollector(metaclass=Singleton):
                         "Scores": f"Run {run_pts}/20, SBR {sbr_pts}/20, SBL {sbl_pts}/20",
                         "Total": f"{total:.1f}/100",
                         "Result": "Passed" if total >= 50 else "Failed",
-                        "Session ID": sess.id,
-                        "Record ID": t.id,
+
                     }
                 )
 
@@ -84,8 +83,7 @@ class DataCollector(metaclass=Singleton):
                         "Scores": f"PU {pu}, SU {su}, PLU {plu}",
                         "Total": f"{total}",
                         "Result": "Passed" if total >= 50 else "Failed",
-                        "Session ID": sess.id,
-                        "Record ID": t.id,
+
                     }
                 )
 
@@ -114,8 +112,7 @@ class DataCollector(metaclass=Singleton):
                         "Scores": f"Rope {'OK' if rope else 'NO'}, Obstacle {'OK' if obstacle else 'NO'}",
                         "Total": "-",
                         "Result": "Passed" if passed else "Failed",
-                        "Session ID": sess.id,
-                        "Record ID": t.id,
+
                     }
                 )
 
@@ -141,8 +138,7 @@ class DataCollector(metaclass=Singleton):
                         "Scores": "-",
                         "Total": "-",
                         "Result": "Passed" if ok else "Failed",
-                        "Session ID": sess.id,
-                        "Record ID": t.id,
+
                     }
                 )
 
@@ -155,8 +151,7 @@ class DataCollector(metaclass=Singleton):
                     "Scores",
                     "Total",
                     "Result",
-                    "Session ID",
-                    "Record ID",
+
                 ]
             )
         rows.sort(key=lambda r: r["Date"])
