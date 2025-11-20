@@ -6,7 +6,7 @@ from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics
+    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, mars
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
@@ -86,7 +86,8 @@ class FitnessWarriorApp:
             "Individual": ind_test_show.server,
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
-            "Cross Statics": cross_statics.server
+            "Cross Statics": cross_statics.server,
+            "Mars" : mars.server
 
 
         }
@@ -164,7 +165,9 @@ class FitnessWarriorApp:
                 _safe_panel(functional_test.get_ui()),
                 _safe_panel(swim_test.get_ui()),
                 _safe_panel(ind_test_show.get_ui()),
+                _safe_panel(mars.get_ui()),
                 _safe_panel(status_tests.get_ui()),
+
             ]
             items = [c for c in items if c is not None]
             return ui.nav_menu("Psychical Tests", *items)
@@ -209,6 +212,7 @@ class FitnessWarriorApp:
             if role is Role.ADMIN:
                 if admin_menu is not None:
                     # Calendar removed from navbar; use global button + modal
+
                     nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
                     nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())
