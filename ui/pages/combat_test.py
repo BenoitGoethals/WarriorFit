@@ -66,10 +66,12 @@ class CombatPage:
                             ui.br(),
                             ui.layout_columns(
                                 ui.input_action_button("combat_add_btn", "Add", disabled=self.selected_military is None,
-                                                       width="150px"),
+                                                       width="150px", class_="btn-primary w-100"),
                                 ui.input_action_button("combat_update_btn", "Update",
-                                                       disabled=self.selected_military is None, width="150px"),
-                                ui.input_action_button("combat_clear_btn", "Clear Form", width="150px"),
+                                                       disabled=self.selected_military is None, width="150px", class_="btn-warning w-100"),
+                                ui.input_action_button("combat_clear_btn", "Clear Form", width="150px", class_="btn-secondary w-100"),
+                                ui.input_action_button("combat_delete_btn", "Delete Selected",
+                                                       class_="btn-danger w-100"),
                                 col_widths=(4,),
                             ),
                             ui.output_text("combat_status", ),
@@ -81,11 +83,7 @@ class CombatPage:
                     ui.card(
                         ui.card_header("Combat Tests  (To pass the combat test, you must pass all test)"),
                         ui.output_data_frame("combat_grid"),
-                        ui.br(),
-                        ui.layout_columns(
-                            ui.input_action_button("combat_delete_btn", "Delete Selected"),
-                            col_widths=(6, 3, 3),
-                        ),
+
                         full_screen=False,
                     ),
                     col_widths=(4, 8),  # Records occupies ~2/3 width
