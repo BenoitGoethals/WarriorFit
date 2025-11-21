@@ -49,6 +49,11 @@ class IndTestShowPage:
         status = reactive.Value("Ready.")
 
         @reactive.effect
+        @reactive.event(input.full_report_cy)
+        def full_report_cy():
+
+
+        @reactive.effect
         @reactive.event(input.ind_search, ignore_none=False)
         async def _on_search():
             s = (input.ind_serial() or "").strip()
