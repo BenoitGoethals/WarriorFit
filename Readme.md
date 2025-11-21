@@ -14,11 +14,11 @@
 **Project Language:** Python
 
 ## 1. Project Overview (click links)
-* [Design](documentation/Design.md)
-* [Business Logic](documentation/business_logic.md)
-* Data Model
-* [Stories](documentation/stories.md)
-* [Initiale proposalInitiale proposal](documentation/project_proposel.md)
+1. * [Design](documentation/Design.md)
+2. * [Business Logic](documentation/business_logic.md)
+3. * [Datamodel/ERD](documentation/datamodel.md)
+4. * [Stories](documentation/stories.md)
+5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md)
 
 
 
