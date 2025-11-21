@@ -2,6 +2,8 @@ import logging
 import os
 from datetime import datetime
 from typing import List, Optional, Callable, Any
+
+from services.data_collector import DataCollector
 from services.generator import GeneratorReport, _output_dir
 from services.report_type import ReportType
 from services.service_cross import ServiceCross
@@ -347,6 +349,28 @@ class ReportGeneratorPdf(GeneratorReport):
             row_builder,
         )
         return {"failed": failed_path, "passed": passed_path}
+
+    async def generate_ind_report_current_year(self,serial_number:str):
+        def row_builder(r: dict) -> List[Any]:
+            return [
+                r["session_id"],
+                (
+                    "-"
+                    if r["session_date"] is None
+                    else r["session_date"].strftime("%Y-%m-%d %H:%M")
+                ),
+                r["serial"],
+                r["run_time_s"],
+                f"{r['run_score']}",
+            ]
+
+        headers=["Session ID","Date","Serial","Running Time","Score"]
+        collector=DataCollector()
+        current_year=datetime.now().year
+        data=await collector.collect_tests_for_serial(serial_number)
+        data=list(filter(lambda x:x["year"]==current_year,data))
+        self._build_pdf(data,f"{serial_number}","Year report",f"Year_report_{serial_number}",headers,row_builder)
+
 
 
 if __name__ == "__main__":
