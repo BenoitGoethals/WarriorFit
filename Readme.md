@@ -13,18 +13,36 @@
 
 **Project Language:** Python
 
-## 1. Project Overview (click links)
-1. * [Design](documentation/Design.md)
-2. * [Business Logic](documentation/business_logic.md)
-3. * [Datamodel/ERD](documentation/datamodel.md)
-4. * [Stories](documentation/stories.md)
-5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md)
+## Project Description
+WarriorFit is a comprehensive fitness and military management application designed to track physical performance, manage personnel data, and generate analytical reports. The system integrates data collection, statistical analysis, and reporting capabilities tailored for military fitness standards.
+Each unit within Defence has a **physical training cell** aimed at preparing soldiers physically for operational deployment.
+Annually, every soldier must complete the **PHEF** (Physical Fitness Evaluation Defence). In addition, combat units carry out **functional** and **combat tests**, while paracommandos must endure additional **combat evaluations**.
+Currently, much of this process is manual, leading to inefficiency, errors, and administrative delays.
+
+The system includes user management, test input, calculations, PDF reporting, and email distribution. It is designed for local server deployment within Defense.
+
+## Project Goals
+The main goals of this project are:
+* To develop a comprehensive fitness and military management application
+* To integrate data collection, statistical analysis, and reporting capabilities tailored for military fitness standards
+* To integrate with existing Defence systems
+
+## Project Development Methodology
+The project is developed using Agile methodology and SOLID principles.
+Using Epic and User Stories, the project is divided into different Epic implementations. With as goal to deliver a working product at the end of each epic implementation.
+The project is developed using Github.
+The project is managed using Github.
 
 
+## 1. Project Structure (click links)
+The project documentation is structured in different documents:
+1. * [Design](documentation/Design.md) (In Progress)
+2. * [Business Logic](documentation/business_logic.md) (In Progress)
+3. * [Datamodel/ERD](documentation/datamodel.md) (In Progress)
+4. * [Stories](documentation/stories.md) (In Progress)
+5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (In Progress)
 
-
-## 2. Project Phases
-
+## 2. Project Roadmap
 ### **Phase 1 — Initiation & Project Charter (Nov 2025)**
 
 * Project scope and vision
@@ -46,3 +64,15 @@
 ### **Phase 5 — Delivery & Demo (Jun 2026)**
 
 * Final demo and handover to end users
+
+
+## 3. Project Management
+This project is managed by a team of 1 person.
+Using Github project with Agile methodology.
+On the kanban board, you can see the different tasks and their status.
+https://github.com/users/BenoitGoethals/projects/20
+
+
+
+
+
