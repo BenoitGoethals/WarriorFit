@@ -31,7 +31,11 @@ Here is how the points and pass system works:
   - *Bronze badge*: ≥ 80% (32-35/40)
 - Norm tables are age and gender dependent. The age that counts is the age the military member reaches in the current calendar year
 - In case of medical exemption, alternative tests may apply and the standards may be adjusted.
+- See the following diagram for a visual representation of the calculation:
 
+![side-bridge-proef-tabel.png](side-bridge-proef-tabel.png)
+![run.png](run.png)
+ 
 ## c. Practical Matters & Points of Attention
 
 - The test must be taken annually. Units must provide at least one test date per month so that military personnel have the opportunity.
@@ -95,7 +99,6 @@ For all separate tests you must achieve a GO.
 | 2      | 1           | 1           | 1           | 1           |
 | 1      | 0           | 0           | 0           | 0           |
 
-*Note*: This table shows the number of correct pull-ups required to achieve a certain number of points, divided by gender and age category. For each 10-year age category, the required number of pull-ups for the same number of points decreases.
 
 ---
 
@@ -131,7 +134,6 @@ For all separate tests you must achieve a GO.
 | 2      | 6-9         | 5-7         | 4-5         | 2-3         |
 | 1      | 1-5         | 1-4         | 1-3         | 1           |
 
-*Note*: This table shows the number of correct push-ups required to achieve a certain number of points, divided by gender and age category. For each 10-year age category, the required number of push-ups for the same number of points decreases. The numbers vary between 1 and 100.
 
 ---
 

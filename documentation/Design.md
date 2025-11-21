@@ -17,7 +17,6 @@ The system includes user management, test input, calculations, PDF reporting, an
 
 ### References
 
-* SRS document
 * Internal Defense standards
 * Python Shiny documentation
 * PostgreSQL manual
