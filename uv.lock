@@ -2437,6 +2437,7 @@ dependencies = [
     { name = "shiny" },
     { name = "shiny-calendar" },
     { name = "sqlalchemy" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -2469,6 +2470,7 @@ requires-dist = [
     { name = "shiny", specifier = ">=1.4.0" },
     { name = "shiny-calendar", specifier = ">=0.2.0" },
     { name = "sqlalchemy", specifier = ">=2.0.43" },
+    { name = "uvicorn", specifier = ">=0.35.0" },
 ]
 
 [[package]]
