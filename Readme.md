@@ -42,6 +42,7 @@ The project documentation is structured in different documents:
 4. * [Stories](documentation/stories.md) (In Progress)
 5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (In Progress)
 6. * [Module Structures](documentation/module_structure.md) (In Progress)
+
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
 
