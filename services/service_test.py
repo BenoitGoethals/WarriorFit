@@ -345,3 +345,7 @@ class ServiceTest(Service):
             service_number,
             current_year=True,
         )
+
+    async def get_upcoming_session_for_pti(self, serial_number_pti):
+        return await self._test_repo.get_upcoming_session_for_pti(serial_number_pti)
+

@@ -983,3 +983,34 @@ class FitnessTestRepository(ABCRepository):
         except (SQLAlchemyError, Exception) as e:
             self.__logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
             return []
+
+    async def get_upcoming_session_for_pti(self, serial_number_pti: str) -> Optional[TestSession]:
+        """
+        Retrieves the upcoming test session for a specific PTI.
+    
+        Args:
+            serial_number_pti (str): The serial number of the PTI.
+    
+        Returns:
+            Optional[TestSession]: The upcoming test session if found, None otherwise.
+    
+        Raises:
+            SQLAlchemyError: If there's a database-related error.
+        """
+        try:
+            async with self.SessionLocal() as session:
+                current_datetime = datetime.now()
+                query = (
+                    select(TestSession)
+                    .where(TestSession.serial_number_pti == serial_number_pti)
+                    .where(TestSession.datetime_start >= current_datetime)
+                    .order_by(TestSession.datetime_start)
+                    .limit(1)
+                )
+                result = await session.execute(query)
+                return result.scalar_one_or_none()
+
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error fetching upcoming session for PTI {serial_number_pti}: {str(e)}")
+            return None
+

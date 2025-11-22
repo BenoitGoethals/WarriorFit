@@ -6,7 +6,7 @@ from services.service_user import UserService
 from utils.Os import Os
 from config.appliccation_config import ApplicationConfig
 from .pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, mars
+    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, mars, status_login_user
 from .pages import usermangement
 from .pages import phef
 from .pages import sessions
@@ -87,7 +87,8 @@ class FitnessWarriorApp:
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
             "Cross Statics": cross_statics.server,
-            "Mars" : mars.server
+            "Mars" : mars.server,
+            "Welcome" : status_login_user.server
 
 
         }
@@ -167,6 +168,7 @@ class FitnessWarriorApp:
                 _safe_panel(ind_test_show.get_ui()),
                 _safe_panel(mars.get_ui()),
                 _safe_panel(status_tests.get_ui()),
+                _safe_panel((sessions.get_ui()))
 
             ]
             items = [c for c in items if c is not None]
@@ -212,18 +214,19 @@ class FitnessWarriorApp:
             if role is Role.ADMIN:
                 if admin_menu is not None:
                     # Calendar removed from navbar; use global button + modal
-
+                    nav_items.append(_safe_panel(status_login_user.get_ui()))
                     nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
                     nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(reports.get_ui()))
-                    nav_items.append(_safe_panel((sessions.get_ui())))
+
                     nav_items.append(_build_cross_menu())
                     nav_items.append(admin_menu)
             elif role is Role.GUEST:
                 nav_items.append(_safe_panel(own_unit.get_ui()))
                 nav_items.append(_safe_panel(ind_test_show.get_ui()))
             elif role is Role.PTI:
+                nav_items.append(_safe_panel(status_login_user.get_ui()))
                 nav_items.append(dashboard_own_unit.get_ui())
                 nav_items.append(own_unit.get_ui())
 
@@ -231,10 +234,11 @@ class FitnessWarriorApp:
                 nav_items.append(_build_cross_menu())
                 nav_items.append(_safe_panel(reports.get_ui()))
             elif role is Role.APTI:
+                nav_items.append(_safe_panel(status_login_user.get_ui()))
                 nav_items.append(dashboard_own_unit.get_ui())
                 nav_items.append(own_unit.get_ui())
                 nav_items.append(_build_test_menu())
-                nav_items.append(_safe_panel((sessions.get_ui())))
+
                 nav_items.append(_safe_panel(reports.get_ui()))
                 nav_items.append(_build_cross_menu())
             elif role is Role.PLANNER:
