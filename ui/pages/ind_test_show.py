@@ -6,7 +6,7 @@ from typing import Optional
 import pandas as pd
 from shiny import ui, render, reactive
 
-
+from services.report_generator_pdf import ReportGeneratorPdf
 from ui.controllers.ind_test_show_controller import IndTestShowController
 
 
@@ -18,6 +18,7 @@ class IndTestShowPage:
         self.serial = reactive.Value("")
         self.mil_info = reactive.Value("No serviceman selected.")
         self.tests_df = reactive.Value(pd.DataFrame())
+        self.report_path = reactive.Value(None)
 
     def get_ui(self):
         return ui.nav_panel(
@@ -28,7 +29,8 @@ class IndTestShowPage:
                     ui.card_header("Lookup"),
                     ui.input_text("ind_serial", "Serial number"),
                     ui.input_action_button("ind_search", "Search", width="150px"),
-                    ui.input_action_button("full_report_cy", "Full Report current Year", width="150px"),
+                    ui.input_action_button("full_report_cy", "Generate Full Report", width="150px"),
+                    ui.output_ui("download_btn_ui"),
                     ui.br(),
                     ui.output_text("ind_status"),
                     ui.hr(),
@@ -50,8 +52,36 @@ class IndTestShowPage:
 
         @reactive.effect
         @reactive.event(input.full_report_cy)
-        def full_report_cy():
+        async def full_report_cy():
+            s = (input.ind_serial() or "").strip()
+            self.report_path.set(None)
+            if s:
+                status.set("Generating report...")
+                report_generator = ReportGeneratorPdf()
+                output_path = await report_generator.generate_ind_report_current_year(serial_number=s)
+                if output_path:
+                    self.report_path.set(output_path)
+                    status.set(f"Full report for {s} generated.")
+                    self.refresh_tick.set(self.refresh_tick.get() + 1)
+                    ui.notification_show("Report generated", type="message", duration=2)
+                else:
+                    status.set("Failed to generate report.")
+            else:
+                status.set("No serviceman selected.")
 
+        @output
+        @render.ui
+        def download_btn_ui():
+            if self.report_path.get():
+                return ui.download_button("download_generated_report", "Download PDF", width="150px", class_="btn-success")
+            return None
+
+        @render.download(filename=lambda: f"Report_{input.ind_serial()}.pdf")
+        def download_generated_report():
+            path = self.report_path.get()
+            if path:
+                return path
+            return None
 
         @reactive.effect
         @reactive.event(input.ind_search, ignore_none=False)
@@ -68,7 +98,6 @@ class IndTestShowPage:
                     raise ValueError("not found")
                 self.serial.set(s)
                 self.mil_info.set(f"{mil.rank} {mil.first_name} {mil.last_name} — {mil.service_number} — {mil.unit}")
-
                 df = await self.controller.collect_tests_df(s)
                 self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
                 status.set(f"Loaded {len(self.tests_df.get())} records." if not self.tests_df.get().empty else "No tests found.")
@@ -99,6 +128,7 @@ class IndTestShowPage:
                 filters=False,
                 selection_mode="none",
                 width="100%",
+
                 
             )
 
