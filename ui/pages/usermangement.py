@@ -23,8 +23,6 @@ class UserManagementPage:
                 ui.card(
                     ui.card_header("Users"),
                     ui.output_data_frame("um_grid"),
-                    ui.input_action_button("um_delete_btn", "Delete Selected"),
-                    full_screen=False, class_="btn-secondary w-100", width="100px"
                 ),
                 ui.card(
                     ui.card_header("Create / Edit User"),
