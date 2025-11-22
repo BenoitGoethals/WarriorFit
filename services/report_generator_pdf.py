@@ -1,7 +1,13 @@
 import logging
 import os
 from datetime import datetime
-from typing import List, Optional, Callable, Any
+from typing import List, Optional, Callable, Any, Dict
+
+import pandas as pd
+from pandas.core.interchange.dataframe_protocol import DataFrame
+
+from core.type_fitness_test import TypeFitnessTest
+from services.data_collector import DataCollector
 from services.generator import GeneratorReport, _output_dir
 from services.report_type import ReportType
 from services.service_cross import ServiceCross
@@ -348,13 +354,187 @@ class ReportGeneratorPdf(GeneratorReport):
         )
         return {"failed": failed_path, "passed": passed_path}
 
+    async def generate_ind_report_current_year(self, serial_number: str):
+        
+        current_year = datetime.now().year
+       
+
+
+        # Get serviceman details
+        serviceman = await self.be_mil_service.get_servicemen_by_serial(serial_number, lazy=False)
+
+        deps = self._ensure_pdf_deps()
+        file_name = f"Report_{serial_number}_{current_year}.pdf"
+        output_path = os.path.join(_output_dir(), file_name)
+
+        doc = deps["SimpleDocTemplate"](output_path, pagesize=deps["A4"])
+        styles = deps["getSampleStyleSheet"]()
+
+        story = [
+            deps["Paragraph"](f"Individual Report - {current_year}", styles["Title"]),
+            deps["Spacer"](1, 12),
+        ]
+
+        if not serviceman:
+            story.append(deps["Paragraph"]("Serviceman not found", styles["Normal"]))
+        else:
+            collector = DataCollector()
+          
+            
+            story.append(deps["Paragraph"](
+                f"Name: {serviceman.first_name} {serviceman.last_name}\n"
+                f"Serial: {serviceman.service_number}\n"
+                f"Unit: {serviceman.unit}\n"
+                f"Age: {serviceman.age_from_birthdate()}",
+                
+                styles["Normal"]
+                ))
+            
+            story.append(deps["Spacer"](1, 12))
+            data_df = await collector.collect_tests_data_for_serial(serial_number)
+
+            def process_table(title, data, headers, row_mapper):
+                if data is None:
+                    return
+                
+                records = []
+                if isinstance(data, pd.DataFrame):
+                    if data.empty:
+                        return
+                    records = data.to_dict("records")
+                elif isinstance(data, list):
+                    if not data:
+                        return
+                    records = data
+                
+                if not records:
+                    return
+
+                story.append(deps["Paragraph"](title, styles["Heading3"]))
+                story.append(deps["Spacer"](1, 6))
+
+                tbl_data = [headers]
+                for r in records:
+                    tbl_data.append(row_mapper(r))
+
+                t = deps["Table"](tbl_data, repeatRows=1)
+                t.setStyle(
+                    deps["TableStyle"](
+                        [
+                            ("BACKGROUND", (0, 0), (-1, 0), deps["colors"].lightgrey),
+                            ("TEXTCOLOR", (0, 0), (-1, 0), deps["colors"].black),
+                            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                            ("FONTSIZE", (0, 0), (-1, -1), 9),
+                            ("INNERGRID", (0, 0), (-1, -1), 0.25, deps["colors"].grey),
+                            ("BOX", (0, 0), (-1, -1), 0.5, deps["colors"].black),
+                        ]
+                    )
+                )
+                story.append(t)
+                story.append(deps["Spacer"](1, 12))
+
+            # Helper to filter DataFrame by Type
+            def get_type_data(df, t_type):
+                if df is None or df.empty:
+                    return []
+                filtered = df[df["Type"] == t_type]
+                return filtered.to_dict("records")
+
+            # PHEF
+            def phef_mapper(r):
+                return [
+                    r.get("Date", "-"),
+                    self._fmt_time(float(r.get("Run") or 0)),
+                    self._fmt_time(float(r.get("SBR") or 0)),
+                    self._fmt_time(float(r.get("SBL") or 0)),
+                    r.get("Total", "-")
+                ]
+
+            process_table(
+                "PHEF Tests", 
+                get_type_data(data_df, "PHEF"), 
+                ["Date", "Run", "Side R", "Side L", "Total"], 
+                phef_mapper
+            )
+
+            # Functional
+            def func_mapper(r):
+                return [
+                    r.get("Date", "-"),
+                    str(r.get("PU", "-")),
+                    str(r.get("SU", "-")),
+                    str(r.get("PLU", "-")),
+                    str(r.get("Total", "-"))
+                ]
+            
+            process_table(
+                "Functional Tests", 
+                get_type_data(data_df, "Functional"), 
+                ["Date", "Push-Ups", "Sit-Ups", "Pull-Ups", "Total"], 
+                func_mapper
+            )
+
+            # Combat
+            def combat_mapper(r):
+                return [
+                    r.get("Date", "-"),
+                    self._fmt_time(float(r.get("Speed") or 0)),
+                    r.get("Rop_scores", "-"),
+                    r.get("Obs_scores", "-")
+                ]
+
+            process_table(
+                "Combat Tests", 
+                get_type_data(data_df, "Combat"), 
+                ["Date", "Run Time", "Rope", "Obstacle"], 
+                combat_mapper
+            )
+
+            # Swimming
+            def swim_mapper(r):
+                return [
+                    r.get("Date", "-"),
+                    r.get("Result", "-")
+                ]
+            
+            process_table(
+                "Swimming Tests", 
+                get_type_data(data_df, "Swimming"), 
+                ["Date", "Result"], 
+                swim_mapper
+            )
+
+            # Mars
+            def mars_mapper(r):
+                return [
+                    r.get("Date", "-"),
+                    r.get("Details", "-"),
+                    r.get("Result", "-")
+                ]
+
+            process_table(
+                "Mars Tests", 
+                get_type_data(data_df, "Mars"), 
+                ["Date", "Distance", "Result"], 
+                mars_mapper
+            )
+    
+            story.append(deps["Spacer"](1, 20))
+            doc.build(story)
+            self._logger.info(f"Generating PDF: {output_path}")
+            return output_path
+
+
+
 
 if __name__ == "__main__":
     import asyncio
 
     async def main():
         gem = ReportGeneratorPdf()
-        await gem.generate_run_report("run", 1)
+        #await gem.generate_run_report("run", 1)
+        await gem.generate_ind_report_current_year("BE-20250001")
 
     #  await gem.generate_report("tstasd", ReportType.COMBAT,True,True)
     # await gem.generate_report( "tstwe", ReportType.SWIMMING,True,True)

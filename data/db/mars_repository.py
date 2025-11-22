@@ -33,9 +33,12 @@ class MarsRepository(ABCRepository):
         results = await self.fetch_and_log(query, "marses_from_unit")
         return results if results else []
 
-    async def get_all_mars_form_service_men(self, service_men: str) -> list[Mars]:
-        end, start = await self.running_year()
-        query = select(Mars).where(Mars.service_number == service_men).where(Mars.datetime_executed.between(start, end))
+    async def get_all_mars_form_service_men(self, service_men: str,this_year=True) -> list[Mars]:
+        if this_year:
+            end, start = await self.running_year()
+            query = select(Mars).where(Mars.service_number == service_men).where(Mars.datetime_executed.between(start, end))
+        else:
+            query = select(Mars).where(Mars.service_number == service_men)
         results = await self.fetch_and_log(query, "marses_service_men")
         return results if results else []
 

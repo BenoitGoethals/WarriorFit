@@ -110,7 +110,7 @@ class ApplicationConfig(metaclass=Singleton):
             raise ValueError(f"Error parsing YAML file: {self.config_path}, Error: {error}")
 
 
-    def __setup_connection_from_yaml(self,config) -> asyncpg.connection:
+    def __setup_connection_from_yaml(self,config):
 
         return create_async_engine(
             url=f"postgresql+asyncpg://{
