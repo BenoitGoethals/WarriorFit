@@ -76,7 +76,7 @@ class OwnUnitController:
 
     async def fetch_tests_for_serial_df(self, serial: str|None) -> pd.DataFrame:
         try:
-            tests_df = await DataCollector().collect_tests_for_serial(serial)
+            tests_df = await DataCollector().collect_tests_for_serial(serial,current_year=False)
         except Exception:
             tests_df = pd.DataFrame(
                 columns=["Date", "Type", "Details", "Scores", "Total", "Result", "Session ID", "Record ID"]

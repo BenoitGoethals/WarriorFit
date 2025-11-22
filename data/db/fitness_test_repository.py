@@ -189,7 +189,60 @@ class FitnessTestRepository(ABCRepository):
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
+    async def get_all_test_sessions_type_fitness_test_for_service_men(self, serial: str, typetest: TypeFitnessTest,
+                                                                      this_year: bool = True) -> List[TestSession]:
+        """
+        Fetches all test sessions of a specific type for a given service member.
+        #S
+        :param serial: The serial number of the service member
+        :param typetest: The type of fitness test to filter by
+        :param this_year: If True, only returns sessions from the current year
+        :return: A list of matching TestSession objects
+        :rtype: List[TestSession]
+        """
+        try:
+            if this_year:
+                end, start = await self.running_year()
+                query = (
+                    select(TestSession)
+                    .join(TestSession.fitness_tests)
+                    .where(TestSession.type_test == typetest)
+                    .where(TestSession.datetime_start.between(start, end))
+                    .where(FitnessTest.serial_number == serial)
+                    .options(
+                        selectinload(TestSession.fitness_tests).selectin_polymorphic([
+                            PhefTest,
+                            FunctionalTest,
+                            CombatTestParatrooper,
+                            CombatSwimmingTest
+                        ])
+                    )
+                )
+            else:
+                query = (
+                    select(TestSession)
+                    .join(TestSession.fitness_tests)
+                    .where(TestSession.type_test == typetest)
+                    .where(FitnessTest.serial_number == serial)
+                    .options(
+                        selectinload(TestSession.fitness_tests).selectin_polymorphic([
+                            PhefTest,
+                            FunctionalTest,
+                            CombatTestParatrooper,
+                            CombatSwimmingTest
+                        ])
+                    )
+                )
 
+            results = await self.fetch_and_log(query, f"test sessions for service member {serial}")
+            return results if results else []
+
+        except SQLAlchemyError as e:
+            self.__logger.error(f"Database error fetching test sessions for service member {serial}: {str(e)}")
+            return []
+        except Exception as e:
+            self.__logger.error(f"Unexpected error fetching test sessions for service member {serial}: {str(e)}")
+            return []
 
     async def get_all_test_sessions_type_fitnessTest_full(self, typetest: TypeFitnessTest, this_year: bool = True) -> \
     List[TestSession]:

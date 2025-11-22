@@ -17,7 +17,9 @@ class IndTestShowController:
 
     async def collect_tests_df(self, serial: str) -> pd.DataFrame:
         try:
-            df = await DataCollector().collect_tests_for_serial(serial)
+            df = await DataCollector().collect_tests_for_serial(serial,current_year=False)
+
+
             return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
         except Exception:
             return pd.DataFrame()

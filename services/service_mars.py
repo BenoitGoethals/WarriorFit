@@ -21,8 +21,8 @@ class ServiceMars(Service):
     async def get_mars_by_id(self, ind_id):
         return await self.__repo.get_mars_by_id(ind_id)
 
-    async def get_mars_from_service_men(self,serial_number)->list[Mars]:
-        return await self.__repo.get_all_mars_form_service_men(serial_number)
+    async def get_mars_from_service_men(self,serial_number,this_year=True)->list[Mars]:
+        return await self.__repo.get_all_mars_form_service_men(serial_number,this_year)
 
     async def add_mars(self, mars):
         return await self.__repo.add_mars(mars)
