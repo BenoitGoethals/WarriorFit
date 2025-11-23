@@ -13,8 +13,6 @@ from .pages import sessions
 from .pages import functional_test
 from .pages import swim_test
 
-from .user_store import UserStore
-
 
 class FitnessWarriorApp:
     APP_TITLE = "Fitness Warrior"
