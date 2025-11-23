@@ -1,4 +1,4 @@
-# 1. PHEF
+y# 1. PHEF
 
 The PHEF tests (Physical Fitness Evaluation Defence) form the standardized system within Defence to measure and monitor the physical readiness of military personnel. They serve as an objective evaluation of physical condition, strength, endurance, and functional suitability for operational deployment.
 
@@ -48,7 +48,7 @@ Here is how the points and pass system works:
 ## 1. Combat Tests
 
 - *Speed March*: 16 km in 120min in combat uniform + weapon + webbing (3 kg)
-- *Rope Course with Gateway*
+- *Rope Course *
 - *Obstacle Course*
 
 For all separate tests you must achieve a GO.

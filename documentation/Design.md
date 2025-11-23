@@ -140,7 +140,7 @@ The APTI supports the PTI with limited input permissions.
 * **Participant List** – Read-only access to personal data
 * **Reports** – View non-validated results
 
-### 4. Participant (Military Member)
+### 4. Participant (Military Member) (TBD)
 
 Limited access to their own test results.
 
@@ -156,7 +156,6 @@ The administrator has access to all management and system functions.
   * Create / deactivate users
   * Assign roles and permissions
 * **System Settings**
-
   * Parameters and thresholds
   * Mail and PDF services
 * **Audit & Logging** – History of changes
@@ -167,14 +166,11 @@ The administrator has access to all management and system functions.
 Guest has **read-only** access within their own unit.
 
 **Main Menu:**
-
 * **Dashboard** – Summary of unit physical readiness
 * **Results Overview**
-
   * Average scores per test
   * Statistics per section or platoon
 * **Reports**
-
   * Generate unit report (read-only)
   * Export to PDF
 * **Search / Filter** – By name, rank, or test date
@@ -203,12 +199,11 @@ The technology choices made in the initial project proposal.
 
 * **SQLAlchemy**: ORM layer
 * **PostgreSQL drivers**: asyncpg, psycopg (psycopg-binary), psycopg2-binary
-* **Migrations**: alembic, mako
+* **Migrations**: alembic, mako (only for development)
 
 ### Security / Authentication
 
 * **Hashing**: bcrypt, passlib
-* **JWT/JOSE**: python-jose, pyjwt
 * **Crypto**: ecdsa, rsa, pyasn1
 
 ### Data / Analysis / Reporting
@@ -248,7 +243,6 @@ The technology choices made in the initial project proposal.
 | 1.2 | User creation error handling | 3 | Must Have |
 | 1.3 | Edit user | 5 | Must Have |
 | 1.4 | Password reset by admin | 2 | Should Have |
-| 1.5 | User management authorization check | 3 | Must Have |
 | 1.6 | User list with search | 2 | Should Have |
 
 ## Epic 2: Test Session Planning
@@ -352,6 +346,19 @@ The technology choices made in the initial project proposal.
 | 11.4 | Unit march overview (current year) | 3 | Should Have |
 | 11.5 | Personal march overview | 2 | Should Have |
 
----
+## Epic 14: Individual Test History Management
 
-**Total Story Points: 159**
+Story #| User Story | Priority | Story Points |
+|----|------------|----------|--------------|
+|  14.1 | Search Individual by Serial Number | High | 3 | 
+|  14.2 | Display Complete Test History | High | 5 |
+|  14.3 | View Test Details and Scores | High | 3 |
+|  14.4 | Generate Full Report | Medium | 5 |
+|  14.5 | Download PDF Report | Medium | 2 |
+
+## Epic 15: Unit Status Overview & Quick Test Access
+
+| ID | User Story | Priority | Story Points |
+|----|------------|----------|--------------|
+| Story 15.1 | View Unit Status Overview | High | 5 | 
+| Story 15.3 | Search for Specific Servicemen | High | 3 | 
