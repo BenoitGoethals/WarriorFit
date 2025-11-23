@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
-from typing import Optional, Any, List
+from typing import Optional, Any, List, Coroutine, Sequence
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, Row, RowMapping
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import joinedload, selectinload, selectin_polymorphic
 
@@ -945,6 +945,22 @@ class FitnessTestRepository(ABCRepository):
             return []
 
     async def get_all_combat_from_mil(self, service_number, current_year)-> List[CombatTestParatrooper]:
+        """
+        Fetch all combat test records tied to a specific service number from the database for
+        a given military unit. When the current year is provided, the query is restricted
+        to tests conducted during that year. If the year is not provided, all available records
+        related to the service number are retrieved. The function also handles any database
+        or processing errors gracefully by logging the issue and returning an empty result set.
+
+        :param service_number: The unique identifier for the military service number.
+        :type service_number: str
+
+        :param current_year: A flag indicating whether to limit results to the current year.
+        :type current_year: bool
+
+        :return: A list of ``CombatTestParatrooper`` instances representing the retrieved tests.
+        :rtype: List[CombatTestParatrooper]
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context
@@ -965,6 +981,23 @@ class FitnessTestRepository(ABCRepository):
             return []
 
     async def get_all_swim_from_mil(self, service_number, current_year)->List[CombatSwimmingTest]:
+        """
+        Fetches all combat swimming tests for a given military service number.
+
+        This asynchronous method retrieves all CombatSwimmingTest entries associated with
+        the provided service number. A specific year can also be filtered by providing the
+        current year parameter; in this case, the method calculates the start and end of
+        the year to limit the query results accordingly.
+
+        :param service_number: Military service number used to retrieve the swimming tests.
+        :type service_number: str
+        :param current_year: Determines whether to filter tests for the current year. If True,
+                             the method filters tests to the present year's timeframe.
+        :type current_year: bool
+        :return: A list of CombatSwimmingTest objects for the provided service number. If no
+                 tests are found, an empty list is returned.
+        :rtype: List[CombatSwimmingTest]
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context
@@ -984,18 +1017,19 @@ class FitnessTestRepository(ABCRepository):
             self.__logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
             return []
 
-    async def get_upcoming_session_for_pti(self, serial_number_pti: str) -> Optional[TestSession]:
+    async def get_upcoming_session_for_pti(self, serial_number_pti: str) -> Any | None:
         """
-        Retrieves the upcoming test session for a specific PTI.
-    
-        Args:
-            serial_number_pti (str): The serial number of the PTI.
-    
-        Returns:
-            Optional[TestSession]: The upcoming test session if found, None otherwise.
-    
-        Raises:
-            SQLAlchemyError: If there's a database-related error.
+        Fetches the upcoming test sessions for a specific PTI (Process Test Identification) based
+        on the provided serial number. It retrieves sessions from the database where the start
+        datetime is equal to or after the current datetime. Results are filtered and sorted by
+        the session start datetime in ascending order.
+
+        :param serial_number_pti: The serial number corresponding to the PTI for which the
+            upcoming test sessions are being queried.
+        :type serial_number_pti: str
+        :return: A list of test session objects that match the criteria or None if an error occurs.
+        :rtype: Any | None
+        :raises SQLAlchemyError: If there is an error while accessing the database.
         """
         try:
             async with self.SessionLocal() as session:
@@ -1005,10 +1039,9 @@ class FitnessTestRepository(ABCRepository):
                     .where(TestSession.serial_number_pti == serial_number_pti)
                     .where(TestSession.datetime_start >= current_datetime)
                     .order_by(TestSession.datetime_start)
-                    .limit(1)
                 )
                 result = await session.execute(query)
-                return result.scalar_one_or_none()
+                return result.scalars().all()
 
         except SQLAlchemyError as e:
             self.__logger.error(f"Database error fetching upcoming session for PTI {serial_number_pti}: {str(e)}")

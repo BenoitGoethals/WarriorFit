@@ -1,8 +1,11 @@
+import datetime
 import logging
 from typing import Optional, List
 
 import bcrypt
-from sqlalchemy import select, delete
+from openpyxl.pivot.fields import DateTimeField
+from sqlalchemy import select, delete, func
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from data.db.abc_repository import ABCRepository
@@ -30,6 +33,7 @@ class UserRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
+                    user.created_at = func.now()
                     session.add(user)
                 await session.refresh(user)
                 return user
