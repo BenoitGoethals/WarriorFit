@@ -6,7 +6,9 @@ from typing import Optional
 import pandas as pd
 from shiny import ui, render, reactive
 
+from config.appliccation_config import ApplicationConfig
 from services.military_service import MilitaryService
+from services.report_generator_pdf import ReportGeneratorPdf
 from ui.controllers.own_unit_controller import OwnUnitController
 
 
@@ -15,6 +17,7 @@ class OwnUnitPage:
         self.controller = OwnUnitController(mil_service or MilitaryService())
         self.refresh_tick = reactive.Value(0)
         self._selected_serial = reactive.Value(None)
+        self.report_path = reactive.Value(None)
 
     def get_ui(self):
         return ui.nav_panel(
@@ -23,11 +26,47 @@ class OwnUnitPage:
                 ui.card_header(f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"),
                 ui.input_action_button("refresh_servicemen", "Refresh"),
                 ui.output_data_frame("servicemen_grid"),
+                ui.input_action_button("full_report_unit", "Pdf Satus Unit", width="150px"),
+                ui.output_ui("download_btn_unit"),
+                ui.br(),
                 full_screen=True,
             ),
         )
 
     def server(self, input, output, session):
+        status_report_unit= reactive.Value("")
+        @reactive.effect
+        @reactive.event(input.full_report_unit)
+        async def full_report_unit():
+            self.report_path.set(None)
+            status_report_unit.set("Generating report...")
+            report_generator = ReportGeneratorPdf()
+            output_path = await report_generator.generate_total_report_current_year_own_unit()
+            if output_path:
+                self.report_path.set(output_path)
+                status_report_unit.set(f"Full report generated.")
+                self.refresh_tick.set(self.refresh_tick.get() + 1)
+                ui.notification_show("Report generated", type="message", duration=2)
+            else:
+                status_report_unit.set("Failed to generate report.")
+
+
+        @output
+        @render.ui
+        def download_btn_unit():
+            if self.report_path.get():
+                return ui.download_button("download_generated_report_unit", "Download PDF", width="150px",
+                                          class_="btn-success")
+            return None
+
+        @render.download(filename=lambda: f"Report_{ApplicationConfig().own_unit}.pdf")
+        def download_generated_report_unit():
+            path = self.report_path.get()
+            if path:
+                return path
+            return None
+
+
         @reactive.calc
         def _tick():
             input.refresh_servicemen()
