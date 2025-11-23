@@ -23,9 +23,9 @@ The system includes user management, test input, calculations, PDF reporting, an
 
 ## Project Goals
 The main goals of this project are:
-* To develop a comprehensive fitness and military management application
+* To develop a comprehensive fitness  military management application
 * To integrate data collection, statistical analysis, and reporting capabilities tailored for military fitness standards
-* To integrate with existing Defence systems
+* To integrate with existing Defence systems (HRM)
 
 ## Project Development Methodology
 The project is developed using Agile methodology and SOLID principles.
@@ -36,23 +36,25 @@ The project is managed using Github.
 
 ## 1. Project Structure (click links)
 The project documentation is structured in different documents:
-1. * [Design](documentation/Design.md) (In Progress)
-2. * [Business Logic](documentation/business_logic.md) (In Progress)
-3. * [Datamodel/ERD](documentation/datamodel.md) (In Progress)
-4. * [Stories](documentation/stories.md) (In Progress)
-5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (In Progress)
-6. * [Module Structures](documentation/module_structure.md) (In Progress)
+1. * [Design](documentation/Design.md) (In Review)
+2. * [Business Logic](documentation/business_logic.md) (In Review)
+3. * [Datamodel/ERD](documentation/datamodel.md) (In Review)
+4. * [Stories](documentation/stories.md) (In Review)
+5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (Done)
+6. * [Module Structures](documentation/module_structure.md) (In Review)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
 
 ## 2. Project Roadmap
-### **Phase 1 — Initiation & Project Charter (Nov 2025)**
+![progress.png](documentation/progress.png)
+
+### **Phase 1 — Initiation & Project Charter (Nov 2025)** (Done)
 
 * Project scope and vision
 * Initialize backlog and repository
 
-### **Phase 2 — Architecture & Structure (Jan 2026)**
+### **Phase 2 — Architecture & Structure (Jan 2026)** (in Progress)
 
 * Technical foundation, layer structure, and UML
 * Working skeleton project
