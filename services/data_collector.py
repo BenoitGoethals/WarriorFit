@@ -328,7 +328,6 @@ class DataCollector(metaclass=Singleton):
                 }
             )
 
-
         if not rows:
             return pd.DataFrame(
                 columns=[
@@ -407,4 +406,67 @@ class DataCollector(metaclass=Singleton):
         if not rows:
             return pd.DataFrame(columns=["Serial", "Name", "Gender", "Age", "Para"])
         rows.sort(key=lambda r: r["Name"])
+        return pd.DataFrame(rows)
+
+    async def collect_tests_data_for_own_unit(self) -> pd.DataFrame:
+        own_unit = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        rows = []
+        for m in own_unit:
+            data_phef = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(m.service_number,
+                                                                                                    TypeFitnessTest.PHEF)
+            data_functional = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                m.service_number, TypeFitnessTest.FUNCTIONAL)
+            data_combat = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(m.service_number,
+                                                                                                      TypeFitnessTest.COMBAT)
+            data_swimming = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                m.service_number, TypeFitnessTest.SWIMMING)
+            data_mars = await self._service_mars.get_mars_from_service_men(serial_number=m.service_number,
+                                                                           this_year=False)
+
+            if data_phef and data_phef[0].fitness_tests:
+                dt:PhefTest = data_phef[0].fitness_tests[0]
+                tp =PhefCalculator.calculate_phef_score(dt.running_time, dt.sideBridge_l, dt.sideBridge_r, m.age_from_birthdate(), m.gender)
+                phef_status = "Passed" if tp[4] else "Failed"
+            else:
+                phef_status = "Not Done"
+
+            if data_combat and data_combat[0].fitness_tests:
+                cmt = data_combat[0].fitness_tests[0]
+                combat_status = "Passed" if cmt.rope_passed and cmt.obstacle_passed else "Failed"
+            else:
+                combat_status = "Not Done"
+            if data_swimming and data_swimming[0].fitness_tests:
+                dw=data_swimming[0].fitness_tests[0]
+                swim_status = "Passed" if dw.swim_paased else "Failed"
+            else:
+                swim_status = "Not Done"
+            if data_functional and data_functional[0].fitness_tests:
+               dfd=data_functional[0].fitness_tests[0]
+               functional_score = (dfd.push_ups + dfd.sit_ups + dfd.pull_ups) / 3
+               func_status = "Passed" if functional_score >= 50 else "Failed"
+            else:
+                func_status = "Not Done"
+
+            if data_mars and data_mars[0].succeeded:
+                mars_status = "Passed"
+            elif data_mars and not data_mars[0].succeeded:
+                mars_status = "Failed"
+            else:
+                mars_status = "Not Done"
+
+
+            rows.append({
+                "Rank": m.rank,
+                "Serial": m.service_number,
+                "Name": f"{m.first_name} {m.last_name}",
+                "Phef": phef_status,
+                "Combat": combat_status,
+                "Swimming": swim_status,
+                "Functional": func_status,
+                "Mars": mars_status
+            })
+
+        if not rows:
+            return pd.DataFrame(columns=["Rank", "Serial","Name", "Phef", "Combat", "Swimming", "Functional", "Mars"])
+
         return pd.DataFrame(rows)
