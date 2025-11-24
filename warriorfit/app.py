@@ -2,6 +2,7 @@ import logging
 from typing import Any, Optional
 from shiny import App, ui, render
 from warriorfit.data.db.db_model import Role
+from warriorfit.mom.broker import Broker
 from warriorfit.services.service_user import UserService
 from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
@@ -19,6 +20,11 @@ class FitnessWarriorApp:
     APP_TITLE = "Fitness Warrior"
     DEFAULT_PORT = 8000
     LOGIN_MODAL_SIZE = "m"
+    _broker=Broker()
+
+    @classmethod
+    def get_broker(cls):
+        return cls._broker
 
     @classmethod
     def _create_logger_formatter(cls) -> logging.Formatter:
@@ -378,4 +384,5 @@ class FitnessWarriorApp:
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
 
 FitnessWarriorApp.setup_logger()
+#FitnessWarriorApp.get_broker().start()
 app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server)
