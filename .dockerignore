@@ -5,6 +5,6 @@ __pycache__
 .pytest_cache
 .coverage
 htmlcov
-logs
+warriorfit/logs
 tests
 .env

@@ -1,0 +1,162 @@
+import logging
+
+from sqlalchemy.orm import selectinload
+
+from warriorfit.data.db.abc_repository import ABCRepository
+from warriorfit.data.db.db_model import ServiceMen, Unit  # assuming ORM models exist
+from sqlalchemy import select, delete as sa_delete
+from sqlalchemy.exc import SQLAlchemyError
+
+
+class ServicemenRepository(ABCRepository):
+    def __init__(self):
+        super().__init__()
+        self.__logger = logging.getLogger(__name__)
+
+    async def create_serviceman(self, service_men: ServiceMen) -> ServiceMen | None:
+        """
+        Create a new serviceman.
+        payload should contain fields compatible with ServiceMen model constructor.
+        """
+        session = None
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    service_men = await session.add(service_men)
+                    await session.refresh(service_men)
+                    return service_men
+        except SQLAlchemyError as e:
+            self.__logger.exception("Failed to create serviceman")
+            if session is not None:
+                try:
+                    await session.rollback()
+                except Exception as e:
+                    self.__logger.exception(e)
+
+    async def get_servicemen_by_id(self, serviceman_id: int) -> ServiceMen | None:
+        """
+        Get serviceman by primary key id.
+        """
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    res = await session.execute(select(ServiceMen).where(ServiceMen.id == serviceman_id))
+                    return res.scalar_one_or_none()
+        except SQLAlchemyError as e:
+            self.__logger.exception(e)
+            return None
+
+    async def get_by_service_number(self, service_number: str,lazy=True) -> ServiceMen | None:
+        """
+        Get a single serviceman by unique service number.
+        """
+        if lazy:
+            query = select(ServiceMen).where(ServiceMen.service_number == service_number)
+        else:
+            query = select(ServiceMen).where(ServiceMen.service_number == service_number).options(selectinload(ServiceMen.unit))
+        results = await self.fetch_and_log(query, "ServiceMen")
+        return results[0] if results else None
+
+    async def list_all(self) -> list[ServiceMen]:
+        query = select(ServiceMen)
+        return await self.fetch_and_log(query, "ServiceMen")
+
+    async def list_by_unit_name(self, unit_name: str, limit: int = 100, offset: int = 0) -> list[ServiceMen]:
+        """
+        List servicemen filtered by unit name.
+        """
+
+        query = select(ServiceMen).join(Unit, ServiceMen.unit_id == Unit.id).where(Unit.name == unit_name).limit(limit).offset(offset)
+
+        return await self.fetch_and_log(query, "ServiceMen")
+
+
+    async def update_serviceman(self, service_men: ServiceMen) -> ServiceMen | None:
+        """
+        Partially update fields of a serviceman and return the updated entity.
+        """
+        session = None
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    service_men_update = await session.execute(
+                        select(ServiceMen).where(ServiceMen.id == service_men.id)
+                    )
+                    service_men_to_update = service_men_update.scalar_one_or_none()
+                    if service_men_to_update is None:
+                        return None
+                    service_men_to_update.last_name = service_men.last_name
+                    service_men_to_update.first_name = service_men.first_name
+                    service_men_to_update.service_number = service_men.service_number
+                    service_men_to_update.rank = service_men.rank
+                    service_men_to_update.age = service_men.age
+                    service_men_to_update.gender = service_men.gender
+                    service_men_to_update.unit_id = service_men.unit_id
+                    await session.commit()
+                    return service_men_to_update
+        except SQLAlchemyError as e:
+            self.__logger.exception(e)
+            if session is not None:
+                try:
+                    await session.rollback()
+                except Exception as e:
+                    self.__logger.exception(e)
+            return None
+
+    async def delete_serviceman(self, serviceman_id: int) -> bool:
+        """
+        Delete serviceman by id. Returns True if a row was deleted.
+        """
+        session = None
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    result = await session.execute(
+                        sa_delete(ServiceMen).where(ServiceMen.id == serviceman_id)
+                    )
+            return bool(getattr(result, "rowcount", 0))
+        except SQLAlchemyError as e:
+            self.__logger.exception("Failed to delete serviceman id=%s", serviceman_id)
+            if session is not None:
+                try:
+                    await session.rollback()
+                except Exception as e:
+                    self.__logger.exception(e)
+            return False
+
+    async def get_by_unit_id(self, id):
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    res = await session.execute(select(Unit).where(Unit.id == id))
+                    return res.scalar_one_or_none()
+        except SQLAlchemyError as e:
+            self.__logger.exception(e)
+            return None
+
+    async def add_unit(self, unit):
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    session.add(unit)
+                    await session.commit()
+                    return True
+        except SQLAlchemyError as e:
+            session.rollback()
+            self.__logger.exception(e)
+            return False
+
+    async def list_all_units(self):
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    res = await session.execute(select(Unit))
+                    return res.scalars().all()
+        except SQLAlchemyError as e:
+            self.__logger.exception(e)
+            return None
+
+    async def get_all_be_mil_from_unit(self, own_unit: str) -> list[ServiceMen]:
+        query = select(ServiceMen).join(Unit, ServiceMen.unit_id == Unit.id).where(Unit.name == own_unit)
+        query = query.options(selectinload(ServiceMen.unit))  # Add explicit loading
+        return await self.fetch_and_log(query, "unit")

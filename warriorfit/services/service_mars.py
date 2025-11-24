@@ -1,0 +1,34 @@
+from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.data.db.db_model import Mars
+from warriorfit.data.db.mars_repository import MarsRepository
+from warriorfit.services.military_service import MilitaryService
+from warriorfit.services.service import Service
+
+
+class ServiceMars(Service):
+    def __init__(self):
+        super().__init__()
+        self.__repo=MarsRepository()
+        self.be_mil_service = MilitaryService()
+
+
+    async def get_all_mars(self):
+        return await self.__repo.get_all_mars()
+
+    async def get_all_mars_from_unit(self):
+        return await self.__repo.get_all_mars_by_unit_name(ApplicationConfig().own_unit)
+
+    async def get_mars_by_id(self, ind_id):
+        return await self.__repo.get_mars_by_id(ind_id)
+
+    async def get_mars_from_service_men(self,serial_number,this_year=True)->list[Mars]:
+        return await self.__repo.get_all_mars_form_service_men(serial_number,this_year)
+
+    async def add_mars(self, mars):
+        return await self.__repo.add_mars(mars)
+
+    async def delete_mars(self, ind_mars):
+        return await self.__repo.delete_mars(ind_mars)
+
+    async def update_mars(self,mars):
+        return await self.__repo.update_mars(mars)
