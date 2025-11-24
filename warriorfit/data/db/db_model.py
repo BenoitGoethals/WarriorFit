@@ -289,3 +289,9 @@ class Mars(Base):
                                                      primaryjoin="Mars.service_number==ServiceMen.service_number",
                                                      foreign_keys=[service_number],
                                                      backref="mars")
+
+class HrMessage(Base):
+    __tablename__ = "hr_messages"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    message: Mapped[str] = mapped_column(String(255), nullable=False)
+    datetime_created: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)

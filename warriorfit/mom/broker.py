@@ -5,26 +5,23 @@ import threading
 import time
 
 from warriorfit.data.db.db_model import PhefTest
+from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
 
 from warriorfit.mom.message_container import MessageContainer
 import httpx
 
 
-class Broker:
+class Broker(metaclass=Singleton):
 
     def __init__(self, url: str="http://127.0.0.1:8005/api/v1/phef/test"):
 
-        self._msg_queue = MessageContainer()
         self._url = url
-        self._running = True
+
         self._logger = logging.getLogger(__name__)
-        self._thread: threading.Thread | None = None
 
 
-    @property
-    def is_running(self):
-        return self._running
+
 
     def send_message(self, message:Message):
         if not isinstance(message, Message):
@@ -47,44 +44,6 @@ class Broker:
             self._logger.error(f"Error sending message to HR: {e}")
             print(e)
             return None
-
-    async def _run_loop(self):
-        while self._running:
-
-            await asyncio.sleep(1)
-
-            message = self._msg_queue.get_message()
-            if not message:
-                continue
-            try:
-                resp = await self._send_message_to_hr(message)
-                if resp and resp.get("success"):
-                    self._logger.info("Message sent successfully to HR")
-                    self._msg_queue.delete_message(message)
-                else:
-                    self._logger.error("Message failed to send to HR")
-            except Exception as e:
-                self._logger.exception(f"send loop error: {e}")
-
-    def start(self):
-        if self._thread and self._thread.is_alive():
-            return
-        self._running = True
-
-        def runner():
-            try:
-                asyncio.run(self._run_loop())
-            except Exception:
-                self._logger.exception("Broker thread crashed")
-
-        # Make it non-daemon so process won’t exit early
-        self._thread = threading.Thread(target=runner, name="BrokerThread", daemon=False)
-        self._thread.start()
-
-    def stop(self):
-        self._running = False
-        if self._thread:
-            self._thread.join(timeout=5)
             self._thread = None
 
 
@@ -112,7 +71,7 @@ if __name__ == "__main__":
         sideBridge_l=20.0,
     )
     b = Broker("http://127.0.0.1:8005/api/v1/phef/test")
-    b.start()
+
     for i in range(10):
         time.sleep(1)
         b.send_message(Message(content=PhefTestDto(dt)))
