@@ -81,3 +81,8 @@ def receive_message(payload: MessageIn):
         raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid message: {e}")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8005)
