@@ -3,10 +3,9 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from mom.broker import Broker
-from mom.message import Message
-from mom.message_container import MessageContainer
-from utils.Os import Os
+from warriorfit.mom import Broker
+from warriorfit.mom.message import Message
+from warriorfit.mom import MessageContainer
 
 
 @pytest.fixture
