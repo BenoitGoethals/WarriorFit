@@ -317,6 +317,7 @@ class FitnessWarriorApp:
         def _mount_on_nav_activation():
             try:
                 _ = input.main_nav()
+             
             except Exception:
                 return
 
@@ -384,5 +385,5 @@ class FitnessWarriorApp:
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
 
 FitnessWarriorApp.setup_logger()
-#FitnessWarriorApp.get_broker().start()
+FitnessWarriorApp.get_broker().start()
 app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server)
