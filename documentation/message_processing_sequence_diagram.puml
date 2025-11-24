@@ -1,0 +1,93 @@
+// ... existing code ...
+
+## Sequence Diagram
+
+The following diagram illustrates the asynchronous message processing flow within the Broker.
+
+```plantuml
+@startuml
+autonumber
+
+box "Application Logic" #White
+    actor "Client / Main App" as Client
+end box
+
+box "MOM (Message Oriented Middleware)" #LightBlue
+    participant "Broker" as Broker
+    participant "MessageContainer" as Queue
+    participant "Broker Thread\n(Async Loop)" as Thread
+end box
+
+box "External System" #LightGray
+    participant "HR / API Endpoint" as API
+end box
+
+== Initialization & Startup ==
+
+Client -> Broker: new Broker(url)
+Client -> Broker: start()
+activate Broker
+
+create Thread
+Broker -> Thread: start()
+activate Thread
+
+Broker --> Client: return (non-blocking)
+deactivate Broker
+
+note right of Thread: Loop runs asynchronously\nchecks queue every 1s
+
+== Message Production ==
+
+Client -> Broker: send_message(message)
+activate Broker
+Broker -> Queue: push_message(message)
+activate Queue
+Queue --> Broker
+deactivate Queue
+Broker --> Client
+deactivate Broker
+
+== Message Consumption (Background) ==
+
+loop while running
+    Thread -> Thread: sleep(1)
+    
+    Thread -> Queue: get_message()
+    activate Queue
+    Queue --> Thread: message
+    deactivate Queue
+
+    alt message is not None
+        Thread -> API: POST (JSON payload)
+        activate API
+        
+        alt HTTP Success (200 OK)
+            API --> Thread: Response {success: True}
+            Thread -> Queue: delete_message(message)
+            activate Queue
+            Queue --> Thread
+            deactivate Queue
+            Thread -> Thread: log info
+        else HTTP Error / Exception
+            API --> Thread: Error / 500 / Timeout
+            deactivate API
+            Thread -> Thread: log error
+            note right: Message remains in Queue\nfor retry
+        end
+    end
+end
+
+== Shutdown ==
+
+Client -> Broker: stop()
+activate Broker
+Broker -> Thread: _running = False
+Broker -> Thread: join()
+deactivate Thread
+destroy Thread
+Broker --> Client
+deactivate Broker
+
+@enduml
+```
