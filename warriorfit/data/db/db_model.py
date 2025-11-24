@@ -1,0 +1,291 @@
+from __future__ import annotations
+
+from datetime import date, datetime
+from typing import List, Optional
+
+from sqlalchemy import (
+    String,
+    ForeignKey,
+    Enum as SAEnum,
+    Boolean,
+    Float,
+    func, UniqueConstraint, Date, Enum,
+)
+from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from warriorfit.core.Gender import Gender
+from warriorfit.core.role import Role
+from warriorfit.core.type_fitness_test import TypeFitnessTest
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class AuditLog(Base):
+    """
+    Represents an audit log for tracking user actions on various entities.
+    """
+    __tablename__ = "audit_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    action: Mapped[str] = mapped_column(String(50), nullable=False)
+    details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    created_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
+    role: Mapped[Role] = mapped_column(SAEnum(Role), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    serial_number: Mapped[Optional[str]] = mapped_column(String(50), unique=True, nullable=True)
+
+
+# Tests
+
+class FitnessTest(Base):
+    __tablename__ = "fitness_tests"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    serial_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+
+    # discriminator
+    type: Mapped[Optional[str]] = mapped_column(String(50))
+
+    __mapper_args__ = {
+        "polymorphic_identity": "fitness_test",
+        "polymorphic_on": type,
+    }
+
+    def __repr__(self):
+        return f"<FitnessTest(id={self.id}, serial_number={self.serial_number})>"
+
+    def __str__(self):
+        return f"FitnessTest(id={self.id}, serial_number={self.serial_number})"
+
+
+class PhefTest(FitnessTest):
+    __tablename__ = "phef_tests"
+
+    id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
+    running_time: Mapped[float] = mapped_column(Float, nullable=False)
+    sideBridge_r: Mapped[float] = mapped_column(Float, nullable=False)
+    sideBridge_l: Mapped[float] = mapped_column(Float, nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": "phef_test"}
+
+    def __repr__(self):
+        return f"<PhefTest(id={self.id}, running_time={self.running_time}, sideBridge_r={self.sideBridge_r}, sideBridge_l={self.sideBridge_l})>"
+
+    def __str__(self):
+        return f"PhefTest(id={self.id}, running_time={self.running_time}, sideBridge_r={self.sideBridge_r}, sideBridge_l={self.sideBridge_l})"
+
+
+class FunctionalTest(FitnessTest):
+    __tablename__ = "functional_tests"
+
+    id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
+    push_ups: Mapped[int] = mapped_column(nullable=False)
+    sit_ups: Mapped[int] = mapped_column(nullable=False)
+    pull_ups: Mapped[int] = mapped_column(nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": "functional_test"}
+
+    def __repr__(self):
+        return f"<FunctionalTest(id={self.id}, push_ups={self.push_ups}, sit_ups={self.sit_ups}, pull_ups={self.pull_ups})>"
+
+    def __str__(self):
+        return f"FunctionalTest(id={self.id}, push_ups={self.push_ups}, sit_ups={self.sit_ups}, pull_ups={self.pull_ups})"
+
+
+class CombatTestParatrooper(FitnessTest):
+    __tablename__ = "combat_tests"
+
+    id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
+    running_time: Mapped[float] = mapped_column(Float, nullable=False)
+    obstacle_passed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    rope_passed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": "combat_test"}
+
+    def __repr__(self):
+        return f"<CombatTestParatrooper(id={self.id}, running_time={self.running_time}, obstacle_passed={self.obstacle_passed}, rope_passed={self.rope_passed})>"
+
+    def __str__(self):
+        return f"CombatTestParatrooper(id={self.id}, running_time={self.running_time}, obstacle_passed={self.obstacle_passed}, rope_passed={self.rope_passed})"
+
+
+class CombatSwimmingTest(FitnessTest):
+    __tablename__ = "combat_swimming_tests"
+
+    id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
+    swim_paased: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": "combat_swimming_test"}
+
+    def __repr__(self):
+        return f"<CombatSwimmingTest(id={self.id}, swim_paased={self.swim_paased})>"
+
+    def __str__(self):
+        return f"CombatSwimmingTest(id={self.id}, swim_paased={self.swim_paased})"
+
+
+class TestSession(Base):
+    __tablename__ = "test_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    serial_number_pti: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    datetime_start: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
+    canceled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    type_test: Mapped[TypeFitnessTest] = mapped_column(
+        SAEnum(TypeFitnessTest), default=TypeFitnessTest.PHEF, nullable=False
+    )
+
+    fitness_tests: Mapped[List[FitnessTest]] = relationship(
+        "FitnessTest",
+        secondary="session_fitness_tests",
+        backref="test_sessions",
+    )
+
+    def __repr__(self):
+        return f"<TestSession(id={self.id}, serial_number_pti={self.serial_number_pti}, datetime_start={self.datetime_start}, executed={self.canceled})>"
+
+    def __str__(self):
+        return f"TestSession(id={self.id}, serial_number_pti={self.serial_number_pti}, datetime_start={self.datetime_start}, executed={self.canceled})"
+
+
+class SessionFitnessTests(Base):
+    __tablename__ = "session_fitness_tests"
+
+    session_id: Mapped[int] = mapped_column(ForeignKey("test_sessions.id"), primary_key=True)
+    fitness_test_id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
+
+
+# CROSS
+
+class Cross(Base):
+    __tablename__ = "cross"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    datetime_start: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
+    distance: Mapped[float] = mapped_column(Float, nullable=False)
+    executed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    runners: Mapped[List[Runner]] = relationship(
+        "Runner", secondary="cross_runners", back_populates="crosses"
+    )
+
+
+class Runner(Base):
+    __tablename__ = "runners"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    serial_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    running_time: Mapped[float] = mapped_column(Float, nullable=False)
+
+    crosses: Mapped[List[Cross]] = relationship(
+        "Cross", secondary="cross_runners", back_populates="runners"
+    )
+
+
+class CrossRunners(Base):
+    __tablename__ = "cross_runners"
+
+    cross_id: Mapped[int] = mapped_column(ForeignKey("cross.id"), primary_key=True)
+    runner_id: Mapped[int] = mapped_column(ForeignKey("runners.id"), primary_key=True)
+
+
+class Unit(Base):
+    __tablename__ = "units"
+    __table_args__ = (
+        UniqueConstraint("name", name="uq_units_name"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    base_location: Mapped[str] = mapped_column(String(150), nullable=False)
+
+    def __repr__(self) -> str:
+        return f"Unit(id={self.id}, name='{self.name}', base_location='{self.base_location}')"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.base_location})"
+
+
+class ServiceMen(Base):
+    __tablename__ = "service_men"
+    __table_args__ = (
+        UniqueConstraint("service_number", name="uq_service_men_service_number"),
+     #   UniqueConstraint("mail", name="uq_service_men_mail"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    first_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    mail: Mapped[str] = mapped_column(String(120), nullable=False)
+    rank: Mapped[str] = mapped_column(String(50), nullable=False)
+    service_number: Mapped[str] = mapped_column(String(50), nullable=False)
+    birthdate: Mapped[date] = mapped_column(Date, nullable=False)
+    gender: Mapped[Gender] = mapped_column(Enum(Gender), nullable=False)
+
+    # Ref naar Unit i.p.v. Enum
+    unit_id: Mapped[int] = mapped_column(ForeignKey("units.id"), nullable=False, index=True)
+    unit: Mapped["Unit"] = relationship("Unit", backref="servicemen")
+
+    para: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    ops_test: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    @property
+    def age(self) -> int:
+        return self.age_from_birthdate()
+
+    def age_from_birthdate(self) -> int:
+        if isinstance(self.birthdate, str):
+            d = datetime.strptime(self.birthdate, "%Y-%m-%d").date()
+        elif isinstance(self.birthdate, datetime):
+            d = self.birthdate.date()
+        else:
+            d = self.birthdate
+        today = date.today()
+        return today.year - d.year - ((today.month, today.day) < (d.month, d.day))
+
+    def age_from_birthdate_and_session_date(self, date_session: date) -> int:
+        if isinstance(self.birthdate, str):
+            b = datetime.strptime(self.birthdate, "%Y-%m-%d").date()
+        elif isinstance(self.birthdate, datetime):
+            b = self.birthdate.date()
+        else:
+            b = self.birthdate
+        return date_session.year - b.year - ((date_session.month, date_session.day) < (b.month, b.day))
+
+    def __str__(self) -> str:
+        return f"{self.first_name} {self.last_name}  {self.mail}"
+
+    def __repr__(self) -> str:
+        return f"{self.first_name} {self.last_name}  {self.mail}"
+
+
+class Mars(Base):
+    __tablename__ = "mars"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    service_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    distance: Mapped[float] = mapped_column(Float, nullable=True, default=30)
+    succeeded: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    datetime_executed: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
+
+    service_men: Mapped["ServiceMen"] = relationship("ServiceMen",
+                                                     primaryjoin="Mars.service_number==ServiceMen.service_number",
+                                                     foreign_keys=[service_number],
+                                                     backref="mars")

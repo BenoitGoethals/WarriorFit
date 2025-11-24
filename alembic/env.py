@@ -6,7 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from data.db.db_model import Base
+from warriorfit.data import Base
 sys.path.append('./data/db')
 
 # this is the Alembic Config object, which provides
