@@ -1,8 +1,8 @@
 # tests/test_Functional_calculator.py
 
 import pytest
-from core.Gender import Gender
-from logic.Functional_calculator import FunctionalCalculator
+from warriorfit.core import Gender
+from warriorfit.logic.Functional_calculator import FunctionalCalculator
 
 
 @pytest.mark.parametrize(

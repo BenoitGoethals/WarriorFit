@@ -2,8 +2,8 @@
 
 import unittest
 import pytest
-from core.Gender import Gender
-from logic.phef_calculator import PhefCalculator
+from warriorfit.core import Gender
+from warriorfit.logic.phef_calculator import PhefCalculator
 
 
 class TestPhefCalculator(unittest.TestCase):
