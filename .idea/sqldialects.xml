@@ -3,6 +3,5 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/warriorfit/data/scripts/test_data.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/warriorfit/military_api_rest/create_populate.sql" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/warriorfit/mom/message_container.py" dialect="SQLite" />
   </component>
 </project>

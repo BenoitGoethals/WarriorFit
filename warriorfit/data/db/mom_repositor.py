@@ -19,11 +19,10 @@ class MomRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    session.add(msg)  # sync; do not await
-                await session.refresh(msg)  # refresh after commit, same session
+                    session.add(msg)
+                await session.refresh(msg)
             return msg
         except IntegrityError as e:
-            # Session is already closed here; automatic rollback happened in session.begin()
             self._logger.error(f"Integrity error adding cross {getattr(msg, 'id', 'unknown')}: {str(e)}")
             return None
         except SQLAlchemyError as e:
@@ -57,10 +56,7 @@ class MomRepository(ABCRepository):
     async def get_last_added_hr_message_by_send_date(self)->HrMessage | None:
         try:
             async with self.SessionLocal() as session:
-                # Use 'select' and order by descending date to get the latest message
                 query = select(HrMessage).order_by(HrMessage.datetime_created.desc())
-                
-                # Await the execution to get the Result, then fetch the first scalar
                 result = await session.execute(query)
                 return result.scalars().first()
         except SQLAlchemyError as e:

@@ -3,12 +3,10 @@ import json
 import logging
 import threading
 import time
-
-from warriorfit.data.db.db_model import PhefTest
+from warriorfit.data.db.db_model import PhefTest, HrMessage
+from warriorfit.data.db.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
-
-from warriorfit.mom.message_container import MessageContainer
 import httpx
 
 
@@ -17,21 +15,32 @@ class Broker(metaclass=Singleton):
     def __init__(self, url: str="http://127.0.0.1:8005/api/v1/phef/test"):
 
         self._url = url
-
+        self._mom_repo=MomRepository()
         self._logger = logging.getLogger(__name__)
+        self.running = False
+        self.worker_thread = None
+
+    def worker(self):
+        """Background thread die om de 5 seconden draait"""
+        print(f"🚀 Message Queue Service gestart")
+        print(f"📍 Target URL: {self._url}")
+       
+        print(f"⏱  Check interval: 5 seconden\n")
+
+        while self.running:
+            self.check_and_send_messages()
+            time.sleep(5)
 
 
-
-
-    def send_message(self, message:Message):
-        if not isinstance(message, Message):
+    async def send_message(self, message:HrMessage):
+        if not isinstance(message, HrMessage):
             raise TypeError("message must be an instance of Message")
-        self._msg_queue.push_message(message)
+        await self._mom_repo.add_hr_message(message)
 
-    async def _send_message_to_hr(self, message: Message) -> dict | None:
+    async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
         try:
+            message = Message(content=message_hr.message)
             async with httpx.AsyncClient() as client:
-                # send dict, not pre-serialized JSON string
                 response = await client.post(
                     self._url,
                     json=message.to_dict(),
@@ -45,6 +54,35 @@ class Broker(metaclass=Singleton):
             print(e)
             return None
             self._thread = None
+
+    async def check_and_send_messages(self):
+        self._logger.info("Checking for messages to send to HR...")
+        msg:HrMessage=await self._mom_repo.get_last_added_hr_message_by_send_date()
+
+        if msg:
+            self._logger.info("Message sent to HR")
+            ret = await self._send_message_to_hr(msg)
+            if ret:
+                await self._mom_repo.delete_hr_message(msg.id)
+        else:
+            self._logger.error("Error sending message to HR")
+
+    def start(self):
+        """Service starten"""
+        if not self.running:
+            self.running = True
+            self.worker_thread = threading.Thread(target=self.worker, daemon=True)
+            self.worker_thread.start()
+
+    def stop(self):
+        """Service stoppen"""
+        print("\n🛑 Service wordt gestopt...")
+        self.running = False
+        if self.worker_thread:
+            self.worker_thread.join()
+        print("✓ Service gestopt")
+
+
 
 
 class PhefTestDto:
@@ -64,14 +102,5 @@ class PhefTestDto:
 
 
 if __name__ == "__main__":
-    dt = PhefTest(
-        serial_number="BE-20250001",
-        running_time=2.0,
-        sideBridge_r=2.0,
-        sideBridge_l=20.0,
-    )
-    b = Broker("http://127.0.0.1:8005/api/v1/phef/test")
 
-    for i in range(10):
-        time.sleep(1)
-        b.send_message(Message(content=PhefTestDto(dt)))
+    b = Broker("http://127.0.0.1:8005/api/v1/phef/test")
