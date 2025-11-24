@@ -36,18 +36,18 @@ The project is managed using Github.
 
 ## 1. Project Structure (click links)
 The project documentation is structured in different documents:
-1. * [Design](warriorfit/documentation/Design.md) (In Review)
-2. * [Business Logic](warriorfit/documentation/business_logic.md) (In Review)
-3. * [Datamodel/ERD](warriorfit/documentation/datamodel.md) (In Review)
-4. * [Stories](warriorfit/documentation/stories.md) (In Review)
-5. * [Initiale proposalInitiale proposal](warriorfit/documentation/project_proposel.md) (Done)
-6. * [Module Structures](warriorfit/documentation/module_structure.md) (In Review)
+1. * [Design](documentation/Design.md) (In Review)
+2. * [Business Logic](documentation/business_logic.md) (In Review)
+3. * [Datamodel/ERD](documentation/datamodel.md) (In Review)
+4. * [Stories](documentation/stories.md) (In Review)
+5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (Done)
+6. * [Module Structures](documentation/module_structure.md) (In Review)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
 
 ## 2. Project Roadmap
-![progress.png](warriorfit/documentation/progress.png)
+![progress.png](documentation/progress.png)
 
 ### **Phase 1 — Initiation & Project Charter (Nov 2025)** (Done)
 
