@@ -3,11 +3,16 @@ import json
 import logging
 import threading
 import time
+import queue
+from datetime import datetime
+
 from warriorfit.data.db.db_model import PhefTest, HrMessage
 from warriorfit.data.db.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
 import httpx
+
+from warriorfit.utils.Os import Os
 
 
 class Broker(metaclass=Singleton):
@@ -19,6 +24,7 @@ class Broker(metaclass=Singleton):
         self._logger = logging.getLogger(__name__)
         self.running = False
         self.worker_thread = None
+        self._msg_queue = queue.Queue()
 
     def worker(self):
         """Background thread die om de 5 seconden draait"""
@@ -27,15 +33,44 @@ class Broker(metaclass=Singleton):
        
         print(f"⏱  Check interval: 5 seconden\n")
 
+        # Create a new event loop for this background thread
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         while self.running:
-            self.check_and_send_messages()
+            try:
+
+                loop.run_until_complete(self._process_cycle())
+            except Exception as e:
+                self._logger.error(f"Worker loop error: {e}")
+
             time.sleep(5)
+        
+        loop.close()
 
 
-    async def send_message(self, message:HrMessage):
-        if not isinstance(message, HrMessage):
-            raise TypeError("message must be an instance of Message")
-        await self._mom_repo.add_hr_message(message)
+    async def _process_cycle(self):
+        """Process queue and then check for sending"""
+        # 1. Drain queue to DB
+        if not self._msg_queue.empty():
+            repo = MomRepository()
+            while not self._msg_queue.empty():
+                try:
+                    msg = self._msg_queue.get_nowait()
+                    await repo.add_hr_message(msg)
+                except queue.Empty:
+                    break
+                except Exception as e:
+                    self._logger.error(f"Error saving queued message: {e}")
+
+        # 2. Send pending messages
+        await self.check_and_send_messages()
+
+    async def send_message(self, pf:PhefTest):
+        if  isinstance(pf, PhefTest):
+            pf_dto = PhefTestDto(pf)
+            hr_m = HrMessage(message=json.dumps(pf_dto.to_dict()),datetime_created=datetime.now())
+            self._msg_queue.put(hr_m)
 
     async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
         try:
@@ -53,17 +88,17 @@ class Broker(metaclass=Singleton):
             self._logger.error(f"Error sending message to HR: {e}")
             print(e)
             return None
-            self._thread = None
 
     async def check_and_send_messages(self):
         self._logger.info("Checking for messages to send to HR...")
-        msg:HrMessage=await self._mom_repo.get_last_added_hr_message_by_send_date()
+        repo = MomRepository()
+        msg:HrMessage=await repo.get_last_added_hr_message_by_send_date()
 
         if msg:
             self._logger.info("Message sent to HR")
             ret = await self._send_message_to_hr(msg)
             if ret:
-                await self._mom_repo.delete_hr_message(msg.id)
+                await repo.delete_hr_message(msg.id)
         else:
             self._logger.error("Error sending message to HR")
 
@@ -102,5 +137,13 @@ class PhefTestDto:
 
 
 if __name__ == "__main__":
-
-    b = Broker("http://127.0.0.1:8005/api/v1/phef/test")
+    
+    def main():    
+        b = Broker("http://127.0.0.1:8005/api/v1/phef/test")
+        b.start()
+        asyncio.run(b.send_message(PhefTest(running_time=120, sideBridge_l=50, sideBridge_r=50, id=1)))
+        asyncio.run(b.send_message(PhefTest(running_time=120, sideBridge_l=50, sideBridge_r=50, id=2)))
+        input("Press Enter to stop the service...")
+        b.stop()
+        
+    main()

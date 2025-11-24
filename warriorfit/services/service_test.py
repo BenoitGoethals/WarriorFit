@@ -72,6 +72,7 @@ class ServiceTest(Service):
             match test.type:
                 case "phef_test":
                     body = self.build_email_body_phef(military, session, test)
+                    self._broker.send_message(message=)
                 case "combat_swimming_test":
                     body = self.build_email_body_swim(military, session, test)
                 case "functional_test":
@@ -87,7 +88,7 @@ class ServiceTest(Service):
                 action="add",
             )
 
-            self._broker.send_message(message=Message(content=test))
+
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
