@@ -27,15 +27,12 @@ class MessageContainer:
         self._logger = logging.getLogger(__name__)
 
 
-    def push_message(self, message: Message) -> int:
+    def push_message(self, message: Message) :
         if not isinstance(message, Message):
             raise TypeError("message must be an instance of Message")
         with self._lock:
             db_id = self._save_message_sqlite(message.to_json(), getattr(message, "timestamp", None))
-            setattr(message, "_db_id", db_id)
-            self._messages.put(message)
-            print("put message in queue")
-            return db_id
+
 
     def get_message(self) -> Optional[Message]:
         with self._lock:

@@ -80,14 +80,13 @@ class ServiceTest(Service):
                     body = self.build_email_body_combat(test)
             if body:
                 await NotifyMail().send_mail(
-                    body=body, subject="Result Test", to=military.mail
+                    body=body, subject="Result Test", to=str(military.mail)
                 )
             await self.add_audit_log(
                 details=f"Fitness test {test.serial_number} {test.type} added to test session {param}",
                 action="add",
             )
-            if not self._broker.is_running:
-                self._broker.start()
+
             self._broker.send_message(message=Message(content=test))
         return add_test
 
