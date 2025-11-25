@@ -43,10 +43,14 @@ class OwnUnitController:
                 "Birthdate": (sm.birthdate or ""),
                 "Para": bool(sm.para),
                 "Ops Test": bool(sm.ops_test),
-                "Phef status": "🟢 Passed" if await self._is_passed_phef(sm) else "🔴 Failed",
-                "Combat status": "🟢 Passed" if await self._is_passed_combat(sm) else "🔴 Failed",
-                "Swim status": "🟢 Passed" if await self._is_passed_swim(sm) else "🔴 Failed",
-                "Mars status": "🟢 Passed" if await self._is_passed_mars(sm) else "🔴 Failed"
+                "Phef status": "🟢 Passed" if await self._is_passed_phef(
+                    sm) else "🔴 Failed" if await self._is_passed_phef(sm) is False else "🔴 Not done",
+                "Combat status": "🟢 Passed" if await self._is_passed_combat(
+                    sm) else "🔴 Failed" if await self._is_passed_combat(sm) is False else "🔴 Not done",
+                "Swim status": "🟢 Passed" if await self._is_passed_swim(
+                    sm) else "🔴 Failed" if await self._is_passed_swim(sm) is False else "🔴 Not done",
+                "Mars status": "🟢 Passed" if await self._is_passed_mars(
+                    sm) else "🔴 Failed" if await self._is_passed_mars(sm) is False else "🔴 Not done"
             }
             for sm in service_men_list
         ]
@@ -55,31 +59,39 @@ class OwnUnitController:
 
     async def _is_passed_phef(self, service_men:ServiceMen):
             mils: list[PhefTest] = await self._service.get_all_phef_mil(service_men.service_number)
+            if not mils or len(mils) == 0:
+                return None
             passed = any([(PhefCalculator.calculate_phef_score(mil.running_time, mil.sideBridge_l, mil.sideBridge_r,
                                                                service_men.age_from_birthdate(), service_men.gender)[4]) for mil in mils])
             return passed
 
     async def _is_passed_combat(self, service_men:ServiceMen):
             mils: list[CombatTestParatrooper] = await self._service.get_all_combat_test_mil(service_men.service_number)
+            if not mils or len(mils) == 0:
+                return None
             return len([x for x in mils if x.running_time <= 7200 and x.rope_passed and x.obstacle_passed]) > 0
 
 
     async def _is_passed_swim(self,service_men:ServiceMen):
         mils: list[CombatSwimmingTest] = await self._service.get_all_combat_test_swim(service_men.service_number)
+        if not mils or len(mils) == 0:
+            return None
         return len([x for x in mils if  x.swim_paased]) > 0
 
     async def _is_passed_mars(self, sm:ServiceMen):
         mars:List[Mars] = await self._service_mars.get_mars_from_service_men(sm.service_number)
+        if not mars or len(mars) == 0:
+            return None
         return len([x for x in mars if x.succeeded]) > 0
 
 
 
     async def fetch_tests_for_serial_df(self, serial: str|None) -> pd.DataFrame:
         try:
-            tests_df = await DataCollector().collect_tests_for_serial(serial,current_year=False)
+            tests_df = await DataCollector().collect_tests_for_serial(serial,current_year=True)
         except Exception:
             tests_df = pd.DataFrame(
-                columns=["Date", "Type", "Details", "Scores", "Total", "Result", "Session ID", "Record ID"]
+                columns=["Test Type", "Session", "Status"]
             )
 
         if tests_df is None or tests_df.empty:

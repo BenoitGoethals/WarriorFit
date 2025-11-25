@@ -233,7 +233,7 @@ class DataCollector(metaclass=Singleton):
             TypeFitnessTest.FUNCTIONAL,this_year=current_year
         )
         for sess in func_sessions or []:
-            func_tests = await sess.fitness_tests
+            func_tests = sess.fitness_tests
             for t in func_tests or []:
                 if getattr(t, "serial_number", "") != serial:
                     continue
