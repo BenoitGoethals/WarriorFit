@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/739cc583-1c3e-4063-8e1f-bfeee0aaf999/console.sql" value="739cc583-1c3e-4063-8e1f-bfeee0aaf999" />
     <file url="file://$PROJECT_DIR$/warriorfit/data/scripts/test_data.sql" value="55b0ca6b-8e0d-494b-bfd4-f53b0fcf6ecd" />
     <file url="file://$PROJECT_DIR$/warriorfit/military_api_rest/create_populate.sql" value="55b0ca6b-8e0d-494b-bfd4-f53b0fcf6ecd" />
   </component>
