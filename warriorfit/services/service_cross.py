@@ -92,15 +92,15 @@ class ServiceCross(Service):
         all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
         if len(all_cross) > 0:
             return (
-                await self.get_average(all_cross),
-                await self.get_gap_time(all_cross),
-                await self.get_best_time(all_cross),
-                await self.get_age_group(all_cross),
-                await self.get_gender_time(all_cross),
-                await self.get_top_10_runners_based_on_running_time(all_cross),
+                await self.get_average(all_cross) if all_cross else 0.0,
+                await self.get_gap_time(all_cross)if all_cross else 0.0,
+                await self.get_best_time(all_cross) if all_cross else 0.0,
+                await self.get_age_group(all_cross) if all_cross else {},
+                await self.get_gender_time(all_cross) if all_cross else (0.0, 0.0),
+                await self.get_top_10_runners_based_on_running_time(all_cross) if all_cross else {},
             )
         else:
-            return None
+          return 0.0, 0.0, 0.0, {}, (0.0, 0.0), {}
 
     async def get_average(self, all_cross) -> float:
         average = 0.0
