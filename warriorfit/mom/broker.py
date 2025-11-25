@@ -1,40 +1,74 @@
 import asyncio
 import json
 import logging
-import threading
-import time
+from datetime import datetime
 
-from warriorfit.data.db.db_model import PhefTest
-from warriorfit.mom.message import Message
-
-from warriorfit.mom.message_container import MessageContainer
 import httpx
 
+from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.data.db.db_model import PhefTest, HrMessage
+from warriorfit.data.db.mom_repositor import MomRepository
+from warriorfit.logic.singleton import Singleton
+from warriorfit.mom.message import Message
+from warriorfit.utils.Os import Os
 
-class Broker:
 
-    def __init__(self, url: str="http://127.0.0.1:8005/api/v1/phef/test"):
+class Broker(metaclass=Singleton):
 
-        self._msg_queue = MessageContainer()
+    def __init__(self, url: str=None):
         self._url = url
-        self._running = True
+        self._mom_repo = MomRepository()
         self._logger = logging.getLogger(__name__)
-        self._thread: threading.Thread | None = None
+        self.running = False
+        self._worker_task = None
+        self._msg_queue = asyncio.Queue()
 
+    async def worker(self):
+        """Background task running on the main event loop"""
+        print(f"🚀 Message Queue Service gestart")
+        print(f"📍 Target URL: {self._url}")
+        print(f"⏱  Check interval: 5 seconden\n")
 
-    @property
-    def is_running(self):
-        return self._running
+        while self.running:
+            try:
+                await self._process_cycle()
+            except Exception as e:
+                self._logger.error(f"Worker loop error: {e}")
 
-    def send_message(self, message:Message):
-        if not isinstance(message, Message):
-            raise TypeError("message must be an instance of Message")
-        self._msg_queue.push_message(message)
+            # Non-blocking sleep to let other tasks run
+            await asyncio.sleep(5)
 
-    async def _send_message_to_hr(self, message: Message) -> dict | None:
+    async def _process_cycle(self):
+        """Process queue and then check for sending"""
+        # 1. Drain queue to DB
+        if not self._msg_queue.empty():
+            repo = MomRepository()
+            while not self._msg_queue.empty():
+                try:
+                    msg = self._msg_queue.get_nowait()
+                    await repo.add_hr_message(msg)
+                except asyncio.QueueEmpty:
+                    break
+                except Exception as e:
+                    self._logger.error(f"Error saving queued message: {e}")
+
+        # 2. Send pending messages
+        await self.check_and_send_messages()
+
+    async def send_message(self, pf: PhefTest):
+        """Enqueues a message to be sent"""
+        if isinstance(pf, PhefTest):
+            pf_dto = PhefTestDto(pf)
+            hr_m = HrMessage(
+                message=json.dumps(pf_dto.to_dict()), 
+                datetime_created=datetime.now()
+            )
+            await self._msg_queue.put(hr_m)
+
+    async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
         try:
+            message = Message(content=message_hr.message)
             async with httpx.AsyncClient() as client:
-                # send dict, not pre-serialized JSON string
                 response = await client.post(
                     self._url,
                     json=message.to_dict(),
@@ -45,47 +79,38 @@ class Broker:
                 return response.json()
         except Exception as e:
             self._logger.error(f"Error sending message to HR: {e}")
-            print(e)
             return None
 
-    async def _run_loop(self):
-        while self._running:
+    async def check_and_send_messages(self):
+        self._logger.info("Checking for messages to send to HR...")
+        repo = MomRepository()
+        msg: HrMessage = await repo.get_last_added_hr_message_by_send_date()
 
-            await asyncio.sleep(1)
-
-            message = self._msg_queue.get_message()
-            if not message:
-                continue
-            try:
-                resp = await self._send_message_to_hr(message)
-                if resp and resp.get("success"):
-                    self._logger.info("Message sent successfully to HR")
-                    self._msg_queue.delete_message(message)
-                else:
-                    self._logger.error("Message failed to send to HR")
-            except Exception as e:
-                self._logger.exception(f"send loop error: {e}")
+        if msg:
+            self._logger.info("Message sent to HR")
+            ret = await self._send_message_to_hr(msg)
+            if ret:
+                await repo.delete_hr_message(msg.id)
 
     def start(self):
-        if self._thread and self._thread.is_alive():
-            return
-        self._running = True
-
-        def runner():
+        """Start the service as a background asyncio task"""
+        if not self._url:
+            self._url=ApplicationConfig.hr_url
+        if not self.running:
+            self.running = True
             try:
-                asyncio.run(self._run_loop())
-            except Exception:
-                self._logger.exception("Broker thread crashed")
-
-        # Make it non-daemon so process won’t exit early
-        self._thread = threading.Thread(target=runner, name="BrokerThread", daemon=False)
-        self._thread.start()
+                loop = asyncio.get_running_loop()
+                self._worker_task = loop.create_task(self.worker())
+            except RuntimeError:
+                print("⚠️ Warning: Could not start Broker worker. No running event loop found.")
 
     def stop(self):
-        self._running = False
-        if self._thread:
-            self._thread.join(timeout=5)
-            self._thread = None
+        """Stop Service"""
+        print("\n🛑 Service wordt gestopt...")
+        self.running = False
+        if self._worker_task:
+            self._worker_task.cancel()
+        print("✓ Service gestopt")
 
 
 class PhefTestDto:
@@ -105,14 +130,16 @@ class PhefTestDto:
 
 
 if __name__ == "__main__":
-    dt = PhefTest(
-        serial_number="BE-20250001",
-        running_time=2.0,
-        sideBridge_r=2.0,
-        sideBridge_l=20.0,
-    )
-    b = Broker("http://127.0.0.1:8005/api/v1/phef/test")
-    b.start()
-    for i in range(10):
-        time.sleep(1)
-        b.send_message(Message(content=PhefTestDto(dt)))
+    async def main():
+        b = Broker(url="http://127.0.0.1:8005/api/v1/phef/test")
+        b.start()
+        
+        # Example test messages
+        await b.send_message(PhefTest(running_time=120, sideBridge_l=50, sideBridge_r=50, id=1, serial_number="TEST001"))
+        await b.send_message(PhefTest(running_time=120, sideBridge_l=50, sideBridge_r=50, id=2, serial_number="TEST002"))
+        
+        print("Running broker for 15 seconds...")
+        await asyncio.sleep(15)
+        b.stop()
+
+    asyncio.run(main())

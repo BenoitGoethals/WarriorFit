@@ -17,6 +17,8 @@ mail:
   use_tls: False
   use_ssl: False
   sender_email : "benoit@albatros.be"
+hr:
+  url : "http://127.0.0.1:8005/api/v1/phef/test"
 
 
 

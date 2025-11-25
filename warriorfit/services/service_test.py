@@ -1,3 +1,4 @@
+
 from warriorfit.core.Gender import Gender
 from warriorfit.data.db.db_model import (
     TestSession,
@@ -11,8 +12,7 @@ from warriorfit.data.db.db_model import (
 from warriorfit.data.db.fitness_test_repository import FitnessTestRepository
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
-from warriorfit.mom.broker import Broker
-from warriorfit.mom.message import Message
+
 from warriorfit.services.service import Service
 from warriorfit.ui.pages.notify_mail import NotifyMail
 
@@ -21,7 +21,7 @@ class ServiceTest(Service):
     def __init__(self):
         super().__init__()
         self._test_repo = FitnessTestRepository()
-        self._broker = Broker()
+
 
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)
@@ -72,6 +72,7 @@ class ServiceTest(Service):
             match test.type:
                 case "phef_test":
                     body = self.build_email_body_phef(military, session, test)
+                    await self._broker.send_message(pf=add_test)
                 case "combat_swimming_test":
                     body = self.build_email_body_swim(military, session, test)
                 case "functional_test":
@@ -80,15 +81,14 @@ class ServiceTest(Service):
                     body = self.build_email_body_combat(test)
             if body:
                 await NotifyMail().send_mail(
-                    body=body, subject="Result Test", to=military.mail
+                    body=body, subject="Result Test", to=str(military.mail)
                 )
             await self.add_audit_log(
                 details=f"Fitness test {test.serial_number} {test.type} added to test session {param}",
                 action="add",
             )
-            if not self._broker.is_running:
-                self._broker.start()
-            self._broker.send_message(message=Message(content=test))
+
+
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
@@ -348,4 +348,3 @@ class ServiceTest(Service):
 
     async def get_upcoming_session_for_pti(self, serial_number_pti):
         return await self._test_repo.get_upcoming_session_for_pti(serial_number_pti)
-
