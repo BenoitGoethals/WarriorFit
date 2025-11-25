@@ -1,15 +1,34 @@
+# WarriorFit Instqll
+
+## 1. docker
+
+```docker
+sudo docker build -t warriorfit-app .
+docker run -p 8000:8000 warriorfit-app
+```
+
+
+## 2. SQL
+
 ```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+create user produser
+    createdb;
+       
+create database warriorfit  with owner produser;;
+
+
 create type typefitnesstest as enum ('PHEF', 'COMBAT', 'FUNCTIONAL', 'SWIMMING');
 
-alter type typefitnesstest owner to benoi;
+alter type typefitnesstest owner to produser;
 
 create type role as enum ('ADMIN', 'USER', 'GUEST', 'PTI', 'PLANNER', 'APTI');
 
-alter type role owner to benoi;
+alter type role owner to produser;
 
 create type gender as enum ('M', 'F');
 
-alter type gender owner to benoi;
+alter type gender owner to produser;
 
 create table alembic_version
 (
@@ -19,7 +38,7 @@ create table alembic_version
 );
 
 alter table alembic_version
-    owner to benoi;
+    owner to produser;
 
 create table fitness_tests
 (
@@ -30,7 +49,7 @@ create table fitness_tests
 );
 
 alter table fitness_tests
-    owner to benoi;
+    owner to produser;
 
 create table test_sessions
 (
@@ -44,7 +63,7 @@ create table test_sessions
 );
 
 alter table test_sessions
-    owner to benoi;
+    owner to produser;
 
 create table users
 (
@@ -63,7 +82,7 @@ create table users
 );
 
 alter table users
-    owner to benoi;
+    owner to produser;
 
 create table audit_logs
 (
@@ -78,7 +97,7 @@ create table audit_logs
 );
 
 alter table audit_logs
-    owner to benoi;
+    owner to produser;
 
 create table combat_swimming_tests
 (
@@ -89,7 +108,7 @@ create table combat_swimming_tests
 );
 
 alter table combat_swimming_tests
-    owner to benoi;
+    owner to produser;
 
 create table combat_tests
 (
@@ -102,7 +121,7 @@ create table combat_tests
 );
 
 alter table combat_tests
-    owner to benoi;
+    owner to produser;
 
 
 create table functional_tests
@@ -116,7 +135,7 @@ create table functional_tests
 );
 
 alter table functional_tests
-    owner to benoi;
+    owner to produser;
 
 create table phef_tests
 (
@@ -129,7 +148,7 @@ create table phef_tests
 );
 
 alter table phef_tests
-    owner to benoi;
+    owner to produser;
 
 create table session_fitness_tests
 (
@@ -141,7 +160,7 @@ create table session_fitness_tests
 );
 
 alter table session_fitness_tests
-    owner to benoi;
+    owner to produser;
 
 create table "cross"
 (
@@ -154,7 +173,7 @@ create table "cross"
 );
 
 alter table "cross"
-    owner to benoi;
+    owner to produser;
 
 create table runners
 (
@@ -165,7 +184,7 @@ create table runners
 );
 
 alter table runners
-    owner to benoi;
+    owner to produser;
 
 create table cross_runners
 (
@@ -177,7 +196,7 @@ create table cross_runners
 );
 
 alter table cross_runners
-    owner to benoi;
+    owner to produser;
 
 create table units
 (
@@ -190,7 +209,7 @@ create table units
 );
 
 alter table units
-    owner to benoi;
+    owner to produser;
 
 create table service_men
 (
@@ -212,7 +231,7 @@ create table service_men
 );
 
 alter table service_men
-    owner to benoi;
+    owner to produser;
 
 create index ix_service_men_unit_id
     on service_men (unit_id);
@@ -228,7 +247,7 @@ create table mars
 );
 
 alter table mars
-    owner to benoi;
+    owner to produser;
 
 create index ix_mars_service_number
     on mars (service_number);
@@ -242,6 +261,6 @@ create table hr_messages
 );
 
 alter table hr_messages
-    owner to benoi;
+    owner to produser;
 
 ```
