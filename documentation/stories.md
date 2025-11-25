@@ -1342,7 +1342,7 @@ As a unit commander or PTI, I need to view the current fitness test status of al
 - Table displays all servicemen in the unit 
 - Each row shows: Service #, Rank, Name, Gender, Birthdate, Para, Ops Test status
 - Test statuses shown for: PHEF, Combat, Swimming, Mars
-- Status indicators use color coding (green = passed, red = failed)
+- Status indicators use color coding (green = passed, red = failed, red=Not done)
 - Pagination shows "Viewing rows X through Y of Z"
 - Data loads within 3 seconds
 
