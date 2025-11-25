@@ -55,7 +55,6 @@ class ReportGeneratorCsv(GeneratorReport):
             writer.writerow(headers)
             for r in rows:
                 writer.writerow(row_builder(r))
-        print(f"CSV generated: {output_path}")
         return output_path
 
     async def generate_phef_report(
@@ -91,7 +90,7 @@ class ReportGeneratorCsv(GeneratorReport):
             )
             return {"failed": failed_path, "passed": passed_path}
         except Exception as e:
-            self.__logger.error(f"Error generating PHEF report: {e}")
+            self._logger.error(f"Error generating PHEF report: {e}")
             return None
 
     async def generate_functional_report(

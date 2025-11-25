@@ -23,7 +23,7 @@ class MailService(metaclass=Singleton):
             self.config = ApplicationConfig().mail_server
         else:
             self.config = config
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     # Public API
     def send_html(

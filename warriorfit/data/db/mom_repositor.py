@@ -16,6 +16,18 @@ class MomRepository(ABCRepository):
         super().__init__()
 
     async def add_hr_message(self,msg:HrMessage)->HrMessage | None:
+        """
+        Adds an HR message to the database session and refreshes it to reflect
+        the most recent state. If an integrity error or other database error
+        occurs during the operation, the error is logged and the method returns
+        None.
+
+        :param msg: The HR message instance to be added to the database.
+        :type msg: HrMessage
+        :return: The saved HR message with updated state after being refreshed,
+            or None if an exception occurred.
+        :rtype: HrMessage | None
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
@@ -30,6 +42,20 @@ class MomRepository(ABCRepository):
             return None
 
     async def get_all_hr_messages(self)-> list[Any] | None | Any:
+        """
+        Retrieve all HR messages from the database.
+
+        This asynchronous method executes a query to fetch all records from the
+        `HrMessage` table. In case of a database error or any unexpected error,
+        the errors are logged, and an empty list is returned.
+
+        :raises SQLAlchemyError: If there is an error while executing the SQL query.
+        :raises Exception: If any unexpected error occurs during execution.
+
+        :return: A list containing all HR messages if the query is successful, `None`
+            or an empty list if there is an error during the process.
+        :rtype: list[Any] | None | Any
+        """
         try:
             query = select(HrMessage)
             results = await self.fetch_and_log(query, "HrMessage")
@@ -41,6 +67,16 @@ class MomRepository(ABCRepository):
             self._logger.error(f"Unexpected error fetching cross: {str(e)}")
 
     async def delete_hr_message(self,id_msg:int)-> bool | None:
+        """
+        Deletes a human resource (HR) message from the database based on the provided ID. If the
+        message is found, it will be removed and the operation will be committed to the database.
+
+        :param id_msg: The ID of the HR message to be deleted.
+        :type id_msg: int
+        :return: Returns True if the message was successfully deleted, False if a database
+            error occurred, or None if the message wasn't found.
+        :rtype: bool | None
+        """
         try:
             async with self.SessionLocal() as session:
                 query= select(HrMessage).where(HrMessage.id==id_msg)
@@ -54,6 +90,20 @@ class MomRepository(ABCRepository):
             return False
     
     async def get_last_added_hr_message_by_send_date(self)->HrMessage | None:
+        """
+        Fetches the last added HR message based on the send date.
+
+        This method queries the database for the latest `HrMessage` record,
+        sorted by the datetime the message was created in descending order.
+        If there is an error during the database query or another unexpected
+        error occurs, the method logs the error and returns `None`.
+
+        :raises SQLAlchemyError: Raised in case of database operation issues.
+        :raises Exception: Raised for any unexpected errors.
+        :return: The latest `HrMessage` instance based on send date or `None`
+                 in case of an error or if no messages are found.
+        :rtype: HrMessage | None
+        """
         try:
             async with self.SessionLocal() as session:
                 query = select(HrMessage).order_by(HrMessage.datetime_created.desc())

@@ -1,4 +1,7 @@
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from warriorfit.app import FitnessWarriorApp
 from warriorfit.core.Gender import Gender
 from warriorfit.data.db.db_model import (
     TestSession,
@@ -61,18 +64,18 @@ class ServiceTest(Service):
 
     async def add_fitness_test_to_testSession(
         self,
-        param,
+        fitness_test,
         test: FitnessTest,
         military: ServiceMen = None,
         session: TestSession = None,
     ):
-        add_test = await self._test_repo.add_fitness_test_to_TestSession(param, test)
+        add_test = await self._test_repo.add_fitness_test_to_TestSession(fitness_test, test)
         body = ""
         if add_test:
             match test.type:
                 case "phef_test":
                     body = self.build_email_body_phef(military, session, test)
-                    await self._broker.send_message(pf=add_test)
+                    await FitnessWarriorApp.get_broker().send_message(add_test)
                 case "combat_swimming_test":
                     body = self.build_email_body_swim(military, session, test)
                 case "functional_test":
@@ -84,7 +87,7 @@ class ServiceTest(Service):
                     body=body, subject="Result Test", to=str(military.mail)
                 )
             await self.add_audit_log(
-                details=f"Fitness test {test.serial_number} {test.type} added to test session {param}",
+                details=f"Fitness test {test.serial_number} {test.type} added to test session {fitness_test}",
                 action="add",
             )
 

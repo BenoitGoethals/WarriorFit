@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 class ServicemenRepository(ABCRepository):
     def __init__(self):
         super().__init__()
-        self.__logger = logging.getLogger(__name__)
+      
 
     async def create_serviceman(self, service_men: ServiceMen) -> ServiceMen | None:
         """
@@ -26,12 +26,12 @@ class ServicemenRepository(ABCRepository):
                     await session.refresh(service_men)
                     return service_men
         except SQLAlchemyError as e:
-            self.__logger.exception("Failed to create serviceman")
+            self._logger.exception("Failed to create serviceman")
             if session is not None:
                 try:
                     await session.rollback()
                 except Exception as e:
-                    self.__logger.exception(e)
+                    self._logger.exception(e)
 
     async def get_servicemen_by_id(self, serviceman_id: int) -> ServiceMen | None:
         """
@@ -43,7 +43,7 @@ class ServicemenRepository(ABCRepository):
                     res = await session.execute(select(ServiceMen).where(ServiceMen.id == serviceman_id))
                     return res.scalar_one_or_none()
         except SQLAlchemyError as e:
-            self.__logger.exception(e)
+            self._logger.exception(e)
             return None
 
     async def get_by_service_number(self, service_number: str,lazy=True) -> ServiceMen | None:
@@ -95,12 +95,12 @@ class ServicemenRepository(ABCRepository):
                     await session.commit()
                     return service_men_to_update
         except SQLAlchemyError as e:
-            self.__logger.exception(e)
+            self._logger.exception(e)
             if session is not None:
                 try:
                     await session.rollback()
                 except Exception as e:
-                    self.__logger.exception(e)
+                    self._logger.exception(e)
             return None
 
     async def delete_serviceman(self, serviceman_id: int) -> bool:
@@ -116,25 +116,52 @@ class ServicemenRepository(ABCRepository):
                     )
             return bool(getattr(result, "rowcount", 0))
         except SQLAlchemyError as e:
-            self.__logger.exception("Failed to delete serviceman id=%s", serviceman_id)
+            self._logger.exception("Failed to delete serviceman id=%s", serviceman_id)
             if session is not None:
                 try:
                     await session.rollback()
                 except Exception as e:
-                    self.__logger.exception(e)
+                    self._logger.exception(e)
             return False
 
     async def get_by_unit_id(self, id):
+        """Retrieve a unit by its unique identifier.
+
+        This asynchronous method fetches a `Unit` object from the database
+        that matches the provided unique identifier. It attempts to perform
+        the operation within an asynchronous session using SQLAlchemy. If
+        the operation encounters an exception, it logs the exception and
+        returns None.
+
+        :param id: The unique identifier of the unit to be retrieved.
+        :type id: int
+        :return: A `Unit` object if found, otherwise None.
+        :rtype: Optional[Unit]
+        :raises SQLAlchemyError: If there is an error during the database operation.
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
                     res = await session.execute(select(Unit).where(Unit.id == id))
                     return res.scalar_one_or_none()
         except SQLAlchemyError as e:
-            self.__logger.exception(e)
+            self._logger.exception(e)
             return None
 
     async def add_unit(self, unit):
+        """
+        Adds a given unit to the database session and commits the transaction.
+
+        This asynchronous method manages a database session to add a unit to the
+        database. If the transaction is successful, it returns True. In case of an
+        error during the transaction, it rolls back the changes, logs the exception,
+        and returns False.
+
+        :param unit: The unit object to be added to the database.
+        :type unit: Any
+        :return: True if the unit is successfully added and committed, otherwise False.
+        :rtype: bool
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
@@ -143,20 +170,41 @@ class ServicemenRepository(ABCRepository):
                     return True
         except SQLAlchemyError as e:
             session.rollback()
-            self.__logger.exception(e)
+            self._logger.exception(e)
             return False
 
     async def list_all_units(self):
+        """
+        Asynchronously retrieves a list of all units from the database.
+
+        This method establishes a new asynchronous database session, executes a query
+        to select all entries from the Unit table, and fetches the results.
+
+        :return: A list of Unit objects if the query succeeds, or None if an exception
+            occurs.
+        :rtype: list[Unit] | None
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
                     res = await session.execute(select(Unit))
                     return res.scalars().all()
         except SQLAlchemyError as e:
-            self.__logger.exception(e)
+            self._logger.exception(e)
             return None
 
     async def get_all_be_mil_from_unit(self, own_unit: str) -> list[ServiceMen]:
+        """
+        Asynchronously retrieves all `ServiceMen` entities associated with the specified
+        unit name from the database. The method executes a database query to filter
+        for servicemen whose unit matches the given `own_unit` name, using optimized
+        loading strategies for improved performance.
+
+        :param own_unit: The name of the unit to filter `ServiceMen` records.
+        :type own_unit: str
+        :return: A list of `ServiceMen` associated with the specified unit.
+        :rtype: list[ServiceMen]
+        """
         query = select(ServiceMen).join(Unit, ServiceMen.unit_id == Unit.id).where(Unit.name == own_unit)
         query = query.options(selectinload(ServiceMen.unit))  # Add explicit loading
         return await self.fetch_and_log(query, "unit")

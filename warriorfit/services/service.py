@@ -15,10 +15,10 @@ class Service(ABC):
         self._user_repo = UserRepository()
         self._be_mil_service = MilitaryService()
 
-        self.__logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
         async_engine = ApplicationConfig().config
         if async_engine is None:
-            self.__logger.error(
+            self._logger.error(
                 "Database configuration not found. Please check your configuration file."
             )
             raise ValueError(

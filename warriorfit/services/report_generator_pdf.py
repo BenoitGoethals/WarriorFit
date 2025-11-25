@@ -15,7 +15,6 @@ class ReportGeneratorPdf(GeneratorReport):
     def __init__(self):
         super().__init__()
         self._cross_service = ServiceCross()
-        self._logger = logging.getLogger(__name__)
 
     async def generate_report(
             self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool
