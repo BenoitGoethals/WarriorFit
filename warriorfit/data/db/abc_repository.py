@@ -19,10 +19,10 @@ class ABCRepository:
 
 
         logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
-        self.__logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
         async_engine = ApplicationConfig().config
         if async_engine is None:
-            self.__logger.error(
+            self._logger.error(
                 "Database configuration not found. Please check your configuration file."
             )
             raise ValueError(
@@ -92,13 +92,13 @@ class ABCRepository:
         try:
             async with self.SessionLocal() as session:
                 await session.execute(test_query)  # Execute the test query
-                self.__logger.info("Database is operational.")
+                self._logger.info("Database is operational.")
                 return True
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database connection error: {e}")
+            self._logger.error(f"Database connection error: {e}")
             return False
         except Exception as e:
-            self.__logger.error(f"Unexpected error while checking database: {e}")
+            self._logger.error(f"Unexpected error while checking database: {e}")
             return False
 
 
@@ -123,16 +123,16 @@ class ABCRepository:
                 result = await session.execute(query)
                 res = result.unique().scalars().all()
                 if not res:
-                    self.__logger.info(
+                    self._logger.info(
                         "No entities found. Please check your database and try again."
                     )
                     return None
                 return res
         except SQLAlchemyError as e:
-            self.__logger.error(f"SQLAlchemy error fetching {log_entity_name}: {e}")
+            self._logger.error(f"SQLAlchemy error fetching {log_entity_name}: {e}")
             return None
         except Exception as e:
-            self.__logger.error(f"Unexpected error fetching {log_entity_name}: {e}")
+            self._logger.error(f"Unexpected error fetching {log_entity_name}: {e}")
             return None
 
         # Security
@@ -193,7 +193,7 @@ class ABCRepository:
                 logs = result.scalars().all()
                 return list(logs)
             except Exception as e:
-                self.__logger.error(f"get_all_audit_logs failed: {e}")
+                self._logger.error(f"get_all_audit_logs failed: {e}")
                 return []
 
     async def get_audit_logs(self) -> list[AuditLog]:
@@ -216,7 +216,7 @@ class ABCRepository:
                     results = await self.fetch_and_log(query, "audit_logs")
                     return results if results else []
         except Exception as e:
-            self.__logger.error(f"Error fetching audit logs: {str(e)}")
+            self._logger.error(f"Error fetching audit logs: {str(e)}")
             return []
 
     async def running_year(self) -> tuple[datetime, datetime]:
