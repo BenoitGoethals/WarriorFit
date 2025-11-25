@@ -1,6 +1,38 @@
 # WarriorFit Install
 
-## 1. docker
+
+## 1. Configuration
+
+Location of config file : warriorfit/config.yaml
+
+``` config
+db:
+  host: "localhost"
+  port: 5432
+  database : "warriorfit"
+  username : "produser"
+  password : "ranger14"
+path:
+  pdf_path : "/home/benoit/temp"
+unit:
+  name : "1-3 Bn Lanciers"
+mail:
+  host : "192.168.0.174"
+  port : 25
+  username : "benoit"
+  password : "R@nger&1401!"
+  sender : "benoit@albatros.be"
+  use_tls: False
+  use_ssl: False
+  sender_email : "benoit@albatros.be"
+hr:
+  url : "http://127.0.0.1:8005/api/v1/phef/test"
+
+
+```
+
+
+## 2. docker
 
 ```docker
 sudo docker build -t warriorfit-app .
@@ -8,7 +40,9 @@ docker run -p 8000:8000 warriorfit-app
 ```
 
 
-## 2. SQL
+## 3. SQL
+
+Run this script to create the database and the tables on a PostgreSQL database.
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
