@@ -43,6 +43,7 @@ The project documentation is structured in different documents:
 5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (Done)
 6. * [Module Structures](documentation/module_structure.md) (In Review)
 7. * [MOM (broker)](documentation/broker.md) (In Development)
+8. * [Install and deply](documentation/install.md) (In Development)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
