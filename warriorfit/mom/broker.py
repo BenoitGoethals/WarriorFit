@@ -5,6 +5,7 @@ from datetime import datetime
 
 import httpx
 
+from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.db.db_model import PhefTest, HrMessage
 from warriorfit.data.db.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
@@ -14,7 +15,7 @@ from warriorfit.utils.Os import Os
 
 class Broker(metaclass=Singleton):
 
-    def __init__(self, url: str = "http://127.0.0.1:8005/api/v1/phef/test"):
+    def __init__(self, url: str=None):
         self._url = url
         self._mom_repo = MomRepository()
         self._logger = logging.getLogger(__name__)
@@ -93,6 +94,8 @@ class Broker(metaclass=Singleton):
 
     def start(self):
         """Start the service as a background asyncio task"""
+        if not self._url:
+            self._url=ApplicationConfig.hr_url
         if not self.running:
             self.running = True
             try:
@@ -128,7 +131,7 @@ class PhefTestDto:
 
 if __name__ == "__main__":
     async def main():
-        b = Broker("http://127.0.0.1:8005/api/v1/phef/test")
+        b = Broker(url="http://127.0.0.1:8005/api/v1/phef/test")
         b.start()
         
         # Example test messages

@@ -12,6 +12,7 @@ class ApplicationConfig(metaclass=Singleton):
     __pdf_path=None
     __own_unit=None
     __mail_server=None
+    __hr_url=None
 
 
     def __init__(self, config_path:str="warriorfit/config/config.yml"):
@@ -43,6 +44,12 @@ class ApplicationConfig(metaclass=Singleton):
         if self.__pdf_path is None:
             raise ValueError("Configuration not loaded. Please call load_config() first.")
         return self.__pdf_path
+
+    @property
+    def hr_url(self)->str:
+        if self.__hr_url is None:
+            raise ValueError("Configuration not loaded. Please call load_config() first.")
+        return self.__hr_url
 
 
     @property
@@ -87,6 +94,7 @@ class ApplicationConfig(metaclass=Singleton):
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
         self.__pdf_path = config["path"]["pdf_path"]
         self.__own_unit = config["unit"]["name"]
+        self.__hr_url = config["hr"]["url"]
         self.__mail_server= SmtpConfig(host=config["mail"]["host"],
                                        port=config["mail"]["port"],
                                        username=config["mail"]["username"],
