@@ -1,4 +1,4 @@
-# WarriorFit Instqll
+# WarriorFit Install
 
 ## 1. docker
 
