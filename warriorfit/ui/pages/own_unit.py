@@ -128,12 +128,8 @@ class OwnUnitPage:
             if not df.empty and "Status" in df.columns:
                 def _fmt_status(s):
                     txt = str(s or "Unknown")
-                    lo = txt.lower()
-                    if lo.startswith("pass"):
-                        return f"🟢 {txt}"
-                    if lo.startswith("fail"):
-                        return f"🔴 {txt}"
-                    return f"🟡 {txt}"
+
+                    return f"{txt}"
                 df = df.copy()
                 df["Status"] = df["Status"].apply(_fmt_status)
 
