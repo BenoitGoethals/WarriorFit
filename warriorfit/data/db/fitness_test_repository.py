@@ -17,7 +17,6 @@ class FitnessTestRepository(ABCRepository):
     def __init__(self):
         super().__init__()
 
-        self.__logger = logging.getLogger(__name__)
 
     async def add_test_session(self, test_session: TestSession) -> Optional[Any]:
         """
@@ -35,10 +34,10 @@ class FitnessTestRepository(ABCRepository):
                 await session.refresh(test_session)
                 return test_session
         except IntegrityError as e:
-            self.__logger.error(f"Integrity error adding test session: {str(e)}")
+            self._logger.error(f"Integrity error adding test session: {str(e)}")
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error adding test session: {str(e)}")
+            self._logger.error(f"Database error adding test session: {str(e)}")
             return None
 
     async def get_all_fitness_tests_from_test_session(
@@ -85,10 +84,10 @@ class FitnessTestRepository(ABCRepository):
                     # Make a copy of the data before session closes
                     return merged_session
         except IntegrityError as e:
-            self.__logger.error(f"Integrity error updating test session: {str(e)}")
+            self._logger.error(f"Integrity error updating test session: {str(e)}")
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error updating test session: {str(e)}")
+            self._logger.error(f"Database error updating test session: {str(e)}")
             return None
 
     async def add_fitness_test_to_TestSession(
@@ -119,7 +118,7 @@ class FitnessTestRepository(ABCRepository):
                     )
 
                     if not test_session:
-                        self.__logger.error(
+                        self._logger.error(
                             f"Test session with ID {test_session_id} not found."
                         )
                         return None
@@ -132,10 +131,10 @@ class FitnessTestRepository(ABCRepository):
                     return test_session
 
         except IntegrityError as e:
-            self.__logger.error(f"Integrity error adding fitness test: {str(e)}")
+            self._logger.error(f"Integrity error adding fitness test: {str(e)}")
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error adding fitness test: {str(e)}")
+            self._logger.error(f"Database error adding fitness test: {str(e)}")
             return None
 
     async def get_all_test_sessions(self, this_year: bool = True) -> List[TestSession]:
@@ -238,10 +237,10 @@ class FitnessTestRepository(ABCRepository):
             return results if results else []
 
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching test sessions for service member {serial}: {str(e)}")
+            self._logger.error(f"Database error fetching test sessions for service member {serial}: {str(e)}")
             return []
         except Exception as e:
-            self.__logger.error(f"Unexpected error fetching test sessions for service member {serial}: {str(e)}")
+            self._logger.error(f"Unexpected error fetching test sessions for service member {serial}: {str(e)}")
             return []
 
     async def get_all_test_sessions_type_fitnessTest_full(self, typetest: TypeFitnessTest, this_year: bool = True) -> \
@@ -299,11 +298,11 @@ class FitnessTestRepository(ABCRepository):
                 async with session.begin():
                     await session.execute(query)
                     await session.commit()
-            self.__logger.info("All TestSession deleted successfully.")
+            self._logger.info("All TestSession deleted successfully.")
         except SQLAlchemyError as e:
-            self.__logger.error(f"Error deleting all TestSession: {e}")
+            self._logger.error(f"Error deleting all TestSession: {e}")
         except Exception as e:
-            self.__logger.error(f"Unexpected error deleting all TestSession: {e}")
+            self._logger.error(f"Unexpected error deleting all TestSession: {e}")
 
     async def get_all_fitness_tests_that_passed_from_year(
             self, year: int
@@ -359,12 +358,12 @@ class FitnessTestRepository(ABCRepository):
                 tests = result.scalars().all()
                 return list(tests) if tests else None
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error fetching passed fitness tests for year {year}: {str(e)}"
             )
             return None
         except Exception as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Unexpected error fetching passed fitness tests for year {year}: {str(e)}"
             )
             return None
@@ -387,16 +386,16 @@ class FitnessTestRepository(ABCRepository):
                 .order_by(TestSession.datetime_start)
                 .limit(count)
             )
-            results = await self.fetch_and_log(query, "upcoming test sessions")
+            results = await self.fetch_and_log(query, "test sessions")
             return results if results else []
 
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error fetching upcoming test sessions: {str(e)}"
             )
             return []
         except Exception as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Unexpected error fetching upcoming test sessions: {str(e)}"
             )
             return []
@@ -432,7 +431,7 @@ class FitnessTestRepository(ABCRepository):
                 test_session = result.unique().scalar_one_or_none()
                 return test_session
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error retrieving test session {session_id}: {str(e)}"
             )
             return None
@@ -452,13 +451,13 @@ class FitnessTestRepository(ABCRepository):
                     query = delete(TestSession).where(TestSession.id == session_id)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self.__logger.error(
+                        self._logger.error(
                             f"No test session found with ID {session_id}"
                         )
                         return False
                     return True
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error deleting test session {session_id}: {str(e)}"
             )
             return False
@@ -502,12 +501,12 @@ class FitnessTestRepository(ABCRepository):
                 tests = result.unique().scalars().all()
                 return list(tests) if tests else []
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error fetching all fitness tests (full): {str(e)}"
             )
             return []
         except Exception as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Unexpected error fetching all fitness tests (full): {str(e)}"
             )
             return []
@@ -534,12 +533,12 @@ class FitnessTestRepository(ABCRepository):
                 tests = result.unique().scalars().all()
                 return list(tests) if tests else []
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error fetching all fitness tests (full): {str(e)}"
             )
             return []
         except Exception as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Unexpected error fetching all fitness tests (full): {str(e)}"
             )
             return []
@@ -580,7 +579,7 @@ class FitnessTestRepository(ABCRepository):
                         return phef_tests
                     return []
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching PHEF tests: {str(e)}")
+            self._logger.error(f"Database error fetching PHEF tests: {str(e)}")
             return []
 
     async def get_all_combat_test(self, session_id: int,current_year=True) -> List[CombatTestParatrooper]:
@@ -619,7 +618,7 @@ class FitnessTestRepository(ABCRepository):
                         return tests
                     return []
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching Combat tests: {str(e)}")
+            self._logger.error(f"Database error fetching Combat tests: {str(e)}")
             return []
 
     async def delete_fitness_test_from_test_session(
@@ -642,14 +641,14 @@ class FitnessTestRepository(ABCRepository):
                         options=[joinedload(TestSession.fitness_tests)],
                     )
                     if not test_session:
-                        self.__logger.error(
+                        self._logger.error(
                             f"TestSession with ID {test_session_id} not found."
                         )
                         return False
 
                     fitness_test = await session.get(FitnessTest, fitness_test_id)
                     if not fitness_test:
-                        self.__logger.error(
+                        self._logger.error(
                             f"FitnessTest with ID {fitness_test_id} not found."
                         )
                         return False
@@ -658,7 +657,7 @@ class FitnessTestRepository(ABCRepository):
                         test_session.fitness_tests.remove(fitness_test)
                         await session.flush()
                     else:
-                        self.__logger.error(
+                        self._logger.error(
                             f"FitnessTest {fitness_test_id} not in TestSession {test_session_id}"
                         )
                         return False
@@ -669,12 +668,12 @@ class FitnessTestRepository(ABCRepository):
                     await session.refresh(test_session)
                     return True
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error deleting FitnessTest {fitness_test_id} from TestSession {test_session_id}: {str(e)}"
             )
             return False
         except Exception as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Unexpected error deleting FitnessTest {fitness_test_id} from TestSession {test_session_id}: {str(e)}"
             )
             return False
@@ -709,7 +708,7 @@ class FitnessTestRepository(ABCRepository):
                         ],
                     )
                     if not fitness_test:
-                        self.__logger.error(
+                        self._logger.error(
                             f"FitnessTest with ID {fitness_test_id} not found."
                         )
                         return None
@@ -725,17 +724,17 @@ class FitnessTestRepository(ABCRepository):
                     await session.refresh(fitness_test)
                     return fitness_test
         except IntegrityError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Integrity error updating FitnessTest {fitness_test_id}: {str(e)}"
             )
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Database error updating FitnessTest {fitness_test_id}: {str(e)}"
             )
             return None
         except Exception as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Unexpected error updating FitnessTest {fitness_test_id}: {str(e)}"
             )
             return None
@@ -788,7 +787,7 @@ class FitnessTestRepository(ABCRepository):
                         return func_test
                     return []
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching Functional tests: {str(e)}")
+            self._logger.error(f"Database error fetching Functional tests: {str(e)}")
             return []
 
     async def get_all_combat_swimming_test(self, session_id,current_year=True) -> list[CombatSwimmingTest]:
@@ -839,7 +838,7 @@ class FitnessTestRepository(ABCRepository):
                         return func_test
                     return []
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching Functional tests: {str(e)}")
+            self._logger.error(f"Database error fetching Functional tests: {str(e)}")
             return []
 
     async def get_all_fitness_tests_from_military_units(self, unit: str) -> List[FitnessTest]:
@@ -867,7 +866,7 @@ class FitnessTestRepository(ABCRepository):
                 return []
             return [test for test in fit_tests if test.serial_number in [m.service_number for m in mils]]
         except (SQLAlchemyError, Exception) as e:
-            self.__logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
+            self._logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
             return []
 
     async def get_all_fitness_tests_from_military_units_type_fitness_test(self, unit: str,
@@ -904,7 +903,7 @@ class FitnessTestRepository(ABCRepository):
                 if getattr(ft, "serial_number", None) in service_numbers
             ]
         except (SQLAlchemyError, Exception) as e:
-            self.__logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
+            self._logger.error(f"Error fetching fitness tests for unit {unit}: {str(e)}")
             return []
 
     async def get_all_phef_from_mil(self, serial, current_year) -> List[PhefTest]:
@@ -941,7 +940,7 @@ class FitnessTestRepository(ABCRepository):
                     phef_tests = result.scalars().all()
                     return list(phef_tests) if phef_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self.__logger.error(f"Error fetching PHEF tests for military unit {serial}: {str(e)}")
+            self._logger.error(f"Error fetching PHEF tests for military unit {serial}: {str(e)}")
             return []
 
     async def get_all_combat_from_mil(self, service_number, current_year)-> List[CombatTestParatrooper]:
@@ -977,7 +976,7 @@ class FitnessTestRepository(ABCRepository):
                     phef_tests = result.scalars().all()
                     return list(phef_tests) if phef_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self.__logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
+            self._logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
             return []
 
     async def get_all_swim_from_mil(self, service_number, current_year)->List[CombatSwimmingTest]:
@@ -1014,7 +1013,7 @@ class FitnessTestRepository(ABCRepository):
                     phef_tests = result.scalars().all()
                     return list(phef_tests) if phef_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self.__logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
+            self._logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
             return []
 
     async def get_upcoming_session_for_pti(self, serial_number_pti: str) -> Any | None:
@@ -1044,6 +1043,6 @@ class FitnessTestRepository(ABCRepository):
                 return result.scalars().all()
 
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error fetching upcoming session for PTI {serial_number_pti}: {str(e)}")
+            self._logger.error(f"Database error fetching upcoming session for PTI {serial_number_pti}: {str(e)}")
             return None
 

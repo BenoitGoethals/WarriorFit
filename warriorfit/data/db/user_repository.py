@@ -12,7 +12,7 @@ from warriorfit.data.db.db_model import User
 class UserRepository(ABCRepository):
     def __init__(self):
         super().__init__()
-        self.__logger = logging.getLogger(__name__)
+     
     async def add_user(self, user: User) -> Optional[User]:
         """
         Adds a new user to the database asynchronously.
@@ -35,12 +35,12 @@ class UserRepository(ABCRepository):
                 await session.refresh(user)
                 return user
         except IntegrityError as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Integrity error adding user {user.username}: {str(e)}"
             )
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error adding user {user.username}: {str(e)}")
+            self._logger.error(f"Database error adding user {user.username}: {str(e)}")
             return None
 
     async def user_mail_exist(self,mail:str)->bool:
@@ -115,7 +115,7 @@ class UserRepository(ABCRepository):
                 async with session.begin():
                     existing_user = await session.get(User, id)
                     if not existing_user:
-                        self.__logger.error(f"User with ID {id} not found.")
+                        self._logger.error(f"User with ID {id} not found.")
                         return None
                     existing_user.username = user.username
                     existing_user.password_hash = user.password_hash
@@ -127,10 +127,10 @@ class UserRepository(ABCRepository):
                     await session.refresh(existing_user)
                     return existing_user
         except IntegrityError as e:
-            self.__logger.error(f"Integrity error updating user {id}: {str(e)}")
+            self._logger.error(f"Integrity error updating user {id}: {str(e)}")
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error updating user {id}: {str(e)}")
+            self._logger.error(f"Database error updating user {id}: {str(e)}")
             return None
 
 
@@ -146,11 +146,11 @@ class UserRepository(ABCRepository):
                 async with session.begin():
                     await session.execute(query)
                     await session.commit()
-            self.__logger.info("All users deleted successfully.")
+            self._logger.info("All users deleted successfully.")
         except SQLAlchemyError as e:
-            self.__logger.error(f"Error deleting all users: {e}")
+            self._logger.error(f"Error deleting all users: {e}")
         except Exception as e:
-            self.__logger.error(f"Unexpected error deleting all users: {e}")
+            self._logger.error(f"Unexpected error deleting all users: {e}")
 
     async def check_user(self, user_name: str, plain_password: str) -> bool:
         """
@@ -166,22 +166,22 @@ class UserRepository(ABCRepository):
                 result = await session.execute(query)
                 user = result.scalar_one_or_none()
                 if user is None:
-                    self.__logger.info(f"User '{user_name}' not found.")
+                    self._logger.info(f"User '{user_name}' not found.")
                     return False
                 password_matches = bcrypt.checkpw(
                     plain_password.encode("utf-8"),
                     user.password_hash.encode("utf-8"),
                 )
                 if not password_matches:
-                    self.__logger.info("Password mismatch.")
+                    self._logger.info("Password mismatch.")
                     return False
-                self.__logger.info(f"User '{user_name}' authenticated successfully.")
+                self._logger.info(f"User '{user_name}' authenticated successfully.")
                 return True
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error in check_user: {e}")
+            self._logger.error(f"Database error in check_user: {e}")
             return False
         except Exception as e:
-            self.__logger.error(f"Unexpected error in check_user: {e}")
+            self._logger.error(f"Unexpected error in check_user: {e}")
             return False
 
     async def delete_user(self, id):
@@ -199,16 +199,16 @@ class UserRepository(ABCRepository):
                     query = delete(User).where(User.id == id)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self.__logger.error(f"No user found with ID {id}.")
+                        self._logger.error(f"No user found with ID {id}.")
                         return False
                     await session.commit()
-            self.__logger.info(f"User with ID {id} deleted successfully.")
+            self._logger.info(f"User with ID {id} deleted successfully.")
             return True
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error deleting user with ID {id}: {str(e)}")
+            self._logger.error(f"Database error deleting user with ID {id}: {str(e)}")
             return False
         except Exception as e:
-            self.__logger.error(
+            self._logger.error(
                 f"Unexpected error deleting user with ID {id}: {str(e)}"
             )
             return False
@@ -234,14 +234,14 @@ class UserRepository(ABCRepository):
                 result = await session.execute(query)
                 user = result.scalar_one_or_none()
                 if user is None:
-                    self.__logger.info(f"User '{serial}' not found.")
+                    self._logger.info(f"User '{serial}' not found.")
                     return False
                 return True
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error in check_user: {e}")
+            self._logger.error(f"Database error in check_user: {e}")
             return False
         except Exception as e:
-            self.__logger.error(f"Unexpected error in check_user: {e}")
+            self._logger.error(f"Unexpected error in check_user: {e}")
             return False
 
     async def delete_user_by_serial(self, selected_serial):
@@ -263,14 +263,14 @@ class UserRepository(ABCRepository):
                     query = delete(User).where(User.serial_number == selected_serial)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self.__logger.error(f"No user found with serial {selected_serial}.")
+                        self._logger.error(f"No user found with serial {selected_serial}.")
                         return False
                     return True
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error deleting user with serial {selected_serial}: {str(e)}")
+            self._logger.error(f"Database error deleting user with serial {selected_serial}: {str(e)}")
             return False
         except Exception as e:
-            self.__logger.error(f"Unexpected error deleting user with serial {selected_serial}: {str(e)}")
+            self._logger.error(f"Unexpected error deleting user with serial {selected_serial}: {str(e)}")
             return False
 
     async def update_user_by_serial(self, user):
@@ -296,7 +296,7 @@ class UserRepository(ABCRepository):
                         select(User).where(User.serial_number == user.serial_number)
                     )).scalar_one_or_none()
                     if not existing_user:
-                        self.__logger.error(f"User with serial number {user.serial_number} not found.")
+                        self._logger.error(f"User with serial number {user.serial_number} not found.")
                         return None
                     existing_user.username = user.username
                     existing_user.password_hash = user.password_hash
@@ -308,10 +308,10 @@ class UserRepository(ABCRepository):
                     return existing_user
 
         except IntegrityError as e:
-            self.__logger.error(f"Integrity error updating user {id}: {str(e)}")
+            self._logger.error(f"Integrity error updating user {id}: {str(e)}")
             return None
         except SQLAlchemyError as e:
-            self.__logger.error(f"Database error updating user {id}: {str(e)}")
+            self._logger.error(f"Database error updating user {id}: {str(e)}")
             return None
 
 

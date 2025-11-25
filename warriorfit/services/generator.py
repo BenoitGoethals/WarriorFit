@@ -28,7 +28,7 @@ class GeneratorReport(ABC):
         self.be_mil_service = MilitaryService()
         self._service = ServiceTest()
         self._user_service = ServiceTest()
-        self.__logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     async def calculate_score(self, own_unit, this_year):
         failed: List[dict] = []
@@ -51,7 +51,7 @@ class GeneratorReport(ABC):
                 sm = await self.be_mil_service.get_servicemen_by_serial(
                     test.serial_number, lazy=False
                 )
-                self.__logger.info(
+                self._logger.info(
                     f"PHEF test: {test.serial_number} - {sm.first_name} {sm.last_name} - {sm.age_from_birthdate()} years old"
                 )
                 score_r = PhefCalculator.side_bridge_result(

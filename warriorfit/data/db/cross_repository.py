@@ -10,7 +10,7 @@ from warriorfit.data.db.db_model import Cross, Runner, CrossRunners  # ensure as
 class CrossRepository(ABCRepository):
     def __init__(self):
         super().__init__()
-        self._logger = logging.getLogger(__name__)
+
 
     async def get_cross(self, id: int) -> Cross | None:
         """
