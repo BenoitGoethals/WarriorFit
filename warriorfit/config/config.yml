@@ -1,8 +1,8 @@
 db:
-  host: "localhost"
+  host: "192.168.0.130"
   port: 5432
   database : "warriorfit"
-  username : "produser"
+  username : "benoi"
   password : "ranger14"
 path:
   pdf_path : "/home/benoit/temp"

@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Optional
 from shiny import App, ui, render
+
+from warriorfit.data.db.abc_repository import ABCRepository
 from warriorfit.data.db.db_model import Role
 from warriorfit.mom.broker import Broker
 from warriorfit.services.service_user import UserService
@@ -64,10 +66,7 @@ class FitnessWarriorApp:
     @staticmethod
     def build_app_ui():
         return ui.page_fillable(
-
             ui.output_ui("main_nav_container"),
-
-
         )
 
     @staticmethod
@@ -174,7 +173,6 @@ class FitnessWarriorApp:
                 _safe_panel(mars.get_ui()),
                 _safe_panel(status_tests.get_ui()),
                 _safe_panel((sessions.get_ui()))
-
             ]
             items = [c for c in items if c is not None]
             return ui.nav_menu("Psychical Tests", *items)
@@ -195,7 +193,6 @@ class FitnessWarriorApp:
                 _safe_panel(auditlog_events.get_ui()),
                 _safe_panel(usermangement.get_ui()),
                 _safe_panel(settings.get_ui()),
-
             ]
             admin_children = [c for c in admin_children if c is not None]
             return ui.nav_menu("Admin", *admin_children) if admin_children else None
@@ -224,7 +221,6 @@ class FitnessWarriorApp:
                     nav_items.append(own_unit.get_ui())
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(reports.get_ui()))
-
                     nav_items.append(_build_cross_menu())
                     nav_items.append(admin_menu)
             elif role is Role.GUEST:
@@ -243,12 +239,10 @@ class FitnessWarriorApp:
                 nav_items.append(dashboard_own_unit.get_ui())
                 nav_items.append(own_unit.get_ui())
                 nav_items.append(_build_test_menu())
-
                 nav_items.append(_safe_panel(reports.get_ui()))
                 nav_items.append(_build_cross_menu())
             elif role is Role.PLANNER:
                 nav_items.append(_safe_panel((sessions.get_ui())))
-
             nav_items.append(ui.nav_spacer())
             nav_items.append(
                 ui.nav_control(
@@ -265,6 +259,7 @@ class FitnessWarriorApp:
         @output
         @render.ui
         def main_nav_container():
+
             _ = nav_version.get()
             return build_main_navbar()
 
