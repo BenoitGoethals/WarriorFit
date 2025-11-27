@@ -63,7 +63,7 @@ Implements the persistent storage logic.
 ### 4.4 Business Logic (`services`)
 The heart of the application logic.
 - **Management Services**: `military_service.py`, `service_user.py`.
-- **Fitness Services**: `service_test.py`, `service_cross.py`, `service_mars.py`.
+- **Fitness Services**: `service_test.py`, `service_cross.py`, `service_march.py`.
 - **Reporting**: `report_generator_pdf.py`, `report_generator_csv.py`, `mail_service.py`.
 - **Calculation**: Algorithms for calculating scores (e.g., PHEF, Functional tests).
 

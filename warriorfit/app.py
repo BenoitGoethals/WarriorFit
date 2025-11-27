@@ -10,7 +10,7 @@ from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.ui.pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, mars, status_login_user
+    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, march, status_login_user
 from warriorfit.ui.pages import usermangement
 from warriorfit.ui.pages import phef
 from warriorfit.ui.pages import sessions
@@ -91,7 +91,7 @@ class FitnessWarriorApp:
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
             "Cross Statics": cross_statics.server,
-            "Mars" : mars.server,
+            "March" : march.server,
             "Welcome" : status_login_user.server
 
 
@@ -170,7 +170,7 @@ class FitnessWarriorApp:
                 _safe_panel(functional_test.get_ui()),
                 _safe_panel(swim_test.get_ui()),
                 _safe_panel(ind_test_show.get_ui()),
-                _safe_panel(mars.get_ui()),
+                _safe_panel(march.get_ui()),
                 _safe_panel(status_tests.get_ui()),
                 _safe_panel((sessions.get_ui()))
             ]
