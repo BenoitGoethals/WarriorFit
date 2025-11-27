@@ -276,8 +276,8 @@ class ServiceMen(Base):
         return f"{self.first_name} {self.last_name}  {self.mail}"
 
 
-class Mars(Base):
-    __tablename__ = "mars"
+class March(Base):
+    __tablename__ = "march"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
     service_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
@@ -286,9 +286,9 @@ class Mars(Base):
     datetime_executed: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
 
     service_men: Mapped["ServiceMen"] = relationship("ServiceMen",
-                                                     primaryjoin="Mars.service_number==ServiceMen.service_number",
+                                                     primaryjoin="March.service_number==ServiceMen.service_number",
                                                      foreign_keys=[service_number],
-                                                     backref="mars")
+                                                     backref="march")
 
 class HrMessage(Base):
     __tablename__ = "hr_messages"

@@ -270,7 +270,7 @@ alter table service_men
 create index ix_service_men_unit_id
     on service_men (unit_id);
 
-create table mars
+create table march
 (
     id                serial
         primary key,
@@ -280,11 +280,11 @@ create table mars
     service_number    varchar(50)
 );
 
-alter table mars
+alter table march
     owner to produser;
 
-create index ix_mars_service_number
-    on mars (service_number);
+create index ix_march_service_number
+    on march (service_number);
 
 create table hr_messages
 (
