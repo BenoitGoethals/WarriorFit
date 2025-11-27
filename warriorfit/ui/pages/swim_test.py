@@ -56,7 +56,7 @@ class SwimTestPage:
                     ),
                 ),
                 ui.card(
-                    ui.card_header("Swimming Tests"),
+                    ui.card_header("Swimming Tests, This list shows not only members of own unit"),
                     ui.output_data_frame("swim_grid"),
 
                     full_screen=False,
