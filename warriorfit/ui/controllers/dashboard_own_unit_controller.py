@@ -6,10 +6,12 @@ import plotly.graph_objects as go
 from warriorfit.config.appliccation_config import ApplicationConfig
 
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen
+from warriorfit.data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, \
+    March
 from warriorfit.logic.phef_calculator import PhefCalculator
 
 from warriorfit.services.military_service import MilitaryService
+from warriorfit.services.service_march import ServiceMarch
 from warriorfit.services.service_test import ServiceTest
 
 
@@ -22,6 +24,7 @@ class DashboardOwnUnitController:
         self._mils=None
         self._all_military_own_unit=None
         self._results_tests_for_unit:dict[str,list[Any]]={}
+        self._march_service=ServiceMarch()
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:
@@ -196,6 +199,14 @@ class DashboardOwnUnitController:
         pass_rate = (passed / total * 100) if total > 0 else 0
         return {"total": total, "sub_value": f"{pass_rate:.1f}%", "sub_label": "Pass Rate", "sub_class": "text-info"}
 
+    async def march_stats(self):
+        tests_march:List[March] =await self._march_service.get_all_march_from_unit()
+        total_march = len(tests_march)
+        passed = sum(1 for t in tests_march if t.succeeded)
+        pass_rate = (passed / total_march * 100) if total_march > 0 else 0
+        return {"total": total_march, "sub_value": f"{pass_rate:.1f}%", "sub_label": "Pass Rate", "sub_class": "text-info"}
+
+
     # ---------- charts ----------
     async def distribution_pie_html(self) -> str:
         counts = {
@@ -227,11 +238,16 @@ class DashboardOwnUnitController:
         swim_pass = sum(1 for t in swim_tests if t.swim_paased)
         swim_fail = len(swim_tests) - swim_pass
 
+        march_tests:List[March] =await self._march_service.get_all_march_from_unit()
+        passed_march:int = len([m for m in march_tests if m.succeeded])
+        failed_march:int = len(march_tests)-passed_march
+
+
         fig = go.Figure(data=[
-            go.Bar(name="Passed", x=["PHEF", "Combat", "Functional", "Swimming"],
-                   y=[phef_pass, combat_pass, func_pass, swim_pass], marker_color="#198754"),
-            go.Bar(name="Failed", x=["PHEF", "Combat", "Functional", "Swimming"],
-                   y=[phef_fail, combat_fail, func_fail, swim_fail], marker_color="#dc3545"),
+            go.Bar(name="Passed", x=["PHEF", "Combat", "Functional", "Swimming","March"],
+                   y=[phef_pass, combat_pass, func_pass, swim_pass,passed_march], marker_color="#198754"),
+            go.Bar(name="Failed", x=["PHEF", "Combat", "Functional", "Swimming","March"],
+                   y=[phef_fail, combat_fail, func_fail, swim_fail,failed_march], marker_color="#dc3545"),
         ])
         fig.update_layout(barmode="group", margin=dict(t=20, b=40, l=40, r=20),
                           xaxis_title="Test Type", yaxis_title="Count")
@@ -330,3 +346,4 @@ class DashboardOwnUnitController:
                 rows.append({"Type": "Swimming", "Serial": t.serial_number, "Reason": "Not passed"})
 
         return pd.DataFrame(rows)
+
