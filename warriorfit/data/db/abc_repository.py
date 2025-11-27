@@ -121,7 +121,7 @@ class ABCRepository:
         try:
             async with self.SessionLocal() as session:
                 result = await session.execute(query)
-                res = result.unique().scalars().all()
+                res = result.scalars().all()
                 if not res:
                     self._logger.info(
                         "No entities found. Please check your database and try again."

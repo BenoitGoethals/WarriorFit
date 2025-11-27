@@ -126,7 +126,7 @@ class ApplicationConfig(metaclass=Singleton):
             config['db']['host']}:{
             config['db']['port']}/{
             config['db']['database']}",
-            echo=True,  # Set to False for production to reduce excessive logging overhead
+            echo=False,  # Set to False for production to reduce excessive logging overhead
             future=True,
             pool_size=20,  # Increase pool size for handling more concurrent requests
             max_overflow=30,  # Allow more connection overflow
