@@ -1,5 +1,5 @@
 db:
-  host: "192.168.0.130"
+  host: "192.168.0.30"
   port: 5432
   database : "warriorfit"
   username : "benoi"

@@ -14,7 +14,7 @@ class MarsPage:
 
         return ui.nav_panel(
             "Mars",
-            ui.h2("🧪 Mars Tests"),
+            ui.h2("🧪 March Tests"),
             ui.layout_columns(
                 ui.div(
                      ui.card(
@@ -41,7 +41,7 @@ class MarsPage:
                     ),
                 ),
                 ui.card(
-                    ui.card_header("Mars Tests  (To pass the mars)"),
+                    ui.card_header("March Tests  (To pass the march)"),
                     ui.output_data_frame("mars_grid"),
 
                     full_screen=False,

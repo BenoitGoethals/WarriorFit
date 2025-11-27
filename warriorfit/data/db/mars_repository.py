@@ -18,8 +18,9 @@ class MarsRepository(ABCRepository):
         return results
 
     async def get_all_mars(self) -> list[Mars]:
+
         query = select(Mars)
-        results = await self.fetch_and_log(query, "marses")
+        results = await self.fetch_and_log(query, "mars")
         return results if results else []
 
     async def get_all_mars_by_unit_name(self, unit_name: str) -> list[Mars]:
@@ -84,7 +85,7 @@ class MarsRepository(ABCRepository):
         session = None
         try:
             async with self.SessionLocal() as session:
-                async with session.begin():                  
+                async with session.begin():
                     existing_mars = await session.get(Mars, mars.id)
                     if not existing_mars:
                         self._logger.error(f"No mars found with ID {mars.id}")
