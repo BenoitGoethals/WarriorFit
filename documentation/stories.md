@@ -1323,7 +1323,7 @@ As a unit commander or PTI, I need to view the current fitness test status of al
 
 ## Acceptance Criteria
 - Display all servicemen with their current test statuses
-- Show status for all test types (PHEF, Combat, Swimming, Mars)
+- Show status for all test types (PHEF, Combat, Swimming, March)
 - Enable quick access to detailed test history via modal
 - Support filtering and searching of personnel
 - Visual indicators clearly distinguish passed/failed tests
@@ -1341,7 +1341,7 @@ As a unit commander or PTI, I need to view the current fitness test status of al
 **Acceptance Criteria:**
 - Table displays all servicemen in the unit 
 - Each row shows: Service #, Rank, Name, Gender, Birthdate, Para, Ops Test status
-- Test statuses shown for: PHEF, Combat, Swimming, Mars
+- Test statuses shown for: PHEF, Combat, Swimming, March
 - Status indicators use color coding (green = passed, red = failed, red=Not done)
 - Pagination shows "Viewing rows X through Y of Z"
 - Data loads within 3 seconds
