@@ -122,6 +122,7 @@ class FitnessWarriorApp:
         login_user_text = reactive.Value("")
         nav_version = reactive.Value(0)
 
+
         # Open/close Calendar modal from app-level button
         @reactive.Effect
         @reactive.event(input.open_calendar_modal_global)

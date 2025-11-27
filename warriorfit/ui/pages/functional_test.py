@@ -71,7 +71,7 @@ class FunctionalPage:
                     ),
                 ),
                 ui.card(
-                    ui.card_header("Functional Tests"),
+                    ui.card_header("Functional Tests : This list shows not only members of own Unit"),
                     ui.output_data_frame("functional_grid"),
                     full_screen=False,
                 ),

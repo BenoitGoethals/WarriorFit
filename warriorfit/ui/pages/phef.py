@@ -82,7 +82,7 @@ class PhefPage:
                     ),
                 ),
                 ui.card(
-                    ui.card_header("PHEF Tests (You must pass running and side-bridge tests to have a pass on the PHEF test)"),
+                    ui.card_header("PHEF Tests (You must pass running and side-bridge tests to have a pass on the PHEF test) This list shows not only members of own unit"),
                     ui.output_data_frame("ph_grid"),
                     ui.br(),
 
