@@ -5,12 +5,13 @@ import pandas as pd
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 
-from warriorfit.data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, Mars
+from warriorfit.data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, March
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.data_collector import DataCollector
 
 from warriorfit.services.military_service import MilitaryService
-from warriorfit.services.service_mars import ServiceMars
+from warriorfit.services.service_march import ServiceMarch
+
 from warriorfit.services.service_test import ServiceTest
 
 
@@ -27,7 +28,7 @@ class OwnUnitController:
         self.unit_name: str = ApplicationConfig().own_unit
         self._data_collector = DataCollector()
         self._service = ServiceTest()
-        self._service_mars = ServiceMars()
+        self._service_mars = ServiceMarch()
 
     async def fetch_servicemen_df(self) -> pd.DataFrame:
         data = await self._mil_service.get_all_be_mil_from_unit(self.unit_name)
@@ -49,8 +50,8 @@ class OwnUnitController:
                     sm) else "🔴 Failed" if await self._is_passed_combat(sm) is False else "🔴 Not done",
                 "Swim status": "🟢 Passed" if await self._is_passed_swim(
                     sm) else "🔴 Failed" if await self._is_passed_swim(sm) is False else "🔴 Not done",
-                "Mars status": "🟢 Passed" if await self._is_passed_mars(
-                    sm) else "🔴 Failed" if await self._is_passed_mars(sm) is False else "🔴 Not done"
+                "March status": "🟢 Passed" if await self._is_passed_march(
+                    sm) else "🔴 Failed" if await self._is_passed_march(sm) is False else "🔴 Not done"
             }
             for sm in service_men_list
         ]
@@ -78,8 +79,8 @@ class OwnUnitController:
             return None
         return len([x for x in mils if  x.swim_paased]) > 0
 
-    async def _is_passed_mars(self, sm:ServiceMen):
-        mars:List[Mars] = await self._service_mars.get_mars_from_service_men(sm.service_number)
+    async def _is_passed_march(self, sm:ServiceMen):
+        mars:List[March] = await self._service_mars.get_march_from_service_men(sm.service_number)
         if not mars or len(mars) == 0:
             return None
         return len([x for x in mars if x.succeeded]) > 0

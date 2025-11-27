@@ -5,7 +5,8 @@ from warriorfit.data.db.db_model import PhefTest
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.logic.singleton import Singleton
 from warriorfit.services.military_service import MilitaryService
-from warriorfit.services.service_mars import ServiceMars
+from warriorfit.services.service_march import ServiceMarch
+
 from warriorfit.services.service_test import ServiceTest
 
 
@@ -13,7 +14,7 @@ class DataCollector(metaclass=Singleton):
 
     def __init__(self):
         self._service = ServiceTest()
-        self._service_mars = ServiceMars()
+        self._service_mars = ServiceMarch()
         self.be_mil = MilitaryService()
 
     async def collect_tests_data_for_serial(self, serial: str, current_year=True) ->pd.DataFrame:
@@ -314,7 +315,7 @@ class DataCollector(metaclass=Singleton):
 
 
         #mars
-        marses= await self._service_mars.get_mars_from_service_men(serial_number=serial,this_year=False)
+        marses= await self._service_mars.get_march_from_service_men(serial_number=serial,this_year=False)
         for mars in marses or []:
             ok = bool(getattr(mars, "succeeded", False))
             rows.append(
@@ -420,7 +421,7 @@ class DataCollector(metaclass=Singleton):
                                                                                                       TypeFitnessTest.COMBAT)
             data_swimming = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
                 m.service_number, TypeFitnessTest.SWIMMING)
-            data_mars = await self._service_mars.get_mars_from_service_men(serial_number=m.service_number,
+            data_mars = await self._service_mars.get_march_from_service_men(serial_number=m.service_number,
                                                                            this_year=False)
 
             if data_phef and data_phef[0].fitness_tests:
@@ -463,7 +464,7 @@ class DataCollector(metaclass=Singleton):
                 "Combat": combat_status,
                 "Swimming": swim_status,
                 "Functional": func_status,
-                "Mars": mars_status
+                "March": mars_status
             })
 
         if not rows:
