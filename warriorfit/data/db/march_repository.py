@@ -1,10 +1,10 @@
 import logging
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, Select
 from sqlalchemy.exc import SQLAlchemyError
 
 from warriorfit.data.db.abc_repository import ABCRepository
-from warriorfit.data.db.db_model import March
+from warriorfit.data.db.db_model import March, ServiceMen, Unit
 
 
 class MarchRepository(ABCRepository):
@@ -58,24 +58,8 @@ class MarchRepository(ABCRepository):
         return results if results else []
 
     async def get_all_march_by_unit_name(self, unit_name: str) -> list[March]:
-        """
-        Retrieve all March objects associated with a specific unit name.
 
-        This method performs an asynchronous query to fetch all March records
-        that are associated with the service men belonging to the specified
-        unit name. The results are returned as a list of March objects.
-
-        :param unit_name: The name of the unit to search for related March records.
-        :type unit_name: str
-        :return: A list of March objects associated with the service men of the given unit name.
-                 If no records are found, an empty list is returned.
-        :rtype: list[March]
-        """
-        query = (
-            select(March)
-            .join(March.service_men)
-            .where(March.service_men.has(unit_name=unit_name))
-        )
+        query = select(March).join(March.service_men).join(ServiceMen.unit).where(Unit.name == unit_name)
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 

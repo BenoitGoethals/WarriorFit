@@ -36,59 +36,38 @@ class DashboardOwnUnitPage:
                     ui.output_ui("own_unit_combat_stats"),
                     class_="text-center",
                 ),
-                # ui.card(
-                #     ui.card_header("💪 Functional Tests", class_="bg-warning text-white"),
-                #     ui.output_ui("own_unit_functional_stats"),
-                #     class_="text-center",
-                # ),
+
                 ui.card(
                     ui.card_header("🏊 Swimming Tests", class_="bg-info text-white"),
                     ui.output_ui("own_unit_swimming_stats"),
                     class_="text-center",
                 ),
-                col_widths=[3, 3, 3, 3],
+                ui.card(
+                    ui.card_header("🏊 March Tests", class_="bg-info text-white"),
+                    ui.output_ui("own_unit_march_stats"),
+                    class_="text-center",
+                ),
+
             ),
             ui.br(),
             ui.layout_columns(
-                ui.card(
-                    ui.card_header("Test Type ; (Own Unit)"),
-                    ui.output_ui("own_unit_test_distribution_chart"),
-                    full_screen=True,
-                ),
+
                 ui.card(
                     ui.card_header("Pass/Fail Rates by Test Type (Own Unit)"),
                     ui.output_ui("own_unit_pass_fail_chart"),
                     full_screen=True,
                 ),
-                col_widths=[6, 6],
             ),
             ui.br(),
             ui.layout_columns(
-                ui.card(
-                    ui.card_header("Recent Test Sessions (Own Unit)"),
-                    ui.output_data_frame("own_unit_recent_sessions_table"),
-                    full_screen=True,
-                ),
                 ui.card(
                     ui.card_header("PHEF Score Distribution (Own Unit)"),
                     ui.output_ui("own_unit_phef_score_histogram"),
                     full_screen=True,
                 ),
-                col_widths=[6, 6],
             ),
             ui.br(),
-            ui.layout_columns(
-                ui.card(
-                    ui.card_header("Who Failed - PHEF (Own Unit)"),
-                    ui.output_data_frame("own_unit_failed_phef_grid"),
-                    full_screen=True,
-                ),
-                ui.card(
-                    ui.card_header("Who Failed (All Tests, Own Unit)"),
-                    ui.output_data_frame("own_unit_failed_all_grid"),
-                    full_screen=True,
-                ),
-            )
+
         )
 
 
@@ -129,12 +108,6 @@ class DashboardOwnUnitPage:
             stats = await self.controller.combat_stats()
             return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
-        # @output
-        # @render.ui
-        # async def own_unit_functional_stats():
-        #     _ = self.refresh_tick.get()
-        #     stats = await self.controller.functional_stats()
-        #     return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
         @output
         @render.ui
@@ -145,13 +118,11 @@ class DashboardOwnUnitPage:
 
         @output
         @render.ui
-        async def own_unit_test_distribution_chart():
+        async def own_unit_march_stats():
             _ = self.refresh_tick.get()
-            try:
-                html = await self.controller.distribution_pie_html()
-                return ui.HTML(html)
-            except Exception as e:
-                return ui.p(f"No data available: {str(e)}", class_="text-muted")
+            stats = await self.controller.march_stats()
+            return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"],
+                                       stats["sub_class"])
 
         @output
         @render.ui
@@ -163,20 +134,7 @@ class DashboardOwnUnitPage:
             except Exception as e:
                 return ui.p(f"No data available: {str(e)}", class_="text-muted")
 
-        @output
-        @render.data_frame
-        async def own_unit_recent_sessions_table():
-            _ = self.refresh_tick.get()
-            try:
-                df = await self.controller.recent_sessions_df()
-            except Exception:
-                df = pd.DataFrame()
-            return render.DataGrid(
-                df if isinstance(df, pd.DataFrame) else pd.DataFrame(),
-                filters=False,
-                selection_mode="none",
-                width="100%",
-            )
+
 
         @output
         @render.ui
@@ -189,37 +147,6 @@ class DashboardOwnUnitPage:
                 return ui.HTML(html)
             except Exception as e:
                 return ui.p(f"No data available: {str(e)}", class_="text-muted")
-
-        @output
-        @render.data_frame
-        async def own_unit_failed_phef_grid():
-            _ = self.refresh_tick.get()
-            try:
-                df = await self.controller.failed_phef_df()
-            except Exception:
-                df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
-            return render.DataGrid(
-                df if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
-                filters=False,
-                selection_mode="none",
-                width="100%",
-            )
-
-        @output
-        @render.data_frame
-        async def own_unit_failed_all_grid():
-            _ = self.refresh_tick.get()
-            try:
-                df = await self.controller.failed_all_df()
-            except Exception:
-                df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
-            return render.DataGrid(
-                df if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
-                filters=False,
-                selection_mode="none",
-                width="100%",
-            )
-
 
 # Public API
 _page = DashboardOwnUnitPage()
