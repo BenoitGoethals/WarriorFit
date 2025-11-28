@@ -32,39 +32,32 @@ class FitnessWarriorApp:
         return cls._broker
 
     @classmethod
-    def _create_logger_formatter(cls) -> logging.Formatter:
-        return logging.Formatter(
-            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
+    def setup_logger(cls) -> None:
+        import yaml
+        import logging.config
 
-    @classmethod
-    def _ensure_log_file_handler(cls, logger: logging.Logger, formatter: logging.Formatter) -> None:
         project_root = Os.get_project_root()
         if not project_root:
             return
+
+        # Ensure logs directory exists
         log_dir = project_root / "logs"
         log_dir.mkdir(exist_ok=True)
-        file_handler = logging.FileHandler(log_dir / "application.log", mode="a")
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(formatter)
-        if not any(isinstance(h, logging.FileHandler) for h in logger.handlers):
-            logger.addHandler(file_handler)
 
-    @classmethod
-    def setup_logger(cls) -> None:
-        cls.logger = logging.getLogger()
-        cls.logger.setLevel(logging.INFO)
-        formatter = cls._create_logger_formatter()
-        cls._ensure_log_file_handler(cls.logger, formatter)
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(formatter)
-        if not any(
-                isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler)
-                for h in cls.logger.handlers
-        ):
-            cls.logger.addHandler(console_handler)
+        config_path = project_root / "warriorfit" / "config" / "logging_configuration.yml"
+
+        if config_path.exists():
+            with open(config_path, "r") as f:
+                config = yaml.safe_load(f)
+
+            if "handlers" in config and "file" in config["handlers"]:
+                config["handlers"]["file"]["filename"] = str(log_dir / "application.log")
+
+            logging.config.dictConfig(config)
+            cls.logger = logging.getLogger()
+        else:
+            logging.basicConfig(level=logging.INFO)
+            cls.logger = logging.getLogger()
 
     @staticmethod
     def build_app_ui():
