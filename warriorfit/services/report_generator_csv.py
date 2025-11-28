@@ -47,7 +47,7 @@ class ReportGeneratorCsv(GeneratorReport):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{report_name}_{file_suffix}_{timestamp}.csv"
         out_dir = _output_dir()
-        os.makedirs(out_dir, exist_ok=True)
+
         output_path = os.path.join(out_dir, file_name)
 
         with open(output_path, "w", newline="", encoding="utf-8") as f:
