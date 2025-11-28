@@ -10,7 +10,9 @@
 **Project Language:** Python
 **Project devlopment methodology:** Agile
 
-**Project Development server:** http://78.21.255.210:8500/ 
+**Project Development server:** http://78.21.255.210:8500/  
+username: tester
+password: tester007!
 
 
 ## Project Description
