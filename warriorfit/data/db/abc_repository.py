@@ -13,12 +13,7 @@ from warriorfit.utils.Os import Os
 class ABCRepository:
 
     def __init__(self):
-        # Configure logging
 
-        self.setup_logger()
-
-
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.ERROR)
         self._logger = logging.getLogger(__name__)
         async_engine = ApplicationConfig().config
         if async_engine is None:
@@ -32,53 +27,6 @@ class ABCRepository:
             bind=async_engine, expire_on_commit=False, class_=AsyncSession
         )
 
-
-    @staticmethod
-    def setup_logger():
-        """
-        Sets up logging by adding a console handler and file handler.
-        Both handlers will log messages at the informational level and above.
-        """
-        # Create logger
-        logger = logging.getLogger()  # Root logger
-        logger.setLevel(logging.INFO)  # Set global logging level
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
-
-        # Create a formatter
-        formatter = logging.Formatter(
-            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
-
-        # Ensure logs directory exists
-        project_root = Os.get_project_root()
-        if project_root:
-            log_dir = project_root / "logs"
-            log_dir.mkdir(exist_ok=True)  # Create logs directory if it doesn't exist
-
-            # File handler -> Logs to a file
-            file_handler = logging.FileHandler(
-                log_dir / "application_db.log", mode="a"
-            )  # Append mode
-            file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(formatter)
-
-            # Add file handler to the root logger
-            if not any(isinstance(h, logging.FileHandler) for h in logger.handlers):
-                logger.addHandler(file_handler)
-
-        # Console handler -> Logs to console
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(formatter)
-
-        # Add console handler to the root logger
-        if not any(
-                isinstance(h, logging.StreamHandler)
-                and not isinstance(h, logging.FileHandler)
-                for h in logger.handlers
-        ):
-            logger.addHandler(console_handler)
 
 
     async def check_if_db_is_operational(self) -> bool:

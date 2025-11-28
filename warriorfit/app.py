@@ -24,6 +24,9 @@ class FitnessWarriorApp:
     LOGIN_MODAL_SIZE = "m"
     _broker=Broker()
 
+    def __init__(self):
+        self.setup_logger()
+
     @classmethod
     def get_broker(cls):
         return cls._broker
