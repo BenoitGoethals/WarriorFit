@@ -1,5 +1,6 @@
 from shiny import ui, render
 
+from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.role import Role
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
 from warriorfit.ui.user_store import UserStore
@@ -20,6 +21,7 @@ class StatusLoginUser:
                         ui.div(
                             ui.h1(ui.output_text("welcome_header"), class_="display-4 fw-bold text-primary mb-2"),
                             ui.p(ui.output_text("welcome_subheader"), class_="lead text-muted"),
+                            ui.p(ui.output_text("version_header"), class_="lead text-muted"),
                             class_="text-center py-5 bg-light rounded-3 mb-4 shadow-sm"
                         )
                     )
@@ -37,6 +39,10 @@ class StatusLoginUser:
             if user:
                 return f"Welcome back, {user.username}!"
             return "Welcome to WarriorFit"
+
+        @render.text
+        def version_header():
+            return f"Version: {ApplicationConfig().version}"
 
         @render.text
         def welcome_subheader():
