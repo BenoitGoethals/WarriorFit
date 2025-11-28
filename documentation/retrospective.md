@@ -212,11 +212,3 @@ Here's a retrospective template tailored to your project phases:
 - Total features delivered: 
 - Lines of code: (optional)
 ```
-
-This structure allows you to:
-- Track progress within each phase through sprints
-- Summarize learnings at phase transitions
-- Keep a final project-wide retrospective
-- See patterns across phases over time
-
-You can keep this as a single `RETROSPECTIVES.md` file in your repo root or docs folder!
