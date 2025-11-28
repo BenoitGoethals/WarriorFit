@@ -82,6 +82,8 @@ On the kanban board, you can see the different tasks and their status.
 https://github.com/users/BenoitGoethals/projects/20
 
 
+## 4. SOR structuur
 
+![land-nl.png](documentation/land-nl.png)
 
 
