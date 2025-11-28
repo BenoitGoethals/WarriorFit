@@ -55,6 +55,7 @@ class OwnUnitPage:
         @render.ui
         def download_btn_unit():
             if self.report_path.get():
+                ui.update_action_button("full_report_unit", disabled=True)
                 return ui.download_button("download_generated_report_unit", "Download PDF", width="150px",
                                           class_="btn-success")
             return None
@@ -62,6 +63,9 @@ class OwnUnitPage:
         @render.download(filename=lambda: f"Report_{ApplicationConfig().own_unit}.pdf")
         def download_generated_report_unit():
             path = self.report_path.get()
+            ui.update_action_button("full_report_unit", disabled=False)
+            self.report_path.set(None)
+            _tick()
             if path:
                 return path
             return None

@@ -39,6 +39,10 @@ class ApplicationConfig(metaclass=Singleton):
         return self.__config
 
     @property
+    def version(self)-> tuple[str, str]:
+        return self.__version
+
+    @property
     def pdf_output_path(self):
 
         if self.__pdf_path is None:
@@ -96,6 +100,7 @@ class ApplicationConfig(metaclass=Singleton):
         if not Path(self.__pdf_path).exists():
             Path(self.__pdf_path).mkdir(parents=True, exist_ok=True)
         self.__own_unit = config["unit"]["name"]
+        self.__version = config["version"]["number"],config["version"]["status"]
         self.__hr_url = config["hr"]["url"]
         self.__mail_server= SmtpConfig(host=config["mail"]["host"],
                                        port=config["mail"]["port"],

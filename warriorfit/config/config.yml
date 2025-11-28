@@ -21,3 +21,6 @@ path:
   pdf_path: /tmp/pdf
 unit:
   name: 1-3 Bn Lanciers
+version:
+  number: 0.1.0
+  status: development

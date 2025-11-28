@@ -21,3 +21,6 @@ path:
   pdf_path: /tmp/pdf
 unit:
   name: 3PARA
+version:
+  number: 0.1.0
+  status: development
