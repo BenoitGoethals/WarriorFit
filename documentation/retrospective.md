@@ -1,7 +1,4 @@
-Here's a retrospective template tailored to your project phases:
-
-```markdown
-# Project Retrospectives - [Project Name]
+# Project Retrospectives - WarriorFit
 
 ---
 
@@ -13,27 +10,28 @@ Here's a retrospective template tailored to your project phases:
 - Repository set up
 
 ### What Went Well ✅
-- 
-- 
+- Define user stories and acceptance criteria
+- Technogical chosens and tools selected
+- scoped out project timeline
 
 ### What Didn't Go Well ❌
-- 
-- 
+- javascript prototype vue.js :  overhead of learning
+- use cases: switch to userstories, more agile, freedom of choice
 
 ### What I Learned 💡
-- 
-- 
+- setup UI with shiny UI kit : mvc framework 
+- sqlqchemy : ORM mapped object relational database
+- docker deployment :  containerization
 
 ### Improvements for Next Phase 🎯
-- 
-- 
+- take more time to understand the project scope
+- take more think how to implement the userstorors
 
 ### Notes
-- 
-
----
+ult
 
 ## Phase 2 - Architecture & Structure (Jan 2026) 🔄 IN PROGRESS
+---
 
 ### Sprint 1 - [Date Range]
 
@@ -211,4 +209,4 @@ Here's a retrospective template tailored to your project phases:
 - Total sprints: 
 - Total features delivered: 
 - Lines of code: (optional)
-```
+
