@@ -4,14 +4,14 @@
 
 **Author:** Benoit Goethals
 **Academic Year:** 2025–2026
-
 **Project Status:** In Progress
-
 **Project Type:** Software Engineering
-
 **Project Duration:** 6 months
-
 **Project Language:** Python
+**Project devlopment methodology:** Agile
+
+**Project Development server:** http://78.21.255.210:8500/ 
+
 
 ## Project Description
 WarriorFit is a comprehensive fitness and military management application designed to track physical performance, manage personnel data, and generate analytical reports. The system integrates data collection, statistical analysis, and reporting capabilities tailored for military fitness standards.
