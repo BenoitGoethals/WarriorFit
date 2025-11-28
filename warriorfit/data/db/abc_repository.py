@@ -186,13 +186,12 @@ class ABCRepository:
         stmt = select(AuditLog).order_by(AuditLog.created_at.desc())
         if limit is not None:
             stmt = stmt.limit(limit).offset(offset)
-
-        async with self.SessionLocal() as session:
-            try:
+        try:
+            async with self.SessionLocal() as session:
                 result = await session.execute(stmt)
                 logs = result.scalars().all()
                 return list(logs)
-            except Exception as e:
+        except Exception as e:
                 self._logger.error(f"get_all_audit_logs failed: {e}")
                 return []
 
