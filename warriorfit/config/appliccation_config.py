@@ -93,6 +93,8 @@ class ApplicationConfig(metaclass=Singleton):
         if not config:
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
         self.__pdf_path = config["path"]["pdf_path"]
+        if not Path(self.__pdf_path).exists():
+            Path(self.__pdf_path).mkdir(parents=True, exist_ok=True)
         self.__own_unit = config["unit"]["name"]
         self.__hr_url = config["hr"]["url"]
         self.__mail_server= SmtpConfig(host=config["mail"]["host"],

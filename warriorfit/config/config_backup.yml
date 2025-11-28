@@ -18,6 +18,6 @@ mail:
   use_tls: false
   username: benoit
 path:
-  pdf_path: /home/benoit/temp
+  pdf_path: /tmp/pdf
 unit:
   name: 3PARA
