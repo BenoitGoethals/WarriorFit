@@ -15,7 +15,11 @@ class UserService(Service, metaclass=Singleton):
         super().__init__()
 
     async def check_user(self, username_login, password_login):
-        return await self._user_repo.check_user(username_login, password_login)
+        user = await self._user_repo.get_user_by_username(username_login)
+        if user.is_active:
+            return user
+        return None
+
 
     async def get_user_by_username(self, username_login):
         return await self._user_repo.get_user_by_username(username_login)
