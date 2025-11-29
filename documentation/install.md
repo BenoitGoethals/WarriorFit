@@ -89,8 +89,7 @@ create table alembic_version
             primary key
 );
 
-alter table alembic_version
-    owner to produser;
+
 
 create table fitness_tests
 (
