@@ -15,8 +15,10 @@ from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from warriorfit.core.Gender import Gender
+from warriorfit.core.rank_enum import Rank
 from warriorfit.core.role import Role
 from warriorfit.core.type_fitness_test import TypeFitnessTest
+from warriorfit.data.db.enum_mapped_user_model import IntEnumType
 
 
 class Base(DeclarativeBase):
@@ -227,24 +229,26 @@ class ServiceMen(Base):
     __tablename__ = "service_men"
     __table_args__ = (
         UniqueConstraint("service_number", name="uq_service_men_service_number"),
-     #   UniqueConstraint("mail", name="uq_service_men_mail"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
     first_name: Mapped[str] = mapped_column(String(80), nullable=False)
     last_name: Mapped[str] = mapped_column(String(80), nullable=False)
     mail: Mapped[str] = mapped_column(String(120), nullable=False)
-    rank: Mapped[str] = mapped_column(String(50), nullable=False)
+    rank: Mapped[Rank] = mapped_column(IntEnumType(Rank), nullable=False)
     service_number: Mapped[str] = mapped_column(String(50), nullable=False)
     birthdate: Mapped[date] = mapped_column(Date, nullable=False)
     gender: Mapped[Gender] = mapped_column(Enum(Gender), nullable=False)
-
-    # Ref naar Unit i.p.v. Enum
     unit_id: Mapped[int] = mapped_column(ForeignKey("units.id"), nullable=False, index=True)
     unit: Mapped["Unit"] = relationship("Unit", backref="servicemen")
-
     para: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     ops_test: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    @property
+    def rank_service_men(self) -> Rank:
+        return Rank(self.rank)
+
+
 
     @property
     def age(self) -> int:

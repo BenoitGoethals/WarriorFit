@@ -105,7 +105,7 @@ class OwnUnitPage:
                 if row_idx < 0 or row_idx >= len(df):
                     return
                 row = df.iloc[row_idx]
-                serial = str(row.get("Service #", "") or "").strip()
+                serial = str(row.get("Service", "") or "").strip()
                 if not serial:
                     return
                 self._selected_serial.set(serial)
