@@ -162,18 +162,16 @@ class CombatPage:
                 ui.update_action_button("combat_add_btn", disabled=True)
                 ui.update_action_button("combat_update_btn", disabled=True)
                 return
-            try:
-                val = await self.controller.search_military(input.combat_serialnr() or "")
-                self.selected_military = val
-                if val is None:
-                    ui.update_text("combat_serialnr", value="Not found")
-                    return
-                military.set(val.rank + " " + val.service_number + " " + val.first_name + " " + val.last_name)
-                ui.update_action_button("combat_add_btn", disabled=False)
-                ui.update_action_button("combat_update_btn", disabled=False)
-            except Exception:
+            val = await self.controller.search_military(input.combat_serialnr() or "")
+            self.selected_military = val
+            if val is None:
                 ui.update_text("combat_serialnr", value="Not found")
                 return
+            military.set(
+                f"{val.rank} {val.service_number} {val.first_name} {val.last_name} {val.gender} {val.age_from_birthdate()} years old")
+            ui.update_action_button("combat_add_btn", disabled=False)
+            ui.update_action_button("combat_update_btn", disabled=False)
+
 
         @output
         @render.text
