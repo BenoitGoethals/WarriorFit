@@ -37,10 +37,24 @@ version:
 
 
 ## 2. docker
-
+local deployment
 ```docker
+
 sudo docker build -t warriorfit-app .
 docker run -p 8000:8000 warriorfit-app
+```
+server deploy
+```
+# 1. List containers to find the one you want
+docker ps -a
+
+# 2. Stop it if running
+docker stop my_container
+
+# 3. Remove it
+docker rm my_container
+
+sudo docker run -d --restart unless-stopped --name warriorfit-app -p 8500:8000 warriorfit-app
 ```
 
 
