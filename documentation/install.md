@@ -27,6 +27,10 @@ mail:
   sender_email : "benoit@albatros.be"
 hr:
   url : "http://127.0.0.1:8005/api/v1/phef/test"
+version:
+  number: 0.1.0
+  status: development
+
 
 
 ```
@@ -252,7 +256,7 @@ create table service_men
     first_name     varchar(80)  not null,
     last_name      varchar(80)  not null,
     mail           varchar(120) not null,
-    rank           varchar(50)  not null,
+    rank           integer  not null,
     service_number varchar(50)  not null
         constraint uq_service_men_service_number
             unique,

@@ -35,8 +35,8 @@ class OwnUnitController:
         service_men_list = data if isinstance(data, list) else ([data] if data is not None else [])
         rows: List[Dict[str, Any]] = [
             {
-                "Service #": sm.service_number,
-                "Rank": sm.rank,
+                "Service": sm.service_number,
+                "Rank": sm.rank_service_men.name if sm.rank else "Burger",
                 "Last name": sm.last_name,
                 "First name": sm.first_name,
                 #"Unit": (getattr(sm.unit, "name", sm.unit) or ""),
