@@ -16,7 +16,20 @@ from warriorfit.services.service_test import ServiceTest
 
 
 class DashboardOwnUnitController:
+    """
+    Handles operations and statistics related to a military unit's fitness tests and personnel
+    performance evaluation.
 
+    This class is designed to provide tools for fetching data related to a military unit’s
+    personnel, their fitness tests, and overall evaluation metrics. It includes methods to
+    gather and calculate statistics for various fitness test types, manage cached test and
+    personnel data, and retrieve results as needed.
+
+    :ivar be_mil_service: Service used for fetching personnel data specific to a unit.
+    :type be_mil_service: MilitaryService
+    :ivar unit_name: Name of the owning unit.
+    :type unit_name: str
+    """
     def __init__(self) -> None:
         self._service = ServiceTest()
         self.be_mil_service = MilitaryService()
