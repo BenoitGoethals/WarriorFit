@@ -12,6 +12,18 @@ from warriorfit.services.service_cross import ServiceCross
 
 
 class ReportGeneratorPdf(GeneratorReport):
+    """
+    Class responsible for generating PDF reports of various types. The generated reports can include
+    PHEF (Physical Efficiency and Fitness), Functional, Combat, Swimming, and Cross Runner data.
+
+    The purpose of this class is to provide specialized methods that handle data transformation and PDF
+    generation for the reports, leveraging utility services for data retrieval and formatting where needed.
+
+    :ivar be_mil_service: Responsible for retrieving servicemen's details.
+    :type be_mil_service: Service or similar object, implementation-specific
+    :ivar logger: Logger instance for logging report generation and relevant activity.
+    :type logger: logging.Logger
+    """
     def __init__(self):
         super().__init__()
         self._cross_service = ServiceCross()
@@ -34,6 +46,18 @@ class ReportGeneratorPdf(GeneratorReport):
             raise ValueError("Invalid report type")
 
     async def generate_run_report(self, report_name: str, cross: int):
+        """
+        Generates a PDF report for a cross run event by fetching runners' details,
+        sorting them based on their running time, and formatting the result into a
+        report layout.
+
+        :param report_name: The name of the report to be generated.
+        :type report_name: str
+        :param cross: An identifier for the cross run event.
+        :type cross: int
+        :return: A PDF file representing the generated report, or None if no data is available.
+        :rtype: Any
+        """
         result = await self._cross_service.get_cross_by_id(cross, lazy=False)
 
         if not result or not result.runners:
@@ -90,6 +114,19 @@ class ReportGeneratorPdf(GeneratorReport):
 
     @staticmethod
     def _fmt_time(sec: int | float | None) -> str:
+        """
+        Formats a given time in seconds into a string formatted as "MM:SS".
+
+        This method takes an integer, float, or None as input, representing a duration
+        in seconds. It converts this duration into a string format with minutes and
+        seconds (MM:SS). If the input is None or invalid, it will return a fallback
+        placeholder string "-" instead.
+
+        :param sec: The duration in seconds to format. It can be an integer, float,
+                    or None.
+        :return: A string representing the duration formatted as "MM:SS". If the
+                 input is invalid or None, returns "-".
+        """
         try:
             s = int(sec or 0)
             return f"{s // 60}:{s % 60:02d}"
@@ -98,6 +135,23 @@ class ReportGeneratorPdf(GeneratorReport):
 
     @staticmethod
     def _ensure_pdf_deps():
+        """
+        Ensures that the required dependencies for generating PDFs are available.
+
+        Attempts to import the necessary modules from the `reportlab` library and
+        returns them encapsulated in a dictionary for ease of access. If the required
+        dependency `reportlab` is not installed, a `RuntimeError` is raised.
+
+        This static method provides a centralized approach to check for and manage
+        dependencies related to PDF generation.
+
+        :raises RuntimeError: If the `reportlab` library is not installed, an error
+            is raised prompting the user to install the dependency.
+        :return: A dictionary containing the `reportlab` dependencies required
+            for PDF generation. Keys include "A4", "colors", "getSampleStyleSheet",
+            "SimpleDocTemplate", "Paragraph", "Spacer", "Table", and "TableStyle".
+        :rtype: dict
+        """
         try:
             from reportlab.lib.pagesizes import A4
             from reportlab.lib import colors
@@ -177,10 +231,22 @@ class ReportGeneratorPdf(GeneratorReport):
             self, report_name: str, own_unit: bool, this_year: bool
     ):
         """
-        Generate PDFs for PHEF:
-        - All FAILED tests (<50 total)
-        - All PASSED tests (>=50 total)
-        Returns dict with 'failed' and 'passed' -> file paths (or None if not created).
+        Generates a PHEF (Performance Health Evaluation Framework) report containing the
+        details of passed and failed tests as two separate PDF files. The method processes
+        data based on the provided criteria, formats it into tables, and generates PDFs
+        with comprehensive test details.
+
+        :param report_name: Name of the report to be generated, used as a reference for
+                            output files.
+        :type report_name: str
+        :param own_unit: Whether to process data only for the current unit or include
+                         all units.
+        :type own_unit: bool
+        :param this_year: Flag to filter data for the current year only.
+        :type this_year: bool
+        :return: A dictionary containing paths to the two generated PDF files, one for
+                 passed tests and the other for failed tests.
+        :rtype: dict
         """
 
         headers, passed, failed = await self.calculate_score(own_unit, this_year)
@@ -224,6 +290,18 @@ class ReportGeneratorPdf(GeneratorReport):
     async def generate_functional_report(
             self, report_name: str, own_unit: bool, this_year: bool
     ):
+        """
+        Generates a functional report based on passed and failed test data. This function
+        calculates functional scores and generates PDF reports for both failed and
+        passed tests, including detailed records of test sessions.
+
+        :param report_name: The name of the report.
+        :param own_unit: Flag indicating whether to filter data for the user's own unit.
+        :param this_year: Flag indicating whether to filter data for the current year.
+        :return: A dictionary containing file paths to the generated failed and passed
+            reports.
+        :rtype: dict
+        """
         failed, headers, passed = await self.calculate_functional_score(
             own_unit, this_year
         )
@@ -265,9 +343,20 @@ class ReportGeneratorPdf(GeneratorReport):
             self, report_name: str, own_unit: bool, this_year: bool
     ):
         """
-        Generate PDFs for Combat tests:
-        - Failed (any requirement not met)
-        - Passed (rope + obstacle passed and running_time <= 7200)
+        Generates a combat report by calculating combat scores, segregating data into
+        failed and passed records, and exporting the results to PDF files.
+
+        :param report_name: The name of the report to be generated.
+        :type report_name: str
+        :param own_unit: Boolean indicating whether to filter records by the unit's
+            own data.
+        :type own_unit: bool
+        :param this_year: Boolean indicating whether to filter records to only
+            include data from the current year.
+        :type this_year: bool
+        :return: A dictionary with paths to the generated PDFs for failed and passed
+            records. The keys are "failed" and "passed", respectively.
+        :rtype: dict
         """
 
         failed, headers, passed = await self.calculate_combat_score(own_unit, this_year)
@@ -283,6 +372,20 @@ class ReportGeneratorPdf(GeneratorReport):
         ]
 
         def row_builder(r: dict) -> List[Any]:
+            """
+            Builds a list of values from a given dictionary. Each value in the list is extracted
+            or computed from the dictionary keys or their corresponding values. The function
+            formats and converts some values, such as dates and times, while keeping specific logic
+            for representing certain states (e.g., Passed/Failed). Aimed at constructing rows
+            for further processing or data usage.
+
+            :param r: Dictionary containing keys required to build the row. Expected keys include
+                      "session_id", "session_date", "serial", "rope", "obstacle", "run_time_s",
+                      and "result".
+            :type r: dict
+            :return: A list of values extracted or computed from the input dictionary.
+            :rtype: List[Any]
+            """
             return [
                 r["session_id"],
                 (
@@ -318,7 +421,17 @@ class ReportGeneratorPdf(GeneratorReport):
     async def generate_swimming_report(
             self, report_name: str, own_unit: bool, this_year: bool
     ):
+        """
+        Generates a swimming test report in PDF format for failed and passed tests. This method
+        calculates swimming test scores and builds two PDF reports: one for the records of
+        failed tests and another for passed tests.
 
+        :param report_name: The name of the report to be generated.
+        :param own_unit: Indicates whether to include only the current unit in the report.
+        :param this_year: Specifies whether the report covers only the current year's data.
+        :return: A dictionary containing file paths of the generated PDF reports for failed and
+                 passed tests.
+        """
         failed, headers, passed = await self.calculate_swim_score(own_unit, this_year)
 
         def row_builder(r: dict) -> List[Any]:
@@ -352,7 +465,13 @@ class ReportGeneratorPdf(GeneratorReport):
         return {"failed": failed_path, "passed": passed_path}
 
     async def generate_ind_report_current_year(self, serial_number: str):
+        """
+        Generate an individual report for the current year, including a summary of a serviceman's
+        details and test results, outputted as a PDF document.
 
+        :param serial_number: A string representing the serviceman's serial number.
+        :return: The file path to the generated PDF report as a string.
+        """
         current_year = datetime.now().year
 
         # Get serviceman details

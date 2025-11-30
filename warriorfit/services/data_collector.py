@@ -11,13 +11,37 @@ from warriorfit.services.service_test import ServiceTest
 
 
 class DataCollector(metaclass=Singleton):
+    """
+    Responsible for collecting and processing fitness test data for servicemen.
 
+    This class is used to manage and aggregate data related to fitness tests conducted
+    for servicemen. It processes results for different test types such as PHEF, Functional,
+    Combat, Swimming, and Mars, organizing the information for further use or analysis.
+
+    :ivar be_mil: Instance of MilitaryService for retrieving servicemen data.
+    :type be_mil: MilitaryService
+    """
     def __init__(self):
         self._service = ServiceTest()
         self._service_mars = ServiceMarch()
         self.be_mil = MilitaryService()
 
     async def collect_tests_data_for_serial(self, serial: str, current_year=True) ->pd.DataFrame:
+        """
+        Collects and processes test data for a given serial with multiple fitness test types. This function
+        aggregates results from different test categories, including PHEF, Functional, Combat, Swimming, and
+        Mars performance. It formats the data into a structured pandas DataFrame for further use or analysis.
+
+        The function evaluates each test type and calculates comprehensive scores, results, and additional
+        details based on individual test performances.
+
+        :param serial: The serial number of the service member whose test data is to be collected.
+        :type serial: str
+        :param current_year: Optional; Whether to fetch test sessions only from the current year.
+        :type current_year: bool
+        :return: A pandas DataFrame containing the fitness test results of the given serial.
+        :rtype: pd.DataFrame
+        """
         rows: list[dict] = []
 
         # PHEF
@@ -410,6 +434,17 @@ class DataCollector(metaclass=Singleton):
         return pd.DataFrame(rows)
 
     async def collect_tests_data_for_own_unit(self) -> pd.DataFrame:
+        """
+        Asynchronously collects and aggregates test data for all service members in the
+        own unit. Retrieves and processes results for various fitness test types, along
+        with their statuses, and returns the consolidated data as a pandas DataFrame.
+
+        :return: A pandas DataFrame containing the aggregated fitness test data for each
+            service member in the unit. The DataFrame contains columns such as "Rank",
+            "Serial", "Name", and fitness test statuses ("Phef", "Combat", "Swimming",
+            "Functional", "March").
+        :rtype: pd.DataFrame
+        """
         own_unit = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
         rows = []
         for m in own_unit:

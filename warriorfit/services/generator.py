@@ -17,13 +17,29 @@ from warriorfit.services.service_test import ServiceTest
 
 
 def _output_dir() -> str:
-    try:
-        return ApplicationConfig().pdf_output_path
-    except Exception:
+
+    path= ApplicationConfig().pdf_output_path
+    if path:
+        return path
+    else:
         return os.getcwd()
 
 
+
 class GeneratorReport(ABC):
+    """
+    Handles the generation of various fitness test reports, including calculations of
+    scores for physical fitness tests, functional tests, combat tests, and swimming tests.
+
+    This abstract class is designed to process and report data collected from unit-specific
+    or general test sessions, utilizing results from multiple test types such as PHEF, combat,
+    functional training, and swimming. The implementation process involves score calculation,
+    data filtering based on unit affiliation, and result categorization.
+
+    :ivar be_mil_service: Service instance for handling military-related operations, such
+        as retrieving military unit data or servicemen details.
+    :type be_mil_service: MilitaryService
+    """
     def __init__(self):
         self.be_mil_service = MilitaryService()
         self._service = ServiceTest()
@@ -31,6 +47,29 @@ class GeneratorReport(ABC):
         self._logger = logging.getLogger(__name__)
 
     async def calculate_score(self, own_unit, this_year):
+        """
+        Calculates the PHEF (Physical Fitness Efficiency) test scores for participants
+        and categorizes them as passed or failed based on their total scores. The
+        method retrieves test sessions, filters them based on the provided criteria,
+        and computes individual scores for side bridge tests and running time using the
+        PhefCalculator.
+
+        The scoring system normalizes results to a standardized scale, where a total
+        score of at least 50 constitutes passing. Results are grouped by session
+        and include detailed metrics such as individual test scores, participant
+        information, and session details. Headers corresponding to the results
+        are also generated.
+
+        :param own_unit: Determines if the filtering should be limited to the service
+                         member's own unit.
+        :type own_unit: bool
+        :param this_year: The specific year for which test sessions and scores should
+                          be considered.
+        :type this_year: int
+        :return: A tuple containing the table headers, passed participants,
+                 and failed participants.
+        :rtype: Tuple[List[str], List[dict], List[dict]]
+        """
         failed: List[dict] = []
         passed: List[dict] = []
         sessions: List[TestSession] = (
@@ -93,6 +132,23 @@ class GeneratorReport(ABC):
         return headers, passed, failed
 
     async def calculate_functional_score(self, own_unit, this_year):
+        """
+        Asynchronously calculates a functional score for military personnel based on
+        their performance in fitness tests. The function filters test results for a
+        specific year and optionally for a specific unit. It aggregates results,
+        categorizing them into passed or failed based on their total score. Each
+        aggregate includes detailed test data.
+
+        :param own_unit: Whether to consider only tests belonging to a specific unit
+            or include all units.
+        :type own_unit: bool
+        :param this_year: The year of test sessions to include.
+        :type this_year: int
+        :return: A tuple containing three elements: a list of failed test results,
+            a list of column headers for summarized results, and a list of passed
+            test results.
+        :rtype: tuple
+        """
         failed: List[dict] = []
         passed: List[dict] = []
 
@@ -140,6 +196,25 @@ class GeneratorReport(ABC):
         return failed, headers, passed
 
     async def calculate_combat_score(self, own_unit, this_year):
+        """
+        Asynchronously calculates the combat score for paratroopers' test results based on
+        certain criteria such as passing a rope course, an obstacle course, and completing
+        a running challenge within a specified time limit.
+
+        This function retrieves and processes the results of combat tests conducted during
+        test sessions in the current year (or a given year). If the `own_unit` parameter
+        is specified, it filters results to include only those for individuals from a specific
+        military unit.
+
+        :param own_unit: A boolean indicating whether to filter the results for the own
+            unit specified in the application configuration.
+        :param this_year: An integer specifying the year for which the combat test
+            results are being evaluated.
+        :return: A tuple containing:
+            - failed: A list of dictionaries with details of individuals who failed the combat test.
+            - headers: A list of strings defining the column headers for the test results.
+            - passed: A list of dictionaries with details of individuals who passed the combat test.
+        """
         failed: List[dict] = []
         passed: List[dict] = []
 
@@ -187,6 +262,19 @@ class GeneratorReport(ABC):
         return failed, headers, passed
 
     async def calculate_swim_score(self, own_unit, this_year):
+        """
+        Calculates swimming scores for a set of test sessions within a specified year. It checks
+        whether participants pass or fail based on their swimming test results, while optionally
+        filtering participants belonging to the specified unit.
+
+        :param own_unit: Whether to filter results to include only participants from the local unit
+        :type own_unit: bool
+        :param this_year: The year in which to fetch test sessions for swimming tests
+        :type this_year: int
+
+        :return: A tuple containing failed test cases, column headers, and passed test cases
+        :rtype: Tuple[List[dict], List[str], List[dict]]
+        """
         failed: List[dict] = []
         passed: List[dict] = []
         sessions: List[TestSession] = (
