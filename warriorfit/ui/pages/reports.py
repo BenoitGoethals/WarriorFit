@@ -6,9 +6,10 @@ from pathlib import Path
 from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.reports_controller import ReportsController, ReportRequest
+from warriorfit.ui.pages.page import Page
 
 
-class ReportsPage:
+class ReportsPage(Page):
     def __init__(self) -> None:
         self.controller = ReportsController()
         self._status_msg = reactive.Value(("info", "Click 'Generate Report' to create your report."))

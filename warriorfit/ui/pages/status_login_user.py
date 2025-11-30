@@ -6,10 +6,11 @@ from shiny import ui, render
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.role import Role
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
+from warriorfit.ui.pages.page import Page
 from warriorfit.ui.user_store import UserStore
 
 
-class StatusLoginUser:
+class StatusLoginUser(Page):
 
     def __init__(self):
         self.controller = StatusLogUserController()

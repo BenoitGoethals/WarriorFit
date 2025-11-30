@@ -7,9 +7,10 @@ import pandas as pd
 from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
+from warriorfit.ui.pages.page import Page
 
 
-class CrossPlanningPage:
+class CrossPlanningPage(Page):
     def __init__(self):
         self._controller = CrossPlanningController()
         self.refresh_tick = reactive.Value(0)

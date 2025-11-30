@@ -7,9 +7,10 @@ from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 
 from warriorfit.ui.controllers.phef_controller import PhefController
+from warriorfit.ui.pages.page import Page
 
 
-class PhefPage:
+class PhefPage(Page):
     def __init__(self):
 
         self.refresh_tick = reactive.Value(0)

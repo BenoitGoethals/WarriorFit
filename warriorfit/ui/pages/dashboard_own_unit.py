@@ -4,9 +4,10 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 from warriorfit.ui.controllers.dashboard_own_unit_controller import DashboardOwnUnitController
+from warriorfit.ui.pages.page import Page
 
 
-class DashboardOwnUnitPage:
+class DashboardOwnUnitPage(Page):
     def __init__(self):
 
         self.refresh_tick = reactive.Value(0)

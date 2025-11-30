@@ -2,10 +2,11 @@ import pandas as pd
 from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
+from warriorfit.ui.pages.page import Page
 from warriorfit.utils.formaters import Formatter
 
 
-class CrossStaticsPage:
+class CrossStaticsPage(Page):
     def __init__(self):
         self._controller = CrossStaticsController()
         self.refresh_tick = reactive.Value(0)

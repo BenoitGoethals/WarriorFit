@@ -7,9 +7,10 @@ from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.services.military_service import MilitaryService
 
 from warriorfit.ui.controllers.functional_controller import FunctionalController
+from warriorfit.ui.pages.page import Page
 
 
-class FunctionalPage:
+class FunctionalPage(Page):
     def __init__(self,):
 
         self.refresh_tick = reactive.Value(0)

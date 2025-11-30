@@ -10,9 +10,10 @@ from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
+from warriorfit.ui.pages.page import Page
 
 
-class OwnUnitPage:
+class OwnUnitPage(Page):
     def __init__(self, mil_service: Optional[MilitaryService] = None):
         self.controller = OwnUnitController(mil_service or MilitaryService())
         self.refresh_tick = reactive.Value(0)

@@ -5,31 +5,44 @@ from shiny import ui, reactive
 from shiny_calendar import render_shiny_calendar, shiny_calendar, shiny_calendar_call_js_func
 
 from warriorfit.ui.controllers.calendar_events_controller import CalendarEventsController
+from warriorfit.ui.pages.page import Page
 from warriorfit.ui.user_store import UserStore
 
 
-class CalendarPage:
+class CalendarPage(Page):
     TITLE = "Calendar"
     TITLE_PERSONAL = "Personal Calendar"
 
     def __init__(self) -> None:
         self._controller = CalendarEventsController()
- 
         self._all = True
-        # Reactive counter to force calendar refresh when needed
         self._refresh_counter = reactive.Value(0)
 
-    def get_ui(self, all: bool):
-        # Plain page content, not a nav panel/tab item
-        self._all = all
+    def get_ui_all_test(self):
+        self._all = True
         return ui.page_fluid(
             ui.h2(CalendarPage.TITLE),
             ui.page_fillable(
                 ui.layout_columns(
                     ui.card(
-                        ui.card_header(CalendarPage.TITLE)
-                        if all is True
-                        else ui.card_header(CalendarPage.TITLE_PERSONAL),
+                        ui.card_header(CalendarPage.TITLE),
+
+                        shiny_calendar("my_calendar"),
+                    ),
+                    col_widths=(12,),
+                ),
+                fillable=True,
+            ),
+        )
+
+    def get_ui(self):
+        self._all = False
+        return ui.page_fluid(
+            ui.h2(CalendarPage.TITLE),
+            ui.page_fillable(
+                ui.layout_columns(
+                    ui.card(
+                      ui.card_header(CalendarPage.TITLE_PERSONAL),
                         shiny_calendar("my_calendar"),
                     ),
                     col_widths=(12,),
@@ -117,7 +130,10 @@ def _get_page() -> CalendarPage:
 
 
 def get_ui(all_test:bool=True):
-       return _get_page().get_ui(all_test)
+    if all_test:
+
+        return _get_page().get_ui_all_test()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
@@ -131,3 +147,4 @@ def refresh():
     """
     page = _get_page()
     page._refresh_counter.set(page._refresh_counter() + 1)
+

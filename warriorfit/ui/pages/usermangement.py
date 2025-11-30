@@ -3,8 +3,10 @@ from __future__ import annotations
 import pandas as pd
 from shiny import ui, render, reactive
 from warriorfit.ui.controllers.usermanagement_controller import UserManagementController, UserForm
+from warriorfit.ui.pages.page import Page
 
-class UserManagementPage:
+
+class UserManagementPage(Page):
     COLUMN_SERIAL = "Serial"
     NO_SELECTION_MESSAGE = "No row selected"
 
