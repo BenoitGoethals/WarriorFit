@@ -1,3 +1,6 @@
+import base64
+from pathlib import Path
+
 from shiny import ui, render
 
 from warriorfit.config.appliccation_config import ApplicationConfig
@@ -22,6 +25,7 @@ class StatusLoginUser:
                             ui.h1(ui.output_text("welcome_header"), class_="display-4 fw-bold text-primary mb-2"),
                             ui.p(ui.output_text("welcome_subheader"), class_="lead text-muted"),
                             ui.p(ui.output_text("version_header"), class_="lead text-muted"),
+                            ui.output_ui("welcome_image"),
                             class_="text-center py-5 bg-light rounded-3 mb-4 shadow-sm"
                         )
                     )
@@ -32,6 +36,14 @@ class StatusLoginUser:
         )
 
     def server(self, input, output, session):
+
+        @output
+        @render.ui
+        def welcome_image():
+            img_path = Path(__file__).parent / "sor.png"
+            with open(img_path, "rb") as f:
+                img_data = base64.b64encode(f.read()).decode()
+            return ui.img(src=f"data:image/png;base64,{img_data}", class_="img-fluid")
         
         @render.text
         def welcome_header():
