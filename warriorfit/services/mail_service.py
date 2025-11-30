@@ -279,34 +279,33 @@ class MailService(metaclass=Singleton):
         )
 
 
-# Example usage (remove or adapt in production):
-if __name__ == "__main__":
-    cfg = SmtpConfig(
-        host="192.168.0.174",
-        port=25,
-        username="benoit",
-        password="R@nger&1401!",
-        sender_email="benoit@albatros.be",
-    )
-    ms = MailService(cfg)
-    start_dt = datetime.utcnow() + timedelta(days=1)
-    end_dt = start_dt + timedelta(hours=1)
-    html = """
-    <h2>Training Session</h2>
-    <p>Hello,<br/>Please find below the meeting details.</p>
-    <ul>
-      <li>Topic: Fitness Assessment</li>
-      <li>When: Tomorrow</li>
-    </ul>
-    """
-    ms.send_html("person@example.com", "Plain HTML Test", html)
-    ms.send_with_calendar_invite(
-        to=["benoit@albatros.be"],
-        subject="Fitness Assessment Invite",
-        html_body=html,
-        start=start_dt,
-        end=end_dt,
-        organizer_email="benoit@albatros.be",
-        organizer_name="Coach",
-        location="Gym Hall A",
-    )
+# if __name__ == "__main__":
+#     cfg = SmtpConfig(
+#         host="192.168.0.174",
+#         port=25,
+#         username="benoit",
+#         password="R@nger&1401!",
+#         sender_email="benoit@albatros.be",
+#     )
+#     ms = MailService(cfg)
+#     start_dt = datetime.utcnow() + timedelta(days=1)
+#     end_dt = start_dt + timedelta(hours=1)
+#     html = """
+#     <h2>Training Session</h2>
+#     <p>Hello,<br/>Please find below the meeting details.</p>
+#     <ul>
+#       <li>Topic: Fitness Assessment</li>
+#       <li>When: Tomorrow</li>
+#     </ul>
+#     """
+#     ms.send_html("person@example.com", "Plain HTML Test", html)
+#     ms.send_with_calendar_invite(
+#         to=["benoit@albatros.be"],
+#         subject="Fitness Assessment Invite",
+#         html_body=html,
+#         start=start_dt,
+#         end=end_dt,
+#         organizer_email="benoit@albatros.be",
+#         organizer_name="Coach",
+#         location="Gym Hall A",
+#     )

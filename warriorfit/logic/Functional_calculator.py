@@ -4,6 +4,8 @@ from warriorfit.core.Gender import Gender
 
 
 class FunctionalCalculator:
+
+
         # Pull-ups () data
         PULLUPS_MEN = {
             '18-27': {10: 20, 9: 18, 8: 16, 7: 14, 6: 12, 5: 10, 4: 8, 3: 6, 2: 4, 1: 1},
@@ -51,6 +53,18 @@ class FunctionalCalculator:
 
         @classmethod
         def get_age_cat(cls, age: int) -> str:
+            """
+            Determines the age category of an individual based on their age.
+
+            This method categorizes an input age into a predefined range. The result
+            is returned as a string representing one of the intervals: '18-27',
+            '28-37', '38-47', '48-56', or a fallback '48-56' for those older than 56.
+
+            :param age: Age of the individual to categorize.
+            :type age: int
+            :return: A string representing the age category of the individual.
+            :rtype: str
+            """
             if 18 <= age <= 27:
                 return '18-27'
             elif 28 <= age <= 37:
@@ -63,30 +77,30 @@ class FunctionalCalculator:
 
         @classmethod
         def _calculate_score(cls, gender: Gender, age: int, count: int, table_men: dict, table_women: dict) -> float:
+            """
+            Calculates the performance score for a given individual based on their gender, age, repetition count,
+            and the performance tables for men and women. The score is scaled to a maximum of 20.0.
+
+            :param gender: The gender of the individual, represented as a `Gender` enum.
+            :param age: The age of the individual.
+            :param count: The number of repetitions completed by the individual.
+            :param table_men: A dictionary representing the performance table for men. The keys are age categories,
+                and the values are dictionaries mapping scores to the required number of repetitions.
+            :param table_women: A dictionary representing the performance table for women. The keys are age categories,
+                and the values are dictionaries mapping scores to the required number of repetitions.
+            :return: The calculated performance score scaled as a `float`. Returns 0.0 if no score could be determined.
+            """
             age_cat = cls.get_age_cat(age)
             table = table_men if gender == Gender.M else table_women
-
             if age_cat not in table:
                 return 0.0
-
             age_group_data = table[age_cat]
-
-            # Logic to find the score based on count (reps).
-            # Assuming linear interpolation or direct lookup logic usually resides here.
-            # For this refactoring, I'll implement a standard lookup or interpolation based on the keys (scores 1-10).
-            # Since the provided data maps Score -> Reps (e.g. {10: 20} means 20 reps gets score 10),
-            # we need to find the highest score where reps <= count.
-
-            # Sort by score descending (keys are scores 10 down to 1)
             sorted_scores = sorted(age_group_data.items(), key=lambda x: x[0], reverse=True)
-
-            # Simple threshold check: if count >= required reps, return that score
             for score, required_reps in sorted_scores:
                 if count >= required_reps:
                     return float(score * 2.0)  # Scaling to 20.0 max based on usage example (20.0 was expected)
 
-            # If count is positive but less than minimum requirement for score 1,
-            # usually it's scaled or 0. Returning 0 for safety if below min.
+
             return 0.0
 
         @classmethod

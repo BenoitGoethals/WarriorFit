@@ -1,8 +1,7 @@
 import logging
 from typing import Any, Optional
 from shiny import App, ui, render
-
-from warriorfit.data.db.abc_repository import ABCRepository
+import time
 from warriorfit.data.db.db_model import Role
 from warriorfit.mom.broker import Broker
 from warriorfit.services.service_user import UserService
@@ -19,20 +18,41 @@ from warriorfit.ui.pages import swim_test
 
 
 class FitnessWarriorApp:
-    APP_TITLE = "Fitness Warrior"
-    DEFAULT_PORT = 8000
-    LOGIN_MODAL_SIZE = "m"
-    _broker=Broker()
+    """
+    Main application class for the Fitness Warrior app.
+
+    This class initializes the application, sets up logging, and defines the
+    user interface and server logic for the app.
+    """
+
+    APP_TITLE = "Fitness Warrior"  # Title of the application
+    DEFAULT_PORT = 8000  # Default port for the application
+    _broker = Broker()  # Broker instance for managing communication
 
     def __init__(self):
+        """
+        Initialize the FitnessWarriorApp instance and set up logging.
+        """
         self.setup_logger()
 
     @classmethod
     def get_broker(cls):
+        """
+        Get the broker instance.
+
+        Returns:
+            Broker: The broker instance used for communication.
+        """
         return cls._broker
 
     @classmethod
     def setup_logger(cls) -> None:
+        """
+        Set up the logging configuration for the application.
+
+        This method ensures that logs are written to a file and configures
+        logging settings based on a YAML configuration file.
+        """
         import yaml
         import logging.config
 
@@ -61,12 +81,26 @@ class FitnessWarriorApp:
 
     @staticmethod
     def build_app_ui():
+        """
+        Build the user interface for the application.
+
+        Returns:
+            ui.Tag: The root UI element for the application.
+        """
         return ui.page_fillable(
             ui.output_ui("main_nav_container"),
         )
 
     @staticmethod
     def register_pages_server(input: Any, output: Any, session: Any) -> None:
+        """
+        Register the server logic for each page in the application.
+
+        Args:
+            input (Any): Input object for reactive inputs.
+            output (Any): Output object for rendering outputs.
+            session (Any): Session object for managing user sessions.
+        """
         from shiny import reactive
         servers_by_tab = {
             "Cross Planning": cross_planning.server,
@@ -87,15 +121,19 @@ class FitnessWarriorApp:
             # Calendar server mounted independently (modal lives outside navbar)
             "CalendarEvents": calendar_events.server,
             "Cross Statics": cross_statics.server,
-            "March" : march.server,
-            "Welcome" : status_login_user.server
-
-
+            "March": march.server,
+            "Welcome": status_login_user.server
         }
         mounted = reactive.Value(set())
 
         @reactive.Effect
         def _mount_on_nav_activation_register_only():
+            """
+            Mount the server logic for the active navigation tab.
+
+            This ensures that the server logic for the selected tab is executed
+            only once when the tab is activated.
+            """
             try:
                 active = input.main_nav()
             except Exception:
@@ -111,6 +149,14 @@ class FitnessWarriorApp:
 
     @staticmethod
     def server(input: Any, output: Any, session: Any) -> None:
+        """
+        Define the server logic for the application.
+
+        Args:
+            input (Any): Input object for reactive inputs.
+            output (Any): Output object for rendering outputs.
+            session (Any): Session object for managing user sessions.
+        """
         from shiny import reactive
         user_service = UserService()
         FitnessWarriorApp.register_pages_server(input, output, session)
@@ -118,11 +164,13 @@ class FitnessWarriorApp:
         login_user_text = reactive.Value("")
         nav_version = reactive.Value(0)
 
-
         # Open/close Calendar modal from app-level button
         @reactive.Effect
         @reactive.event(input.open_calendar_modal_global)
         def _open_calendar_modal():
+            """
+            Open the global calendar modal and refresh its content.
+            """
             # Force calendar to re-run before showing the modal
             calendar_events.refresh()
 
@@ -139,6 +187,9 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.open_personal_calendar_modal_global)
         def _open_personal_calendar_modal():
+            """
+            Open the personal calendar modal and refresh its content.
+            """
             # Force personal calendar to re-run before showing the modal
             calendar_events.refresh()
 
@@ -155,12 +206,30 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.close_calendar_modal_global)
         def _close_calendar_modal():
+            """
+            Close the currently open calendar modal.
+            """
             ui.modal_remove()
 
         def _safe_panel(panel: Optional[Any]) -> Optional[ui.Tag]:
+            """
+            Safely returns the given panel if it is not None.
+
+            Args:
+                panel (Optional[Any]): The panel to check.
+
+            Returns:
+                Optional[ui.Tag]: The panel if it is not None, otherwise None.
+            """
             return panel if panel is not None else None
 
-        def _build_test_menu() -> ui.nav_menu:
+        def _build_test_menu():
+            """
+            Builds the navigation menu for the "Psychical Tests" section.
+
+            Returns:
+                ui.nav_menu: A navigation menu containing links to various test pages.
+            """
             items = [
                 _safe_panel(phef.get_ui()),
                 _safe_panel(combat_test.get_ui()),
@@ -174,7 +243,13 @@ class FitnessWarriorApp:
             items = [c for c in items if c is not None]
             return ui.nav_menu("Psychical Tests", *items)
 
-        def _build_cross_menu() -> ui.nav_menu:
+        def _build_cross_menu():
+            """
+            Builds the navigation menu for the "Cross/Runs" section.
+
+            Returns:
+                ui.nav_menu: A navigation menu containing links to cross and run-related pages.
+            """
             items = [
                 _safe_panel(cross_statics.get_ui()),
                 _safe_panel(cross_planning.get_ui()),
@@ -184,6 +259,15 @@ class FitnessWarriorApp:
             return ui.nav_menu("Cross/Runs", *items)
 
         def _build_admin_menu(role: Optional[Role]) -> Optional[ui.nav_menu]:
+            """
+            Builds the navigation menu for the "Admin" section based on the user's role.
+
+            Args:
+                role (Optional[Role]): The role of the user.
+
+            Returns:
+                Optional[ui.nav_menu]: A navigation menu for admin pages if the user is an admin, otherwise None.
+            """
             if role != Role.ADMIN:
                 return None
             admin_children = [
@@ -195,16 +279,37 @@ class FitnessWarriorApp:
             return ui.nav_menu("Admin", *admin_children) if admin_children else None
 
         def _get_session_user():
+            """
+            Retrieves the current user from the session.
+
+            Returns:
+                Any: The user object stored in the session, or None if no user is set.
+            """
             return getattr(session, "user", None)
 
         def _set_session_user(user):
+            """
+            Sets the current user in the session.
+
+            Args:
+                user: The user object to store in the session.
+            """
             setattr(session, "user", user)
 
         def _clear_session_user():
+            """
+            Clears the current user from the session.
+            """
             if hasattr(session, "user"):
                 delattr(session, "user")
 
-        def build_main_navbar() -> ui.page_navbar:
+        def build_main_navbar():
+            """
+            Builds the main navigation bar based on the user's role.
+
+            Returns:
+                ui.page_navbar: The main navigation bar for the application.
+            """
             user = _get_session_user()
             role = getattr(user, "role", None)
             nav_items: list[Any] = []
@@ -212,7 +317,6 @@ class FitnessWarriorApp:
             admin_menu = _build_admin_menu(role)
             if role is Role.ADMIN:
                 if admin_menu is not None:
-                    # Calendar removed from navbar; use global button + modal
                     nav_items.append(_safe_panel(status_login_user.get_ui()))
                     nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
                     nav_items.append(own_unit.get_ui())
@@ -227,7 +331,6 @@ class FitnessWarriorApp:
                 nav_items.append(_safe_panel(status_login_user.get_ui()))
                 nav_items.append(dashboard_own_unit.get_ui())
                 nav_items.append(own_unit.get_ui())
-
                 nav_items.append(_build_test_menu())
                 nav_items.append(_build_cross_menu())
                 nav_items.append(_safe_panel(reports.get_ui()))
@@ -247,8 +350,10 @@ class FitnessWarriorApp:
                 )
             )
             nav_items.append(ui.nav_control(
-            ui.input_action_button("open_personal_calendar_modal_global", "Personal Calendar", class_="btn btn-primary")))
-            nav_items.append(ui.nav_control(ui.input_action_button("open_calendar_modal_global", "Open Calendar", class_="btn btn-primary")))
+                ui.input_action_button("open_personal_calendar_modal_global", "Personal Calendar",
+                                       class_="btn btn-primary")))
+            nav_items.append(ui.nav_control(
+                ui.input_action_button("open_calendar_modal_global", "Open Calendar", class_="btn btn-primary")))
             nav_items.append(ui.nav_control(ui.input_action_button("logout_btn", "Logout")))
             nav_items = [i for i in nav_items if i is not None]
             return ui.page_navbar(*nav_items, id="main_nav")
@@ -256,22 +361,42 @@ class FitnessWarriorApp:
         @output
         @render.ui
         def main_nav_container():
+            """
+            Render the main navigation container.
 
+            This function updates the navigation bar whenever the `nav_version` changes.
+            """
             _ = nav_version.get()
             return build_main_navbar()
 
         @output
         @render.text
         def login_status():
+            """
+            Render the login status text.
+
+            This function displays the current login status message.
+            """
             return status_text()
 
         @output
         @render.text
         def login_user():
+            """
+            Render the logged-in user information.
+
+            This function displays the username, role, and unit of the currently logged-in user.
+            """
             return login_user_text()
 
         @reactive.Effect
         async def login_dialog():
+            """
+            Display the login dialog modal.
+
+            This function creates and shows a modal for user login, including fields for
+            username and password, and a login button.
+            """
             status_text.set("")
             login = ui.div(
                 ui.h2("Login"),
@@ -280,11 +405,17 @@ class FitnessWarriorApp:
                 ui.input_action_button("handle_login", "Login"),
                 ui.div(ui.output_text("login_status", inline=True), style="color: red; font-weight: bold;"),
             )
-            ui.modal_show(ui.modal(login, easy_close=False, size=FitnessWarriorApp.LOGIN_MODAL_SIZE, footer=None))
+            ui.modal_show(ui.modal(login, easy_close=False, size="m", footer=None))
 
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login():
+            """
+            Handle the login process.
+
+            This function validates the user's credentials, sets the session user if valid,
+            and updates the UI accordingly. If the login fails, an error message is displayed.
+            """
             logger = getattr(FitnessWarriorApp, "logger", logging.getLogger(__name__))
             username_login = (input.username_login() or "").lower()
             password_login = input.password_login()
@@ -294,7 +425,8 @@ class FitnessWarriorApp:
                     UserStore.set_user(user)
                     await user_service.add_audit_log(f"User {username_login} logged in", "login")
                     _set_session_user(user)
-                    login_user_text.set(f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}")
+                    login_user_text.set(
+                        f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}")
                     status_text.set("")
                     ui.modal_remove()
                     nav_version.set(nav_version.get() + 1)
@@ -307,17 +439,30 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _mount_on_nav_activation():
+            """
+            Monitor navigation activation.
+
+            This function ensures that the navigation bar is properly mounted and handles
+            any errors during the process.
+            """
             try:
                 _ = input.main_nav()
-             
-            except Exception:
+            except Exception as e:
+                logging.error(f"Error mounting nav: {e}")
                 return
 
         @reactive.Effect
         def _on_logout_button_click():
+            """
+            Handle the logout button click.
+
+            This function clears the session user, updates the navigation bar, and reloads
+            the page after logging out.
+            """
             try:
                 clicks = input.logout_btn()
-            except Exception:
+            except Exception as e:
+                logging.error(f"Error handling logout button: {e}")
                 return
             if clicks and clicks > 0:
                 _clear_session_user()
@@ -325,13 +470,17 @@ class FitnessWarriorApp:
                 ui.notification_show("You have been logged out.", type="message")
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
 
-        import time
-        INACTIVITY_LIMIT_SECONDS = 600
         last_activity = reactive.Value(time.time())
 
         @output
         @render.ui
         def _activity_probe():
+            """
+            Inject a script to monitor user activity.
+
+            This function adds a script to the page that tracks user interactions and
+            reports activity to the server.
+            """
             return ui.tags.script(
                 """
                 (function(){
@@ -346,6 +495,11 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _record_activity():
+            """
+            Record user activity.
+
+            This function updates the `last_activity` timestamp whenever user activity is detected.
+            """
             try:
                 _ = input.activity_ping()
             except Exception as e:
@@ -355,6 +509,12 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _reset_on_nav_or_login():
+            """
+            Reset the activity timer on navigation or login.
+
+            This function updates the `last_activity` timestamp when the user navigates
+            or logs in.
+            """
             try:
                 _ = input.main_nav()
             except Exception as e:
@@ -365,16 +525,23 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _auto_logout_timer():
+            """
+            Automatically log out inactive users.
+
+            This function checks the `last_activity` timestamp and logs out the user if
+            they have been inactive for 10 minutes.
+            """
             reactive.invalidate_later(5)
             user = _get_session_user()
             if not user:
                 return
             ts = last_activity.get() or time.time()
-            if time.time() - ts >= INACTIVITY_LIMIT_SECONDS:
+            if time.time() - ts >= 600:
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You were logged out due to 10 minutes of inactivity.", type="warning")
                 ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
+
 
 FitnessWarriorApp.setup_logger()
 FitnessWarriorApp.get_broker().start()
