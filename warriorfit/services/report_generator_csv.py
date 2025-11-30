@@ -7,12 +7,40 @@ from warriorfit.services.report_type import ReportType
 
 
 class ReportGeneratorCsv(GeneratorReport):
+    """
+    Generates various types of CSV reports for performance assessments.
+
+    This class is responsible for generating performance reports in CSV format.
+    It provides comprehensive methods to build reports for different categories such as
+    PHEF, functional assessments, combat performance, and swimming performance.
+    Reports are generated based on inputs provided, and the class handles concise
+    formats and error handling during report generation.
+
+    :ivar calculate_score: Method reference to calculate scores for PHEF reports.
+    :ivar calculate_functional_score: Method reference to calculate scores for functional assessments.
+    :ivar calculate_combat_score: Method reference to calculate scores for combat performance.
+    :ivar calculate_swim_score: Method reference to calculate scores for swimming performance.
+    """
     def __init__(self):
         super().__init__()
 
     async def generate_report(
         self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool
     ):
+        """
+        Generates a report based on the specified parameters. The function handles different
+        report types such as PHEF, Functional, Combat, and Swimming, and passes the required
+        details to the corresponding specific report generation function. If the report type
+        is invalid, it raises a ValueError.
+
+        :param report_name: The name of the report.
+        :param report_type: Enum value representing the type of the report.
+        :param own_unit: Whether the report is specific to the owner's unit.
+        :param this_year: Whether the report should focus on the current year.
+        :return: A coroutine that resolves to the generated report.
+        :rtype: Awaitable
+        :raises ValueError: If the report type provided is invalid.
+        """
         if report_type is ReportType.PHEF:
             return await self.generate_phef_report(report_name, own_unit, this_year)
         elif report_type is ReportType.FUNCTIONAL:
@@ -42,6 +70,20 @@ class ReportGeneratorCsv(GeneratorReport):
         headers: List[str],
         row_builder: Callable[[dict], List[Any]],
     ) -> Optional[str]:
+        """
+        Builds a CSV file from the provided data rows, headers, and a row builder function.
+        Generates a filename based on the specified report name, file suffix, and the current
+        timestamp. The file is saved in the output directory. If no rows are provided, no
+        file is created, and the function returns None.
+
+        :param rows: List of dictionaries containing data to be written into the CSV file.
+        :param report_name: Name of the report to be used in the file name.
+        :param file_suffix: Additional suffix to append to the file name.
+        :param headers: List of column headers to be written into the CSV file.
+        :param row_builder: Function that takes a dictionary (row) as input and returns
+            a list representing the corresponding row in the CSV.
+        :return: Path to the generated CSV file or None if no rows are provided.
+        """
         if not rows:
             return None
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -60,6 +102,21 @@ class ReportGeneratorCsv(GeneratorReport):
     async def generate_phef_report(
         self, report_name: str, own_unit: bool, this_year: bool
     ):
+        """
+        Generates a Performance-based Health Evaluation Framework (PHEF) report. The report
+        includes two categories: passed and failed results, formatted into CSV files based
+        on given parameters and dynamically built row data.
+
+        The method calculates scores using `calculate_score` and utilizes the provided
+        `row_builder` function to format data rows for CSV creation. It generates two
+        separate CSV files for passed and failed results and returns their file paths.
+
+        :param report_name: Name of the report to be generated.
+        :param own_unit: Whether to filter the report data for the user's own unit.
+        :param this_year: Whether to filter the report for data from the current year.
+        :return: A dictionary with paths to the 'failed' and 'passed' report CSV files,
+            or None in case of an error during report generation.
+        """
         try:
 
             headers, passed, failed = await self.calculate_score(own_unit, this_year)
@@ -96,6 +153,20 @@ class ReportGeneratorCsv(GeneratorReport):
     async def generate_functional_report(
         self, report_name: str, own_unit: bool, this_year: bool
     ):
+        """
+        Generates a functional report based on the given parameters. The method calculates the
+        functional scores for different sessions and creates separate CSV files for failed and
+        passed sessions. The generated report paths for both the failed and passed sessions are
+        returned in the result.
+
+        :param report_name: The name of the report to be generated.
+        :param own_unit: Indicates whether the report is specific to the user's unit.
+        :param this_year: Indicates whether the report should focus on the current year.
+        :return: A dictionary containing paths to the generated CSV files for both failed and
+            passed sessions.
+        :rtype: Dict[str, str]
+
+        """
         failed, headers, passed = await self.calculate_functional_score(
             own_unit, this_year
         )
@@ -126,6 +197,24 @@ class ReportGeneratorCsv(GeneratorReport):
     async def generate_combat_report(
         self, report_name: str, own_unit: bool, this_year: bool
     ):
+        """
+        Asynchronously generates a combat report based on given parameters and computes the
+        results of passed and failed combat scores. The method processes the data, formats it
+        into respective CSV files for failed and passed scores, and returns the file paths for
+        these reports.
+
+        :param report_name: The name of the combat report to be generated.
+        :type report_name: str
+        :param own_unit: Flag indicating whether the calculation should be limited to the
+            user's own unit.
+        :type own_unit: bool
+        :param this_year: Flag to specify if the calculation should only consider the
+            combat scores of the current year.
+        :type this_year: bool
+        :return: A dictionary containing paths to the generated CSV files for failed
+            and passed scores.
+        :rtype: dict
+        """
         failed, headers, passed = await self.calculate_combat_score(own_unit, this_year)
 
         def row_builder(r: dict) -> List[Any]:
@@ -177,18 +266,18 @@ class ReportGeneratorCsv(GeneratorReport):
         return {"failed": failed_path, "passed": passed_path}
 
 
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(
-        ReportGeneratorCsv().generate_report("tstsdf", ReportType.PHEF, True, True)
-    )
-    asyncio.run(
-        ReportGeneratorCsv().generate_report("tstasd", ReportType.COMBAT, True, True)
-    )
-    asyncio.run(
-        ReportGeneratorCsv().generate_report("tstwe", ReportType.SWIMMING, True, True)
-    )
-    asyncio.run(
-        ReportGeneratorCsv().generate_report("tstf", ReportType.FUNCTIONAL, True, True)
-    )
+# if __name__ == "__main__":
+#     import asyncio
+#
+#     asyncio.run(
+#         ReportGeneratorCsv().generate_report("tstsdf", ReportType.PHEF, True, True)
+#     )
+#     asyncio.run(
+#         ReportGeneratorCsv().generate_report("tstasd", ReportType.COMBAT, True, True)
+#     )
+#     asyncio.run(
+#         ReportGeneratorCsv().generate_report("tstwe", ReportType.SWIMMING, True, True)
+#     )
+#     asyncio.run(
+#         ReportGeneratorCsv().generate_report("tstf", ReportType.FUNCTIONAL, True, True)
+#     )

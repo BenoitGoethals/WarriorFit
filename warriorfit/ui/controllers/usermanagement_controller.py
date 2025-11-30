@@ -23,6 +23,18 @@ class UserForm:
 
 
 class UserManagementController:
+    """
+    Handles user management operations such as creating, updating, validating, and
+    deleting users. This controller interacts with underlying services to manage
+    user-related data and provides methods to perform specific operations.
+
+    The class includes utilities for validating user input, checking existing
+    records, and managing current user sessions, as well as providing role-based
+    options for user creation and updates.
+
+    :ivar selected_user: The currently selected user for update or validation operations.
+    :type selected_user: Optional[UserForm]
+    """
     EMAIL_REGEX = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
     def __init__(self,):
         self._service =  UserService()
@@ -30,6 +42,22 @@ class UserManagementController:
 
     @staticmethod
     def role_choices() -> List[str]:
+        """
+        Builds a list of role choices based on the enumerated type `Role`.
+
+        This static method extracts all possible role values from the `Role`
+        enumeration. It attempts two approaches: first, by accessing the `value`
+        attribute of each role in the `Role` enumeration, and secondly, by
+        converting the role objects to their string representation if the `value`
+        attribute is not available. If both approaches fail, it raises a runtime
+        exception.
+
+        :return: A list of role choices extracted from the `Role` enumeration.
+        :rtype: List[str]
+
+        :raises RuntimeError: If the method fails to construct role choices for
+            any reason, including unexpected errors during enumeration.
+        """
         try:
             return [r.value for r in Role]
         except AttributeError:
@@ -38,6 +66,17 @@ class UserManagementController:
             raise RuntimeError("Failed to build role choices") from exc
 
     async def list_users_df(self) -> pd.DataFrame:
+        """
+        Generate a pandas DataFrame of users.
+
+        This asynchronous method fetches a list of all users and converts it into
+        a structured pandas DataFrame. The DataFrame includes details such as
+        serial number, ID, username, email, role, active status, password hash,
+        and account creation date.
+
+        :return: A pandas DataFrame containing user information.
+        :rtype: pd.DataFrame
+        """
         users = await self._service.get_all_users()
         return pd.DataFrame([
             {
@@ -54,6 +93,23 @@ class UserManagementController:
         ])
 
     async def validate(self, form: UserForm, *, is_update: bool) -> Tuple[bool, str]:
+        """
+        Validates the user form input to ensure all required fields are correctly filled,
+        checks for unique constraints on serial, email, and username, and validates the
+        email format against a predefined regex. The validation logic differs based on
+        whether it's an update operation or a new record creation.
+
+        :param form: The user form data containing fields such as serial, username,
+                     password, email, and role.
+        :type form: UserForm
+        :param is_update: Indicates whether the operation is an update or a new
+                          record creation.
+        :type is_update: bool
+        :return: A tuple where the first element is a boolean indicating if the
+                 validation passed and the second element is a string providing
+                 informative feedback on validation failures or success.
+        :rtype: Tuple[bool, str]
+        """
         req = ["serial", "username", "password", "email", "role"]
         for f in req:
             if not getattr(form, f, "").strip():
@@ -97,10 +153,28 @@ class UserManagementController:
         return True, "OK"
 
     def set_selected_user(self, user:UserForm):
+        """
+        Sets the currently selected user.
+
+        :param user: The user to be set as the selected user.
+        :type user: UserForm
+        """
         self.selected_user=user
 
 
     async def create_user(self, form: UserForm) -> Optional[User]:
+        """
+        Creates a new user using provided form data and adds it to the user service.
+
+        This method initializes a new user object, populates it with the data from
+        the provided form, hashes the password for secure storage, and delegates
+        user addition to an underlying service.
+
+        :param form: The form containing user data required to create a new user.
+        :type form: UserForm
+        :return: The created user object if successful, or None otherwise.
+        :rtype: Optional[User]
+        """
         user = User()
         user.serial_number = form.serial
         user.username = form.username
@@ -111,6 +185,21 @@ class UserManagementController:
         return await self._service.add_user(user)
 
     async def update_user(self, user_id: int|None, form: UserForm) -> bool:
+        """
+        Updates a user's information asynchronously based on the provided user ID and form data.
+
+        This function modifies user attributes and persists these updates using the
+        service's update functionality. It ensures all changes, including sensitive
+        fields such as passwords, are properly handled before being saved.
+
+        :param user_id: The ID of the user to be updated. If None, a new user will be created.
+        :type user_id: int or None
+        :param form: A form instance containing updated user details such as username,
+            password, email, role, and active status.
+        :type form: UserForm
+        :return: A boolean indicating whether the update operation was successful.
+        :rtype: bool
+        """
         user = User()
         user.id = user_id
         user.serial_number = form.serial
@@ -123,4 +212,13 @@ class UserManagementController:
         return bool(updated)
 
     async def delete_user_by_serial(self, serial: str|None) -> bool:
+        """
+        Deletes a user by their serial identifier asynchronously. It interacts with
+        the service layer to perform the deletion and returns a boolean indicating
+        whether the operation was successful.
+
+        :param serial: The serial identifier of the user to be deleted. It can be
+          a string or None.
+        :return: A boolean value indicating whether the deletion was successful.
+        """
         return await self._service.delete_user_by_serial(serial)

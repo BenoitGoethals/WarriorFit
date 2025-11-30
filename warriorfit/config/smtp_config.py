@@ -11,3 +11,4 @@ class SmtpConfig:
     use_tls: bool = False
     use_ssl: bool = False
     sender_email: Optional[str] = None  # fallback From address
+    sender: Optional[str] = None

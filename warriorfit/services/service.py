@@ -9,6 +9,16 @@ from warriorfit.utils.Os import Os
 
 
 class Service(ABC):
+    """
+    Service class to manage interactions with repositories and external services.
+
+    This class provides an interface to manage audit logging, interact with
+    repositories, and handle configuration of database sessions. It serves as
+    a utility for higher-level application operations.
+
+    :ivar NO_ENTITY_FOUND_MSG: Default message when no relevant entity is found.
+    :type NO_ENTITY_FOUND_MSG: str
+    """
     NO_ENTITY_FOUND_MSG = "No {entity} found."
 
     def __init__(self, file_name: str = None):
@@ -29,6 +39,21 @@ class Service(ABC):
         )
 
     async def add_audit_log(self, details, action):
+        """
+        Add an entry to the audit log with the provided details and action.
+
+        The method is intended to log actions performed by a user. It saves
+        information such as user's ID, the related action, details of the
+        action performed, and the IP address from where the action was
+        initiated into the audit log.
+
+        :param details: Additional information related to the action.
+        :type details: str
+        :param action: The action performed by the user that is to be logged.
+        :type action: str
+        :return: A coroutine that resolves once the audit log has been created.
+        :rtype: Coroutine
+        """
         user_id = getattr(UserStore.get_user(), "id", None)
         return await self._user_repo.create_audit_log(
             user_id=user_id,
@@ -38,4 +63,14 @@ class Service(ABC):
         )
 
     async def get_audit_logs(self):
+        """
+        Retrieves audit logs asynchronously.
+
+        This method fetches audit logs from the associated user repository. It is
+        designed to work with asynchronous programming.
+
+        :return: A coroutine that resolves to the audit logs fetched from the user
+            repository.
+        :rtype: Any
+        """
         return await self._user_repo.get_audit_logs()
