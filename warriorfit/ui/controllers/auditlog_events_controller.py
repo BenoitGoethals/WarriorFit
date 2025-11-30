@@ -6,10 +6,31 @@ from warriorfit.services.service_user import UserService
 
 
 class AuditLogEventsController:
+    """
+    Manages audit log events and provides functionality to retrieve audit logs in
+    a structured format.
+
+    This class interacts with user-related services to fetch audit log data and
+    user information asynchronously. It is designed to correlate and present audit
+    events in a tabular format for analysis and reporting.
+
+    """
     def __init__(self) -> None:
         self._service = UserService()
 
     async def list_audit_logs_df(self) -> pd.DataFrame:
+        """
+        Generates a DataFrame containing audit logs with details about users' actions,
+        including user, action, details, IP address, and creation timestamp. This
+        method retrieves audit logs and user data asynchronously, then matches user
+        records to logs to compile a comprehensive DataFrame.
+
+        :return: A pandas DataFrame containing audit logs, with columns for
+                 user, action, details, IP address, and creation time. If no logs
+                 are available, an empty DataFrame is returned with predefined
+                 column headers.
+        :rtype: pd.DataFrame
+        """
         logs: List[Any] = await self._service.get_audit_logs()
         users:List[User] = await self._service.get_all_users()
         

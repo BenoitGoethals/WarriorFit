@@ -4,6 +4,14 @@ from warriorfit.data.db.enum_mapped_user_model import IntEnumType
 
 
 class Rank(IntEnum):
+    """
+    Represents military ranks in an enumeration, categorized by Volunteers, NCOs,
+    Officers, and General Officers.
+
+    The class provides an integer representation of each rank and includes a string
+    representation method for displaying the ranks in a human-readable format.
+
+    """
     # Volunteers
     SOLDIER = 1
     FIRST_SOLDIER = 2

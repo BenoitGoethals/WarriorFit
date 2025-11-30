@@ -6,7 +6,14 @@ from warriorfit.services.service_test import ServiceTest
 
 
 class CalendarEventsController:
-    
+    """
+    Handles the retrieval and processing of calendar events for fitness tests and cross-training sessions.
+
+    This class provides functionality to gather sessions, categorize them by type, calculate their
+    respective durations, and format the event details for external usage. The resulting events
+    include details on attributes such as ID, title, start and end times, and display colors, ensuring
+    they are properly formatted for posting or rendering in a calendar interface.
+    """
     def __init__(self,) -> None:
         self._service_test = ServiceTest()
         self._service_cross = ServiceCross()

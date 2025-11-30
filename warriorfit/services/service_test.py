@@ -21,6 +21,19 @@ from warriorfit.ui.pages.notify_mail import NotifyMail
 
 
 class ServiceTest(Service):
+    """
+    ServiceTest class for managing various fitness tests and their sessions.
+
+    This class extends the functionalities of the Service class, providing
+    methods to interact with multiple fitness test types, manage test
+    sessions, handle notifications, and perform necessary CRUD operations
+    on test data. It communicates with repositories for data access and
+    executes business logic related to fitness testing.
+
+    :ivar test_repo: The repository used for accessing and managing fitness
+        test data.
+    :type test_repo: FitnessTestRepository
+    """
     def __init__(self):
         super().__init__()
         self._test_repo = FitnessTestRepository()
@@ -75,7 +88,7 @@ class ServiceTest(Service):
             match test.type:
                 case "phef_test":
                     body = self.build_email_body_phef(military, session, test)
-                    await FitnessWarriorApp.get_broker().send_message(add_test)
+                   # await FitnessWarriorApp.get_broker().send_message(add_test)
                 case "combat_swimming_test":
                     body = self.build_email_body_swim(military, session, test)
                 case "functional_test":

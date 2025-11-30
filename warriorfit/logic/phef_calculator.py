@@ -109,7 +109,7 @@ class PhefCalculator:
 
 
     @classmethod
-    def side_bridge_result(cls, side_time: float|str, age: int, gender: Gender)->int:
+    def side_bridge_result(cls, side_time: float | str, age: int, gender: Gender)-> int:
         """
         Calculates the result of the side bridge test based on the provided time, age, and gender.
         The method determines the age group and gender category to match the corresponding score in
