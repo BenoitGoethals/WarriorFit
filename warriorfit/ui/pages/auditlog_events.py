@@ -2,7 +2,10 @@ from warriorfit.ui.controllers.auditlog_events_controller import AuditLogEventsC
 import pandas as pd
 from shiny import ui, render, reactive
 
-class AuditLogEventsPage:
+from warriorfit.ui.pages.page import Page
+
+
+class AuditLogEventsPage(Page):
     def __init__(self) -> None:
         self.refresh_tick = reactive.Value(0)
         self.ctrl = AuditLogEventsController()

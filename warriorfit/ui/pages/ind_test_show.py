@@ -6,9 +6,10 @@ from shiny import ui, render, reactive
 
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
+from warriorfit.ui.pages.page import Page
 
 
-class IndTestShowPage:
+class IndTestShowPage(Page):
     def __init__(self):
 
         self.controller = IndTestShowController()

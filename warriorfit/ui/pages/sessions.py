@@ -8,9 +8,10 @@ from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.services.military_service import MilitaryService
 
 from warriorfit.ui.controllers.session_controller import SessionsController
+from warriorfit.ui.pages.page import Page
 
 
-class SessionsPage:
+class SessionsPage(Page):
     SESSION_TYPES = [r.name for r in TypeFitnessTest]
     ROLES = [r.name for r in Role]
 

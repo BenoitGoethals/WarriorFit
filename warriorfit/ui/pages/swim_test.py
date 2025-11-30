@@ -5,9 +5,10 @@ import pandas as pd
 from warriorfit.data.db.db_model import TestSession, ServiceMen
 
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
+from warriorfit.ui.pages.page import Page
 
 
-class SwimTestPage:
+class SwimTestPage(Page):
     def __init__(self,):
 
         self.refresh_tick = reactive.Value(0)

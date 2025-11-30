@@ -8,7 +8,19 @@ from warriorfit.services.military_service import MilitaryService
 
 
 class NotifyMail(metaclass=Singleton):
+    """
+    Singleton class for handling email notifications.
 
+    This class provides functionality for sending email notifications. It uses a
+    singleton pattern to ensure only one instance of the NotifyMail class exists
+    throughout the application lifecycle. It also includes logging capabilities
+    to record events or errors during the email sending process.
+
+    :ivar be_mil_service: Handles operations related to the military service.
+    :type be_mil_service: MilitaryService
+    :ivar logger: Logger object used to log events and errors within the class.
+    :type logger: logging.Logger
+    """
     def __init__(self, ):
         self.be_mil_service = MilitaryService()
         self.logger = logging.getLogger(__name__)

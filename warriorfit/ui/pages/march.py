@@ -4,9 +4,10 @@ from datetime import datetime
 
 from warriorfit.data.db.db_model import March
 from warriorfit.ui.controllers.march_controller import MarchController
+from warriorfit.ui.pages.page import Page
 
 
-class marchPage:
+class MarchPage(Page):
 
     def __init__(self):
         self.controller:MarchController = MarchController()
@@ -58,7 +59,7 @@ class marchPage:
         status = reactive.Value("Ready.")
         # Reactive trigger to force grid refresh
         refresh_trigger = reactive.Value(0)
-        military = reactive.Value("")
+        military = reactive.Value("No selection")
 
         @output
         @render.text
@@ -193,7 +194,8 @@ class marchPage:
                     return
                 ui.update_action_button("add_march_bn", disabled=False)
                 ui.update_action_button("update_march_bn", disabled=False)
-                military.set(val.rank + " " + val.service_number + " " + val.first_name + " " + val.last_name)
+                military.set(
+                    f"{val.rank} {val.service_number} {val.first_name} {val.last_name} {val.gender} {val.age_from_birthdate()} years old")
                 ui.update_action_button("add_march_bn", disabled=False)
                 ui.update_action_button("update_march_bn", disabled=False)
             except Exception:
@@ -201,7 +203,7 @@ class marchPage:
                 return
 
 
-_page = marchPage()
+_page = MarchPage()
 
 
 def get_ui():

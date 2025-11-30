@@ -4,9 +4,10 @@ from __future__ import annotations
 from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.setting_controller import SettingsController, SettingsData
+from warriorfit.ui.pages.page import Page
 
 
-class SettingsPage:
+class SettingsPage(Page):
     def __init__(self):
         self.controller = SettingsController()
         self._status = reactive.Value("")

@@ -6,9 +6,10 @@ from shiny import ui, render, reactive
 
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
+from warriorfit.ui.pages.page import Page
 
 
-class StatusTests:
+class StatusTests(Page):
     def __init__(self, mil_service: Optional[MilitaryService] = None):
         self._controller:StatusTestsController = StatusTestsController(mil_service or MilitaryService())
         self.refresh_tick = reactive.Value(0)

@@ -7,13 +7,15 @@ from typing import Dict, Any
 import pandas as pd
 from shiny import ui, render, reactive
 
+from warriorfit.ui.pages.page import Page
+
 # UI:
 ui.output_ui("runner_card")
 
 from warriorfit.ui.controllers.cross_controller import CrossController
 
 
-class CrossPage:
+class CrossPage(Page):
     def __init__(self):
         self.controller = CrossController()
         self.refresh_tick = reactive.Value(0)
