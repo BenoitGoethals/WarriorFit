@@ -2,7 +2,7 @@
 
 import unittest
 import pytest
-from warriorfit.core import Gender
+from warriorfit.core.Gender import Gender
 from warriorfit.logic.phef_calculator import PhefCalculator
 
 
