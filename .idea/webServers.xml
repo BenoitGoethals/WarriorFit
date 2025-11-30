@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="8ce0d966-9730-4dfc-b6f1-b918080c6fcb" name="ubuntu24" url="http://192.168.0.30">
+        <fileTransfer rootFolder="/upload" accessType="FTPS" host="192.168.0.30" port="21">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
