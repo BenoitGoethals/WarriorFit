@@ -9,7 +9,8 @@ from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.ui.pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, march, status_login_user
+    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, march, status_login_user, \
+    reserve_fitness_room
 from warriorfit.ui.pages import usermangement
 from warriorfit.ui.pages import phef
 from warriorfit.ui.pages import sessions
@@ -122,7 +123,8 @@ class FitnessWarriorApp:
             "CalendarEvents": calendar_events.server,
             "Cross Statics": cross_statics.server,
             "March": march.server,
-            "Welcome": status_login_user.server
+            "Welcome": status_login_user.server,
+            "Reserve Room": reserve_fitness_room.server
         }
         mounted = reactive.Value(set())
 
@@ -323,6 +325,7 @@ class FitnessWarriorApp:
                     nav_items.append(_build_test_menu())
                     nav_items.append(_safe_panel(reports.get_ui()))
                     nav_items.append(_build_cross_menu())
+                    nav_items.append(_safe_panel(reserve_fitness_room.get_ui()))
                     nav_items.append(admin_menu)
             elif role is Role.GUEST:
                 nav_items.append(_safe_panel(own_unit.get_ui()))
@@ -334,6 +337,7 @@ class FitnessWarriorApp:
                 nav_items.append(_build_test_menu())
                 nav_items.append(_build_cross_menu())
                 nav_items.append(_safe_panel(reports.get_ui()))
+                nav_items.append(_safe_panel(reserve_fitness_room.get_ui()))
             elif role is Role.APTI:
                 nav_items.append(_safe_panel(status_login_user.get_ui()))
                 nav_items.append(dashboard_own_unit.get_ui())
@@ -341,6 +345,7 @@ class FitnessWarriorApp:
                 nav_items.append(_build_test_menu())
                 nav_items.append(_safe_panel(reports.get_ui()))
                 nav_items.append(_build_cross_menu())
+                nav_items.append(_safe_panel(reserve_fitness_room.get_ui()))
             elif role is Role.PLANNER:
                 nav_items.append(_safe_panel((sessions.get_ui())))
             nav_items.append(ui.nav_spacer())
