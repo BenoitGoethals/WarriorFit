@@ -1,0 +1,174 @@
+@startuml
+
+' --- Relationships ---
+
+' Inheritance
+Page <|-- AuditLogEventsPage
+Page <|-- DashboardOwnUnitPage
+Page <|-- MarchPage
+Page <|-- OwnUnitPage
+Page <|-- PhefPage
+Page <|-- CrossPlanningPage
+Page <|-- CombatTestPage
+Page <|-- FunctionalTestPage
+
+' Association (Pages use Controllers)
+AuditLogEventsPage --> AuditLogEventsController
+DashboardOwnUnitPage --> DashboardOwnUnitController
+MarchPage --> MarchController
+OwnUnitPage --> OwnUnitController
+PhefPage --> PhefController
+CombatTestPage --> CombatTestController
+FunctionalTestPage --> FunctionalTestController
+
+' Association (Controllers use Services)
+DashboardOwnUnitController --> MilitaryService
+DashboardOwnUnitController --> ServiceTest
+DashboardOwnUnitController --> ServiceMarch
+OwnUnitController --> MilitaryService
+OwnUnitController --> ServiceTest
+OwnUnitController --> ServiceMarch
+OwnUnitController --> DataCollector
+MarchController --> ServiceMarch
+MarchController --> MilitaryService
+
+' Dependency (Services/Controllers use Models)
+OwnUnitController ..> ServiceMen
+OwnUnitController ..> PhefTest
+OwnUnitController ..> CombatTestParatrooper
+OwnUnitController ..> CombatSwimmingTest
+OwnUnitController ..> March
+DashboardOwnUnitController ..> PhefTest
+DashboardOwnUnitController ..> FunctionalTest
+DashboardOwnUnitController ..> TypeFitnessTest
+MarchController ..> March
+
+' Utility Usage
+DashboardOwnUnitController ..> PhefCalculator
+OwnUnitController ..> PhefCalculator
+DashboardOwnUnitController ..> ApplicationConfig
+OwnUnitController ..> ApplicationConfig
+
+' --- Class Definitions ---
+
+class Page {
+    +get_ui()
+    +server(input, output, session)
+}
+
+class AuditLogEventsPage {
+    -refresh_tick: reactive.Value
+    -ctrl: AuditLogEventsController
+    +get_ui()
+    +server(input, output, session)
+}
+
+class DashboardOwnUnitPage {
+    -controller: DashboardOwnUnitController
+    +get_ui()
+    +server(input, output, session)
+    -_ui_stats_card()
+}
+
+class MarchPage {
+    -controller: MarchController
+    +get_ui()
+    +server(input, output, session)
+    +refresh()
+}
+
+class AuditLogEventsController {
+    +list_audit_logs_df()
+}
+
+class DashboardOwnUnitController {
+    -be_mil_service: MilitaryService
+    -_service: ServiceTest
+    -_march_service: ServiceMarch
+    +unit_name: str
+    +own_unit_serials()
+    +personnel_stats()
+    +phef_stats()
+    +combat_stats()
+    +swimming_stats()
+    +march_stats()
+    +pass_fail_bar_html()
+    +phef_hist_html()
+    +reset_cache()
+}
+
+class OwnUnitController {
+    -_mil_service: MilitaryService
+    -_data_collector: DataCollector
+    -_service: ServiceTest
+    -_service_mars: ServiceMarch
+    +unit_name: str
+    +fetch_servicemen_df()
+    +fetch_tests_for_serial_df()
+    -_is_passed_phef()
+    -_is_passed_combat()
+    -_is_passed_swim()
+    -_is_passed_march()
+}
+
+class MarchController {
+    +get_all_march()
+    +add_march(march)
+    +update_march(march)
+    +delete_march(id)
+    +search_military(serial)
+}
+
+class MilitaryService {
+    +get_all_be_mil_from_unit(unit_name)
+}
+
+class ServiceTest {
+    +get_all_test_sessions()
+    +get_all_phef(session_id)
+    +get_all_combat_test(session_id)
+    +get_all_functional_test(session_id)
+    +get_all_combat_swimming_test(session_id)
+}
+
+class ServiceMarch {
+    +get_all_march_from_unit()
+    +get_march_from_service_men(serial)
+}
+
+class DataCollector {
+    +collect_tests_for_serial()
+}
+
+class PhefCalculator {
+    +calculate_phef_score()
+    +side_bridge_result()
+    +running_result()
+}
+
+class ServiceMen {
+    +service_number: str
+    +first_name: str
+    +last_name: str
+    +rank: str
+    +gender: str
+    +birthdate: Date
+    +age_from_birthdate()
+}
+
+class March {
+    +id: int
+    +service_number: str
+    +distance: float
+    +succeeded: bool
+    +datetime_executed: datetime
+}
+
+enum TypeFitnessTest {
+    PHEF
+    COMBAT
+    FUNCTIONAL
+    SWIMMING
+}
+
+@enduml
