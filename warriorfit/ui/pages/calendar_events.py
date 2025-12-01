@@ -35,6 +35,9 @@ class CalendarPage(Page):
             ),
         )
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         self._all = False
         return ui.page_fluid(

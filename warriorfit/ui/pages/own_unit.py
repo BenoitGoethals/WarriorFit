@@ -20,12 +20,15 @@ class OwnUnitPage(Page):
         self._selected_serial = reactive.Value(None)
         self.report_path = reactive.Value(None)
 
+    def refresh(self):
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
+
     def get_ui(self):
         return ui.nav_panel(
             "Status Unit",
             ui.card(
                 ui.card_header(f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"),
-                ui.input_action_button("refresh_servicemen", "Refresh"),
+              #  ui.input_action_button("refresh_servicemen", "Refresh"),
                 ui.output_data_frame("servicemen_grid"),
                 ui.input_action_button("full_report_unit", "Pdf Satus Unit", width="150px"),
                 ui.output_ui("download_btn_unit"),
@@ -35,6 +38,9 @@ class OwnUnitPage(Page):
         )
 
     def server(self, input, output, session):
+        self.refresh_tick = reactive.Value(0)
+        self.refresh_on_nav(input, "Status Unit", self.refresh_tick)
+
         status_report_unit= reactive.Value("")
         @reactive.effect
         @reactive.event(input.full_report_unit)
@@ -66,21 +72,17 @@ class OwnUnitPage(Page):
             path = self.report_path.get()
             ui.update_action_button("full_report_unit", disabled=False)
             self.report_path.set(None)
-            _tick()
+
             if path:
                 return path
             return None
 
 
-        @reactive.calc
-        def _tick():
-            input.refresh_servicemen()
-            return self.refresh_tick.get()
+
 
         @output
         @render.data_frame
         async def servicemen_grid():
-            _ = _tick()
             df = await self.controller.fetch_servicemen_df()
             return render.DataGrid(
                 df,
@@ -88,11 +90,11 @@ class OwnUnitPage(Page):
                 selection_mode="row",
                 width="100%",
             )
-
-        @reactive.Effect
-        @reactive.event(input.refresh_servicemen)
-        def _on_refresh():
-            self.refresh_tick.set(self.refresh_tick.get() + 1)
+        #
+        # @reactive.Effect
+        # @reactive.event(input.refresh_servicemen)
+        # def _on_refresh():
+        #     self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.servicemen_grid_selected_rows)

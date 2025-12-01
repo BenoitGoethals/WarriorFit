@@ -19,6 +19,9 @@ class IndTestShowPage(Page):
         self.tests_df = reactive.Value(pd.DataFrame())
         self.report_path = reactive.Value(None)
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "Individual",

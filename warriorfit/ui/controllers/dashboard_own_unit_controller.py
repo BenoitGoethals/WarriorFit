@@ -105,6 +105,10 @@ class DashboardOwnUnitController:
         score_run = PhefCalculator.running_result(test.running_time, age, gender)
         return (score_run * (50 / 20)) + ((score_r + score_l) * (25 / 20))
 
+    def reset_cache(self):
+        self._mils=None
+        self._results_tests_for_unit = {}
+
 
     async def _tests_for_unit(self, t: TypeFitnessTest) -> List[Any]:
         """

@@ -21,6 +21,9 @@ class PhefPage(Page):
 
     NO_SELECTION_MESSAGE = "No row selected"
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "PHEF Tests",
@@ -35,7 +38,7 @@ class PhefPage(Page):
                     ui.card(
                         ui.input_text("ph_serialnr", "Serial Number"),
                         ui.input_action_button("ph_search", "Conform Serial", width="150px"),
-                        ui.output_text("ph_miltary"),
+                        ui.output_text("ph_military"),
                         ui.layout_columns(
                             ui.input_text(
                                 "ph_side_bridge_r",
@@ -65,7 +68,7 @@ class PhefPage(Page):
                         ),
                         ui.layout_columns(
                             ui.div("Score Totaal:", ui.output_ui("ph_total_score")),
-                            col_widths=(8, 4),
+                            col_widths=(12,),
                         ),
 
                         ui.layout_columns(
@@ -94,6 +97,7 @@ class PhefPage(Page):
         )
 
     def server(self, input, output, session):
+        self.refresh_on_nav(input, "PHEF Tests")
         # Reactive state
         ph_side_bridge_r_score_val = reactive.Value("")
         ph_side_bridge_l_score_val = reactive.Value("")
@@ -188,7 +192,7 @@ class PhefPage(Page):
 
         @output
         @render.text
-        def ph_miltary():
+        def ph_military():
             return military.get()
 
         # Score outputs

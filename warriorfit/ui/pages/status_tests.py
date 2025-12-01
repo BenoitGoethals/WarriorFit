@@ -15,6 +15,9 @@ class StatusTests(Page):
         self.refresh_tick = reactive.Value(0)
         self._selected_serial = reactive.Value(None)
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "PHEF Not done",

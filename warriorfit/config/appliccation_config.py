@@ -123,6 +123,7 @@ class ApplicationConfig(metaclass=Singleton):
             max_overflow=30,
             pool_recycle=3600,
             pool_timeout=30,
+            pool_pre_ping=True,
         )
 
     def save_config(self, config: dict):

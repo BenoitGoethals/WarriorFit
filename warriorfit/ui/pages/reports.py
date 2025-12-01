@@ -15,6 +15,10 @@ class ReportsPage(Page):
         self._status_msg = reactive.Value(("info", "Click 'Generate Report' to create your report."))
         self._last_paths = reactive.Value([])
         self.__logger = logging.getLogger(__name__)
+
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "Reports",
@@ -46,7 +50,6 @@ class ReportsPage(Page):
                     ),
                     ui.input_action_button("generate_report", "Generate Report", class_="btn-primary"),
                     ui.download_button("download_report", "Download", class_="btn-primary"),
-
 
                     width=300,
                 ),
@@ -119,6 +122,7 @@ class ReportsPage(Page):
                 yield data
 
             return _iter()
+
 
 # Public API: keep same signatures
 _page = ReportsPage()

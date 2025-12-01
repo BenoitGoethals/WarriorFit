@@ -15,6 +15,9 @@ class StatusLoginUser(Page):
     def __init__(self):
         self.controller = StatusLogUserController()
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "Welcome",

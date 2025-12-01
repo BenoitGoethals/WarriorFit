@@ -14,6 +14,9 @@ class SettingsPage(Page):
         self._unit_status = reactive.Value("")
         self._darkmode_status = reactive.Value("Dark mode is OFF")
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "Settings",

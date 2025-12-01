@@ -17,6 +17,9 @@ class UserManagementPage(Page):
         self.selected_serial = reactive.Value(None)
         self.selected_id = reactive.Value(0)
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "User Management",
