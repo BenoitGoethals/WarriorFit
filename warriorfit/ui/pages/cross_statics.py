@@ -11,6 +11,9 @@ class CrossStaticsPage(Page):
         self._controller = CrossStaticsController()
         self.refresh_tick = reactive.Value(0)
 
+    def refresh(self):
+         self._controller.load()
+
     def get_ui(self):
         return ui.nav_panel(
             "Cross Statics",
@@ -71,6 +74,8 @@ class CrossStaticsPage(Page):
         )
 
     def server(self, input, output, session):
+        self.refresh_tick = reactive.Value(0)
+        self.refresh_on_nav(input, "Cross Statics", self.refresh_tick)
         @reactive.Effect
         async def _init():
             await self._controller.load()

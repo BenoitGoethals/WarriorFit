@@ -19,8 +19,10 @@ class CombatPage(Page):
 
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def get_ui(self):
+    def refresh(self):
+        pass
 
+    def get_ui(self):
             return ui.nav_panel(
                 "Combat Tests",
                 ui.h2("🧪 Combat Tests"),

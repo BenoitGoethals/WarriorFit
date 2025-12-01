@@ -31,7 +31,8 @@ class SessionsPage(Page):
             return False, "Invalid session type."
         return True, "OK"
 
-
+    def refresh(self):
+        pass
 
     def get_ui(self):
         return ui.nav_panel(

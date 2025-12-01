@@ -9,8 +9,6 @@ from warriorfit.ui.pages.page import Page
 
 class DashboardOwnUnitPage(Page):
     def __init__(self):
-
-        self.refresh_tick = reactive.Value(0)
         self.controller = DashboardOwnUnitController()
 
     def get_ui(self):
@@ -18,9 +16,9 @@ class DashboardOwnUnitPage(Page):
             "Dashboard",
             ui.h2(f"📊 {self.controller.unit_name} Dashboard " + str(datetime.now().year)),
             ui.br(),
-            ui.layout_columns(
-                ui.input_action_button("own_unit_refresh", "Refresh", class_="btn btn-outline-primary"),
-            ),
+            # ui.layout_columns(
+            #     ui.input_action_button("own_unit_refresh", "Refresh", class_="btn btn-outline-primary"),
+            # ),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("👥 Unit Personnel", class_="bg-secondary text-white"),
@@ -81,31 +79,42 @@ class DashboardOwnUnitPage(Page):
             (ui.p(sub_label) if sub_value is not None else ui.div()),
         )
 
+    def refresh(self):
+        self.controller.reset_cache()
+
     def server(self, input, output, session):
-        @reactive.Effect
-        @reactive.event(input.own_unit_refresh)
-        def _trigger_refresh():
-            self.refresh_tick.set(self.refresh_tick.get() + 1)
-            ui.notification_show("Own unit dashboard reloaded", type="message", duration=2)
+        # Create a session-specific reactive value
+        refresh_tick = reactive.Value(0)
+        
+
+        self.refresh_on_nav(input, "Dashboard", refresh_tick)
+
+        # @reactive.Effect
+        # @reactive.event(input.own_unit_refresh)
+        # def _trigger_refresh():
+        #     self.controller.reset_cache()
+        #     refresh_tick.set(refresh_tick.get() + 1)
+        #     ui.notification_show("Own unit dashboard reloaded", type="message", duration=2)
+
 
         @output
         @render.ui
         async def own_unit_personnel_stats():
-            _ = self.refresh_tick.get()
+            _ = refresh_tick.get()
             stats = await self.controller.personnel_stats()
             return self._ui_stats_card("Service members in unit", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
         @output
         @render.ui
         async def own_unit_phef_stats():
-            _ = self.refresh_tick.get()
+            _ = refresh_tick.get()
             stats = await self.controller.phef_stats()
             return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
         @output
         @render.ui
         async def own_unit_combat_stats():
-            _ = self.refresh_tick.get()
+            _ = refresh_tick.get()
             stats = await self.controller.combat_stats()
             return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
@@ -113,14 +122,14 @@ class DashboardOwnUnitPage(Page):
         @output
         @render.ui
         async def own_unit_swimming_stats():
-            _ = self.refresh_tick.get()
+            _ = refresh_tick.get()
             stats = await self.controller.swimming_stats()
             return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"], stats["sub_class"])
 
         @output
         @render.ui
         async def own_unit_march_stats():
-            _ = self.refresh_tick.get()
+            _ = refresh_tick.get()
             stats = await self.controller.march_stats()
             return self._ui_stats_card("Total Tests (Own Unit)", stats["total"], stats["sub_value"], stats["sub_label"],
                                        stats["sub_class"])
@@ -128,7 +137,7 @@ class DashboardOwnUnitPage(Page):
         @output
         @render.ui
         async def own_unit_pass_fail_chart():
-            _ = self.refresh_tick.get()
+            _ = refresh_tick.get()
             try:
                 html = await self.controller.pass_fail_bar_html()
                 return ui.HTML(html)
@@ -140,7 +149,7 @@ class DashboardOwnUnitPage(Page):
         @output
         @render.ui
         async def own_unit_phef_score_histogram():
-            _ = self.refresh_tick.get()
+            _ = refresh_tick.get()
             try:
                 html = await self.controller.phef_hist_html()
                 if not html:

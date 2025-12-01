@@ -16,24 +16,17 @@ class UserService(Service, metaclass=Singleton):
 
     async def check_user(self, username_login, password_login):
         """
-        Checks if a user exists in the system by username and verifies their active status.
+        Checks if the provided username and password match the credentials stored in the repository.
 
-        This asynchronous method retrieves a user based on the provided username and
-        returns the user if they are marked as active. If the user is either not active
-        or does not exist, the method returns None.
-
-        :param username_login: The username used to identify the user.
+        :param username_login: The username to check.
         :type username_login: str
-        :param password_login: The password associated with the username.
+        :param password_login: The password to check.
         :type password_login: str
-        :return: The user object if the user exists and is active, or None if the user
-                 is inactive or does not exist.
-        :rtype: User or None
+        :return: A boolean indicating whether the provided credentials are valid.
+        :rtype: bool
         """
-        user = await self._user_repo.get_user_by_username(username_login)
-        if user.is_active:
-            return user
-        return None
+        return await self._user_repo.check_user(username_login, password_login)
+
 
 
     async def get_user_by_username(self, username_login):

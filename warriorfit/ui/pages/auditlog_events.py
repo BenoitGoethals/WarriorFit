@@ -10,27 +10,28 @@ class AuditLogEventsPage(Page):
         self.refresh_tick = reactive.Value(0)
         self.ctrl = AuditLogEventsController()
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "Audit Logs",
             ui.h2("Audit Logs"),
             ui.card(
                 ui.card_header("Audit Logs"),
-                ui.input_action_button("au_refresh", "Refresh"),
+             #   ui.input_action_button("au_refresh", "Refresh"),
                 ui.output_data_frame("au_grid"),
                 full_screen=False,
             ),
         )
 
     def server(self, input, output, session):
-
-        @reactive.calc
-        def _tick():
-            input.au_refresh()
-            return self.refresh_tick.get()
+        self.refresh_tick = reactive.Value(0)
+        self.refresh_on_nav(input, "Audit Logs", self.refresh_tick)
 
         @reactive.calc
         async def au_df():
+            _ = self.refresh_tick.get()
             try:
                 df: pd.DataFrame = await self.ctrl.list_audit_logs_df()
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
@@ -40,7 +41,7 @@ class AuditLogEventsPage(Page):
         @output
         @render.data_frame
         async def au_grid():
-            _ = _tick()
+           # _ = _tick()
             df = await au_df()
             return render.DataGrid(df, filters=True, selection_mode="rows",width="100%")
 

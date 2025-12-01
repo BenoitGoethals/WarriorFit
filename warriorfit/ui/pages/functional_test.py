@@ -21,6 +21,9 @@ class FunctionalPage(Page):
 
     NO_SELECTION_MESSAGE = "No row selected"
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "Functional Tests",

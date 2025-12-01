@@ -12,8 +12,10 @@ class MarchPage(Page):
     def __init__(self):
         self.controller:MarchController = MarchController()
 
-    def get_ui(self):
+    def refresh(self):
+        pass
 
+    def get_ui(self):
         return ui.nav_panel(
             "March",
             ui.h2("🧪 March Tests"),

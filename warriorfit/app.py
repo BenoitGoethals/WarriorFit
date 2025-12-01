@@ -422,6 +422,9 @@ class FitnessWarriorApp:
             try:
                 if await user_service.check_user(username_login, password_login):
                     user = await user_service.get_user_by_username(username_login)
+                    if user.is_active is False:
+                        status_text.set("Your account is disabled. Please contact your administrator.")
+                        return
                     UserStore.set_user(user)
                     await user_service.add_audit_log(f"User {username_login} logged in", "login")
                     _set_session_user(user)
@@ -544,5 +547,5 @@ class FitnessWarriorApp:
 
 
 FitnessWarriorApp.setup_logger()
-FitnessWarriorApp.get_broker().start()
+#FitnessWarriorApp.get_broker().start()
 app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server)

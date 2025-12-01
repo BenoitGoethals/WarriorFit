@@ -26,6 +26,9 @@ class CrossPage(Page):
         self._last_paths = None
     NO_SELECTION_MESSAGE = "No row selected"
 
+    def refresh(self):
+        pass
+
     def get_ui(self):
         return ui.nav_panel(
             "Cross",
