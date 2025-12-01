@@ -257,7 +257,7 @@ class DashboardOwnUnitController:
 
         march_tests:List[March] =await self._march_service.get_all_march_from_unit()
         passed_march:int = len([m for m in march_tests if m.succeeded])
-        failed_march:int = len(march_tests)-passed_march
+        failed_march:int = len([m for m in march_tests if not m.succeeded])
 
 
         fig = go.Figure(data=[
