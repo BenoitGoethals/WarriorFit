@@ -318,7 +318,7 @@ class Reservation(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), nullable=False)
-    date: Mapped[str] = mapped_column(String(10), nullable=False)
+    date: Mapped[datetime] = mapped_column(server_default=func.now())
     start_time: Mapped[datetime] = mapped_column(server_default=func.now())
     end_time: Mapped[datetime] = mapped_column(server_default=func.now())
     serial_number: Mapped[str] = mapped_column(String(50), nullable=False)

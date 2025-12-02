@@ -53,6 +53,7 @@ class ReserveFitnessRoomService(Service):
 
 
     async def add_reservation(self, reservation)-> Reservation | None:
+        
         res= await self._repo.add_reservation(reservation)
         if res:
             await self.add_audit_log(details=f"Reservation {reservation.id} added", action="add")

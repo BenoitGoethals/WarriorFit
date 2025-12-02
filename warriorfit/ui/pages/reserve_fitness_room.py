@@ -13,18 +13,9 @@ from warriorfit.ui.pages.page import Page
 class ReserveFitnessRoomPage(Page):
 
     def __init__(self):
-        # Define available rooms
-        # self.rooms = [
-        #     Room(id=1, name="Sports Hall A", capacity=20, location="Floor 1"),
-        #     Room(id=2, name="Sports Hall B", capacity=15, location="Floor 1"),
-        #     Room(id=3, name="Fitness Studio", capacity=10, location="Floor 2"),
-        #     Room(id=4, name="Yoga Room", capacity=12, location="Floor 2")
-        # ]
+
         self.rooms:List[Room]=[]
         self._controller:ReserveFitnessRoomController = ReserveFitnessRoomController()
-
-
-
 
         # Time slots
         self.time_slots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
@@ -686,7 +677,7 @@ class ReserveFitnessRoomPage(Page):
 
         @reactive.Effect
         @reactive.event(input.reserve)
-        def _():
+        async def _():
             # Validation
             if not input.pti_name():
                 ui.notification_show("Please enter your name", type="error")
@@ -729,17 +720,26 @@ class ReserveFitnessRoomPage(Page):
                         return
 
             # Find room object
-            room_obj = next((r for r in self.rooms if r.id == selected_room.get()), None)
+            room_obj:Room = next((r for r in self.rooms if r.id == selected_room.get()), None)
+
+            # Convert date string to datetime object
+            date_res = datetime.strptime(date_str, "%Y-%m-%d")
+
+            # Combine date with start time string to create full datetime
+            start_time = datetime.strptime(f"{date_str} {input.start_time()}", "%Y-%m-%d %H:%M")
+
+            # Combine date with end time string to create full datetime  
+            end_time = datetime.strptime(f"{date_str} {input.end_time()}", "%Y-%m-%d %H:%M")
+        
 
             # Create new reservation
             new_reservation = Reservation(
-                id=len(current_reservations) + 1,
-                room_id=selected_room.get(),
-                room_name=room_obj.name,
-                room_location=room_obj.location,
-                date=date_str,
-                start_time=input.start_time(),
-                end_time=input.end_time(),
+              #  id=len(current_reservations) + 1,
+              #  room_id=selected_room.get(),
+                room=room_obj,
+                date=date_res,
+                start_time=start_time,
+                end_time=end_time,
                 serial_number=input.pti_name(),
                 activity=input.activity() or "Training"
             )
@@ -748,7 +748,7 @@ class ReserveFitnessRoomPage(Page):
             reservations.set(current_reservations)
 
             ui.notification_show("✅ Reservation created successfully!", type="message", duration=3)
-
+            await self._controller.add_reservation(new_reservation)
             # Reset fields and close modal
             ui.update_text("activity", value="")
             ui.update_text("pti_name", value="")
