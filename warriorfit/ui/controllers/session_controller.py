@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.db.db_model import TestSession
+from warriorfit.data.model.db_model import TestSession
 import datetime
 import pandas as pd
 from warriorfit.core.type_fitness_test import TypeFitnessTest

@@ -1,13 +1,12 @@
 import asyncio
-from typing import Any, Coroutine
-from datetime import datetime
+from typing import Any
 
-from sqlalchemy import Select, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.orm import Session
 
-from warriorfit.data.db.abc_repository import ABCRepository
-from warriorfit.data.db.db_model import HrMessage
+from warriorfit.data.model.db_model import HrMessage
+from warriorfit.data.repositories.abc_repository import ABCRepository
+
 
 
 class MomRepository(ABCRepository):

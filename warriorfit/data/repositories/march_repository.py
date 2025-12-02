@@ -1,10 +1,9 @@
-import logging
-
-from sqlalchemy import select, delete, Select
+from sqlalchemy import select, delete
 from sqlalchemy.exc import SQLAlchemyError
 
-from warriorfit.data.db.abc_repository import ABCRepository
-from warriorfit.data.db.db_model import March, ServiceMen, Unit
+from warriorfit.data.model.db_model import March, ServiceMen, Unit
+from warriorfit.data.repositories.abc_repository import ABCRepository
+
 
 
 class MarchRepository(ABCRepository):

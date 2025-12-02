@@ -1,9 +1,7 @@
-import logging
-
 from sqlalchemy.orm import selectinload
 
-from warriorfit.data.db.abc_repository import ABCRepository
-from warriorfit.data.db.db_model import ServiceMen, Unit  # assuming ORM models exist
+from warriorfit.data.model.db_model import ServiceMen, Unit
+from warriorfit.data.repositories.abc_repository import ABCRepository
 from sqlalchemy import select, delete as sa_delete
 from sqlalchemy.exc import SQLAlchemyError
 

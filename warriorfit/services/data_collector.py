@@ -1,7 +1,8 @@
 import pandas as pd
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import PhefTest
+from warriorfit.data.model.db_model import PhefTest
+
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.logic.singleton import Singleton
 from warriorfit.services.military_service import MilitaryService

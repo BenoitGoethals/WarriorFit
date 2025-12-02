@@ -5,7 +5,7 @@ import pandas as pd
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 
-from warriorfit.data.db.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, March
+from warriorfit.data.model.db_model import PhefTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, March
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.data_collector import DataCollector
 

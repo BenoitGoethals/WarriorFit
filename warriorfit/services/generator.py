@@ -4,7 +4,7 @@ from abc import ABC
 from typing import List
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import (
+from warriorfit.data.model.db_model import (
     TestSession,
     PhefTest,
     FunctionalTest,

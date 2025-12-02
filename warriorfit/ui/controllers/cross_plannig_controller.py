@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, Optional
 
-from warriorfit.data.db.db_model import Cross
+from warriorfit.data.model.db_model import Cross
 from warriorfit.services.service_cross import ServiceCross
 
 

@@ -1,11 +1,11 @@
-import logging
 from typing import List
 from sqlalchemy import select, insert, exists, and_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
-from warriorfit.data.db.abc_repository import ABCRepository
-from warriorfit.data.db.db_model import Cross, Runner, CrossRunners  # ensure association table is imported
+from warriorfit.data.model.db_model import Cross, Runner, CrossRunners
+from warriorfit.data.repositories.abc_repository import ABCRepository
+
 
 class CrossRepository(ABCRepository):
     def __init__(self):
