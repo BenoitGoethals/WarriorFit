@@ -2,7 +2,7 @@ import logging
 from typing import Any, Optional
 from shiny import App, ui, render
 import time
-from warriorfit.data.db.db_model import Role
+from warriorfit.data.model.db_model import Role
 from warriorfit.mom.broker import Broker
 from warriorfit.services.service_user import UserService
 from warriorfit.ui.user_store import UserStore

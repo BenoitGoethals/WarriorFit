@@ -4,7 +4,7 @@ import pandas as pd
 from warriorfit.core.Gender import Gender
 
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import FunctionalTest, TestSession, ServiceMen
+from warriorfit.data.model.db_model import FunctionalTest, TestSession, ServiceMen
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.services.military_service import MilitaryService
 

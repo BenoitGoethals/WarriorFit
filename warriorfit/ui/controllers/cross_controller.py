@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any, Tuple, List
 
 import pandas as pd
 
-from warriorfit.data.db.db_model import Runner, Cross  # Runner model given in prompt
+from warriorfit.data.model.db_model import Runner, Cross  # Runner model given in prompt
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.services.service_cross import ServiceCross  # assumed service layer for Cross domain

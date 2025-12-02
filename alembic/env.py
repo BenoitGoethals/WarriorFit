@@ -6,7 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from warriorfit.data.db.db_model import Base
+from warriorfit.data.model.db_model import Base
 
 sys.path.append('./data/db')
 

@@ -2,8 +2,8 @@ from typing import Any
 from numpy import floating
 from numpy.ma.extras import average
 from warriorfit.core.Gender import Gender
-from warriorfit.data.db.cross_repository import CrossRepository
-from warriorfit.data.db.db_model import Cross, Runner, ServiceMen
+from warriorfit.data.repositories.cross_repository import CrossRepository
+from warriorfit.data.model.db_model import Cross, Runner, ServiceMen
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service import Service
 
