@@ -11,8 +11,8 @@ class CrossStaticsPage(Page):
         self._controller = CrossStaticsController()
         self.refresh_tick = reactive.Value(0)
 
-    def refresh(self):
-         self._controller.load()
+    async def refresh(self):
+        await self._controller.load()
 
     def get_ui(self):
         return ui.nav_panel(
