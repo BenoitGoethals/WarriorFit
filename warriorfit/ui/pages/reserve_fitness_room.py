@@ -1,8 +1,12 @@
 from shiny import ui, render, reactive
-from datetime import datetime
+from datetime import datetime, timedelta
+from dataclasses import dataclass
+from typing import List
 import calendar
 
+from warriorfit.data.model.db_model import Room, Reservation
 from warriorfit.ui.pages.page import Page
+
 
 
 class ReserveFitnessRoomPage(Page):
@@ -10,15 +14,15 @@ class ReserveFitnessRoomPage(Page):
     def __init__(self):
         # Define available rooms
         self.rooms = [
-            {"id": 1, "name": "Sports Hall A", "capacity": 20, "location": "Floor 1"},
-            {"id": 2, "name": "Sports Hall B", "capacity": 15, "location": "Floor 1"},
-            {"id": 3, "name": "Fitness Studio", "capacity": 10, "location": "Floor 2"},
-            {"id": 4, "name": "Yoga Room", "capacity": 12, "location": "Floor 2"}
+            Room(id=1, name="Sports Hall A", capacity=20, location="Floor 1"),
+            Room(id=2, name="Sports Hall B", capacity=15, location="Floor 1"),
+            Room(id=3, name="Fitness Studio", capacity=10, location="Floor 2"),
+            Room(id=4, name="Yoga Room", capacity=12, location="Floor 2")
         ]
 
         # Time slots
         self.time_slots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-                      "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
+                           "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
 
     def refresh(self):
         pass
@@ -164,13 +168,111 @@ class ReserveFitnessRoomPage(Page):
                 .modal-close:hover {
                     color: #1f2937;
                 }
+                .week-calendar {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 0.85rem;
+                }
+                .week-calendar th {
+                    background-color: #4f46e5;
+                    color: white;
+                    padding: 10px 5px;
+                    text-align: center;
+                    font-weight: 600;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                }
+                .week-calendar td {
+                    border: 1px solid #e5e7eb;
+                    padding: 2px;
+                    height: 60px;
+                    vertical-align: top;
+                    position: relative;
+                }
+                .week-calendar td.time-label {
+                    background-color: #f9fafb;
+                    font-weight: 600;
+                    text-align: center;
+                    width: 80px;
+                    padding: 5px;
+                }
+                .week-calendar td.day-cell {
+                    cursor: pointer;
+                    background-color: white;
+                }
+                .week-calendar td.day-cell:hover {
+                    background-color: #f3f4f6;
+                }
+                .week-calendar td.day-cell.past {
+                    background-color: #f9fafb;
+                }
+                .reservation-block {
+                    position: absolute;
+                    left: 2px;
+                    right: 2px;
+                    border-radius: 4px;
+                    padding: 4px;
+                    font-size: 0.75rem;
+                    overflow: hidden;
+                    cursor: pointer;
+                    border-left: 3px solid;
+                }
+                .reservation-block:hover {
+                    opacity: 0.8;
+                }
+                .reservation-block.room-1 {
+                    background-color: #fecaca;
+                    border-color: #ef4444;
+                    color: #7f1d1d;
+                }
+                .reservation-block.room-2 {
+                    background-color: #bfdbfe;
+                    border-color: #3b82f6;
+                    color: #1e3a8a;
+                }
+                .reservation-block.room-3 {
+                    background-color: #bbf7d0;
+                    border-color: #10b981;
+                    color: #064e3b;
+                }
+                .reservation-block.room-4 {
+                    background-color: #fed7aa;
+                    border-color: #f59e0b;
+                    color: #78350f;
+                }
+                .week-header-date {
+                    font-size: 0.75rem;
+                    display: block;
+                    color: #d1d5db;
+                }
             """),
 
             ui.h2("🗓️ PTI Room Booking System"),
 
             ui.navset_tab(
                 ui.nav_panel(
-                    "📅 Calendar",
+                    "📅 Weekly Calendar",
+                    ui.div(
+                        ui.layout_columns(
+                            ui.input_action_button("prev_week", "◀ Previous Week", class_="btn-primary"),
+                            ui.output_text("current_week"),
+                            ui.input_action_button("next_week", "Next Week ▶", class_="btn-primary"),
+                            col_widths=[3, 6, 3]
+                        ),
+                        ui.layout_columns(
+                            ui.input_action_button("open_modal", "➕ New Reservation", class_="btn-success mt-3"),
+                            col_widths=[12]
+                        ),
+                        ui.hr(),
+                        ui.output_ui("weekly_calendar_view"),
+                        ui.output_ui("reservation_modal"),
+                        class_="calendar-container"
+                    )
+                ),
+
+                ui.nav_panel(
+                    "📅 Monthly Calendar",
                     ui.div(
                         ui.layout_columns(
                             ui.input_action_button("prev_month", "◀ Previous", class_="btn-primary"),
@@ -178,13 +280,8 @@ class ReserveFitnessRoomPage(Page):
                             ui.input_action_button("next_month", "Next ▶", class_="btn-primary"),
                             col_widths=[2, 8, 2]
                         ),
-                        ui.layout_columns(
-                            ui.input_action_button("open_modal", "➕ New Reservation", class_="btn-success mt-3"),
-                            col_widths=[12]
-                        ),
                         ui.hr(),
                         ui.output_ui("calendar_view"),
-                        ui.output_ui("reservation_modal"),
                         class_="calendar-container"
                     )
                 ),
@@ -202,12 +299,20 @@ class ReserveFitnessRoomPage(Page):
 
     def server(self, input, output, session):
         # Reactive values
-        reservations = reactive.Value([])
+        reservations: reactive.Value[List[Reservation]] = reactive.Value([])
         selected_room = reactive.Value(None)
         current_month_val = reactive.Value(datetime.now().month)
         current_year_val = reactive.Value(datetime.now().year)
+        current_week_start = reactive.Value(datetime.now().date() - timedelta(days=datetime.now().weekday()))
         selected_calendar_date = reactive.Value(None)
         show_modal = reactive.Value(False)
+
+        @output
+        @render.text
+        def current_week():
+            week_start = current_week_start()
+            week_end = week_start + timedelta(days=6)
+            return f"Week: {week_start.strftime('%B %d')} - {week_end.strftime('%B %d, %Y')}"
 
         @output
         @render.text
@@ -215,6 +320,105 @@ class ReserveFitnessRoomPage(Page):
             month_names = ["January", "February", "March", "April", "May", "June",
                            "July", "August", "September", "October", "November", "December"]
             return f"{month_names[current_month_val() - 1]} {current_year_val()}"
+
+        @reactive.Effect
+        @reactive.event(input.prev_week)
+        def _():
+            current_week_start.set(current_week_start() - timedelta(days=7))
+
+        @reactive.Effect
+        @reactive.event(input.next_week)
+        def _():
+            current_week_start.set(current_week_start() + timedelta(days=7))
+
+        @output
+        @render.ui
+        def weekly_calendar_view():
+            week_start = current_week_start()
+            all_res = reservations.get()
+            today = datetime.now().date()
+
+            # Generate week days (Monday to Sunday)
+            week_days = [week_start + timedelta(days=i) for i in range(7)]
+
+            # Create header with days
+            day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            header_cells = [ui.tags.th("Time")]
+            for i, day in enumerate(week_days):
+                is_today = day == today
+                day_class = "font-weight-bold" if is_today else ""
+                header_cells.append(
+                    ui.tags.th(
+                        ui.div(
+                            day_names[i],
+                            ui.span(day.strftime("%d/%m"), class_="week-header-date")
+                        ),
+                        class_=day_class
+                    )
+                )
+
+            # Create rows for each hour
+            rows = []
+            for time_slot in self.time_slots:
+                cells = [ui.tags.td(time_slot, class_="time-label")]
+
+                for day in week_days:
+                    date_str = str(day)
+                    is_past = day < today
+
+                    # Find reservations for this day and time slot
+                    slot_idx = self.time_slots.index(time_slot)
+                    day_reservations = [
+                        r for r in all_res
+                        if r.date == date_str and
+                           self.time_slots.index(r.start_time) <= slot_idx < self.time_slots.index(r.end_time)
+                    ]
+
+                    # Create cell with reservations
+                    cell_class = "day-cell"
+                    if is_past:
+                        cell_class += " past"
+
+                    reservation_blocks = []
+                    for res in day_reservations:
+                        # Calculate position and height based on time
+                        start_idx = self.time_slots.index(res.start_time)
+                        end_idx = self.time_slots.index(res.end_time)
+
+                        # Only show block at the start time
+                        if slot_idx == start_idx:
+                            duration = end_idx - start_idx
+                            height = (duration * 60) - 4  # 60px per hour minus padding
+
+                            reservation_blocks.append(
+                                ui.div(
+                                    ui.div(f"{res.serial_number}", style="font-weight: bold;"),
+                                    ui.div(f"{res.room.name}", style="font-size: 0.7rem;"),
+                                    ui.div(f"{res.start_time}-{res.end_time}", style="font-size: 0.65rem;"),
+                                    class_=f"reservation-block room-{res.room_id}",
+                                    style=f"height: {height}px; top: 2px;",
+                                    onclick=f"Shiny.setInputValue('reservation_click', {res.id}, {{priority: 'event'}})"
+                                )
+                            )
+
+                    cells.append(
+                        ui.tags.td(
+                            *reservation_blocks,
+                            class_=cell_class,
+                            onclick=f"Shiny.setInputValue('week_cell_click', '{date_str}_{time_slot}', {{priority: 'event'}})"
+                        )
+                    )
+
+                rows.append(ui.tags.tr(*cells))
+
+            return ui.div(
+                ui.tags.table(
+                    ui.tags.thead(ui.tags.tr(*header_cells)),
+                    ui.tags.tbody(*rows),
+                    class_="week-calendar"
+                ),
+                style="overflow-x: auto;"
+            )
 
         @reactive.Effect
         @reactive.event(input.prev_month)
@@ -268,22 +472,22 @@ class ReserveFitnessRoomPage(Page):
                         date_str = str(date)
 
                         # Count reservations for this day
-                        day_reservations = [r for r in all_res if r["date"] == date_str]
+                        day_reservations = [r for r in all_res if r.date == date_str]
 
                         # Group by room
                         room_counts = {}
                         for res in day_reservations:
-                            room_id = res["room_id"]
+                            room_id = res.room_id
                             room_counts[room_id] = room_counts.get(room_id, 0) + 1
 
                         # Create badges
                         badges = []
                         for room_id, count in room_counts.items():
-                            room = next((r for r in self.rooms if r["id"] == room_id), None)
+                            room = next((r for r in self.rooms if r.id == room_id), None)
                             if room:
                                 badges.append(
                                     ui.span(
-                                        f"{room['name'][:8]}: {count}",
+                                        f"{room.name[:8]}: {count}",
                                         class_=f"reservation-badge room-color-{room_id}"
                                     )
                                 )
@@ -332,7 +536,7 @@ class ReserveFitnessRoomPage(Page):
             date_formatted = date_obj.strftime("%B %d, %Y")
 
             all_res = reservations.get()
-            day_res = [r for r in all_res if r["date"] == date_str]
+            day_res = [r for r in all_res if r.date == date_str]
 
             if not day_res:
                 return ui.div(
@@ -343,15 +547,15 @@ class ReserveFitnessRoomPage(Page):
             # Group by room
             res_cards = []
             for room in self.rooms:
-                room_res = [r for r in day_res if r["room_id"] == room["id"]]
+                room_res = [r for r in day_res if r.room_id == room.id]
                 if room_res:
                     items = []
-                    for res in sorted(room_res, key=lambda x: x["time"]):
+                    for res in sorted(room_res, key=lambda x: x.start_time):
                         items.append(
                             ui.div(
-                                f"🕐 {res['time']} - 👤 {res['pti_name']} ({res['activity']})",
+                                f"🕐 {res.start_time} - {res.end_time} | 👤 {res.serial_number} | {res.activity}",
                                 ui.input_action_button(
-                                    f"del_cal_{res['id']}",
+                                    f"del_cal_{res.id}",
                                     "❌",
                                     class_="btn-danger btn-sm float-end"
                                 ),
@@ -361,7 +565,7 @@ class ReserveFitnessRoomPage(Page):
 
                     res_cards.append(
                         ui.div(
-                            ui.strong(f"📍 {room['name']} - {room['location']}"),
+                            ui.strong(f"📍 {room.name} - {room.location}"),
                             *items,
                             class_="mb-3"
                         )
@@ -405,7 +609,11 @@ class ReserveFitnessRoomPage(Page):
                         ui.input_text("pti_name", "PTI Name *", placeholder="Your name"),
                         ui.input_text("activity", "Activity", placeholder="E.g. Personal Training"),
                         ui.input_date("date", "Date *", value=datetime.now().date()),
-                        ui.input_select("time", "Time *", choices=[""] + self.time_slots),
+                        ui.layout_columns(
+                            ui.input_select("start_time", "Start Time *", choices=[""] + self.time_slots),
+                            ui.input_select("end_time", "End Time *", choices=[""] + self.time_slots),
+                            col_widths=[6, 6]
+                        ),
                         ui.h4("Select Room *", style="margin-top: 20px;"),
                         ui.output_ui("room_choice"),
                         ui.input_action_button("reserve", "Confirm Reservation", class_="btn-success w-100 mt-3"),
@@ -421,19 +629,19 @@ class ReserveFitnessRoomPage(Page):
         def room_choice():
             room_buttons = []
             for room in self.rooms:
-                is_selected = selected_room.get() == room["id"]
+                is_selected = selected_room.get() == room.id
                 card_class = "room-card selected" if is_selected else "room-card"
 
                 room_buttons.append(
                     ui.div(
                         ui.input_action_button(
-                            f"room_{room['id']}",
+                            f"room_{room.id}",
                             ui.div(
-                                ui.strong(room["name"]),
+                                ui.strong(room.name),
                                 ui.br(),
-                                ui.tags.small(room["location"]),
+                                ui.tags.small(room.location),
                                 ui.br(),
-                                ui.tags.small(f"Max. {room['capacity']} people")
+                                ui.tags.small(f"Max. {room.capacity} people")
                             ),
                             class_="w-100"
                         ),
@@ -472,39 +680,57 @@ class ReserveFitnessRoomPage(Page):
                 ui.notification_show("Please enter your name", type="error")
                 return
 
-            if not input.time():
-                ui.notification_show("Please select a time", type="error")
+            if not input.start_time():
+                ui.notification_show("Please select a start time", type="error")
+                return
+
+            if not input.end_time():
+                ui.notification_show("Please select an end time", type="error")
+                return
+
+            # Validate that end time is after start time
+            start_idx = self.time_slots.index(input.start_time()) if input.start_time() in self.time_slots else -1
+            end_idx = self.time_slots.index(input.end_time()) if input.end_time() in self.time_slots else -1
+
+            if start_idx >= end_idx:
+                ui.notification_show("End time must be after start time", type="error")
                 return
 
             if selected_room.get() is None:
                 ui.notification_show("Please select a room", type="error")
                 return
 
-            # Check if time is already booked
+            # Check if time is already booked (check for overlaps)
             date_str = str(input.date())
             current_reservations = reservations.get()
 
             for res in current_reservations:
-                if (res["room_id"] == selected_room.get() and
-                        res["date"] == date_str and
-                        res["time"] == input.time()):
-                    ui.notification_show("This room is already booked for this time", type="error")
-                    return
+                if res.room_id == selected_room.get() and res.date == date_str:
+                    # Check for time overlap
+                    res_start_idx = self.time_slots.index(res.start_time)
+                    res_end_idx = self.time_slots.index(res.end_time)
 
-            # Find room name
-            room_obj = next((r for r in self.rooms if r["id"] == selected_room.get()), None)
+                    # Overlap occurs if: new start < existing end AND new end > existing start
+                    if start_idx < res_end_idx and end_idx > res_start_idx:
+                        ui.notification_show(f"This room is already booked from {res.start_time} to {res.end_time}",
+                                             type="error")
+                        return
+
+            # Find room object
+            room_obj = next((r for r in self.rooms if r.id == selected_room.get()), None)
 
             # Create new reservation
-            new_reservation = {
-                "id": len(current_reservations) + 1,
-                "room_id": selected_room.get(),
-                "room_name": room_obj["name"],
-                "room_location": room_obj["location"],
-                "date": date_str,
-                "time": input.time(),
-                "pti_name": input.pti_name(),
-                "activity": input.activity() or "Training"
-            }
+            new_reservation = Reservation(
+                id=len(current_reservations) + 1,
+                room_id=selected_room.get(),
+                room_name=room_obj.name,
+                room_location=room_obj.location,
+                date=date_str,
+                start_time=input.start_time(),
+                end_time=input.end_time(),
+                serial_number=input.pti_name(),
+                activity=input.activity() or "Training"
+            )
 
             current_reservations.append(new_reservation)
             reservations.set(current_reservations)
@@ -517,6 +743,10 @@ class ReserveFitnessRoomPage(Page):
             selected_room.set(None)
             show_modal.set(False)
 
+            # Force calendar refresh by triggering reactive dependencies
+            # This ensures the calendar updates immediately
+            reservations.set(list(current_reservations))
+
         @output
         @render.ui
         def reservations_list():
@@ -525,7 +755,7 @@ class ReserveFitnessRoomPage(Page):
 
             filtered_reservations = [
                 r for r in all_reservations
-                if r["date"] == filter_date_str
+                if r.date == filter_date_str
             ]
 
             if not filtered_reservations:
@@ -536,22 +766,22 @@ class ReserveFitnessRoomPage(Page):
 
             room_divs = []
             for room in self.rooms:
-                room_reservations = [r for r in filtered_reservations if r["room_id"] == room["id"]]
+                room_reservations = [r for r in filtered_reservations if r.room_id == room.id]
 
                 reservation_cards = []
-                for res in sorted(room_reservations, key=lambda x: x["time"]):
+                for res in sorted(room_reservations, key=lambda x: x.start_time):
                     reservation_cards.append(
                         ui.div(
                             ui.layout_columns(
                                 ui.div(
-                                    ui.strong(f"🕐 {res['time']}"),
+                                    ui.strong(f"🕐 {res.start_time} - {res.end_time}"),
                                     ui.br(),
-                                    f"👤 {res['pti_name']}",
+                                    f"👤 {res.serial_number}",
                                     ui.br(),
-                                    ui.tags.small(res['activity'], style="color: #6b7280;")
+                                    ui.tags.small(res.activity, style="color: #6b7280;")
                                 ),
                                 ui.input_action_button(
-                                    f"delete_{res['id']}",
+                                    f"delete_{res.id}",
                                     "❌",
                                     class_="btn-danger btn-sm"
                                 ),
@@ -563,7 +793,7 @@ class ReserveFitnessRoomPage(Page):
 
                 if room_reservations:
                     room_content = ui.div(
-                        ui.strong(f"📍 {room['name']} - {room['location']}"),
+                        ui.strong(f"📍 {room.name} - {room.location}"),
                         ui.hr(),
                         *reservation_cards,
                         class_="room-card",
@@ -579,24 +809,24 @@ class ReserveFitnessRoomPage(Page):
             all_reservations = reservations.get()
             for res in all_reservations:
                 # For list view
-                button_id = f"delete_{res['id']}"
+                button_id = f"delete_{res.id}"
 
                 @reactive.Effect
                 @reactive.event(input[button_id], ignore_none=True)
-                def remove(res_id=res['id']):
+                def remove(res_id=res.id):
                     current = reservations.get()
-                    new = [r for r in current if r["id"] != res_id]
+                    new = [r for r in current if r.id != res_id]
                     reservations.set(new)
                     ui.notification_show("Reservation cancelled", type="warning")
 
                 # For calendar view
-                button_id_cal = f"del_cal_{res['id']}"
+                button_id_cal = f"del_cal_{res.id}"
 
                 @reactive.Effect
                 @reactive.event(input[button_id_cal], ignore_none=True)
-                def remove_cal(res_id=res['id']):
+                def remove_cal(res_id=res.id):
                     current = reservations.get()
-                    new = [r for r in current if r["id"] != res_id]
+                    new = [r for r in current if r.id != res_id]
                     reservations.set(new)
                     ui.notification_show("Reservation cancelled", type="warning")
 

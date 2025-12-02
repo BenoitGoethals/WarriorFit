@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 import pandas as pd
 
-from warriorfit.data.db.db_model import User
+from warriorfit.data.model.db_model import User
 from warriorfit.services.service_user import UserService
 
 

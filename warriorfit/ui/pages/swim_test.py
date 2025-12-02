@@ -2,7 +2,7 @@ from shiny import ui, render, reactive
 import pandas as pd
 
 
-from warriorfit.data.db.db_model import TestSession, ServiceMen
+from warriorfit.data.model.db_model import TestSession, ServiceMen
 
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.pages.page import Page

@@ -1,4 +1,4 @@
-from warriorfit.data.db.servicemen_repository import ServicemenRepository
+from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
 
 
 class MilitaryService:

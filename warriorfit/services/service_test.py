@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from warriorfit.app import FitnessWarriorApp
+    pass
 from warriorfit.core.Gender import Gender
-from warriorfit.data.db.db_model import (
+from warriorfit.data.model.db_model import (
     TestSession,
     FitnessTest,
     PhefTest,
@@ -12,7 +12,7 @@ from warriorfit.data.db.db_model import (
     CombatTestParatrooper,
     ServiceMen,
 )
-from warriorfit.data.db.fitness_test_repository import FitnessTestRepository
+from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
 

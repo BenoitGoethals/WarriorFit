@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-from warriorfit.data.db.enum_mapped_user_model import IntEnumType
+from warriorfit.data.model.enum_mapped_user_model import IntEnumType
 
 
 class Rank(IntEnum):
