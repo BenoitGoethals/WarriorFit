@@ -80,3 +80,7 @@ class ReserveFitnessRoomService(Service):
         if res:
             await self.add_audit_log(details=f"Reservation {reservation.id} updated", action="update")
         return res
+
+
+    async def get_rooms(self):
+        return await self._repo.get_rooms()
