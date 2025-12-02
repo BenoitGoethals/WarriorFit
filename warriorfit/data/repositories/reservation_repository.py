@@ -1,5 +1,6 @@
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DatabaseError
-from warriorfit.data.model.db_model import Reservation
+from warriorfit.data.model.db_model import Reservation, Room
 from warriorfit.data.repositories.abc_repository import ABCRepository
 
 
@@ -82,3 +83,10 @@ class ReservationRepository(ABCRepository):
                     await session.rollback()
                     self._logger.error(f"Database error while deleting all reservations: {str(e)}")
                     return False
+
+
+    async def get_rooms(self)->list[Room]:
+        query = select(Room)
+        results = await self.fetch_and_log(query, "March")
+        return results if results else []
+
