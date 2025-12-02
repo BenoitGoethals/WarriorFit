@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from warriorfit.data.db.db_model import ServiceMen
+from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
 

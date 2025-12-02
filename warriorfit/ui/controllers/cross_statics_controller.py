@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-from warriorfit.data.db.db_model import Runner, ServiceMen
+from warriorfit.data.model.db_model import Runner, ServiceMen
 
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_cross import ServiceCross

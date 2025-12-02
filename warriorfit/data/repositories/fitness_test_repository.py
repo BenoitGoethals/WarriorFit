@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from typing import Optional, Any, List
 
@@ -8,9 +7,10 @@ from sqlalchemy.orm import joinedload, selectinload, selectin_polymorphic
 
 from warriorfit.core.role import Role
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.abc_repository import ABCRepository
-from warriorfit.data.db.db_model import TestSession, FitnessTest, PhefTest, FunctionalTest, CombatTestParatrooper, \
+from warriorfit.data.model.db_model import TestSession, FitnessTest, PhefTest, FunctionalTest, CombatTestParatrooper, \
     CombatSwimmingTest, User
+from warriorfit.data.repositories.abc_repository import ABCRepository
+
 
 
 class FitnessTestRepository(ABCRepository):

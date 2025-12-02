@@ -4,7 +4,7 @@ import logging
 from typing import Tuple, Dict, Any, Optional
 import pandas as pd
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import CombatTestParatrooper, TestSession, ServiceMen
+from warriorfit.data.model.db_model import CombatTestParatrooper, TestSession, ServiceMen
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_test import ServiceTest
 

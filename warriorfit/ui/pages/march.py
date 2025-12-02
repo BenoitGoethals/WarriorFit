@@ -2,7 +2,7 @@ from shiny import ui, reactive, render
 import pandas as pd
 from datetime import datetime
 
-from warriorfit.data.db.db_model import March
+from warriorfit.data.model.db_model import March
 from warriorfit.ui.controllers.march_controller import MarchController
 from warriorfit.ui.pages.page import Page
 
