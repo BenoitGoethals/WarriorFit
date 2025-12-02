@@ -5,18 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Tuple
 
 from warriorfit.config.appliccation_config import ApplicationConfig
-
-
-@dataclass
-class SettingsData:
-    db_host: str = ""
-    db_port: int = 5432
-    db_database: str = ""
-    db_username: str = ""
-    db_password: str = ""
-    pdf_path: str = ""
-    own_unit: str = ""
-    darkmode: bool = False
+from warriorfit.config.settings_data import SettingsData
 
 
 class SettingsController:
@@ -29,13 +18,10 @@ class SettingsController:
     these operations, and processes various configuration sections such as database,
     paths, units, and display settings.
 
-    :ivar app_cfg: An instance of the ApplicationConfig class used to read and write
-        configuration files.
-    :type app_cfg: ApplicationConfig
     """
 
     def __init__(self) -> None:
-        self.app_cfg = ApplicationConfig()
+        pass
 
     def load(self) -> SettingsData:
         """
@@ -53,23 +39,10 @@ class SettingsController:
         :return: An instance of `SettingsData` populated with settings data.
         :rtype: SettingsData
         """
-        cfg = self.app_cfg.load_config() or {}
+        ApplicationConfig().load_config()
+        return ApplicationConfig().settings_data
 
-        db = cfg.get("db", {})
-        path = cfg.get("path", {})
-        unit = cfg.get("unit", {})
-        display = cfg.get("display", {})
 
-        return SettingsData(
-            db_host=db.get("host", "") or "",
-            db_port=int(db.get("port", 5432) or 5432),
-            db_database=db.get("database", "") or "",
-            db_username=db.get("username", "") or "",
-            db_password=db.get("password", "") or "",
-            pdf_path=path.get("pdf_path", "") or "",
-            own_unit=unit.get("name", "") or "",
-            darkmode=bool(display.get("darkmode", False)),
-        )
 
     def save(self, data: SettingsData) -> Tuple[bool, str]:
         """
@@ -83,24 +56,10 @@ class SettingsController:
         :rtype: Tuple[bool, str]
         """
         try:
-            cfg: Dict[str, Any] = self.app_cfg.load_config() or {}
-            cfg["db"] = {
-                "host": data.db_host,
-                "port": int(data.db_port or 5432),
-                "database": data.db_database,
-                "username": data.db_username,
-                "password": data.db_password,
-            }
-            cfg.setdefault("path", {})
-            cfg["path"]["pdf_path"] = data.pdf_path
 
-            cfg.setdefault("unit", {})
-            cfg["unit"]["name"] = data.own_unit
 
-            cfg.setdefault("display", {})
-            cfg["display"]["darkmode"] = bool(data.darkmode)
 
-            self.app_cfg.save_config(cfg)
+            ApplicationConfig().save_config(data)
             return True, "Configuration saved successfully."
         except Exception as e:
             return False, f"Failed to save configuration: {e}"

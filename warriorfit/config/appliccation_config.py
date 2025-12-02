@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Any
 import yaml
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from warriorfit.config.settings_data import SettingsData
 from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.logic.singleton import Singleton
 
@@ -18,19 +20,22 @@ class ApplicationConfig(metaclass=Singleton):
         :param config_path: Path to the configuration file.
         """
         self.config_path = self._get_project_root() / config_path
-        self.__config = None
-        self.__pdf_path = None
-        self.__own_unit = None
-        self.__mail_server = None
-        self.__hr_url = None
+        self._settings_data = None
+        self.__config_db = None
+
+
         self.__version = None
         self.load_config()
 
     @property
     def config(self):
-        if not self.__config:
+        if not self.__config_db:
             raise ValueError("Configuration not loaded. Call load_config() first.")
-        return self.__config
+        return self.__config_db
+
+    @property
+    def settings_data(self):
+        return self._settings_data
 
     @property
     def version(self) -> tuple[str, str]:
@@ -38,27 +43,27 @@ class ApplicationConfig(metaclass=Singleton):
 
     @property
     def pdf_output_path(self):
-        if not self.__pdf_path:
+        if not self._settings_data.pdf_path:
             raise ValueError("Configuration not loaded. Call load_config() first.")
-        return self.__pdf_path
+        return self._settings_data.pdf_path
 
     @property
     def hr_url(self) -> str:
-        if not self.__hr_url:
+        if not self._settings_data.hr_url:
             raise ValueError("Configuration not loaded. Call load_config() first.")
-        return self.__hr_url
+        return self._settings_data.hr_url
 
     @property
     def own_unit(self) -> str:
-        if not self.__own_unit:
+        if not self._settings_data.own_unit:
             raise ValueError("Configuration not loaded. Call load_config() first.")
-        return self.__own_unit
+        return self._settings_data.own_unit
 
     @property
     def mail_server(self) -> SmtpConfig:
-        if not self.__mail_server:
+        if not self._settings_data.mail_server:
             raise ValueError("Configuration not loaded. Call load_config() first.")
-        return self.__mail_server
+        return self._settings_data.mail_server
 
     @staticmethod
     def _get_project_root() -> Path:
@@ -79,13 +84,18 @@ class ApplicationConfig(metaclass=Singleton):
         config = self._load_yaml_file()
         if not config:
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
-
-        self.__pdf_path = self._ensure_directory(config["path"]["pdf_path"])
-        self.__own_unit = config["unit"]["name"]
+        
+        self._settings_data = SettingsData(db_host=config['db']['host'], db_port=config['db']['port'],
+                            db_database=config['db']['database'], db_username=config['db']['username'],
+                            db_password=config['db']['password'],pdf_path=self._ensure_directory(config["path"]["pdf_path"])
+                            ,own_unit=config["unit"]["name"],mail_server=SmtpConfig(**config["mail"]),
+                                           hr_url=config["hr"]["url"]
+                                           )
+   
         self.__version = (config["version"]["number"], config["version"]["status"])
-        self.__hr_url = config["hr"]["url"]
-        self.__mail_server = SmtpConfig(**config["mail"])
-        self.__config = self._setup_database_connection(config)
+
+
+        self.__config_db = self._setup_database_connection()
 
     def _load_yaml_file(self) -> Any:
         """
@@ -109,14 +119,14 @@ class ApplicationConfig(metaclass=Singleton):
             directory.mkdir(parents=True, exist_ok=True)
         return str(directory)
 
-    @staticmethod
-    def _setup_database_connection(config: dict):
+
+    def _setup_database_connection(self):
         """
         Set up the database connection using SQLAlchemy.
         """
         return create_async_engine(
-            url=f"postgresql+asyncpg://{config['db']['username']}:{config['db']['password']}@"
-                f"{config['db']['host']}:{config['db']['port']}/{config['db']['database']}",
+            url=f"postgresql+asyncpg://{self._settings_data.db_username}:{self._settings_data.db_password}@"
+                f"{self._settings_data.db_host}:{self._settings_data.db_port}/{self._settings_data.db_database}",
             echo=False,
             future=True,
             pool_size=20,
@@ -126,9 +136,41 @@ class ApplicationConfig(metaclass=Singleton):
             pool_pre_ping=True,
         )
 
-    def save_config(self, config: dict):
+    def save_config(self, config: SettingsData):
         """
         Save the updated configuration back to the YAML file.
         """
+        config_dict = {
+            'db': {
+                'database': config.db_database,
+                'host': config.db_host,
+                'password': config.db_password,
+                'port': config.db_port,
+                'username': config.db_username
+            },
+            'hr': {
+                'url': config.hr_url
+            },
+            'mail': {
+                'host': config.mail_server.host,
+                'password': config.mail_server.password,
+                'port': config.mail_server.port,
+                'sender': config.mail_server.sender,
+                'sender_email': config.mail_server.sender_email,
+                'use_ssl': config.mail_server.use_ssl,
+                'use_tls': config.mail_server.use_tls,
+                'username': config.mail_server.username
+            },
+            'path': {
+                'pdf_path': config.pdf_path
+            },
+            'unit': {
+                'name': config.own_unit
+            },
+            'version': {
+                'number': self.version[0],
+                'status': self.version[1]
+            }
+        }
         with open(self.config_path, "w") as file:
-            yaml.dump(config, file, default_flow_style=False)
+            yaml.dump(config_dict, file, default_flow_style=False, sort_keys=False)
