@@ -1,0 +1,2 @@
+class ReserveFitnessRoomController:
+    pass
