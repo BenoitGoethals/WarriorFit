@@ -5,6 +5,7 @@ from typing import List
 import calendar
 
 from warriorfit.data.model.db_model import Room, Reservation
+from warriorfit.ui.controllers.reserve_fitness_room_controller import ReserveFitnessRoomController
 from warriorfit.ui.pages.page import Page
 
 
@@ -13,12 +14,17 @@ class ReserveFitnessRoomPage(Page):
 
     def __init__(self):
         # Define available rooms
-        self.rooms = [
-            Room(id=1, name="Sports Hall A", capacity=20, location="Floor 1"),
-            Room(id=2, name="Sports Hall B", capacity=15, location="Floor 1"),
-            Room(id=3, name="Fitness Studio", capacity=10, location="Floor 2"),
-            Room(id=4, name="Yoga Room", capacity=12, location="Floor 2")
-        ]
+        # self.rooms = [
+        #     Room(id=1, name="Sports Hall A", capacity=20, location="Floor 1"),
+        #     Room(id=2, name="Sports Hall B", capacity=15, location="Floor 1"),
+        #     Room(id=3, name="Fitness Studio", capacity=10, location="Floor 2"),
+        #     Room(id=4, name="Yoga Room", capacity=12, location="Floor 2")
+        # ]
+        self.rooms:List[Room]=[]
+        self._controller:ReserveFitnessRoomController = ReserveFitnessRoomController()
+
+
+
 
         # Time slots
         self.time_slots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
@@ -306,6 +312,11 @@ class ReserveFitnessRoomPage(Page):
         current_week_start = reactive.Value(datetime.now().date() - timedelta(days=datetime.now().weekday()))
         selected_calendar_date = reactive.Value(None)
         show_modal = reactive.Value(False)
+
+
+        @reactive.Effect
+        async def _load_rooms():
+            self.rooms=await self._controller.rooms()
 
         @output
         @render.text
@@ -628,6 +639,7 @@ class ReserveFitnessRoomPage(Page):
         @render.ui
         def room_choice():
             room_buttons = []
+            self._controller.rooms()
             for room in self.rooms:
                 is_selected = selected_room.get() == room.id
                 card_class = "room-card selected" if is_selected else "room-card"
