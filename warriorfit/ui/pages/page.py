@@ -1,17 +1,18 @@
+import inspect
 from abc import ABC, abstractmethod
 
-from shiny import reactive
+from shiny import reactive, ui
 
 
 class Page(ABC):
 
     @abstractmethod
-    def get_ui(self):
-        pass
+    def get_ui(self)-> ui.Tag:
+        raise NotImplementedError
 
     @abstractmethod
     def server(self, input, output, session):
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def refresh(self):
@@ -27,11 +28,14 @@ class Page(ABC):
 
         @reactive.Effect
         @reactive.event(input.main_nav)
-        def _refresh_on_nav():
+        async def _refresh_on_nav():
             try:
                 # Check if the current tab matches the tab_name
                 if input.main_nav() == tab_name:
-                    self.refresh()
+                    if inspect.iscoroutinefunction(self.refresh):
+                        await self.refresh()
+                    else:
+                        self.refresh()
                     target_tick = refresh_tick if refresh_tick is not None else getattr(self, "refresh_tick", None)
 
                     if target_tick is not None:
