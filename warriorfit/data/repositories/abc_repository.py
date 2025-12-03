@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.db.db_model import AuditLog
+from warriorfit.data.model.db_model import AuditLog
 
 from warriorfit.utils.Os import Os
 

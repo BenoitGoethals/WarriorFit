@@ -5,7 +5,7 @@ import pandas as pd
 
 
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import PhefTest, TestSession, ServiceMen
+from warriorfit.data.model.db_model import PhefTest, TestSession, ServiceMen
 from warriorfit.logic.phef_calculator import PhefCalculator
 
 from warriorfit.services.military_service import MilitaryService

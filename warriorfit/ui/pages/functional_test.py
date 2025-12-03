@@ -1,7 +1,7 @@
 from shiny import ui, render, reactive
 import pandas as pd
 
-from warriorfit.data.db.db_model import TestSession, ServiceMen
+from warriorfit.data.model.db_model import TestSession, ServiceMen
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 
 from warriorfit.services.military_service import MilitaryService

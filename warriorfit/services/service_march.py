@@ -1,6 +1,6 @@
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.db.db_model import March
-from warriorfit.data.db.march_repository import MarchRepository
+from warriorfit.data.model.db_model import March
+from warriorfit.data.repositories.march_repository import MarchRepository
 
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service import Service

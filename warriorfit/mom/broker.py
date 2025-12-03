@@ -6,11 +6,10 @@ from datetime import datetime
 import httpx
 
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.db.db_model import PhefTest, HrMessage
-from warriorfit.data.db.mom_repositor import MomRepository
+from warriorfit.data.model.db_model import PhefTest, HrMessage
+from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
-from warriorfit.utils.Os import Os
 
 
 class Broker(metaclass=Singleton):

@@ -1,12 +1,12 @@
-import logging
 from typing import Optional, List
 
 import bcrypt
 from sqlalchemy import select, delete, func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from warriorfit.data.db.abc_repository import ABCRepository
-from warriorfit.data.db.db_model import User
+from warriorfit.data.model.db_model import User
+from warriorfit.data.repositories.abc_repository import ABCRepository
+
 
 
 class UserRepository(ABCRepository):
