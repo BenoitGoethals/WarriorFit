@@ -211,3 +211,8 @@ VALUES ('3para', 'Tielen'),
        ('SFG', 'Leuven'),
        ('trgpara', 'Schaffen');
 
+INSERT INTO rooms (id, name, capacity, location) VALUES (1, 'Sports Hall A', 20, 'Floor 1');
+INSERT INTO rooms (id, name, capacity, location) VALUES (2, 'Sports Hall B', 15, 'Floor 1');
+INSERT INTO rooms (id, name, capacity, location) VALUES (3, 'Fitness Studio', 10, 'Floor 2');
+INSERT INTO rooms (id, name, capacity, location) VALUES (4, 'Yoga Room', 12, 'Floor 2');
+INSERT INTO rooms (id, name, capacity, location) VALUES (5, 'Fitness Room', 25, 'Ground Floor');

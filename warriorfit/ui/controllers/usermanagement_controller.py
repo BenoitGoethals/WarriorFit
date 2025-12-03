@@ -7,7 +7,7 @@ from typing import List, Tuple, Optional
 
 import pandas as pd
 
-from warriorfit.data.db.db_model import User, Role
+from warriorfit.data.model.db_model import User, Role
 from warriorfit.security.auth_service import Auth
 from warriorfit.services.service_user import UserService
 

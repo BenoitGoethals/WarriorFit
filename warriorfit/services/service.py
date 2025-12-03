@@ -2,7 +2,7 @@ import logging
 from abc import ABC
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.db.user_repository import UserRepository
+from warriorfit.data.repositories.user_repository import UserRepository
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os

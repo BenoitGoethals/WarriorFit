@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from warriorfit.config.appliccation_config import ApplicationConfig
 
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, \
+from warriorfit.data.model.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, \
     March
 from warriorfit.logic.phef_calculator import PhefCalculator
 

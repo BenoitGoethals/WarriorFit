@@ -18,7 +18,7 @@ from warriorfit.core.Gender import Gender
 from warriorfit.core.rank_enum import Rank
 from warriorfit.core.role import Role
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.enum_mapped_user_model import IntEnumType
+from warriorfit.data.model.enum_mapped_user_model import IntEnumType
 
 
 class Base(DeclarativeBase):
@@ -299,3 +299,33 @@ class HrMessage(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
     message: Mapped[str] = mapped_column(String(255), nullable=False)
     datetime_created: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
+
+
+class Room(Base):
+    __tablename__ = "rooms"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    capacity: Mapped[int] = mapped_column(nullable=False)
+    location: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    # Relationship with Reservation
+    reservations: Mapped[List["Reservation"]] = relationship("Reservation", back_populates="room")
+
+
+class Reservation(Base):
+    __tablename__ = "reservations"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), nullable=False)
+    date: Mapped[datetime] = mapped_column(server_default=func.now())
+    start_time: Mapped[datetime] = mapped_column(server_default=func.now())
+    end_time: Mapped[datetime] = mapped_column(server_default=func.now())
+    serial_number: Mapped[str] = mapped_column(String(50), nullable=False)
+    activity: Mapped[str] = mapped_column(String(100), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    # Relationship with Room
+    room: Mapped["Room"] = relationship("Room", back_populates="reservations")
+
+

@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any
 import pandas as pd
 
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.db.db_model import CombatSwimmingTest, TestSession, ServiceMen
+from warriorfit.data.model.db_model import CombatSwimmingTest, TestSession, ServiceMen
 
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_test import ServiceTest
