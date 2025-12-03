@@ -17,9 +17,8 @@ class ReserveFitnessRoomPage(Page):
         self.reservations: List[Reservation] = []
         self._controller: ReserveFitnessRoomController = ReserveFitnessRoomController()
 
-        # Time slots
-        self.time_slots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-                           "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
+        # Time slots from 06:00 to 23:00
+        self.time_slots = [f"{h:02d}:00" for h in range(6, 24)]
 
     def refresh(self):
         pass
@@ -246,7 +245,7 @@ class ReserveFitnessRoomPage(Page):
             """),
 
             ui.h2("🗓️ PTI Room Booking System"),
-
+            ui.input_action_button("open_modal", "➕ New Reservation", class_="btn-success"),
             ui.navset_tab(
                 ui.nav_panel(
                     "📅 Weekly Calendar",
@@ -254,13 +253,12 @@ class ReserveFitnessRoomPage(Page):
                         ui.layout_columns(
                             ui.input_action_button("prev_week", "◀ Previous Week", class_="btn-primary"),
                             ui.output_text("current_week"),
+
                             ui.input_action_button("next_week", "Next Week ▶", class_="btn-primary"),
-                            col_widths=[3, 6, 3]
+                            col_widths=[2, 8, 2]
                         ),
-                        ui.layout_columns(
-                            ui.input_action_button("open_modal", "➕ New Reservation", class_="btn-success mt-3"),
-                            col_widths=[12]
-                        ),
+
+
                         ui.hr(),
                         ui.output_ui("weekly_calendar_view"),
                         ui.output_ui("reservation_modal"),
@@ -364,15 +362,18 @@ class ReserveFitnessRoomPage(Page):
 
             # Create rows for each hour
             rows = []
-            for time_slot in self.time_slots:
-                cells = [ui.tags.td(time_slot, class_="time-label")]
+            for slot_idx, time_slot in enumerate(self.time_slots):
+                # Apply z-index to ensure earlier rows render above later rows (for overlapping events)
+                row_z_index = 100 - slot_idx
+
+                cells = [
+                    ui.tags.td(time_slot, class_="time-label", style=f"position: relative; z-index: {row_z_index};")]
 
                 for day in week_days:
                     date_str = str(day)
                     is_past = day < today
 
                     # Find reservations for this day and time slot
-                    slot_idx = self.time_slots.index(time_slot)
                     day_reservations = []
                     for r in all_res:
                         r_date = r.date.date() if isinstance(r.date, datetime) else r.date
@@ -405,15 +406,16 @@ class ReserveFitnessRoomPage(Page):
                         # Only show block at the start time
                         if slot_idx == start_idx:
                             duration = end_idx - start_idx
-                            height = (duration * 60) - 4  # 60px per hour minus padding
+                            # 65px per hour to account for cell height + borders
+                            height = (duration * 65) - 4
 
                             reservation_blocks.append(
                                 ui.div(
                                     ui.div(f"{res.serial_number}", style="font-weight: bold;"),
                                     ui.div(f"{res.room.name}", style="font-size: 0.7rem;"),
-                                    ui.div(f"{r_start}-{r_end}", style="font-size: 0.65rem;"),
+                                    ui.div(f"{r_start}-{r_end}", style="font-size: 0.65rem; font-weight: bold;"),
                                     class_=f"reservation-block room-{res.room_id}",
-                                    style=f"height: {height}px; top: 2px;",
+                                    style=f"height: {height}px; top: 2px; z-index: {row_z_index + 1};",
                                     onclick=f"Shiny.setInputValue('reservation_click', {res.id}, {{priority: 'event'}})"
                                 )
                             )
@@ -422,6 +424,7 @@ class ReserveFitnessRoomPage(Page):
                         ui.tags.td(
                             *reservation_blocks,
                             class_=cell_class,
+                            style=f"position: relative; z-index: {row_z_index};",
                             onclick=f"Shiny.setInputValue('week_cell_click', '{date_str}_{time_slot}', {{priority: 'event'}})"
                         )
                     )
@@ -862,7 +865,8 @@ class ReserveFitnessRoomPage(Page):
 
                 @reactive.Effect
                 @reactive.event(input[button_id], ignore_none=True)
-                def remove(res_id=res.id):
+                async def remove(res_id=res.id):
+                    await self._controller.delete_reservation(res_id)
                     current = reservations.get()
                     new = [r for r in current if r.id != res_id]
                     reservations.set(new)
@@ -873,7 +877,8 @@ class ReserveFitnessRoomPage(Page):
 
                 @reactive.Effect
                 @reactive.event(input[button_id_cal], ignore_none=True)
-                def remove_cal(res_id=res.id):
+                async def remove_cal(res_id=res.id):
+                    await self._controller.delete_reservation(res_id)
                     current = reservations.get()
                     new = [r for r in current if r.id != res_id]
                     reservations.set(new)
