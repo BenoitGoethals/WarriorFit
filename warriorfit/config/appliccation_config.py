@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Any
 import yaml
 from sqlalchemy.ext.asyncio import create_async_engine
-
+import os
 from warriorfit.config.settings_data import SettingsData
 from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.logic.singleton import Singleton
@@ -19,6 +19,15 @@ class ApplicationConfig(metaclass=Singleton):
 
         :param config_path: Path to the configuration file.
         """
+        ENV = os.getenv('APP_ENV', 'development')
+
+        if ENV == 'production':
+           config_path = "warriorfit/config/config_prod.yml"
+        elif ENV == 'development':
+            config_path = "warriorfit/config/config_dev.yml"
+        elif ENV == 'test':
+            config_path = "warriorfit/config/config_test.yml"
+
         self.config_path = self._get_project_root() / config_path
         self._settings_data = None
         self.__config_db = None

@@ -26,6 +26,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Copy the rest of the application code
 COPY . .
 
+ENV APP_ENV=test
+
 # Install the project itself (if configured as a package)
 RUN uv sync --frozen
 
