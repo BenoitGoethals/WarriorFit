@@ -1,5 +1,6 @@
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
+from warriorfit.services.be_mil_service import BEMILService
 
 
 class MilitaryService:
@@ -16,6 +17,7 @@ class MilitaryService:
         Initializes the MilitaryService with a ServicemenRepository.
         """
         self._repo = ServicemenRepository()
+        self._be_mil_service=BEMILService()
 
 
     async def add_service_men(self, service_men):
@@ -67,7 +69,7 @@ class MilitaryService:
 
         sm= await self._repo.get_by_service_number(serial, lazy=lazy)
         if not sm:
-           sm = self.
+           sm = self._be_mil_service.get_be_mil_by_id(serial)
         return sm
 
 
