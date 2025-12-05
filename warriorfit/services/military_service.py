@@ -1,3 +1,4 @@
+from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
 
 
@@ -61,18 +62,13 @@ class MilitaryService:
         """
         return await self._repo.get_servicemen_by_id(ind_id)
 
-    async def get_servicemen_by_serial(self, serial: str, lazy=True):
-        """
-        Retrieves a serviceman by their serial number.
+    async def get_servicemen_by_serial(self, serial: str, lazy=True)->ServiceMen|None:
 
-        Args:
-            serial (str): The serial number of the serviceman.
-            lazy (bool): Whether to load related data lazily. Defaults to True.
+        sm= await self._repo.get_by_service_number(serial, lazy=lazy)
+        if not sm:
+            ...
+        return sm
 
-        Returns:
-            The serviceman object if found.
-        """
-        return await self._repo.get_by_service_number(serial, lazy=lazy)
 
     async def get_all_units(self):
         """
