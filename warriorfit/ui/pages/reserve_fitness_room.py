@@ -684,26 +684,6 @@ class ReserveFitnessRoomPage(Page):
                 )
             return ui.div(*room_buttons)
 
-        # Event handlers for room selection
-        @reactive.Effect
-        @reactive.event(input.room_1)
-        def _():
-            selected_room.set(1)
-
-        @reactive.Effect
-        @reactive.event(input.room_2)
-        def _():
-            selected_room.set(2)
-
-        @reactive.Effect
-        @reactive.event(input.room_3)
-        def _():
-            selected_room.set(3)
-
-        @reactive.Effect
-        @reactive.event(input.room_4)
-        def _():
-            selected_room.set(4)
 
         @reactive.Effect
         @reactive.event(input.reserve)
