@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime
 import httpx
+
+from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.Gender import Gender
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.logic.singleton import Singleton
 class BEMILService(metaclass=Singleton):
-    BASE_URL = "http://192.168.0.30:8400"
+    BASE_URL = ApplicationConfig().hr_url
 
     def __init__(self):
         self.__logger = logging.getLogger(__name__)

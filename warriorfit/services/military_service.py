@@ -17,6 +17,7 @@ class MilitaryService:
         """
         self._repo = ServicemenRepository()
 
+
     async def add_service_men(self, service_men):
         """
         Adds a new serviceman to the repository.
@@ -66,7 +67,7 @@ class MilitaryService:
 
         sm= await self._repo.get_by_service_number(serial, lazy=lazy)
         if not sm:
-            ...
+           sm = self.
         return sm
 
 
