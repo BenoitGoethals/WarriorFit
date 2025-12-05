@@ -273,11 +273,11 @@ class ServiceMen(Base):
             b = self.birthdate
         return date_session.year - b.year - ((date_session.month, date_session.day) < (b.month, b.day))
 
-    def __str__(self) -> str:
-        return f"{self.first_name} {self.last_name}  {self.mail}"
-
     def __repr__(self) -> str:
-        return f"{self.first_name} {self.last_name}  {self.mail}"
+        return f"ServiceMen(id={self.id}, first_name='{self.first_name}', last_name='{self.last_name}', mail='{self.mail}', rank={self.rank}, service_number='{self.service_number}', birthdate='{self.birthdate}', gender={self.gender}, unit_id={self.unit_id})"
+
+    def __str__(self) -> str:
+        return f"ServiceMen(id={self.id}, first_name='{self.first_name}', last_name='{self.last_name}', mail='{self.mail}', rank={self.rank}, service_number='{self.service_number}', birthdate='{self.birthdate}', gender={self.gender}, unit_id={self.unit_id})"
 
 
 class March(Base):
