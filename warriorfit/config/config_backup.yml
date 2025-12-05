@@ -7,7 +7,7 @@ db:
 display:
   darkmode: false
 hr:
-  url: http://127.0.0.1:8005/api/v1/phef/test
+  url: http://192.168.0.30:8400
 mail:
   host: 192.168.0.174
   password: R@nger&1401!
