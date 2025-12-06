@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 import httpx
@@ -6,6 +7,9 @@ from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.Gender import Gender
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.logic.singleton import Singleton
+from warriorfit.mom.message import Message
+
+
 class BEMILService(metaclass=Singleton):
     BASE_URL = ApplicationConfig().hr_url
 
@@ -69,6 +73,16 @@ class BEMILService(metaclass=Singleton):
                 self.__logger.error(f"Error fetching BEMILs from unit {unit_name}: {e}")
                 return None
 
+    async def sent_hr_message_to_hr(self, message:Message):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self.BASE_URL + "/hrmessages",
+                json=message.to_dict(),
+                headers={'accept': 'application/json', 'Content-Type': 'application/json'}
+            )
+            self.__logger.info(json.dumps(message.to_dict(), indent=2))
+            response.raise_for_status()
+        return response.json()
 
 
 if __name__ == "__main__":

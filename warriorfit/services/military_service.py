@@ -69,7 +69,7 @@ class MilitaryService:
 
         sm= await self._repo.get_by_service_number(serial, lazy=lazy)
         if not sm:
-           sm = self._be_mil_service.get_be_mil_by_id(serial)
+           sm = await self._be_mil_service.get_be_mil_by_id(serial)
         return sm
 
 
