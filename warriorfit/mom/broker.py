@@ -3,7 +3,7 @@ import json
 import logging
 from sqlalchemy import TIMESTAMP, func
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.model.db_model import PhefTest, HrMessage
+from warriorfit.data.model.db_model import PhefTest, HrMessage, TestSession, FitnessTest
 from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
@@ -55,15 +55,15 @@ class Broker(metaclass=Singleton):
         # 2. Send pending messages
         await self.check_and_send_messages()
 
-    async def send_message(self, pf: PhefTest):
+    async def send_message(self, pf: PhefTest|FitnessTest):
         """Enqueues a message to be sent"""
-        if isinstance(pf, PhefTest):
-            pf_dto = PhefTestDto(pf)
-            hr_m = HrMessage(
-                message=json.dumps(pf_dto.to_dict()), 
-                datetime_created=func.now()
-            )
-            await self._msg_queue.put(hr_m)
+
+        pf_dto = PhefTestDto(pf)
+        hr_m = HrMessage(
+            message=json.dumps(pf_dto.to_dict()),
+            datetime_created=func.now()
+        )
+        await self._msg_queue.put(hr_m)
 
     async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
         try:
