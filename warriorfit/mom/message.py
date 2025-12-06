@@ -4,14 +4,16 @@ from typing import Any
 class Message:
     """A class representing a message in MOM."""
     def __init__(self, content: Any):
+        self.id = 0
         self.content = content
         self.timestamp = datetime.now()
 
     def to_dict(self) -> dict:
         content = self._content_to_dict(self.content)
         return {
-            "content": content,
-            "timestamp": self.timestamp.isoformat(),
+            "id": self.id,
+            "message": content,
+            "datetime_created": self.timestamp.isoformat(),
         }
 
     @staticmethod

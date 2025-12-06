@@ -44,7 +44,7 @@ The project documentation is structured in different documents:
 4. * [Stories](documentation/stories.md) (In Review)
 5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (Done)
 6. * [Module Structures](documentation/module_structure.md) (In Review)
-7. * [MOM (broker)](documentation/broker.md) (In Development)
+7. * [MOM (broker)](documentation/broker.md) (In Development) Message-Oriented Middleware
 8. * [Install and deply](documentation/install.md) (In Development)
 9. * [Retrospective](documentation/retrospective.md) 
 10. * [Reservation Rooms](documentation/reservation_rooms.md) (out of scope,In Development)

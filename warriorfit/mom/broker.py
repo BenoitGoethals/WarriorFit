@@ -1,32 +1,33 @@
 import asyncio
 import json
 import logging
-from datetime import datetime
-
-import httpx
-
+from sqlalchemy import TIMESTAMP, func
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import PhefTest, HrMessage
 from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
-
+from warriorfit.services.be_mil_service import BEMILService
 
 class Broker(metaclass=Singleton):
 
-    def __init__(self, url: str=None):
-        self._url = url
+    def __init__(self):
+
         self._mom_repo = MomRepository()
         self._logger = logging.getLogger(__name__)
         self.running = False
         self._worker_task = None
         self._msg_queue = asyncio.Queue()
+        self._be_mil_service = BEMILService()
 
     async def worker(self):
         """Background task running on the main event loop"""
-        print(f"🚀 Message Queue Service gestart")
-        print(f"📍 Target URL: {self._url}")
-        print(f"⏱  Check interval: 5 seconden\n")
+        print(f"🚀 Message Queue Service started")
+        print(f"📍 Target URL: {ApplicationConfig().hr_url}")
+        print(f"⏱  Check interval: 5 seconds\n")
+        self._logger.info("Message Queue Service started")
+        self._logger.info(f"Target URL: {ApplicationConfig().hr_url}")
+        self._logger.info(f"Check interval: 5 seconds")
 
         while self.running:
             try:
@@ -60,22 +61,14 @@ class Broker(metaclass=Singleton):
             pf_dto = PhefTestDto(pf)
             hr_m = HrMessage(
                 message=json.dumps(pf_dto.to_dict()), 
-                datetime_created=datetime.now()
+                datetime_created=func.now()
             )
             await self._msg_queue.put(hr_m)
 
     async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
         try:
             message = Message(content=message_hr.message)
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    self._url,
-                    json=message.to_dict(),
-                    headers={'accept': 'application/json', 'Content-Type': 'application/json'}
-                )
-                print(json.dumps(message.to_dict(), indent=2))
-                response.raise_for_status()
-                return response.json()
+            return await self._be_mil_service.sent_hr_message_to_hr(message)
         except Exception as e:
             self._logger.error(f"Error sending message to HR: {e}")
             return None
@@ -93,8 +86,7 @@ class Broker(metaclass=Singleton):
 
     def start(self):
         """Start the service as a background asyncio task"""
-        if not self._url:
-            self._url=ApplicationConfig.hr_url
+
         if not self.running:
             self.running = True
             try:
@@ -102,14 +94,17 @@ class Broker(metaclass=Singleton):
                 self._worker_task = loop.create_task(self.worker())
             except RuntimeError:
                 print("⚠️ Warning: Could not start Broker worker. No running event loop found.")
+                self._logger.warning("Could not start Broker worker. No running event loop found.")
 
     def stop(self):
         """Stop Service"""
-        print("\n🛑 Service wordt gestopt...")
+        print("\n🛑 Service stopped...")
+        self._logger.info("Service stopped...")
         self.running = False
         if self._worker_task:
             self._worker_task.cancel()
-        print("✓ Service gestopt")
+        print("✓ Service stopped")
+        self._logger.info("Service stopped")
 
 
 class PhefTestDto:
@@ -130,7 +125,7 @@ class PhefTestDto:
 
 if __name__ == "__main__":
     async def main():
-        b = Broker(url="http://127.0.0.1:8005/api/v1/phef/test")
+        b = Broker()
         b.start()
         
         # Example test messages
