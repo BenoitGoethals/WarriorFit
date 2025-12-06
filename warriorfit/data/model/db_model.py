@@ -264,7 +264,7 @@ class ServiceMen(Base):
         today = date.today()
         return today.year - d.year - ((today.month, today.day) < (d.month, d.day))
 
-    def age_from_birthdate_and_session_date(self, date_session: date) -> int:
+    def age_from_birthdate_and_session_date(self, date_session: date|TIMESTAMP) -> int:
         if isinstance(self.birthdate, str):
             b = datetime.strptime(self.birthdate, "%Y-%m-%d").date()
         elif isinstance(self.birthdate, datetime):

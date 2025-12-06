@@ -552,5 +552,5 @@ class FitnessWarriorApp:
 
 
 FitnessWarriorApp.setup_logger()
-#FitnessWarriorApp.get_broker().start()
+FitnessWarriorApp.get_broker().start()
 app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server)

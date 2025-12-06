@@ -65,11 +65,11 @@ class MomRepository(ABCRepository):
         except Exception as e:
             self._logger.error(f"Unexpected error fetching cross: {str(e)}")
 
-    async def delete_hr_message(self,id_msg:int)-> bool | None:
+    async def delete_hr_message(self, id_msg: int) -> bool | None:
         """
         Deletes a human resource (HR) message from the database based on the provided ID. If the
         message is found, it will be removed and the operation will be committed to the database.
-
+    
         :param id_msg: The ID of the HR message to be deleted.
         :type id_msg: int
         :return: Returns True if the message was successfully deleted, False if a database
@@ -78,17 +78,15 @@ class MomRepository(ABCRepository):
         """
         try:
             async with self.SessionLocal() as session:
-                query= select(HrMessage).where(HrMessage.id==id_msg)
-                msg= await self.fetch_and_log(query, "HrMessage")
-                if msg:
-                    query= delete(HrMessage).where(HrMessage.id==id_msg)
+                async with session.begin():
+                    query = delete(HrMessage).where(HrMessage.id == id_msg)
                     result = await session.execute(query)
+
                     if result.rowcount == 0:
                         self._logger.error(
                             f"No HR message found with ID {id_msg} to delete."
                         )
                         return False
-                    return True
                     return True
         except SQLAlchemyError as e:
             self._logger.error(f"Database error deleting cross {id_msg}: {str(e)}")
