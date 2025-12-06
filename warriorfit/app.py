@@ -10,7 +10,7 @@ from warriorfit.utils.Os import Os
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.ui.pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
     cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, march, status_login_user, \
-    reserve_fitness_room
+    reserve_fitness_room, status_application
 from warriorfit.ui.pages import usermangement
 from warriorfit.ui.pages import phef
 from warriorfit.ui.pages import sessions
@@ -124,7 +124,8 @@ class FitnessWarriorApp:
             "Cross Statics": cross_statics.server,
             "March": march.server,
             "Welcome": status_login_user.server,
-            "Reserve Room": reserve_fitness_room.server
+            "Reserve Room": reserve_fitness_room.server,
+            "Status Application" :status_application.server
         }
         mounted = reactive.Value(set())
 
@@ -276,6 +277,7 @@ class FitnessWarriorApp:
                 _safe_panel(auditlog_events.get_ui()),
                 _safe_panel(usermangement.get_ui()),
                 _safe_panel(settings.get_ui()),
+                _safe_panel(status_application.get_ui())
             ]
             admin_children = [c for c in admin_children if c is not None]
             return ui.nav_menu("Admin", *admin_children) if admin_children else None

@@ -1,0 +1,2 @@
+class StatusApplicationController:
+    pass
