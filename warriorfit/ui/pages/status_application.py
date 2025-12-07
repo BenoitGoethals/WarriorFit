@@ -1,0 +1,71 @@
+from shiny import ui, render, reactive
+from warriorfit.data.repositories.abc_repository import ABCRepository
+from warriorfit.ui.controllers.StatusApplicationController import StatusApplicationController
+from warriorfit.ui.pages.page import Page
+
+
+class StatusApplicationPage(Page):
+
+    def __init__(self):
+        self._controller=StatusApplicationController()
+
+    def refresh(self):
+        pass
+
+    def get_ui(self):
+        return ui.nav_panel(
+            "Status Application",
+            ui.h2("Application Status Dashboard"),
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header("Database Connectivity"),
+                    ui.output_text("db_status_display")
+                ),
+                ui.card(
+                    ui.card_header("HR Service Ops"),
+                    ui.output_text("hr_status_display")
+                ),
+                ui.card(
+                    ui.card_header("Server Status"),
+                    ui.output_text("server_status_display")
+                ),
+            )
+        )
+
+    def server(self, input, output, session):
+        refresh_tick = reactive.Value(0)
+
+        self.refresh_on_nav(input, "Status Application", refresh_tick)
+
+        @output
+        @render.text
+        async def db_status_display():
+            return await self._controller.status_db()
+
+
+        @output
+        @render.text
+        async def hr_status_display():
+            return await self._controller.status_hr()
+
+        @output
+        @render.text
+        async def server_status_display():
+            return await self._controller.status_server()
+
+
+
+
+            return "Running"
+
+
+# Public API
+_page = StatusApplicationPage()
+
+
+def get_ui():
+    return _page.get_ui()
+
+
+def server(input, output, session):
+    _page.server(input, output, session)

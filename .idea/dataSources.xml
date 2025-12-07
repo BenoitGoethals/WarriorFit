@@ -8,11 +8,11 @@
       <jdbc-url>jdbc:postgresql://78.21.255.210:5432/postgres</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="postgres@localhost" uuid="739cc583-1c3e-4063-8e1f-bfeee0aaf999">
-      <driver-ref>postgresql</driver-ref>
+    <data-source source="LOCAL" name="@192.168.0.30" uuid="008a564a-cd92-4686-a592-30b3f5694cc5">
+      <driver-ref>sqlserver.ms</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://192.168.0.30</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
