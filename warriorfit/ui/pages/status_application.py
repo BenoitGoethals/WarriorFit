@@ -1,9 +1,13 @@
-from shiny import ui, render
+from shiny import ui, render, reactive
 from warriorfit.data.repositories.abc_repository import ABCRepository
+from warriorfit.ui.controllers.StatusApplicationController import StatusApplicationController
 from warriorfit.ui.pages.page import Page
 
 
 class StatusApplicationPage(Page):
+
+    def __init__(self):
+        self._controller=StatusApplicationController()
 
     def refresh(self):
         pass
@@ -29,25 +33,29 @@ class StatusApplicationPage(Page):
         )
 
     def server(self, input, output, session):
+        refresh_tick = reactive.Value(0)
+
+        self.refresh_on_nav(input, "Status Application", refresh_tick)
+
         @output
         @render.text
         async def db_status_display():
-            try:
-                repo = ABCRepository()
-                is_operational = await repo.check_if_db_is_operational()
-                return "Operational" if is_operational else "Non-Operational"
-            except Exception:
-                return "Error Connecting"
+            return await self._controller.status_db()
+
 
         @output
         @render.text
-        def hr_status_display():
-            # Placeholder for HR service check logic
-            return "Operational"
+        async def hr_status_display():
+            return await self._controller.status_hr()
 
         @output
         @render.text
-        def server_status_display():
+        async def server_status_display():
+            return await self._controller.status_server()
+
+
+
+
             return "Running"
 
 
