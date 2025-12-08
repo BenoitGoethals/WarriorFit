@@ -67,6 +67,7 @@ The project documentation is structured in different documents:
 9. * [Retrospective](documentation/retrospective.md) 
 10. * [Reservation Rooms](documentation/reservation_rooms.md) (out of scope,In Development)
 11. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (In Development)
+12. * [Testing](documentation/testcases.md) (In Development)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
@@ -85,11 +86,13 @@ if you want to see the project in action, you can check  :
 * Working skeleton project
 * Proof of concept, working demo
 
-### **Phase 3 — Development/enhancements & Iterations (Jan–Jun 2026)**
+### **Phase 3 — Development/enhancements/testing & Iterations (Jan–april 2026)**
 
 * Incremental deliveries via Agile sprints
+* Enhancements and bug fixes
+* Testing and validation
 
-### **Phase 4 — Testing & Validation (Jun 2026)**
+### **Phase 4 — Testing & Validation (april 2026)**
 
 * Acceptance testing and bug fixing
 
