@@ -3,16 +3,31 @@
 ### Digitization of Physical Military Tests at SOR-Unit Level
 
 **Author:** Benoit Goethals
+
 **Academic Year:** 2025–2026
+
 **Project Status:** In Progress
+
 **Project Type:** Software Engineering
+
 **Project Duration:** 6 months
+
 **Project Language:** Python
+
 **Project devlopment methodology:** Agile
 
 **Project Development server:** http://78.21.255.210:8500/  
 username: tester
 password: tester007!
+
+
+## Updates
+* 2025-09-1: Project started
+* 2025-10-30: all user stories done 
+* 2025-11-15: extra user stories for cross management done
+* 2025-11-30 Room reservation done
+* 2025-12-01: HRM SIMULATOR done
+* 2026-01-04: Project first release ready for testing
 
 
 ## Project Description
@@ -27,7 +42,10 @@ The system includes user management, test input, calculations, PDF reporting, an
 The main goals of this project are:
 * To develop a comprehensive fitness  military management application
 * To integrate data collection, statistical analysis, and reporting capabilities tailored for military fitness standards
+* Cross management
+* Reservation of rooms
 * To integrate with existing Defence systems (HRM)
+* To integrate with existing Defence systems (SIMULATOR)
 
 ## Project Development Methodology
 The project is developed using Agile methodology and SOLID principles.
@@ -61,12 +79,13 @@ if you want to see the project in action, you can check  :
 * Project scope and vision
 * Initialize backlog and repository
 
-### **Phase 2 — Architecture & Structure (Jan 2026)** (in Progress)
+### **Phase 2 — Architecture & Structure (Jan 2026)** (in final fase)
 
 * Technical foundation, layer structure, and UML
 * Working skeleton project
+* Proof of concept, working demo
 
-### **Phase 3 — Development & Iterations (Jan–Jun 2026)**
+### **Phase 3 — Development/enhancements & Iterations (Jan–Jun 2026)**
 
 * Incremental deliveries via Agile sprints
 
