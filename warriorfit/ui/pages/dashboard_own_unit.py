@@ -89,15 +89,6 @@ class DashboardOwnUnitPage(Page):
 
         self.refresh_on_nav(input, "Dashboard", refresh_tick)
 
-        # @reactive.Effect
-        # @reactive.event(input.own_unit_refresh)
-        # def _trigger_refresh():
-        #     self.controller.reset_cache()
-        #     refresh_tick.set(refresh_tick.get() + 1)
-        #     ui.notification_show("Own unit dashboard reloaded", type="message", duration=2)
-
-
-        @output
         @render.ui
         async def own_unit_personnel_stats():
             _ = refresh_tick.get()

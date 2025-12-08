@@ -67,12 +67,13 @@ class StatusApplicationPage(Page):
         async def read_log():
             return await self._controller.load_log_application()
 
+
         @output
         @render.text
         async def lof_file():
             return await read_log()
 
-# Public API
+
 _page = StatusApplicationPage()
 
 
