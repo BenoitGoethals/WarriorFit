@@ -29,7 +29,13 @@ class StatusApplicationPage(Page):
                     ui.card_header("Server Status"),
                     ui.output_text("server_status_display")
                 ),
-            )
+            ),
+            ui.layout_columns(
+                    ui.card(
+                        ui.card_header("Log File"),
+                        ui.output_text_verbatim("lof_file")
+                    ),
+                )
         )
 
     def server(self, input, output, session):
@@ -54,10 +60,17 @@ class StatusApplicationPage(Page):
             return await self._controller.status_server()
 
 
+        def check_log_modified():
+            return self._controller.check_log_modified()
 
+        @reactive.poll(check_log_modified, 2.0)
+        async def read_log():
+            return await self._controller.load_log_application()
 
-            return "Running"
-
+        @output
+        @render.text
+        async def lof_file():
+            return await read_log()
 
 # Public API
 _page = StatusApplicationPage()

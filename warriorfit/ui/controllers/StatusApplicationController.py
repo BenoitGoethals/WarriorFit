@@ -1,3 +1,5 @@
+import os
+
 import aiohttp
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.repositories.abc_repository import ABCRepository
@@ -37,4 +39,21 @@ class StatusApplicationController:
             error = sum(1 for line in lines if "error" in line.lower())
     
         return f"Log: {error} Errors"
+
+    async def load_log_application(self)->str:
+        project_root = Os.get_project_root()
+        log_path = project_root / "logs" / "application.log"
+        async with aiofiles.open(log_path, "r") as f:
+            lines = await f.readlines()
+            last_100_lines = lines[-100:] if len(lines) > 100 else lines
+            return ''.join(last_100_lines)
+
+    def check_log_modified(self):
+        from warriorfit.utils.Os import Os
+        project_root = Os.get_project_root()
+        log_path = project_root / "logs" / "application.log"
+        if log_path.exists():
+            return os.path.getmtime(log_path)
+        return None
+        
         
