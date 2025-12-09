@@ -113,3 +113,16 @@ https://github.com/users/BenoitGoethals/projects/20
 ![land-nl.png](documentation/land-nl.png)
 
 
+
+Copyright (c) 2025 Goethals Benoit
+
+This source code is provided for viewing purposes only.
+
+You may NOT:
+- Use this code in any project
+- Copy, modify, or distribute this code
+- Use this code for commercial or non-commercial purposes
+
+All rights reserved.
+
+
