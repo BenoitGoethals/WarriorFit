@@ -24,16 +24,16 @@ class ServiceCross(Service):
         self._cross_repo = CrossRepository()
         self.be_mil_service = MilitaryService()
 
-    async def get_runner(self, runner_id) -> Runner | None:
+    async def get_runner(self, runner_id:int) -> Runner | None:
         return await self._cross_repo.get_runner(runner_id)
 
     async def get_cross(self, cross_id) -> Cross | None:
         return await self._cross_repo.get_cross(cross_id)
 
-    async def add(self, cross) -> Cross | None:
+    async def add(self, cross:Cross) -> Cross | None:
         added = await self._cross_repo.add_cross(cross)
         if added:
-            await self.add_audit_log(details=f"Cross {cross.name} added", action="add")
+            await self.add_audit_log(details=f"Cross {cross} added", action="add")
         return added
 
     async def list_all(self) -> list[Cross]:
@@ -42,8 +42,8 @@ class ServiceCross(Service):
     async def get_all_runners(self) -> list[Runner]:
         return await self._cross_repo.get_all_runners()
 
-    async def delete_cross(self, id: float) -> bool:
-        deleted = await self._cross_repo.remove_cross(id)
+    async def delete_cross(self, id_nr: int) -> bool:
+        deleted = await self._cross_repo.remove_cross(id_nr)
         if deleted:
             await self.add_audit_log(details=f"Cross {id} deleted", action="delete")
         return deleted
@@ -51,14 +51,14 @@ class ServiceCross(Service):
     async def get_all_crosses(self) -> list[Cross]:
         return await self._cross_repo.get_all_cross()
 
-    async def get_cross_by_id(self, id, lazy=True) -> Cross | None:
+    async def get_cross_by_id(self, id_nr, lazy=True) -> Cross | None:
         if lazy:
-            return await self._cross_repo.get_cross(id)
+            return await self._cross_repo.get_cross(id_nr)
         else:
-            return await self._cross_repo.get_cross_full(id)
+            return await self._cross_repo.get_cross_full(id_nr)
 
-    async def get_cross_with_runners(self, id) -> list[Runner]:
-        return await self._cross_repo.get_runners_from_a_cross(id)
+    async def get_cross_with_runners(self, id_nr) -> list[Runner]:
+        return await self._cross_repo.get_runners_from_a_cross(id_nr)
 
     async def add_runner_to_cross(self, id_cross, r) -> Runner:
         r.cross_id = id_cross
@@ -79,19 +79,19 @@ class ServiceCross(Service):
             )
         return updated
 
-    async def remove_runner_from_cross(self, id) -> bool:
-        removed = await self._cross_repo.remove_runner(id)
+    async def remove_runner_from_cross(self, id_nr:int) -> bool:
+        removed = await self._cross_repo.remove_runner(id_nr)
         if removed:
             await self.add_audit_log(
-                details=f"Runner {id} removed from cross", action="delete"
+                details=f"Runner {id_nr} removed from cross", action="delete"
             )
         return removed
 
-    async def update_cross(self, cross):
+    async def update_cross(self, cross:Cross):
         updated = await self._cross_repo.update_cross(cross)
         if updated:
             await self.add_audit_log(
-                details=f"Cross {cross.name} updated", action="update"
+                details=f"Cross {cross} updated", action="update"
             )
         return updated
 
