@@ -115,7 +115,7 @@ class CrossPage(Page):
 
         async def _refresh_cross_choices():
             crosses = await self.controller.load_crosses()
-            items = {str(c.id): getattr(c, "name", f"Cross {c.id}") for c in (crosses or [])}
+            items = {str(c.id): getattr(c, "name", f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')}") for c in (crosses or [])}
             cur = (input.cross_id() or "").strip()
             selected = cur if cur in items else None
             ui.update_select("cross_id", choices=items, selected=selected)
