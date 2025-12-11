@@ -188,6 +188,11 @@ class Cross(Base):
         "Runner", secondary="cross_runners", back_populates="crosses"
     )
 
+    def __repr__(self) -> str:
+        return f"Cross(id={self.id}, datetime_start='{self.datetime_start}', distance={self.distance}, executed={self.executed})"
+    def __str__(self) -> str:
+        return f"Cross(id={self.id}, datetime_start='{self.datetime_start}', distance={self.distance}, executed={self.executed})"
+
 
 class Runner(Base):
     __tablename__ = "runners"
