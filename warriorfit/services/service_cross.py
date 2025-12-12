@@ -238,6 +238,8 @@ class ServiceCross(Service):
                         runner.serial_number
                     )
                 )
+                if service_man is None:
+                    continue
                 if service_man.gender == Gender.F:
                     all_runners_f.append(runner.running_time)
                 else:
