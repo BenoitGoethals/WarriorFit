@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 from typing import Optional, Dict, Any, Tuple, List
 
 import pandas as pd
@@ -22,13 +23,13 @@ class CrossController:
         """
         Parses time input into an equivalent duration in seconds.
 
-        The method accepts time in either "mm:ss" format or as a single value representing
+        The method accepts time in "hh:mm:ss", "mm:ss" format or as a single value representing
         the total number of seconds. It validates the input for correctness, ensuring that
         the time is a positive numeric value. If the input is valid, it computes and returns
         the time in seconds.
 
         :param val: A string representing the time input. It can be a formatted time string
-                    in "mm:ss" format or a numeric value (as seconds).
+                    in "hh:mm:ss" or "mm:ss" format or a numeric value (as seconds).
         :type val: str
         :return: A tuple where the first value is a boolean indicating success (`True`)
                  or failure (`False`), and the second value is the computed time in seconds
@@ -42,38 +43,36 @@ class CrossController:
         try:
             if ":" in txt:
                 parts = txt.split(":")
-                if len(parts) != 2:
-                    return False, "Time must be in mm:ss or seconds."
-                m = int(parts[0])
-                s = int(parts[1])
-                total = m * 60 + s
+                if len(parts) == 2:
+                    # mm:ss format
+                    m = int(parts[0])
+                    s = int(parts[1])
+                    total = (m * 60 + s) * 1000
+                elif len(parts) == 3:
+                    # hh:mm:ss format
+                    h = int(parts[0])
+                    m = int(parts[1])
+                    s = int(parts[2])
+                    total = (h * 3600 + m * 60 + s) * 1000
+                else:
+                    return False, "Time must be in hh:mm:ss, mm:ss or seconds."
             else:
-                total = int(float(txt))
+                total = float(txt)
             if total <= 0:
                 return False, "Time must be positive."
-            return True, int(total)
+            return True, total
         except Exception:
-            return False, "Time must be numeric (mm:ss or seconds)."
+            return False, "Time must be numeric (hh:mm:ss, mm:ss or seconds)."
 
     @staticmethod
-    def format_seconds(sec: float | int) -> str:
-        """
-        Format a time duration in seconds to a string representation of minutes
-        and seconds in the format "MM:SS".
+    def format_seconds(sec: float) -> str:
+        total_seconds = int(sec / 1000)
+        hr = total_seconds // 3600
+        remaining_seconds = total_seconds % 3600
+        mini = remaining_seconds // 60
+        sec = remaining_seconds % 60
+        return f"{hr:02d}:{mini:02d}:{sec:02d}"
 
-        This method takes a numeric value (either integer or float) representing
-        time in seconds and converts it into a string formatted as "MM:SS", where
-        "MM" represents the number of minutes and "SS" represents the number of
-        remaining seconds.
-
-        :param sec: The time duration in seconds, expressed as a float or an int.
-        :type sec: float | int
-        :return: A string representation of the time in the "MM:SS" format.
-        :rtype: str
-        """
-        m = int(sec) // 60
-        s = int(sec) % 60
-        return f"{int(m)}:{int(s):02d}"
 
     async def validate_form(self, data: Dict[str, Any], update=False) -> Tuple[bool, Dict[str, Any] | str]:
         """
