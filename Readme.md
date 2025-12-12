@@ -68,6 +68,7 @@ The project documentation is structured in different documents:
 10. * [Reservation Rooms](documentation/reservation_rooms.md) (out of scope,In Development)
 11. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (In Development)
 12. * [Testing](documentation/testcases.md) (In Development)
+13. * [Cross App](documentation/crsossapp.md) (In Development)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
