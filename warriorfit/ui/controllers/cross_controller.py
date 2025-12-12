@@ -146,6 +146,7 @@ class CrossController:
             if cross is None:
                 return pd.DataFrame()
             data = []
+            cross.sort(key=lambda r: r.running_time, reverse=False)
             for r in cross:
                 runner = await self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)
                 data.append({
@@ -156,15 +157,16 @@ class CrossController:
                     "Runner Name": runner.first_name + " " + runner.last_name if runner else "",
                     "Gender": runner.gender if runner else "",
                     "Age": runner.age_from_birthdate() if runner else "",
-                    "Running seconds": r.running_time,
+
                     "Unit": runner.unit if runner else "",
 
                 })
             df = pd.DataFrame(data)
+
             if df.empty:
                 return df
             # Sort by running time ascending (fastest first)
-            df = df.sort_values(by="Running seconds", ascending=True).reset_index(drop=True)
+           # df = df.sort_values(by="Running seconds", ascending=True).reset_index(drop=True)
             df["Order"] = df.index + 1  # Add 1 to make it 1-based instead of 0-based
 
             return df
