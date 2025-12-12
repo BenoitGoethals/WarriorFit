@@ -122,10 +122,8 @@ class CrossPage(Page):
 
         @reactive.calc
         async def runners_df():
-
             cid = self.selected_cross_id.get()
-            _ = self.refresh_tick.get()  # depend on refresh to re-query
-
+            _ = self.refresh_tick.get()
             if not cid:
                 return pd.DataFrame()
             df= await self.controller.list_runners_df(int(cid))
