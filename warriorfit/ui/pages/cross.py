@@ -128,14 +128,15 @@ class CrossPage(Page):
 
             if not cid:
                 return pd.DataFrame()
-            return await self.controller.list_runners_df(int(cid))
-
+            df= await self.controller.list_runners_df(int(cid))
+            return df
 
         @output
         @render.data_frame
         async def runners_grid():
             df = await runners_df()
-            return render.DataGrid(df, filters=False, selection_mode="rows", width="100%",)
+
+            return render.DataGrid(df.drop(columns=["ID"], errors="ignore"), filters=False, selection_mode="rows", width="100%",)
 
         @output
         @render.text
