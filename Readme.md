@@ -27,6 +27,8 @@ password: tester007!
 * 2025-11-15: extra user stories for cross management done
 * 2025-11-30 Room reservation done
 * 2025-12-01: HRM SIMULATOR done
+* 2025-12-12: Prof of concept WarriorFit cross app done
+* 2025-12-13: video demo done https://youtu.be/SdIgCeE7cGY
 * 2026-01-04: Project first release ready for testing
 
 
