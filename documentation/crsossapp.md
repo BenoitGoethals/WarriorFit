@@ -1,4 +1,4 @@
-## High-level architecture (Markdown)
+## High-level architecture 
 
 ### Summary
 **WarriorFit (fletTestCase)** is a **Python + Flet** client application that provides a simple UI for timing “cross/running” events, recording results, and persisting those results locally (and typically syncing them to a backend service).
