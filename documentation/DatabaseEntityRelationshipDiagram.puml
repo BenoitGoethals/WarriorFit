@@ -1,0 +1,212 @@
+@startuml
+hide circle
+skinparam classAttributeIconSize 0
+
+' =========================
+' ORM Classes (db_model.py)
+' =========================
+
+class Base <<SQLAlchemy DeclarativeBase>>
+
+class AuditLog {
+  +id: int
+  +user_id: int
+  +action: str
+  +details: dict?
+  +ip_address: str?
+  +created_at: timestamp
+}
+
+class User {
+  +id: int
+  +username: str
+  +email: str
+  +password_hash: str
+  +created_at: timestamp
+  +role: Role
+  +is_active: bool
+  +serial_number: str?
+}
+
+' -------------------------
+' Tests (polymorphic)
+' -------------------------
+class FitnessTest {
+  +id: int
+  +serial_number: str?
+  +type: str?
+}
+
+class PhefTest {
+  +id: int
+  +running_time: float
+  +sideBridge_r: float
+  +sideBridge_l: float
+}
+
+class FunctionalTest {
+  +id: int
+  +push_ups: int
+  +sit_ups: int
+  +pull_ups: int
+}
+
+class CombatTestParatrooper {
+  +id: int
+  +running_time: float
+  +obstacle_passed: bool
+  +rope_passed: bool
+}
+
+class CombatSwimmingTest {
+  +id: int
+  +swim_paased: bool
+}
+
+class TestSession {
+  +id: int
+  +serial_number_pti: str?
+  +datetime_start: timestamp
+  +canceled: bool
+  +description: str?
+  +type_test: TypeFitnessTest
+}
+
+class SessionFitnessTests {
+  +session_id: int
+  +fitness_test_id: int
+}
+
+' -------------------------
+' Cross
+' -------------------------
+class Cross {
+  +id: int
+  +datetime_start: timestamp
+  +distance: float
+  +executed: bool
+  +description: str?
+}
+
+class Runner {
+  +id: int
+  +serial_number: str?
+  +running_time: float
+}
+
+class CrossRunners {
+  +cross_id: int
+  +runner_id: int
+}
+
+' -------------------------
+' Units / personnel
+' -------------------------
+class Unit {
+  +id: int
+  +name: str
+  +base_location: str
+}
+
+class ServiceMen {
+  +id: int
+  +first_name: str
+  +last_name: str
+  +mail: str
+  +rank: Rank
+  +service_number: str
+  +birthdate: date
+  +gender: Gender
+  +unit_id: int
+  +para: bool
+  +ops_test: bool
+}
+
+class March {
+  +id: int
+  +service_number: str?
+  +distance: float?
+  +succeeded: bool
+  +datetime_executed: timestamp
+}
+
+class HrMessage {
+  +id: int
+  +message: str
+  +datetime_created: timestamp
+}
+
+' -------------------------
+' Rooms / reservations
+' -------------------------
+class Room {
+  +id: int
+  +name: str
+  +capacity: int
+  +location: str
+}
+
+class Reservation {
+  +id: int
+  +room_id: int
+  +date: datetime
+  +start_time: datetime
+  +end_time: datetime
+  +serial_number: str
+  +activity: str
+  +created_at: datetime
+}
+
+' =========================
+' Inheritance
+' =========================
+Base <|-- AuditLog
+Base <|-- User
+Base <|-- FitnessTest
+FitnessTest <|-- PhefTest
+FitnessTest <|-- FunctionalTest
+FitnessTest <|-- CombatTestParatrooper
+FitnessTest <|-- CombatSwimmingTest
+
+Base <|-- TestSession
+Base <|-- SessionFitnessTests
+
+Base <|-- Cross
+Base <|-- Runner
+Base <|-- CrossRunners
+
+Base <|-- Unit
+Base <|-- ServiceMen
+Base <|-- March
+Base <|-- HrMessage
+
+Base <|-- Room
+Base <|-- Reservation
+
+' =========================
+' Relationships (FK/association)
+' =========================
+
+' AuditLog.user_id -> User.id
+User "1" <-- "0..*" AuditLog : user_id
+
+' TestSession <-> FitnessTest (M:N via session_fitness_tests)
+TestSession "1" -- "0..*" SessionFitnessTests : session_id
+FitnessTest "1" -- "0..*" SessionFitnessTests : fitness_test_id
+TestSession "0..*" -- "0..*" FitnessTest : via session_fitness_tests
+
+' Cross <-> Runner (M:N via cross_runners)
+Cross "1" -- "0..*" CrossRunners : cross_id
+Runner "1" -- "0..*" CrossRunners : runner_id
+Cross "0..*" -- "0..*" Runner : via cross_runners
+
+' ServiceMen.unit_id -> Unit.id
+Unit "1" <-- "0..*" ServiceMen : unit_id
+
+' March.service_number -> ServiceMen.service_number (non-FK join in ORM)
+ServiceMen "1" .. "0..*" March : service_number (join)
+
+' Reservation.room_id -> Room.id
+Room "1" <-- "0..*" Reservation : room_id
+
+@enduml

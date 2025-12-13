@@ -62,12 +62,6 @@ Handles authentication and authorization.
 *   **Hashing**: Password hashing utilities (using `bcrypt`).
 *   **Access Control**: Helper functions to check user roles and permissions.
 
-### 📂 `military_api_rest` (Integration)
-Manages external communication.
-
-*   **HRM Integration**: Client logic to fetch personnel data from external Defence systems.
-*   **API Endpoints**: (If applicable) Exposes REST endpoints for other systems to consume WarriorFit data.
-
 ### 📂 `utils` (Utilities)
 General-purpose helper functions.
 

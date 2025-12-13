@@ -42,9 +42,9 @@ The system includes user management, test input, calculations, PDF reporting, an
 
 ## Project Goals
 The main goals of this project are:
-* To develop a comprehensive fitness  military management application
+* To develop a comprehensive fitness military management application
 * To integrate data collection, statistical analysis, and reporting capabilities tailored for military fitness standards
-* Cross management
+* Cross (running event) management
 * Reservation of rooms
 * To integrate with existing Defence systems (HRM)
 * To integrate with existing Defence systems (SIMULATOR)
