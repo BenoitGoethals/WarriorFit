@@ -40,7 +40,7 @@ Layers are implemented in such a way that the UI can be replaced by another web/
 - **Language**: Python 3.13+
 - **Package Manager**: uv
 - **UI Framework**: Shiny for Python
-- **Database**: SQLAlchemy (ORM), Alembic (Migrations), SQLite (default via `messages.db`, extensible)
+- **Database**: SQLAlchemy (ORM), Alembic (Migrations)
 - **Data Analysis**: Pandas, NumPy
 - **Visualization**: Plotly
 - **Utilities**: OpenPyXL (Excel), PyYAML (Config), Jinja2 (Templating)
@@ -100,45 +100,55 @@ The Planner has access to all planning and management modules but no test input.
 * **Manage Sessions**
 
   * Create new session
-  * Edit / cancel sessions
+  * Edit / cancel / delete sessions
   * View session history
+  * Room reservation management
 * **PTI Planning** – Overview of scheduled tasks per PTI
+* **Cross Management** – Planning and tracking of running events
 * **Reports & Statistics**
 
   * Results per unit
   * Participation rates
+  * Individual test history
   * Export to PDF or Excel
 
 ### 2. PTI (Physical Training Instructor)
 
 The PTI can see all sessions and enter or validate results.
 
-**Main Menu:**
+* **Dashboard** – Overview of scheduled sessions and PTI status
+* **Manage Sessions**
 
-* **Dashboard** – Active sessions today
-* **Sessions**
+  * Create new session
+  * Edit / cancel / delete sessions
+  * View session history
+  * Room reservation management
+* **PTI Planning** – Overview of scheduled tasks per PTI
+* **Cross Management** – Planning and tracking of running events
+* **Reports & Statistics**
 
-  * Enter new test results
-  * Edit / validate results
-  * Add comments
-* **Reports**
-
-  * Generate individual report
-  * Export session report
+  * Results per unit
+  * Participation rates
+  * Individual test history
+  * Export to PDF or Excel
 
 ### 3. APTI (Assistant PTI)
 
-The APTI supports the PTI with limited input permissions.
+* **Dashboard** – Overview of scheduled sessions and PTI status
+* **Manage Sessions**
 
-**Main Menu:**
+  * Create new session
+  * Edit / cancel / delete sessions
+  * View session history
+  * Room reservation management
+* **PTI Planning** – Overview of scheduled tasks per PTI
+* **Cross Management** – Planning and tracking of running events
+* **Reports & Statistics**
 
-* **Dashboard** – Overview of assigned sessions
-* **Enter Results**
-
-  * Enter test data per participant
-  * Add remarks
-* **Participant List** – Read-only access to personal data
-* **Reports** – View non-validated results
+  * Results per unit
+  * Participation rates
+  * Individual test history
+  * Export to PDF or Excel
 
 ### 4. Participant (Military Member) (TBD)
 
