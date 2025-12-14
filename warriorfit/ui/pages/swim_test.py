@@ -1,30 +1,67 @@
-from shiny import ui, render, reactive
-import pandas as pd
+from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Any, Final, Optional
+
+import pandas as pd
+from shiny import ui, render, reactive
 
 from warriorfit.data.model.db_model import TestSession, ServiceMen
-
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.pages.page import Page
 
 
+@dataclass(frozen=True, slots=True)
+class SwimFormData:
+    serialnr: str
+    session_id: str
+    swim_passed: bool
+
+
 class SwimTestPage(Page):
-    def __init__(self,):
+    TAB_NAME: Final[str] = "Swimming Tests"
+    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
 
+    # Disable these inputs until serial is confirmed
+    _DISABLE_IDS: Final[tuple[str, ...]] = (
+        "swim_passed",
+        "swim_passed_input",
+    )
+
+    def __init__(self) -> None:
         self.refresh_tick = reactive.Value(0)
-
-        self.selected_military: ServiceMen = None
-        self.selected_session: TestSession = None
+        self.selected_military: Optional[ServiceMen] = None
+        self.selected_session: Optional[TestSession] = None
         self.controller = SwimmingController()
 
-    NO_SELECTION_MESSAGE = "No row selected"
+    def refresh(self) -> None:
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
 
-    def refresh(self):
-        pass
-
-    def get_ui(self):
+    def get_ui(self) -> ui.Tag:
         return ui.nav_panel(
-            "Swimming Tests",
+            self.TAB_NAME,
+            # One JS custom message handler to toggle input disabling (no repeated script injection).
+            ui.tags.script(
+                """
+                (function () {
+                  if (window.__wf_toggle_disabled_registered) return;
+                  window.__wf_toggle_disabled_registered = true;
+
+                  Shiny.addCustomMessageHandler("wf_toggle_disabled", function (payload) {
+                    try {
+                      const ids = (payload && payload.ids) ? payload.ids : [];
+                      const disabled = !!(payload && payload.disabled);
+                      ids.forEach((id) => {
+                        const el = document.getElementById(id);
+                        if (el) el.disabled = disabled;
+                      });
+                    } catch (e) {
+                      // no-op
+                    }
+                  });
+                })();
+                """
+            ),
             ui.h2("🏊 Swimming Tests"),
             ui.layout_columns(
                 ui.div(
@@ -35,23 +72,40 @@ class SwimTestPage(Page):
                     ),
                     ui.card(
                         ui.input_text("swim_serialnr", "Serial Number"),
-                        ui.input_action_button("swim_search", "Conform Serial", width="150px"),
-                        ui.output_text("swim_miltary"),
+                        ui.input_action_button("swim_search", "Confirm Serial", width="150px"),
+                        ui.output_text("swim_military"),
                         ui.layout_columns(
-                            ui.input_checkbox("swim_passed", "Swimming Test Passed"),
-                            ui.div("Status :", ui.output_ui("swim_status_display")),
+                            ui.input_checkbox("swim_passed", "Swimming Test Passed", value=False),
+                            ui.div("Status:", ui.output_ui("swim_status_display")),
                             col_widths=(8, 4),
                         ),
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button(
-                                "swim_add_btn", "Add", disabled=self.selected_military is None, width="150px", class_="btn-primary w-100"
+                                "swim_add_btn",
+                                "Add",
+                                disabled=True,
+                                width="150px",
+                                class_="btn-primary w-100",
                             ),
                             ui.input_action_button(
-                                "swim_update_btn", "Update", disabled=self.selected_military is None, width="150px", class_="btn-warning w-100"
+                                "swim_update_btn",
+                                "Update",
+                                disabled=True,
+                                width="150px",
+                                class_="btn-warning w-100",
                             ),
-                            ui.input_action_button("swim_clear_btn", "Clear Form", width="150px", class_="btn-secondary w-100"),
-                            ui.input_action_button("swim_delete_btn", "Delete Selected", class_="btn-danger w-100"),
+                            ui.input_action_button(
+                                "swim_clear_btn",
+                                "Clear Form",
+                                width="150px",
+                                class_="btn-secondary w-100",
+                            ),
+                            ui.input_action_button(
+                                "swim_delete_btn",
+                                "Delete Selected",
+                                class_="btn-danger w-100",
+                            ),
                             col_widths=(4,),
                         ),
                         ui.output_text("swim_status"),
@@ -60,216 +114,352 @@ class SwimTestPage(Page):
                     ),
                 ),
                 ui.card(
-                    ui.card_header("Swimming Tests, This list shows not only members of own unit"),
+                    ui.card_header("Swimming Tests (includes members outside own unit)"),
                     ui.output_data_frame("swim_grid"),
-
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
             ),
         )
 
-    def server(self, input, output, session):
-        records = reactive.Value([])
-        swim_passed_val = reactive.Value(False)
-        military = reactive.Value("No selection")
+    def server(self, input: Any, output: Any, session: Any) -> None:
+        self.refresh_on_nav(input, self.TAB_NAME)
+
         status = reactive.Value("Ready.")
+        military_text = reactive.Value("No selection")
+
         selected_session_id = reactive.Value("")
         selected_swim_id = reactive.Value("")
 
-        def _read_form():
-            return {
-                "serialnr": (input.swim_serialnr() or "").strip(),
-                "session_id": (input.swim_session_id() or "").strip(),
-                "swim_passed": input.swim_passed(),
-            }
+        swim_passed_val = reactive.Value(False)
 
-        def _write_form(rec):
-            session.send_input_message("swim_serialnr", {"value": rec.get("serialnr", "")})
-            session.send_input_message("swim_passed", {"value": rec.get("swim_passed", False)})
-
-        def _clear_form():
-            _write_form({"serialnr": "", "swim_passed": False})
-
-        async def _refresh_session_choices():
-            sessions = await self.controller.load_sessions()
-            items = {str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}" for s in (sessions or [])}
-            current = (input.swim_session_id() or "").strip()
-            selected = current if current in items else None
-            ui.update_select("swim_session_id", choices=items, selected=selected)
-
-        @reactive.effect
-        @reactive.event(input.swim_search, ignore_none=False)
-        async def swim_search():
-            if not (input.swim_serialnr() or "").strip():
-                ui.update_action_button("swim_add_btn", disabled=True)
-                ui.update_action_button("swim_update_btn", disabled=True)
-                return
+        # ----------------------------
+        # UI state helpers
+        # ----------------------------
+        def _toggle_inputs(disabled: bool) -> None:
             try:
-                val = await self.controller.search_military(input.swim_serialnr() or "")
-                self.selected_military = val
-                if val is None:
-                    ui.update_text("swim_serialnr", value="Not found")
-                    return
-                military.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
-                ui.update_action_button("swim_add_btn", disabled=False)
-                ui.update_action_button("swim_update_btn", disabled=False)
+                session.send_custom_message(
+                    "wf_toggle_disabled",
+                    {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
+                )
             except Exception:
-                ui.update_text("swim_serialnr", value="Not found")
+                pass
 
+        def _set_buttons(*, can_add: bool, can_update: bool) -> None:
+            ui.update_action_button("swim_add_btn", disabled=not can_add)
+            ui.update_action_button("swim_update_btn", disabled=not can_update)
+
+        def _clear_form() -> None:
+            session.send_input_message("swim_serialnr", {"value": ""})
+            session.send_input_message("swim_passed", {"value": False})
+
+            self.selected_military = None
+            selected_swim_id.set("")
+            swim_passed_val.set(False)
+
+            _toggle_inputs(disabled=True)
+            _set_buttons(can_add=False, can_update=False)
+
+        def _read_form() -> SwimFormData:
+            return SwimFormData(
+                serialnr=(input.swim_serialnr() or "").strip(),
+                session_id=(input.swim_session_id() or "").strip(),
+                swim_passed=bool(input.swim_passed()),
+            )
+
+        def _require_session_selected() -> bool:
+            if not (selected_session_id.get() or "").strip():
+                status.set("Select a session first.")
+                return False
+            return True
+
+        def _require_military_selected() -> bool:
+            if self.selected_military is None:
+                status.set("Confirm a valid serial first.")
+                return False
+            return True
+
+        async def _refresh_session_choices() -> None:
+            try:
+                sessions = await self.controller.load_sessions()
+            except Exception:
+                sessions = []
+
+            items = {
+                str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
+                for s in (sessions or [])
+            }
+            current = (input.swim_session_id() or "").strip()
+            ui.update_select("swim_session_id", choices=items, selected=(current if current in items else None))
+
+        # ----------------------------
+        # Outputs
+        # ----------------------------
         @output
         @render.text
-        def swim_status():
+        def swim_status() -> str:
             return status.get()
 
         @output
         @render.text
-        def swim_miltary():
-            return military.get()
+        def swim_military() -> str:
+            return military_text.get()
 
         @output
-        @render.text
-        def swim_status_display():
-            val = swim_passed_val.get()
-            text = "PASSED" if val else "FAILED"
-            color = "green" if val else "red"
-            return ui.span(text, style=f"color: {color}; font-weight: bold;")
+        @render.ui
+        def swim_status_display() -> ui.Tag:
+            passed = bool(swim_passed_val.get())
+            text = "PASSED" if passed else "FAILED"
+            color = "green" if passed else "red"
+            return ui.span(text, style=f"color: {color}; font-weight: 700;")
 
+        # Keep the reactive value in sync with the checkbox
         @reactive.Effect
         @reactive.event(input.swim_passed)
-        def on_swim_passed_change():
-            swim_passed_val.set(input.swim_passed())
+        def _on_swim_passed_change() -> None:
+            swim_passed_val.set(bool(input.swim_passed()))
 
+        # ----------------------------
+        # Init / session selection
+        # ----------------------------
+        @reactive.Effect
+        async def _init() -> None:
+            await _refresh_session_choices()
+            _clear_form()
+            status.set("Ready.")
+
+        @reactive.Effect
+        def _on_session_change() -> None:
+            val = (input.swim_session_id() or "").strip()
+            selected_session_id.set(val)
+
+            # Switching sessions should reset form state.
+            _clear_form()
+            self.selected_session = None
+
+            if not val:
+                status.set("Select a session.")
+                return
+            status.set("Session selected. Confirm a serial to enter results.")
+
+        @reactive.Effect
+        @reactive.event(input.swim_session_id)
+        async def _load_session_object() -> None:
+            val = (input.swim_session_id() or "").strip()
+            if not val:
+                self.selected_session = None
+                return
+            try:
+                self.selected_session = await self.controller.get_session_by_id(int(val))
+            except Exception:
+                self.selected_session = None
+
+        # ----------------------------
+        # Search military / unlock inputs
+        # ----------------------------
+        @reactive.Effect
+        @reactive.event(input.swim_search, ignore_none=False)
+        async def _on_search() -> None:
+            if not _require_session_selected():
+                return
+
+            serial = (input.swim_serialnr() or "").strip()
+            if not serial:
+                status.set("Enter a serial number.")
+                _clear_form()
+                return
+
+            try:
+                val = await self.controller.search_military(serial)
+            except Exception:
+                val = None
+
+            self.selected_military = val
+            if val is None:
+                military_text.set("Not found")
+                status.set("Serial not found.")
+                _toggle_inputs(disabled=True)
+                _set_buttons(can_add=False, can_update=False)
+                return
+
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
+            status.set("Serial confirmed. Set result and save.")
+            _toggle_inputs(disabled=False)
+            _set_buttons(can_add=True, can_update=True)
+
+        # ----------------------------
+        # Grid data
+        # ----------------------------
         @reactive.calc
-        async def sessions_swim_data():
+        async def sessions_swim_data() -> pd.DataFrame:
             _ = self.refresh_tick.get()
-            session_id = selected_session_id.get()
-            if not session_id:
+            sess_id = (selected_session_id.get() or "").strip()
+            if not sess_id:
                 return pd.DataFrame()
             try:
-                return await self.controller.list_swim_df(int(session_id))
-            except Exception as e:
-                print(f"Error fetching Swimming test data: {e}")
+                return await self.controller.list_swim_df(int(sess_id))
+            except Exception:
                 return pd.DataFrame()
 
         @output
         @render.data_frame
         async def swim_grid():
             df = await sessions_swim_data()
-            df = self.controller.decorate_grid(df)
-            return render.DataGrid(df, filters=False, selection_mode="rows", width="100%",)
+            try:
+                df = self.controller.decorate_grid(df)
+            except Exception:
+                pass
+            return render.DataGrid(
+                df,
+                filters=False,
+                selection_mode="rows",
+                row_selection_mode="single",
+                width="100%",
+            )
 
-        @reactive.Effect
-        async def _init():
-            await _refresh_session_choices()
-
-        @reactive.Effect
-        async def _on_session_change():
-            val = (input.swim_session_id() or "").strip()
-            selected_session_id.set(val)
-            if val:
-                self.selected_session = await self.controller.get_session_by_id(int(val))
-                status.set(f"Session is set to {val}")
-
+        # ----------------------------
+        # Row selection -> populate form
+        # ----------------------------
         @reactive.Effect
         @reactive.event(input.swim_grid_selected_rows)
-        async def _on_swim_row_selected():
+        async def _on_row_selected() -> None:
+            sel = input.swim_grid_selected_rows()
+            if not sel:
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            df = await sessions_swim_data()
+            if df is None or df.empty:
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            row_idx = sel[0]
+            if row_idx < 0 or row_idx >= len(df):
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            row = df.iloc[row_idx]
+            swim_id = str(row.get("ID", "") or "").strip()
+            selected_swim_id.set(swim_id)
+
+            serial = str(row.get("Serial", "") or "").strip()
+            ui.update_text("swim_serialnr", value=serial)
+
+            result_txt = str(row.get("Result", "") or "").strip().upper()
+            passed = result_txt == "PASSED"
+            ui.update_checkbox("swim_passed", value=passed)
+
+            # Selecting an existing record: allow Update, disable Add.
+            _set_buttons(can_add=False, can_update=True)
+
             try:
-                sel = input.swim_grid_selected_rows()
-                if not sel:
-                    status.set(self.NO_SELECTION_MESSAGE)
-                    return
-                ui.update_action_button("swim_add_btn", disabled=True)
-                ui.update_action_button("swim_update_btn", disabled=True)
-                row_idx = sel[0]
-                df = await sessions_swim_data()
-                if row_idx < 0 or row_idx >= len(df):
-                    status.set(self.NO_SELECTION_MESSAGE)
-                    return
+                self.selected_military = await self.controller.search_military(serial) if serial else None
+            except Exception:
+                self.selected_military = None
 
-                row = df.iloc[row_idx]
-                selected_swim_id.set(row["ID"] or "")
-                selected_session_id.set(input.swim_session_id() or "")
-                serial = str(row.get("Serial", "") or "")
-                self.selected_military = await self.controller.search_military(serial)
+            _toggle_inputs(disabled=(self.selected_military is None))
+            status.set(f"Selected Swimming Test: {serial}" if serial else "Selected Swimming Test.")
 
-                swim_passed = row.get("Result", "FAILED") == "PASSED"
-                ui.update_text("swim_serialnr", value=serial)
-                ui.update_checkbox("swim_passed", value=swim_passed)
-                status.set(f"Selected Swimming Test: {serial}")
-            except Exception as e:
-                status.set(f"Selection error: {e}")
-
-        def _validate(data):
-            return self.controller.validate_form(data)
-
+        # ----------------------------
+        # CRUD
+        # ----------------------------
         @reactive.Effect
         @reactive.event(input.swim_add_btn)
-        async def _on_add():
-            data = _read_form()
-            ok, res = _validate(data)
-            if not ok:
-                status.set(res)
+        async def _on_add() -> None:
+            if not _require_session_selected() or not _require_military_selected():
                 return
+
+            form = _read_form()
+            ok, res = self.controller.validate_form(
+                {
+                    "serialnr": form.serialnr,
+                    "session_id": form.session_id,
+                    "swim_passed": form.swim_passed,
+                }
+            )
+            if not ok:
+                status.set(str(res))
+                return
+
             payload = {
-                "id": data["session_id"],
-                "serialnr": data["serialnr"],
+                "id": form.session_id,
+                "serialnr": form.serialnr,
                 "swim_passed": res["swim_passed"],
             }
-            added = await self.controller.add_swim(int(payload["id"]), payload,session=self.selected_session,military=self.selected_military)
+
+            added = await self.controller.add_swim(
+                int(payload["id"]),
+                payload,
+                session=self.selected_session,
+                military=self.selected_military,
+            )
             if not added:
-                status.set(f"Failed to add Swimming test for {payload['serialnr']} in session {str(payload['id'])}.")
+                status.set(f"Failed to add Swimming test for {payload['serialnr']} in session {payload['id']}.")
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            records.set(records.get() + [payload])
-            status.set(f"Added Swimming test for {payload['serialnr']} in session {str(payload['id'])}.")
+            status.set(f"Added Swimming test for {payload['serialnr']} in session {payload['id']}.")
             _clear_form()
 
         @reactive.Effect
         @reactive.event(input.swim_update_btn)
-        async def _on_update():
-            data = _read_form()
-            ok, res = _validate(data)
-            if not ok:
-                status.set(res)
+        async def _on_update() -> None:
+            if not _require_session_selected() or not _require_military_selected():
                 return
-            payload = {**data, **res}
-            updated = await self.controller.update_swim(int(selected_swim_id.get()), payload)
+
+            swim_id_raw = (selected_swim_id.get() or "").strip()
+            if not swim_id_raw:
+                status.set("Select a row to update.")
+                return
+
+            form = _read_form()
+            ok, res = self.controller.validate_form(
+                {
+                    "serialnr": form.serialnr,
+                    "session_id": form.session_id,
+                    "swim_passed": form.swim_passed,
+                }
+            )
+            if not ok:
+                status.set(str(res))
+                return
+
+            payload = {
+                "session_id": form.session_id,
+                "serialnr": form.serialnr,
+                "swim_passed": res["swim_passed"],
+            }
+
+            updated = await self.controller.update_swim(int(swim_id_raw), payload)
             if not updated:
                 status.set(f"Failed to update Swimming test for {payload['serialnr']}.")
                 return
+
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Swimming test for {payload['serialnr']}.")
             _clear_form()
 
         @reactive.Effect
         @reactive.event(input.swim_delete_btn)
-        async def _on_delete():
-            sel = input.swim_grid_selected_rows()
-            sel_session_id = input.swim_session_id()
-            if not sel or not sel_session_id:
+        async def _on_delete() -> None:
+            sess_id_raw = (input.swim_session_id() or "").strip()
+            swim_id_raw = (selected_swim_id.get() or "").strip()
+            if not sess_id_raw or not swim_id_raw:
                 status.set("Select a row to delete.")
                 return
-            ok = await self.controller.delete_swim(int(sel_session_id), int(selected_swim_id.get()))
+
+            ok = await self.controller.delete_swim(int(sess_id_raw), int(swim_id_raw))
             if not ok:
-                status.set(f"Failed to delete Swimming test for record ID {sel[0]}.")
+                status.set("Failed to delete selected Swimming record.")
                 return
+
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            try:
-                df = await sessions_swim_data()
-                row_idx = sel[0]
-                row = df.iloc[row_idx] if row_idx < len(df) else None
-                if row is not None:
-                    status.set(f"Swimming test for record ID {row['ID']} deleted successfully.")
-                else:
-                    status.set("Swimming test deleted successfully.")
-            except Exception:
-                status.set("Swimming test deleted successfully.")
+            status.set("Swimming test deleted successfully.")
+            _clear_form()
 
         @reactive.Effect
         @reactive.event(input.swim_clear_btn)
-        def _on_clear():
+        def _on_clear() -> None:
             _clear_form()
             status.set("Form cleared.")
 
@@ -278,9 +468,9 @@ class SwimTestPage(Page):
 _page = SwimTestPage()
 
 
-def get_ui():
+def get_ui() -> ui.Tag:
     return _page.get_ui()
 
 
-def server(input, output, session):
+def server(input: Any, output: Any, session: Any) -> None:
     _page.server(input, output, session)

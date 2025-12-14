@@ -1,33 +1,78 @@
-from shiny import ui, render, reactive
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Final, Optional
+
 import pandas as pd
+from shiny import ui, render, reactive
 
-from warriorfit.data.model.db_model import TestSession, ServiceMen
+from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.logic.phef_calculator import PhefCalculator
-
 from warriorfit.services.military_service import MilitaryService
-
 from warriorfit.ui.controllers.phef_controller import PhefController
 from warriorfit.ui.pages.page import Page
 
 
-class PhefPage(Page):
-    def __init__(self):
+@dataclass(frozen=True, slots=True)
+class PhefFormData:
+    serialnr: str
+    session_id: str
+    side_bridge_r: str
+    side_bridge_l: str
+    run_2400: str
 
+
+class PhefPage(Page):
+    TAB_NAME: Final[str] = "PHEF Tests"
+    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
+
+    # These IDs are disabled until the user confirms a valid serial.
+    _DISABLE_IDS: Final[tuple[str, ...]] = (
+        "ph_run_2400",
+        "ph_run_2400_input",
+        "ph_side_bridge_r",
+        "ph_side_bridge_r_input",
+        "ph_side_bridge_l",
+        "ph_side_bridge_l_input",
+    )
+
+    def __init__(self) -> None:
         self.refresh_tick = reactive.Value(0)
-        self.be_mil_service = MilitaryService()
-        self.selected_military: ServiceMen = None
-        self.selected_session: TestSession = None
+        self.be_mil_service = MilitaryService()  # kept for compatibility/side-effects if used elsewhere
+        self.selected_military: Optional[ServiceMen] = None
+        self.selected_session: Optional[TestSession] = None
         self.controller = PhefController()
 
-    NO_SELECTION_MESSAGE = "No row selected"
+    def refresh(self) -> None:
+        # Used by app-level refresh triggers (e.g., calendar modal or nav hooks)
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
 
-    def refresh(self):
-        pass
-
-    def get_ui(self):
+    def get_ui(self) -> ui.Tag:
         return ui.nav_panel(
-            "PHEF Tests",
-            ui.h2("🧪 PHEF Tests "),
+            self.TAB_NAME,
+            # Register ONE custom-message handler to toggle disabling inputs.
+            ui.tags.script(
+                """
+                (function () {
+                  if (window.__wf_toggle_disabled_registered) return;
+                  window.__wf_toggle_disabled_registered = true;
+
+                  Shiny.addCustomMessageHandler("wf_toggle_disabled", function (payload) {
+                    try {
+                      const ids = (payload && payload.ids) ? payload.ids : [];
+                      const disabled = !!(payload && payload.disabled);
+                      ids.forEach((id) => {
+                        const el = document.getElementById(id);
+                        if (el) el.disabled = disabled;
+                      });
+                    } catch (e) {
+                      // no-op
+                    }
+                  });
+                })();
+                """
+            ),
+            ui.h2("🧪 PHEF Tests"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -37,7 +82,7 @@ class PhefPage(Page):
                     ),
                     ui.card(
                         ui.input_text("ph_serialnr", "Serial Number"),
-                        ui.input_action_button("ph_search", "Conform Serial", width="150px"),
+                        ui.input_action_button("ph_search", "Confirm Serial", width="150px"),
                         ui.output_text("ph_military"),
                         ui.layout_columns(
                             ui.input_text(
@@ -51,7 +96,7 @@ class PhefPage(Page):
                         ui.layout_columns(
                             ui.input_text(
                                 "ph_side_bridge_l",
-                                "Side-bridge time Left (mm:ss)",
+                                "Side-bridge Left time (mm:ss)",
                                 placeholder="e.g., 2:30",
                             ),
                             ui.div("Score :", ui.output_ui("ph_side_bridge_l_score")),
@@ -67,17 +112,36 @@ class PhefPage(Page):
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
-                            ui.div("Score Totaal:", ui.output_ui("ph_total_score")),
+                            ui.div("Total:", ui.output_ui("ph_total_score")),
                             col_widths=(12,),
                         ),
-
+                        ui.br(),
                         ui.layout_columns(
-                            ui.input_action_button("ph_add_btn", "Add",
-                                                   disabled=self.selected_military is None, width="150px", class_="btn-primary w-100"),
-                            ui.input_action_button("ph_update_btn", "Update",
-                                                   disabled=self.selected_military is None, width="150px", class_="btn-warning w-100"),
-                            ui.input_action_button("ph_clear_btn", "Clear Form", width="150px", class_="btn-secondary w-100"),
-                            ui.input_action_button("ph_delete_btn", "Delete Selected", class_="btn-danger w-100"),
+                            ui.input_action_button(
+                                "ph_add_btn",
+                                "Add",
+                                disabled=True,
+                                width="150px",
+                                class_="btn-primary w-100",
+                            ),
+                            ui.input_action_button(
+                                "ph_update_btn",
+                                "Update",
+                                disabled=True,
+                                width="150px",
+                                class_="btn-warning w-100",
+                            ),
+                            ui.input_action_button(
+                                "ph_clear_btn",
+                                "Clear Form",
+                                width="150px",
+                                class_="btn-secondary w-100",
+                            ),
+                            ui.input_action_button(
+                                "ph_delete_btn",
+                                "Delete Selected",
+                                class_="btn-danger w-100",
+                            ),
                             col_widths=(4,),
                         ),
                         ui.output_text("ph_status"),
@@ -86,355 +150,466 @@ class PhefPage(Page):
                     ),
                 ),
                 ui.card(
-                    ui.card_header("PHEF Tests (You must pass running and side-bridge tests to have a pass on the PHEF test) This list shows not only members of own unit"),
+                    ui.card_header(
+                        "PHEF Tests (Pass requires running and both side-bridge tests). "
+                        "List includes members outside own unit."
+                    ),
                     ui.output_data_frame("ph_grid"),
                     ui.br(),
-
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
             ),
         )
 
-    def server(self, input, output, session):
-        self.refresh_on_nav(input, "PHEF Tests")
-        # Reactive state
-        ph_side_bridge_r_score_val = reactive.Value("")
-        ph_side_bridge_l_score_val = reactive.Value("")
-        ph_run_2400_score_val = reactive.Value("")
-        military = reactive.Value("No selection")
+    def server(self, input: Any, output: Any, session: Any) -> None:
+        self.refresh_on_nav(input, self.TAB_NAME)
+
         status = reactive.Value("Ready.")
+        military_text = reactive.Value("No selection")
         selected_session_id = reactive.Value("")
         selected_phef_id = reactive.Value("")
 
-        # Form helpers
-        def _read_form():
-            return {
-                "serialnr": (input.ph_serialnr() or "").strip(),
-                "session_id": (input.ph_session_id() or "").strip(),
-                "side_bridge_r": (input.ph_side_bridge_r() or "").strip(),
-                "side_bridge_l": (input.ph_side_bridge_l() or "").strip(),
-                "run_2400": (input.ph_run_2400() or "").strip(),
-            }
+        side_r_score = reactive.Value("")  # expected numeric-as-string from calculator
+        side_l_score = reactive.Value("")
+        run_score = reactive.Value("")
 
-        def _write_form(rec):
-            session.send_input_message("ph_serialnr", {"value": rec.get("serialnr", "")})
-            session.send_input_message("ph_side_bridge_r", {"value": rec.get("side_bridge_r", "")})
-            session.send_input_message("ph_side_bridge_l", {"value": rec.get("side_bridge_l", "")})
-            session.send_input_message("ph_run_2400", {"value": rec.get("run_2400", "")})
+        # ----------------------------
+        # UI state helpers
+        # ----------------------------
+        def _toggle_inputs(disabled: bool) -> None:
+            # One custom message instead of inserting script repeatedly.
+            try:
+                session.send_custom_message(
+                    "wf_toggle_disabled",
+                    {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
+                )
+            except Exception:
+                # Fail open; app stays usable even if custom message fails.
+                pass
 
-        def _clear_form():
-            _write_form({
-                "serialnr": "",
-                "side_bridge_r": "",
-                "side_bridge_l": "",
-                "run_2400": "",
-            })
+        def _set_buttons(*, can_add: bool, can_update: bool) -> None:
+            ui.update_action_button("ph_add_btn", disabled=not can_add)
+            ui.update_action_button("ph_update_btn", disabled=not can_update)
 
-        async def _refresh_session_choices():
-            test_sessions = await self.controller.load_sessions()
+        def _clear_form() -> None:
+            session.send_input_message("ph_serialnr", {"value": ""})
+            session.send_input_message("ph_side_bridge_r", {"value": ""})
+            session.send_input_message("ph_side_bridge_l", {"value": ""})
+            session.send_input_message("ph_run_2400", {"value": ""})
+
+            self.selected_military = None
+            selected_phef_id.set("")
+
+            side_r_score.set("")
+            side_l_score.set("")
+            run_score.set("")
+
+            _toggle_inputs(disabled=True)
+            _set_buttons(can_add=False, can_update=False)
+
+        def _read_form() -> PhefFormData:
+            return PhefFormData(
+                serialnr=(input.ph_serialnr() or "").strip(),
+                session_id=(input.ph_session_id() or "").strip(),
+                side_bridge_r=(input.ph_side_bridge_r() or "").strip(),
+                side_bridge_l=(input.ph_side_bridge_l() or "").strip(),
+                run_2400=(input.ph_run_2400() or "").strip(),
+            )
+
+        def _require_session_selected() -> bool:
+            if not (selected_session_id.get() or "").strip():
+                status.set("Select a session first.")
+                return False
+            return True
+
+        def _require_military_selected() -> bool:
+            if self.selected_military is None:
+                status.set("Confirm a valid serial first.")
+                return False
+            return True
+
+        # ----------------------------
+        # Outputs
+        # ----------------------------
+        @output
+        @render.text
+        def ph_status() -> str:
+            return status.get()
+
+        @output
+        @render.text
+        def ph_military() -> str:
+            return military_text.get()
+
+        def _score_span(value: object, *, pass_if_ge: float = 10.0) -> ui.Tag:
+            text = "" if value is None else str(value)
+            color = "inherit"
+            try:
+                num = float(value)  # type: ignore[arg-type]
+                color = "green" if num >= pass_if_ge else "red"
+            except (TypeError, ValueError):
+                pass
+            return ui.span(text, style=f"color: {color}; font-weight: 600;")
+
+        @output
+        @render.ui
+        def ph_side_bridge_r_score() -> ui.Tag:
+            return _score_span(side_r_score.get(), pass_if_ge=10.0)
+
+        @output
+        @render.ui
+        def ph_side_bridge_l_score() -> ui.Tag:
+            return _score_span(side_l_score.get(), pass_if_ge=10.0)
+
+        @output
+        @render.ui
+        def ph_run_2400_score() -> ui.Tag:
+            return _score_span(run_score.get(), pass_if_ge=10.0)
+
+        @output
+        @render.ui
+        def ph_total_score() -> ui.Tag:
+            try:
+                side_total = float(side_r_score.get()) + float(side_l_score.get())
+                run_val = float(run_score.get())
+                passed = not (side_total < 20 or run_val < 10)
+                label = f"{side_total:.0f} " + ("PASSED" if passed else "FAILED")
+                return ui.span(
+                    label,
+                    style=("color: green; font-weight: 700;" if passed else "color: red; font-weight: 700;"),
+                )
+            except (TypeError, ValueError):
+                return ui.span("")
+
+        # ----------------------------
+        # Session choices + selection
+        # ----------------------------
+        async def _refresh_session_choices() -> None:
+            try:
+                test_sessions = await self.controller.load_sessions()
+            except Exception:
+                test_sessions = []
+
             items = {
                 str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
                 for s in (test_sessions or [])
             }
             current = (input.ph_session_id() or "").strip()
-            selected = current if current in items else None
-            ui.update_select("ph_session_id", choices=items, selected=selected)
-
-        # Search military
-        @reactive.effect
-        @reactive.event(input.ph_search, ignore_none=False)
-        async def ph_search():
-            if not (input.ph_serialnr() or "").strip():
-                ui.update_action_button("ph_add_btn", disabled=True)
-                ui.update_action_button("ph_update_btn", disabled=True)
-                # Disable inputs via inline JS
-                enable_input_field(True)
-                return
-            val = await self.controller.search_military(input.ph_serialnr() or "")
-            self.selected_military = val
-            if val is None:
-                ui.update_text("ph_serialnr", value="Not found")
-                return
-            military.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name} {val.gender} {val.age_from_birthdate()} years old")
-            ui.update_action_button("ph_add_btn", disabled=False)
-            ui.update_action_button("ph_update_btn", disabled=False)
-            # Enable inputs via inline JS
-            enable_input_field(False)
+            ui.update_select("ph_session_id", choices=items, selected=(current if current in items else None))
 
         @reactive.Effect
-        @reactive.event(input.ph_clear_btn)
-        def clear_form():
+        async def _init() -> None:
+            await _refresh_session_choices()
+            _clear_form()
+            status.set("Ready.")
+
+        @reactive.Effect
+        def _on_session_change() -> None:
+            val = (input.ph_session_id() or "").strip()
+            selected_session_id.set(val)
+
+            # Changing sessions should reset form state (avoid mixing records/scores).
             _clear_form()
 
+            if not val:
+                self.selected_session = None
+                status.set("Select a session.")
+                return
 
-        def enable_input_field(enable: bool):
-            enable = "false" if not enable else "true"
-            ui.insert_ui(
-                selector="body",
-                where="beforeEnd",
-                ui=ui.tags.script(f"""
-                            (function(){{
-                              const ids = ['ph_run_2400','ph_run_2400_input','ph_side_bridge_r','ph_side_bridge_r_input','ph_side_bridge_l','ph_side_bridge_l_input'];
-                              for (const id of ids) {{
-                                const el = document.getElementById(id);
-                                if (el) el.disabled = {enable};
-                              }}
-                            }})();
-                            """),
-            )
+            status.set("Session selected. Confirm a serial to enter results.")
 
-        # Status outputs
-        @output
-        @render.text
-        def ph_status():
-            return status.get()
-
-        @output
-        @render.text
-        def ph_military():
-            return military.get()
-
-        # Score outputs
-        @output
-        @render.ui
-        def ph_side_bridge_r_score():
-            text = str(ph_side_bridge_r_score_val.get())
-            try:
-                num = float(ph_side_bridge_r_score_val.get())
-            except (TypeError, ValueError):
-                num = None
-            color = "red" if (num is not None and num < 10) else "green"
-            return ui.span(text, style=f"color: {color};")
-
-        @output
-        @render.ui
-        def ph_side_bridge_l_score():
-            text = str(ph_side_bridge_l_score_val.get())
-            try:
-                num = float(ph_side_bridge_l_score_val.get())
-            except (TypeError, ValueError):
-                num = None
-            color = "red" if (num is not None and num < 10) else "green"
-            return ui.span(text, style=f"color: {color};")
-
-        @output
-        @render.text
-        def ph_run_2400_score():
-            text = str(ph_run_2400_score_val.get())
-            try:
-                num = float(ph_run_2400_score_val.get())
-            except (TypeError, ValueError):
-                num = None
-            color = "red" if (num is not None and num < 10) else "green"
-            return ui.span(text, style=f"color: {color};")
-
-        @output
-        @render.text
-        def ph_total_score():
-            try:
-                side =float(ph_side_bridge_r_score_val.get())+float(ph_side_bridge_l_score_val.get())
-                run = float(ph_run_2400_score_val.get())
-                if side < 20 or run < 10:
-                    return ui.span(str(side) + " FAILED", style="color: red; font-weight: bold;")
-                return ui.span(str(side) + " PASSED", style="color: green; font-weight: bold;")
-            except (TypeError, ValueError):
-                return ui.span("")
-
-
-        # Live score calculations
         @reactive.Effect
-        @reactive.event(input.ph_side_bridge_r)
-        def _on_side_bridge_r_change():
-            raw = (input.ph_side_bridge_r() or "").strip()
-            ok, val = self.controller.parse_time_to_seconds(raw)
-            if not ok or not self.selected_military:
-                ph_side_bridge_r_score_val.set("")
+        @reactive.event(input.ph_session_id)
+        async def _load_session_object() -> None:
+            val = (input.ph_session_id() or "").strip()
+            if not val:
+                self.selected_session = None
                 return
             try:
-                score = PhefCalculator.side_bridge_result(
-                    val,
-                    self.selected_military.age_from_birthdate(),
-                    self.selected_military.gender,
+                self.selected_session = await self.controller.get_session_by_id(int(val))
+            except Exception:
+                self.selected_session = None
+
+        # ----------------------------
+        # Search military / unlock form
+        # ----------------------------
+        @reactive.Effect
+        @reactive.event(input.ph_search, ignore_none=False)
+        async def _on_search() -> None:
+            if not _require_session_selected():
+                return
+
+            serial = (input.ph_serialnr() or "").strip()
+            if not serial:
+                status.set("Enter a serial number.")
+                _clear_form()
+                return
+
+            try:
+                val = await self.controller.search_military(serial)
+            except Exception:
+                val = None
+
+            self.selected_military = val
+            if val is None:
+                military_text.set("Not found")
+                status.set("Serial not found.")
+                _toggle_inputs(disabled=True)
+                _set_buttons(can_add=False, can_update=False)
+                return
+
+            military_text.set(
+                f"{val.rank} {val.service_number} {val.first_name} {val.last_name} "
+                f"{val.gender} {val.age_from_birthdate()} years old"
+            )
+            status.set("Serial confirmed. Enter results.")
+            _toggle_inputs(disabled=False)
+            _set_buttons(can_add=True, can_update=True)
+
+        # ----------------------------
+        # Live scoring (only if military selected)
+        # ----------------------------
+        def _compute_side_bridge_score(raw: str) -> str:
+            if self.selected_military is None:
+                return ""
+            ok, seconds = self.controller.parse_time_to_seconds(raw)
+            if not ok:
+                return ""
+            try:
+                return str(
+                    PhefCalculator.side_bridge_result(
+                        seconds,
+                        self.selected_military.age_from_birthdate(),
+                        self.selected_military.gender,
+                    )
                 )
             except Exception:
-                score = ""
-            ph_side_bridge_r_score_val.set(score)
+                return ""
+
+        def _compute_run_score(raw: str) -> str:
+            if self.selected_military is None:
+                return ""
+            ok, seconds = self.controller.parse_time_to_seconds(raw)
+            if not ok:
+                return ""
+            try:
+                return str(
+                    PhefCalculator.running_result(
+                        seconds,
+                        self.selected_military.age_from_birthdate(),
+                        self.selected_military.gender,
+                    )
+                )
+            except Exception:
+                return ""
+
+        @reactive.Effect
+        @reactive.event(input.ph_side_bridge_r)
+        def _on_side_bridge_r_change() -> None:
+            raw = (input.ph_side_bridge_r() or "").strip()
+            side_r_score.set(_compute_side_bridge_score(raw) if raw else "")
 
         @reactive.Effect
         @reactive.event(input.ph_side_bridge_l)
-        def _on_side_bridge_l_change():
+        def _on_side_bridge_l_change() -> None:
             raw = (input.ph_side_bridge_l() or "").strip()
-            ok, val = self.controller.parse_time_to_seconds(raw)
-            if not ok or not self.selected_military:
-                ph_side_bridge_l_score_val.set("")
-                return
-            try:
-                score = PhefCalculator.side_bridge_result(
-                    val,
-                    self.selected_military.age_from_birthdate(),
-                    self.selected_military.gender,
-                )
-            except Exception:
-                score = ""
-            ph_side_bridge_l_score_val.set(score)
+            side_l_score.set(_compute_side_bridge_score(raw) if raw else "")
 
         @reactive.Effect
         @reactive.event(input.ph_run_2400)
-        def _on_run_change():
+        def _on_run_change() -> None:
             raw = (input.ph_run_2400() or "").strip()
-            ok, val = self.controller.parse_time_to_seconds(raw)
-            if not ok or not self.selected_military:
-                ph_run_2400_score_val.set("")
-                return
-            try:
-                score = PhefCalculator.running_result(
-                    val,
-                    self.selected_military.age_from_birthdate(),
-                    self.selected_military.gender,
-                )
-            except Exception:
-                score = ""
-            ph_run_2400_score_val.set(score)
+            run_score.set(_compute_run_score(raw) if raw else "")
 
-        # Data
+        # ----------------------------
+        # Grid data
+        # ----------------------------
         @reactive.calc
-        async def sessions_phef__data():
+        async def sessions_phef__data() -> pd.DataFrame:
             _ = self.refresh_tick.get()
-            session_id = selected_session_id.get()
-            if not session_id:
+            sess_id = (selected_session_id.get() or "").strip()
+            if not sess_id:
                 return pd.DataFrame()
+
             sess_date = self.selected_session.datetime_start if self.selected_session else None
-            return await self.controller.list_phef_df(int(session_id), session_date=sess_date)
+            try:
+                df = await self.controller.list_phef_df(int(sess_id), session_date=sess_date)
+            except Exception:
+                return pd.DataFrame()
+
+            try:
+                return self.controller.decorate_grid(df)
+            except Exception:
+                return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
         @output
         @render.data_frame
         async def ph_grid():
             df = await sessions_phef__data()
-            df = self.controller.decorate_grid(df)
-            return render.DataGrid(df, filters=False, selection_mode="rows",width="100%")
+            return render.DataGrid(df, filters=False, selection_mode="rows", width="100%")
 
-        # Init and session selection
-        @reactive.Effect
-        async def _init():
-            await _refresh_session_choices()
-
-        @reactive.Effect
-        async def _on_session_change():
-            val = (input.ph_session_id() or "").strip()
-            selected_session_id.set(val)
-            if val:
-                self.selected_session = await self.controller.get_session_by_id(int(val))
-
-        # Row selection
+        # ----------------------------
+        # Row selection -> populate form
+        # ----------------------------
         @reactive.Effect
         @reactive.event(input.ph_grid_selected_rows)
-        async def _on_ph_row_selected():
-            try:
-                sel = input.ph_grid_selected_rows()
-                if not sel:
-                    status.set(self.NO_SELECTION_MESSAGE)
-                    return
-                ui.update_action_button("ph_add_btn", disabled=True)
-                ui.update_action_button("ph_update_btn", disabled=True)
-                enable_input_field(False)
-                row_idx = sel[0]
-                df = await sessions_phef__data()
-                if row_idx < 0 or row_idx >= len(df):
-                    status.set(self.NO_SELECTION_MESSAGE)
-                    return
-                row = df.iloc[row_idx]
-                selected_phef_id.set(row["ID"] or "")
-                selected_session_id.set(input.ph_session_id() or "")
-                serial = str(row.get("Serial", "") or "")
-                self.selected_military = await self.controller.search_military(serial)
-                ui.update_text("ph_serialnr", value=serial)
-                ui.update_text("ph_side_bridge_l", value=row.get("Sidebridge L", ""))
-                ui.update_text("ph_side_bridge_r", value=row.get("Sidebridge R", row.get("Sidebridge R ", "")))
-                ui.update_text("ph_run_2400", value=row.get("runningTime", ""))
-                status.set(f"Selected PHEF: {serial}")
-            except Exception as e:
-                status.set(f"Selection error: {e}")
+        async def _on_row_selected() -> None:
+            sel = input.ph_grid_selected_rows()
+            if not sel:
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
 
+            df = await sessions_phef__data()
+            if df is None or df.empty:
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            row_idx = sel[0]
+            if row_idx < 0 or row_idx >= len(df):
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            row = df.iloc[row_idx]
+            phef_id = str(row.get("ID", "") or "").strip()
+            selected_phef_id.set(phef_id)
+
+            serial = str(row.get("Serial", "") or "").strip()
+            ui.update_text("ph_serialnr", value=serial)
+            ui.update_text("ph_side_bridge_l", value=str(row.get("Sidebridge L", "") or ""))
+            ui.update_text("ph_side_bridge_r", value=str(row.get("Sidebridge R", row.get("Sidebridge R ", "")) or ""))
+            ui.update_text("ph_run_2400", value=str(row.get("runningTime", "") or ""))
+
+            # Selecting an existing record means we should allow Update, but not Add.
+            _set_buttons(can_add=False, can_update=True)
+
+            # Try to resolve military (so scores can compute as user edits)
+            try:
+                self.selected_military = await self.controller.search_military(serial) if serial else None
+            except Exception:
+                self.selected_military = None
+
+            _toggle_inputs(disabled=(self.selected_military is None))
+            status.set(f"Selected PHEF record for: {serial}" if serial else "Selected PHEF record.")
+
+        # ----------------------------
         # CRUD
-        def _validate(data):
-            return self.controller.validate_form(data)
+        # ----------------------------
+        def _validate(form: PhefFormData) -> tuple[bool, Any]:
+            # controller expects a dict
+            try:
+                return self.controller.validate_form(
+                    {
+                        "serialnr": form.serialnr,
+                        "session_id": form.session_id,
+                        "side_bridge_r": form.side_bridge_r,
+                        "side_bridge_l": form.side_bridge_l,
+                        "run_2400": form.run_2400,
+                    }
+                )
+            except Exception as e:
+                return False, f"Validation failed: {e}"
 
         @reactive.Effect
         @reactive.event(input.ph_add_btn)
-        async def _on_add():
-            data = _read_form()
-            ok, res = _validate(data)
-            if not ok:
-                status.set(res)
+        async def _on_add() -> None:
+            if not _require_session_selected() or not _require_military_selected():
                 return
+
+            form = _read_form()
+            ok, res = _validate(form)
+            if not ok:
+                status.set(str(res))
+                return
+
             payload = {
-                "id": data["session_id"],
-                "serialnr": data["serialnr"],
+                "id": form.session_id,
+                "serialnr": form.serialnr,
                 "side_bridge_r_s": res["side_bridge_r_s"],
                 "side_bridge_l_s": res["side_bridge_l_s"],
                 "run2400_s": res["run2400_s"],
             }
-            added = await self.controller.add_phef(int(payload["id"]), payload,self.selected_military,self.selected_session)
+
+            added = await self.controller.add_phef(
+                int(form.session_id),
+                payload,
+                self.selected_military,
+                self.selected_session,
+            )
             if not added:
-                status.set(f"Failed to add PHEF test for {payload['serialnr']} in session {str(payload['id'])}.")
+                status.set(f"Failed to add PHEF test for {form.serialnr} in session {form.session_id}.")
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(f"Added PHEF test for {payload['serialnr']} in session {str(payload['id'])}.")
+            status.set(f"Added PHEF test for {form.serialnr} in session {form.session_id}.")
             _clear_form()
 
         @reactive.Effect
         @reactive.event(input.ph_update_btn)
-        async def _on_update():
-            data = _read_form()
-            ok, res = _validate(data)
+        async def _on_update() -> None:
+            if not _require_session_selected() or not _require_military_selected():
+                return
+
+            phef_id_raw = (selected_phef_id.get() or "").strip()
+            if not phef_id_raw:
+                status.set("Select a row to update.")
+                return
+
+            form = _read_form()
+            ok, res = _validate(form)
             if not ok:
-                status.set(res)
+                status.set(str(res))
                 return
-            payload = {**data, **res}
-            updated = await self.controller.update_phef(int(selected_phef_id.get()), payload)
+
+            payload = {
+                "session_id": form.session_id,
+                "serialnr": form.serialnr,
+                "side_bridge_r_s": res["side_bridge_r_s"],
+                "side_bridge_l_s": res["side_bridge_l_s"],
+                "run2400_s": res["run2400_s"],
+            }
+
+            updated = await self.controller.update_phef(int(phef_id_raw), payload)
             if not updated:
-                status.set(
-                    f"Failed to update PHEF test for {payload['serialnr']} in session {str(payload['session_id'])}."
-                )
+                status.set(f"Failed to update PHEF test for {form.serialnr} in session {form.session_id}.")
                 return
+
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Updated PHEF test for {payload['serialnr']} in session {str(payload['session_id'])}."
-            )
+            status.set(f"Updated PHEF test for {form.serialnr} in session {form.session_id}.")
             _clear_form()
 
         @reactive.Effect
         @reactive.event(input.ph_delete_btn)
-        async def _on_delete():
-            sel = input.ph_grid_selected_rows()
-            sel_session_id = input.ph_session_id()
-            if not sel or not sel_session_id:
+        async def _on_delete() -> None:
+            sess_id_raw = (input.ph_session_id() or "").strip()
+            phef_id_raw = (selected_phef_id.get() or "").strip()
+
+            if not sess_id_raw or not phef_id_raw:
                 status.set("Select a row to delete.")
                 return
-            ok = await self.controller.delete_phef(int(sel_session_id), int(selected_phef_id.get()))
+
+            ok = await self.controller.delete_phef(int(sess_id_raw), int(phef_id_raw))
             if not ok:
-                status.set(f"Failed to delete PHEF test for record ID {sel[0]}.")
+                status.set("Failed to delete selected PHEF record.")
                 return
+
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            try:
-                df = await sessions_phef__data()
-                row_idx = sel[0]
-                row = df.iloc[row_idx]
-                status.set(f"PHEF test for record ID {row['ID']} deleted successfully.")
-                _clear_form()
-            except Exception:
-                status.set("Invalid selection.")
+            status.set("PHEF record deleted successfully.")
+            _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.ph_clear_btn)
+        def _on_clear() -> None:
+            _clear_form()
+            status.set("Form cleared.")
 
 
-# Public API
 _page = PhefPage()
 
 
-def get_ui():
+def get_ui() -> ui.Tag:
     return _page.get_ui()
 
 
-def server(input, output, session):
+def server(input: Any, output: Any, session: Any) -> None:
     _page.server(input, output, session)
