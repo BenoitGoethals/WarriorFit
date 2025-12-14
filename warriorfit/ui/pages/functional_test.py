@@ -1,32 +1,76 @@
-from shiny import ui, render, reactive
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Final, Optional
+
 import pandas as pd
+from shiny import ui, render, reactive
 
 from warriorfit.data.model.db_model import TestSession, ServiceMen
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
-
 from warriorfit.services.military_service import MilitaryService
-
 from warriorfit.ui.controllers.functional_controller import FunctionalController
 from warriorfit.ui.pages.page import Page
 
 
-class FunctionalPage(Page):
-    def __init__(self,):
+@dataclass(frozen=True, slots=True)
+class FunctionalFormData:
+    serialnr: str
+    session_id: str
+    push_ups: int
+    sit_ups: int
+    pull_ups: int
 
+
+class FunctionalPage(Page):
+    TAB_NAME: Final[str] = "Functional Tests"
+    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
+
+    # Disable these inputs until serial is confirmed
+    _DISABLE_IDS: Final[tuple[str, ...]] = (
+        "functional_push_ups",
+        "functional_push_ups_input",
+        "functional_sit_ups",
+        "functional_sit_ups_input",
+        "functional_pull_ups",
+        "functional_pull_ups_input",
+    )
+
+    def __init__(self) -> None:
         self.refresh_tick = reactive.Value(0)
-        self.be_mil_service = MilitaryService()
-        self.selected_military: ServiceMen = None
-        self.selected_session: TestSession = None
+        self.be_mil_service = MilitaryService()  # kept for consistency/side-effects if any
+        self.selected_military: Optional[ServiceMen] = None
+        self.selected_session: Optional[TestSession] = None
         self.controller = FunctionalController()
 
-    NO_SELECTION_MESSAGE = "No row selected"
+    def refresh(self) -> None:
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
 
-    def refresh(self):
-        pass
-
-    def get_ui(self):
+    def get_ui(self) -> ui.Tag:
         return ui.nav_panel(
-            "Functional Tests",
+            self.TAB_NAME,
+            # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
+            ui.tags.script(
+                """
+                (function () {
+                  if (window.__wf_toggle_disabled_registered) return;
+                  window.__wf_toggle_disabled_registered = true;
+
+                  Shiny.addCustomMessageHandler("wf_toggle_disabled", function (payload) {
+                    try {
+                      const ids = (payload && payload.ids) ? payload.ids : [];
+                      const disabled = !!(payload && payload.disabled);
+                      ids.forEach((id) => {
+                        const el = document.getElementById(id);
+                        if (el) el.disabled = disabled;
+                      });
+                    } catch (e) {
+                      // no-op
+                    }
+                  });
+                })();
+                """
+            ),
             ui.h2("🧪 Functional Tests"),
             ui.layout_columns(
                 ui.div(
@@ -37,8 +81,8 @@ class FunctionalPage(Page):
                     ),
                     ui.card(
                         ui.input_text("functional_serialnr", "Serial Number"),
-                        ui.input_action_button("functional_search", "Conform Serial", width="150px"),
-                        ui.output_text("functional_miltary"),
+                        ui.input_action_button("functional_search", "Confirm Serial", width="150px"),
+                        ui.output_text("functional_military"),
                         ui.layout_columns(
                             ui.input_numeric("functional_push_ups", "Push-ups", value=0, min=0),
                             ui.div("Score :", ui.output_ui("functional_push_ups_score")),
@@ -55,18 +99,36 @@ class FunctionalPage(Page):
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
-                            ui.div("Score :", ui.output_ui("functional_total_score")),
-                            col_widths=(8, 4),
+                            ui.div("Result:", ui.output_ui("functional_total_score")),
+                            col_widths=(12,),
                         ),
                         ui.br(),
                         ui.layout_columns(
-                            ui.input_action_button("functional_add_btn", "Add",
-                                                   disabled=self.selected_military is None, width="150px", class_="btn-primary w-100"),
-                            ui.input_action_button("functional_update_btn", "Update",
-                                                   disabled=self.selected_military is None, width="150px", class_="btn-warning w-100"),
-                            ui.input_action_button("functional_clear_btn", "Clear Form", width="150px", class_="btn-secondary w-100"),
-                            ui.input_action_button("functional_delete_btn", "Delete Selected",
-                                                   class_="btn-danger w-100"),
+                            ui.input_action_button(
+                                "functional_add_btn",
+                                "Add",
+                                disabled=True,
+                                width="150px",
+                                class_="btn-primary w-100",
+                            ),
+                            ui.input_action_button(
+                                "functional_update_btn",
+                                "Update",
+                                disabled=True,
+                                width="150px",
+                                class_="btn-warning w-100",
+                            ),
+                            ui.input_action_button(
+                                "functional_clear_btn",
+                                "Clear Form",
+                                width="150px",
+                                class_="btn-secondary w-100",
+                            ),
+                            ui.input_action_button(
+                                "functional_delete_btn",
+                                "Delete Selected",
+                                class_="btn-danger w-100",
+                            ),
                             col_widths=(4,),
                         ),
                         ui.output_text("functional_status"),
@@ -75,7 +137,7 @@ class FunctionalPage(Page):
                     ),
                 ),
                 ui.card(
-                    ui.card_header("Functional Tests : This list shows not only members of own Unit"),
+                    ui.card_header("Functional Tests: This list shows not only members of own Unit"),
                     ui.output_data_frame("functional_grid"),
                     full_screen=False,
                 ),
@@ -83,290 +145,453 @@ class FunctionalPage(Page):
             ),
         )
 
-    def server(self, input, output, session):
-        records = reactive.Value([])
-        functional_score_push_ups_val = reactive.Value("")
-        functional_score_sit_ups_val = reactive.Value("")
-        functional_score_pull_ups_val = reactive.Value("")
-        military = reactive.Value("No selection")
+    def server(self, input: Any, output: Any, session: Any) -> None:
+        self.refresh_on_nav(input, self.TAB_NAME)
+
         status = reactive.Value("Ready.")
+        military_text = reactive.Value("No selection")
+
         selected_session_id = reactive.Value("")
         selected_functional_id = reactive.Value("")
 
-        def _read_form():
-            return {
-                "serialnr": (input.functional_serialnr() or "").strip(),
-                "session_id": (input.functional_session_id() or "").strip(),
-                "push_ups": input.functional_push_ups(),
-                "sit_ups": input.functional_sit_ups(),
-                "pull_ups": input.functional_pull_ups(),
-            }
+        # Store *raw reps* for scoring (int values stored as strings in old code)
+        push_val = reactive.Value("0")
+        sit_val = reactive.Value("0")
+        pull_val = reactive.Value("0")
 
-        def _write_form(rec):
-            session.send_input_message("functional_serialnr", {"value": rec.get("serialnr", "")})
-            session.send_input_message("functional_push_ups", {"value": rec.get("push_ups", 0)})
-            session.send_input_message("functional_sit_ups", {"value": rec.get("sit_ups", 0)})
-            session.send_input_message("functional_pull_ups", {"value": rec.get("pull_ups", 0)})
+        # ----------------------------
+        # Helpers
+        # ----------------------------
+        def _toggle_inputs(disabled: bool) -> None:
+            try:
+                session.send_custom_message(
+                    "wf_toggle_disabled",
+                    {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
+                )
+            except Exception:
+                pass
 
-        def _clear_form():
-            _write_form({"serialnr": "", "push_ups": 0, "sit_ups": 0, "pull_ups": 0})
+        def _set_buttons(*, can_add: bool, can_update: bool) -> None:
+            ui.update_action_button("functional_add_btn", disabled=not can_add)
+            ui.update_action_button("functional_update_btn", disabled=not can_update)
 
-        async def _refresh_session_choices():
-            test_sessions = await self.controller.load_sessions()
+        def _clear_form() -> None:
+            session.send_input_message("functional_serialnr", {"value": ""})
+            session.send_input_message("functional_push_ups", {"value": 0})
+            session.send_input_message("functional_sit_ups", {"value": 0})
+            session.send_input_message("functional_pull_ups", {"value": 0})
+
+            self.selected_military = None
+            selected_functional_id.set("")
+
+            push_val.set("0")
+            sit_val.set("0")
+            pull_val.set("0")
+
+            _toggle_inputs(disabled=True)
+            _set_buttons(can_add=False, can_update=False)
+
+        def _read_form() -> FunctionalFormData:
+            def _to_int(v: Any) -> int:
+                try:
+                    return int(v)
+                except (TypeError, ValueError):
+                    return 0
+
+            return FunctionalFormData(
+                serialnr=(input.functional_serialnr() or "").strip(),
+                session_id=(input.functional_session_id() or "").strip(),
+                push_ups=_to_int(input.functional_push_ups()),
+                sit_ups=_to_int(input.functional_sit_ups()),
+                pull_ups=_to_int(input.functional_pull_ups()),
+            )
+
+        async def _refresh_session_choices() -> None:
+            try:
+                test_sessions = await self.controller.load_sessions()
+            except Exception:
+                test_sessions = []
+
             items = {
                 str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
                 for s in (test_sessions or [])
             }
             current = (input.functional_session_id() or "").strip()
-            selected = current if current in items else None
-            ui.update_select("functional_session_id", choices=items, selected=selected)
+            ui.update_select("functional_session_id", choices=items, selected=(current if current in items else None))
 
-        @reactive.effect
-        @reactive.event(input.functional_search, ignore_none=False)
-        async def functional_search():
-            if not (input.functional_serialnr() or "").strip():
-                ui.update_action_button("functional_add_btn", disabled=True)
-                ui.update_action_button("functional_update_btn", disabled=True)
-                return
-            try:
-                val = await self.controller.search_military(input.functional_serialnr() or "")
-                self.selected_military = val
-                if val is None:
-                    ui.update_text("functional_serialnr", value="Not found")
-                    return
-                military.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
-                ui.update_action_button("functional_add_btn", disabled=False)
-                ui.update_action_button("functional_update_btn", disabled=False)
-            except Exception:
-                ui.update_text("functional_serialnr", value="Not found")
-                return
+        def _require_session_selected() -> bool:
+            if not (selected_session_id.get() or "").strip():
+                status.set("Select a session first.")
+                return False
+            return True
 
+        def _require_military_selected() -> bool:
+            if self.selected_military is None:
+                status.set("Confirm a valid serial first.")
+                return False
+            return True
+
+        # ----------------------------
+        # Outputs
+        # ----------------------------
         @output
         @render.text
-        def functional_status():
+        def functional_status() -> str:
             return status.get()
 
         @output
         @render.text
-        def functional_miltary():
-            return military.get()
+        def functional_military() -> str:
+            return military_text.get()
 
-        @output
-        @render.text
-        def functional_push_ups_score():
-            val = functional_score_push_ups_val.get()
+        def _score_span(value: object, *, pass_if_ge: float = 20.0) -> ui.Tag:
+            text = "" if value is None else str(value)
+            color = "inherit"
             try:
-                if self.selected_military:
-                    num = FunctionalCalculator.get_score_pushup(
-                        self.selected_military.gender,
-                        self.selected_military.age_from_birthdate(),
-                        int(val),
-                    )
-                else:
-                    num = 0
+                num = float(value)  # type: ignore[arg-type]
+                color = "green" if num >= pass_if_ge else "red"
             except (TypeError, ValueError):
-                num = None
-            color = "red" if (num is not None and num < 20) else "green"
-            return ui.span(str(num), style=f"color: {color};")
+                pass
+            return ui.span(text, style=f"color: {color}; font-weight: 600;")
 
-        @output
-        @render.text
-        def functional_sit_ups_score():
-            val = functional_score_sit_ups_val.get()
-            try:
-                if self.selected_military:
-                    num = FunctionalCalculator.get_score_situp(
-                        self.selected_military.gender,
-                        self.selected_military.age_from_birthdate(),
-                        int(val),
-                    )
-                else:
-                    num = 0
-            except (TypeError, ValueError):
-                num = None
-            color = "red" if (num is not None and num < 20) else "green"
-            return ui.span(str(num), style=f"color: {color};")
-
-        @output
-        @render.text
-        def functional_pull_ups_score():
-            val = functional_score_pull_ups_val.get()
-            try:
-                if self.selected_military:
-                    num = FunctionalCalculator.get_score_pullup(
-                        self.selected_military.gender,
-                        self.selected_military.age_from_birthdate(),
-                        int(val),
-                    )
-                else:
-                    num = 0
-            except (TypeError, ValueError):
-                num = None
-            color = "red" if (num is not None and num < 20) else "green"
-            return ui.span(str(num), style=f"color: {color};")
-
-        def _calculate_total_score(push_ups, sit_ups, pull_ups)->bool:
-            try:
-                push_ups_score = FunctionalCalculator.get_score_pushup(
+        def _calc_score_pushups(reps: int) -> Optional[int]:
+            if self.selected_military is None:
+                return None
+            return int(
+                FunctionalCalculator.get_score_pushup(
                     self.selected_military.gender,
                     self.selected_military.age_from_birthdate(),
-                    int(push_ups),
+                    reps,
                 )
-                sit_ups_score = FunctionalCalculator.get_score_situp(
+            )
+
+        def _calc_score_situps(reps: int) -> Optional[int]:
+            if self.selected_military is None:
+                return None
+            return int(
+                FunctionalCalculator.get_score_situp(
                     self.selected_military.gender,
                     self.selected_military.age_from_birthdate(),
-                    int(sit_ups),
+                    reps,
                 )
-                pull_ups_score = FunctionalCalculator.get_score_pullup(
+            )
+
+        def _calc_score_pullups(reps: int) -> Optional[int]:
+            if self.selected_military is None:
+                return None
+            return int(
+                FunctionalCalculator.get_score_pullup(
                     self.selected_military.gender,
                     self.selected_military.age_from_birthdate(),
-                    int(pull_ups),
+                    reps,
                 )
-                return push_ups_score>10 or sit_ups_score>10 + pull_ups_score>10
-            except (TypeError, ValueError):
+            )
+
+        @output
+        @render.ui
+        def functional_push_ups_score() -> ui.Tag:
+            try:
+                reps = int(push_val.get() or 0)
+            except Exception:
+                reps = 0
+            score = _calc_score_pushups(reps)
+            return _score_span(score, pass_if_ge=20.0)
+
+        @output
+        @render.ui
+        def functional_sit_ups_score() -> ui.Tag:
+            try:
+                reps = int(sit_val.get() or 0)
+            except Exception:
+                reps = 0
+            score = _calc_score_situps(reps)
+            return _score_span(score, pass_if_ge=20.0)
+
+        @output
+        @render.ui
+        def functional_pull_ups_score() -> ui.Tag:
+            try:
+                reps = int(pull_val.get() or 0)
+            except Exception:
+                reps = 0
+            score = _calc_score_pullups(reps)
+            return _score_span(score, pass_if_ge=20.0)
+
+        def _passes_total(push_reps: int, sit_reps: int, pull_reps: int) -> bool:
+            if self.selected_military is None:
+                return False
+            try:
+                p = _calc_score_pushups(push_reps) or 0
+                s = _calc_score_situps(sit_reps) or 0
+                pu = _calc_score_pullups(pull_reps) or 0
+                # Fixes old bug: `a>10 or b>10 + c>10` (operator precedence & wrong logic)
+                return (p > 10) and (s > 10) and (pu > 10)
+            except Exception:
                 return False
 
-
         @output
-        @render.text
-        def functional_total_score():
-            if self.selected_military:
-                try:
-                    if _calculate_total_score(functional_score_push_ups_val.get(), functional_score_sit_ups_val.get(), functional_score_pull_ups_val.get()):
-                        return ui.span("PASSED", style="color: green; font-weight: bold;")
-                    return ui.span( " FAILED", style="color: red; font-weight: bold;")
-                except (TypeError, ValueError):
-                    return ui.span("")
-            return ui.span("")
+        @render.ui
+        def functional_total_score() -> ui.Tag:
+            if self.selected_military is None:
+                return ui.span("")
+            try:
+                passed = _passes_total(int(push_val.get()), int(sit_val.get()), int(pull_val.get()))
+                return ui.span(
+                    "PASSED" if passed else "FAILED",
+                    style=("color: green; font-weight: 700;" if passed else "color: red; font-weight: 700;"),
+                )
+            except Exception:
+                return ui.span("")
 
+        # ----------------------------
+        # Live rep tracking (kept simple)
+        # ----------------------------
         @reactive.Effect
         @reactive.event(input.functional_push_ups)
-        def on_push_ups_change():
+        def _on_push_change() -> None:
             try:
-                val = int(input.functional_push_ups() or 0)
-                functional_score_push_ups_val.set(str(val))
+                push_val.set(str(int(input.functional_push_ups() or 0)))
             except Exception:
-                functional_score_push_ups_val.set("")
+                push_val.set("0")
 
         @reactive.Effect
         @reactive.event(input.functional_sit_ups)
-        def on_sit_ups_change():
+        def _on_sit_change() -> None:
             try:
-                val = int(input.functional_sit_ups() or 0)
-                functional_score_sit_ups_val.set(str(val))
+                sit_val.set(str(int(input.functional_sit_ups() or 0)))
             except Exception:
-                functional_score_sit_ups_val.set("")
+                sit_val.set("0")
 
         @reactive.Effect
         @reactive.event(input.functional_pull_ups)
-        def on_pull_ups_change():
+        def _on_pull_change() -> None:
             try:
-                val = int(input.functional_pull_ups() or 0)
-                functional_score_pull_ups_val.set(str(val))
+                pull_val.set(str(int(input.functional_pull_ups() or 0)))
             except Exception:
-                functional_score_pull_ups_val.set("")
+                pull_val.set("0")
 
+        # ----------------------------
+        # Init & session selection
+        # ----------------------------
+        @reactive.Effect
+        async def _init() -> None:
+            await _refresh_session_choices()
+            _clear_form()
+            status.set("Ready.")
+
+        @reactive.Effect
+        def _on_session_change() -> None:
+            val = (input.functional_session_id() or "").strip()
+            selected_session_id.set(val)
+
+            # changing session resets selection + input lock
+            _clear_form()
+
+            if not val:
+                self.selected_session = None
+                status.set("Select a session.")
+                return
+
+            status.set("Session selected. Confirm a serial to enter results.")
+
+        @reactive.Effect
+        @reactive.event(input.functional_session_id)
+        async def _load_session_object() -> None:
+            val = (input.functional_session_id() or "").strip()
+            if not val:
+                self.selected_session = None
+                return
+            try:
+                self.selected_session = await self.controller.get_session_by_id(int(val))
+            except Exception:
+                self.selected_session = None
+
+        # ----------------------------
+        # Search military / unlock inputs
+        # ----------------------------
+        @reactive.Effect
+        @reactive.event(input.functional_search, ignore_none=False)
+        async def _on_search() -> None:
+            if not _require_session_selected():
+                return
+
+            serial = (input.functional_serialnr() or "").strip()
+            if not serial:
+                status.set("Enter a serial number.")
+                _clear_form()
+                return
+
+            try:
+                val = await self.controller.search_military(serial)
+            except Exception:
+                val = None
+
+            self.selected_military = val
+            if val is None:
+                military_text.set("Not found")
+                status.set("Serial not found.")
+                _toggle_inputs(disabled=True)
+                _set_buttons(can_add=False, can_update=False)
+                return
+
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
+            status.set("Serial confirmed. Enter results.")
+            _toggle_inputs(disabled=False)
+            _set_buttons(can_add=True, can_update=True)
+
+        # ----------------------------
+        # Data grid
+        # ----------------------------
         @reactive.calc
-        async def sessions_functional_data():
+        async def sessions_functional_data() -> pd.DataFrame:
             _ = self.refresh_tick.get()
-            session_id = selected_session_id.get()
-            if not session_id:
+            sess_id = (selected_session_id.get() or "").strip()
+            if not sess_id:
                 return pd.DataFrame()
             try:
-                return await self.controller.list_functional_tests_df(int(session_id))
-            except Exception as e:
-                print(f"Error fetching Functional test data: {e}")
+                return await self.controller.list_functional_tests_df(int(sess_id))
+            except Exception:
                 return pd.DataFrame()
 
         @output
         @render.data_frame
         async def functional_grid():
             df = await sessions_functional_data()
-            df = self.controller.decorate_grid(df)
-            return render.DataGrid(df, filters=False, selection_mode="rows", width="100%",)
+            try:
+                df = self.controller.decorate_grid(df)
+            except Exception:
+                pass
+            return render.DataGrid(df, filters=False, selection_mode="rows", row_selection_mode="single", width="100%")
 
-        @reactive.Effect
-        async def _init():
-            await _refresh_session_choices()
-
-        @reactive.Effect
-        async def _on_session_change():
-            val = (input.functional_session_id() or "").strip()
-            selected_session_id.set(val)
-            if val:
-                self.selected_session = await self.controller.get_session_by_id(int(val))
-                status.set(f"Session is set to {val}")
-
+        # ----------------------------
+        # Row selection -> populate form
+        # ----------------------------
         @reactive.Effect
         @reactive.event(input.functional_grid_selected_rows)
-        async def _on_functional_row_selected():
+        async def _on_row_selected() -> None:
+            sel = input.functional_grid_selected_rows()
+            if not sel:
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            df = await sessions_functional_data()
+            if df is None or df.empty:
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            row_idx = sel[0]
+            if row_idx < 0 or row_idx >= len(df):
+                status.set(self.NO_SELECTION_MESSAGE)
+                return
+
+            row = df.iloc[row_idx]
+            functional_id = str(row.get("ID", "") or "").strip()
+            selected_functional_id.set(functional_id)
+
+            serial = str(row.get("Serial", "") or "").strip()
+            ui.update_text("functional_serialnr", value=serial)
+
+            def _safe_int(v: Any) -> int:
+                try:
+                    return int(v)
+                except (TypeError, ValueError):
+                    return 0
+
+            ui.update_numeric("functional_push_ups", value=_safe_int(row.get("Push-ups", row.get("push_ups", 0))))
+            ui.update_numeric("functional_sit_ups", value=_safe_int(row.get("Sit-ups", row.get("sit_ups", 0))))
+            ui.update_numeric("functional_pull_ups", value=_safe_int(row.get("Pull-ups", row.get("pull_ups", 0))))
+
+            # Selection: allow Update, disable Add (avoids duplicate add)
+            _set_buttons(can_add=False, can_update=True)
+
             try:
-                sel = input.functional_grid_selected_rows()
-                if not sel:
-                    status.set(self.NO_SELECTION_MESSAGE)
-                    return
-                ui.update_action_button("functional_add_btn", disabled=True)
-                ui.update_action_button("functional_update_btn", disabled=True)
-                row_idx = sel[0]
-                df = await sessions_functional_data()
-                if row_idx < 0 or row_idx >= len(df):
-                    status.set(self.NO_SELECTION_MESSAGE)
-                    return
+                self.selected_military = await self.controller.search_military(serial) if serial else None
+            except Exception:
+                self.selected_military = None
 
-                row = df.iloc[row_idx]
-                selected_functional_id.set(row["ID"] or "")
-                selected_session_id.set(input.functional_session_id() or "")
-                serial = str(row.get("Serial", "") or "")
-                self.selected_military = await self.controller.search_military(serial)
+            _toggle_inputs(disabled=(self.selected_military is None))
+            status.set(f"Selected Functional Test: {serial}" if serial else "Selected Functional Test.")
 
-                ui.update_text("functional_serialnr", value=serial)
-                ui.update_numeric("functional_push_ups", value=int(row.get("Push-ups", 0)))
-                ui.update_numeric("functional_sit_ups", value=int(row.get("Sit-ups", 0)))
-                ui.update_numeric("functional_pull_ups", value=int(row.get("Pull-ups", 0)))
-
-                status.set(f"Selected Functional Test: {serial}")
-            except Exception as e:
-                status.set(f"Selection error: {e}")
-
+        # ----------------------------
+        # CRUD
+        # ----------------------------
         @reactive.Effect
         @reactive.event(input.functional_add_btn)
-        async def _on_add():
-            data = _read_form()
-            ok, res = self.controller.validate_form(data)
+        async def _on_add() -> None:
+            if not _require_session_selected() or not _require_military_selected():
+                return
+
+            form = _read_form()
+            ok, res = self.controller.validate_form(
+                {
+                    "serialnr": form.serialnr,
+                    "session_id": form.session_id,
+                    "push_ups": form.push_ups,
+                    "sit_ups": form.sit_ups,
+                    "pull_ups": form.pull_ups,
+                }
+            )
             if not ok:
-                status.set(res)
+                status.set(str(res))
                 return
 
             record = {
-                "id": data["session_id"],
-                "serialnr": data["serialnr"],
+                "id": form.session_id,
+                "serialnr": form.serialnr,
                 "push_ups": res["push_ups"],
                 "sit_ups": res["sit_ups"],
                 "pull_ups": res["pull_ups"],
             }
 
-            added_functional = await self.controller.add_functional(int(record["id"]), record,session=self.selected_session,military=self.selected_military)
-            if not added_functional:
+            added = await self.controller.add_functional(
+                int(record["id"]),
+                record,
+                session=self.selected_session,
+                military=self.selected_military,
+            )
+            if not added:
                 status.set(f"Failed to add Functional test for {record['serialnr']} in session {record['id']}.")
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            records.set(records.get() + [record])
             status.set(f"Added Functional test for {record['serialnr']} in session {record['id']}.")
             _clear_form()
 
         @reactive.Effect
         @reactive.event(input.functional_update_btn)
-        async def _on_update():
-            data = _read_form()
-            ok, res = self.controller.validate_form(data)
-            if not ok:
-                status.set(res)
+        async def _on_update() -> None:
+            if not _require_session_selected() or not _require_military_selected():
                 return
 
-            payload = {**data, **res}
-            updated_functional = await self.controller.update_functional(int(selected_functional_id.get()), payload)
-            if not updated_functional:
+            functional_id_raw = (selected_functional_id.get() or "").strip()
+            if not functional_id_raw:
+                status.set("Select a row to update.")
+                return
+
+            form = _read_form()
+            ok, res = self.controller.validate_form(
+                {
+                    "serialnr": form.serialnr,
+                    "session_id": form.session_id,
+                    "push_ups": form.push_ups,
+                    "sit_ups": form.sit_ups,
+                    "pull_ups": form.pull_ups,
+                }
+            )
+            if not ok:
+                status.set(str(res))
+                return
+
+            payload = {
+                "session_id": form.session_id,
+                "serialnr": form.serialnr,
+                "push_ups": res["push_ups"],
+                "sit_ups": res["sit_ups"],
+                "pull_ups": res["pull_ups"],
+            }
+
+            updated = await self.controller.update_functional(int(functional_id_raw), payload)
+            if not updated:
                 status.set(f"Failed to update Functional test for {payload['serialnr']}.")
                 return
 
@@ -376,32 +601,25 @@ class FunctionalPage(Page):
 
         @reactive.Effect
         @reactive.event(input.functional_delete_btn)
-        async def _on_delete():
-            sel = input.functional_grid_selected_rows()
-            sel_session_id = input.functional_session_id()
-            if not sel or not sel_session_id:
+        async def _on_delete() -> None:
+            sess_id_raw = (input.functional_session_id() or "").strip()
+            functional_id_raw = (selected_functional_id.get() or "").strip()
+            if not sess_id_raw or not functional_id_raw:
                 status.set("Select a row to delete.")
                 return
-            ok = await self.controller.delete_functional(int(sel_session_id), int(selected_functional_id.get()))
+
+            ok = await self.controller.delete_functional(int(sess_id_raw), int(functional_id_raw))
             if not ok:
-                status.set(f"Failed to delete Functional test for record ID {sel[0]}.")
+                status.set("Failed to delete selected Functional record.")
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            try:
-                df = await sessions_functional_data()
-                row_idx = sel[0]
-                row = df.iloc[row_idx] if row_idx < len(df) else None
-                if row is not None:
-                    status.set(f"Functional test for record ID {row['ID']} deleted successfully.")
-                else:
-                    status.set("Functional test deleted successfully.")
-            except Exception:
-                status.set("Functional test deleted successfully.")
+            status.set("Functional test deleted successfully.")
+            _clear_form()
 
         @reactive.Effect
         @reactive.event(input.functional_clear_btn)
-        def _on_clear():
+        def _on_clear() -> None:
             _clear_form()
             status.set("Form cleared.")
 
@@ -410,9 +628,9 @@ class FunctionalPage(Page):
 _page = FunctionalPage()
 
 
-def get_ui():
+def get_ui() -> ui.Tag:
     return _page.get_ui()
 
 
-def server(input, output, session):
+def server(input: Any, output: Any, session: Any) -> None:
     _page.server(input, output, session)
