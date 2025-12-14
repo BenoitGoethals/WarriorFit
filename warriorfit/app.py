@@ -1,16 +1,34 @@
 import logging
-from typing import Any, Optional
-from shiny import App, ui, render
 import time
+from dataclasses import dataclass
+from typing import Any, Callable, Optional
+
+from shiny import App, ui, render
+
+from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import Role
 from warriorfit.mom.broker import Broker
 from warriorfit.services.service_user import UserService
 from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
-from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.ui.pages import reports, settings, combat_test, own_unit, dashboard_own_unit, ind_test_show, cross, \
-    cross_planning, calendar_events, auditlog_events, status_tests, cross_statics, march, status_login_user, \
-    reserve_fitness_room, status_application
+from warriorfit.ui.pages import (
+    reports,
+    settings,
+    combat_test,
+    own_unit,
+    dashboard_own_unit,
+    ind_test_show,
+    cross,
+    cross_planning,
+    calendar_events,
+    auditlog_events,
+    status_tests,
+    cross_statics,
+    march,
+    status_login_user,
+    reserve_fitness_room,
+    status_application,
+)
 from warriorfit.ui.pages import usermangement
 from warriorfit.ui.pages import phef
 from warriorfit.ui.pages import sessions
@@ -18,42 +36,37 @@ from warriorfit.ui.pages import functional_test
 from warriorfit.ui.pages import swim_test
 
 
+@dataclass(frozen=True)
+class PageSpec:
+    """
+    A page definition: what it is (UI + server) and who may see it.
+    This keeps "roles" separate from "pages".
+    """
+    tab: str
+    group: str  # "root" | "Psychical Tests" | "Cross/Runs" | "Admin"
+    ui_factory: Callable[[], Optional[Any]]
+    server_factory: Callable[[Any, Any, Any], Any] | None
+    allowed_roles: set[Role]
+
+
 class FitnessWarriorApp:
     """
     Main application class for the Fitness Warrior app.
-
-    This class initializes the application, sets up logging, and defines the
-    user interface and server logic for the app.
     """
 
-    APP_TITLE = "Fitness Warrior"  # Title of the application
-    DEFAULT_PORT = 8000  # Default port for the application
-    _broker = Broker()  # Broker instance for managing communication
+    APP_TITLE = "Fitness Warrior"
+    DEFAULT_PORT = 8000
+    _broker = Broker()
 
     def __init__(self):
-        """
-        Initialize the FitnessWarriorApp instance and set up logging.
-        """
         self.setup_logger()
 
     @classmethod
     def get_broker(cls):
-        """
-        Get the broker instance.
-
-        Returns:
-            Broker: The broker instance used for communication.
-        """
         return cls._broker
 
     @classmethod
     def setup_logger(cls) -> None:
-        """
-        Set up the logging configuration for the application.
-
-        This method ensures that logs are written to a file and configures
-        logging settings based on a YAML configuration file.
-        """
         import yaml
         import logging.config
 
@@ -61,7 +74,6 @@ class FitnessWarriorApp:
         if not project_root:
             return
 
-        # Ensure logs directory exists
         log_dir = project_root / "logs"
         log_dir.mkdir(exist_ok=True)
 
@@ -80,14 +92,175 @@ class FitnessWarriorApp:
             logging.basicConfig(level=logging.INFO)
             cls.logger = logging.getLogger()
 
+    # -----------------------------
+    # Pages (what exists) + Roles (who can see)
+    # -----------------------------
+
+    @staticmethod
+    def _pages() -> list[PageSpec]:
+        # If you want to change visibility, do it HERE (roles), not in navbar code.
+        return [
+            # Root-level pages
+            PageSpec(
+                tab="Welcome",
+                group="root",
+                ui_factory=status_login_user.get_ui,
+                server_factory=status_login_user.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Dashboard",
+                group="root",
+                ui_factory=dashboard_own_unit.get_ui,
+                server_factory=dashboard_own_unit.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Status Unit",
+                group="root",
+                ui_factory=own_unit.get_ui,
+                server_factory=own_unit.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST},
+            ),
+            PageSpec(
+                tab="Individual",
+                group="root",
+                ui_factory=ind_test_show.get_ui,
+                server_factory=ind_test_show.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST},
+            ),
+            PageSpec(
+                tab="Reports",
+                group="root",
+                ui_factory=reports.get_ui,
+                server_factory=reports.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Reserve Room",
+                group="root",
+                ui_factory=reserve_fitness_room.get_ui,
+                server_factory=reserve_fitness_room.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Sessions",
+                group="root",
+                ui_factory=sessions.get_ui,
+                server_factory=sessions.server,
+                allowed_roles={Role.PLANNER},
+            ),
+            # Psychical Tests (menu)
+            PageSpec(
+                tab="PHEF Tests",
+                group="Psychical Tests",
+                ui_factory=phef.get_ui,
+                server_factory=phef.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Combat Tests",
+                group="Psychical Tests",
+                ui_factory=combat_test.get_ui,
+                server_factory=combat_test.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Functional Tests",
+                group="Psychical Tests",
+                ui_factory=functional_test.get_ui,
+                server_factory=functional_test.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Swimming Tests",
+                group="Psychical Tests",
+                ui_factory=swim_test.get_ui,
+                server_factory=swim_test.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="March",
+                group="Psychical Tests",
+                ui_factory=march.get_ui,
+                server_factory=march.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="PHEF Not done",
+                group="Psychical Tests",
+                ui_factory=status_tests.get_ui,
+                server_factory=status_tests.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Sessions",
+                group="Psychical Tests",
+                ui_factory=sessions.get_ui,
+                server_factory=sessions.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            # Cross/Runs (menu)
+            PageSpec(
+                tab="Cross Statics",
+                group="Cross/Runs",
+                ui_factory=cross_statics.get_ui,
+                server_factory=cross_statics.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Cross Planning",
+                group="Cross/Runs",
+                ui_factory=cross_planning.get_ui,
+                server_factory=cross_planning.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="Cross",
+                group="Cross/Runs",
+                ui_factory=cross.get_ui,
+                server_factory=cross.server,
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            # Admin (menu)
+            PageSpec(
+                tab="Audit Logs",
+                group="Admin",
+                ui_factory=auditlog_events.get_ui,
+                server_factory=auditlog_events.server,
+                allowed_roles={Role.ADMIN},
+            ),
+            PageSpec(
+                tab="User Management",
+                group="Admin",
+                ui_factory=usermangement.get_ui,
+                server_factory=usermangement.server,
+                allowed_roles={Role.ADMIN},
+            ),
+            PageSpec(
+                tab="Settings",
+                group="Admin",
+                ui_factory=settings.get_ui,
+                server_factory=settings.server,
+                allowed_roles={Role.ADMIN},
+            ),
+            PageSpec(
+                tab="Status Application",
+                group="Admin",
+                ui_factory=status_application.get_ui,
+                server_factory=status_application.server,
+                allowed_roles={Role.ADMIN},
+            ),
+        ]
+
+    @staticmethod
+    def _pages_for_role(role: Optional[Role]) -> list[PageSpec]:
+        if role is None:
+            return []
+        return [p for p in FitnessWarriorApp._pages() if role in p.allowed_roles]
+
     @staticmethod
     def build_app_ui():
-        """
-        Build the user interface for the application.
-
-        Returns:
-            ui.Tag: The root UI element for the application.
-        """
         return ui.page_fillable(
             ui.output_ui("main_nav_container"),
         )
@@ -95,74 +268,44 @@ class FitnessWarriorApp:
     @staticmethod
     def register_pages_server(input: Any, output: Any, session: Any) -> None:
         """
-        Register the server logic for each page in the application.
-
-        Args:
-            input (Any): Input object for reactive inputs.
-            output (Any): Output object for rendering outputs.
-            session (Any): Session object for managing user sessions.
+        Mount server logic lazily when a tab is activated.
         """
         from shiny import reactive
-        servers_by_tab = {
-            "Cross Planning": cross_planning.server,
-            "PHEF Not done": status_tests.server,
-            "Audit Logs": auditlog_events.server,
-            "Cross": cross.server,
-            "User Management": usermangement.server,
-            "PHEF Tests": phef.server,
-            "Combat Tests": combat_test.server,
-            "Functional Tests": functional_test.server,
-            "Swimming Tests": swim_test.server,
-            "Sessions": sessions.server,
-            "Reports": reports.server,
-            "Settings": settings.server,
-            "Status Unit": own_unit.server,
-            "Dashboard": dashboard_own_unit.server,
-            "Individual": ind_test_show.server,
-            # Calendar server mounted independently (modal lives outside navbar)
-            "CalendarEvents": calendar_events.server,
-            "Cross Statics": cross_statics.server,
-            "March": march.server,
-            "Welcome": status_login_user.server,
-            "Reserve Room": reserve_fitness_room.server,
-            "Status Application" :status_application.server
+
+        servers_by_tab: dict[str, Callable[[Any, Any, Any], Any]] = {
+            p.tab: p.server_factory
+            for p in FitnessWarriorApp._pages()
+            if p.server_factory is not None
         }
+
+        # Calendar server mounted independently (modal lives outside navbar)
+        servers_by_tab["CalendarEvents"] = calendar_events.server
+
         mounted = reactive.Value(set())
 
         @reactive.Effect
         def _mount_on_nav_activation_register_only():
-            """
-            Mount the server logic for the active navigation tab.
-
-            This ensures that the server logic for the selected tab is executed
-            only once when the tab is activated.
-            """
             try:
                 active = input.main_nav()
             except Exception:
                 active = None
+
             already = mounted.get()
             if active and active in servers_by_tab and active not in already:
                 servers_by_tab[active](input, output, session)
                 mounted.set({*already, active})
-            # Ensure calendar server is mounted so modal UI works even if no tab selected
+
             if "CalendarEvents" not in mounted.get():
                 servers_by_tab["CalendarEvents"](input, output, session)
                 mounted.set({*mounted.get(), "CalendarEvents"})
 
     @staticmethod
     def server(input: Any, output: Any, session: Any) -> None:
-        """
-        Define the server logic for the application.
-
-        Args:
-            input (Any): Input object for reactive inputs.
-            output (Any): Output object for rendering outputs.
-            session (Any): Session object for managing user sessions.
-        """
         from shiny import reactive
+
         user_service = UserService()
         FitnessWarriorApp.register_pages_server(input, output, session)
+
         status_text = reactive.Value("")
         login_user_text = reactive.Value("")
         nav_version = reactive.Value(0)
@@ -171,12 +314,7 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.open_calendar_modal_global)
         def _open_calendar_modal():
-            """
-            Open the global calendar modal and refresh its content.
-            """
-            # Force calendar to re-run before showing the modal
             calendar_events.refresh()
-
             ui.modal_show(
                 ui.modal(
                     calendar_events.get_ui(),
@@ -190,12 +328,7 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.open_personal_calendar_modal_global)
         def _open_personal_calendar_modal():
-            """
-            Open the personal calendar modal and refresh its content.
-            """
-            # Force personal calendar to re-run before showing the modal
             calendar_events.refresh()
-
             ui.modal_show(
                 ui.modal(
                     calendar_events.get_ui(all_test=False),
@@ -209,201 +342,91 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.close_calendar_modal_global)
         def _close_calendar_modal():
-            """
-            Close the currently open calendar modal.
-            """
             ui.modal_remove()
 
-        def _safe_panel(panel: Optional[Any]) -> Optional[ui.Tag]:
-            """
-            Safely returns the given panel if it is not None.
-
-            Args:
-                panel (Optional[Any]): The panel to check.
-
-            Returns:
-                Optional[ui.Tag]: The panel if it is not None, otherwise None.
-            """
-            return panel if panel is not None else None
-
-        def _build_test_menu():
-            """
-            Builds the navigation menu for the "Psychical Tests" section.
-
-            Returns:
-                ui.nav_menu: A navigation menu containing links to various test pages.
-            """
-            items = [
-                _safe_panel(phef.get_ui()),
-                _safe_panel(combat_test.get_ui()),
-                _safe_panel(functional_test.get_ui()),
-                _safe_panel(swim_test.get_ui()),
-                _safe_panel(ind_test_show.get_ui()),
-                _safe_panel(march.get_ui()),
-                _safe_panel(status_tests.get_ui()),
-                _safe_panel((sessions.get_ui()))
-            ]
-            items = [c for c in items if c is not None]
-            return ui.nav_menu("Psychical Tests", *items)
-
-        def _build_cross_menu():
-            """
-            Builds the navigation menu for the "Cross/Runs" section.
-
-            Returns:
-                ui.nav_menu: A navigation menu containing links to cross and run-related pages.
-            """
-            items = [
-                _safe_panel(cross_statics.get_ui()),
-                _safe_panel(cross_planning.get_ui()),
-                _safe_panel(cross.get_ui()),
-            ]
-            items = [c for c in items if c is not None]
-            return ui.nav_menu("Cross/Runs", *items)
-
-        def _build_admin_menu(role: Optional[Role]) -> Optional[ui.nav_menu]:
-            """
-            Builds the navigation menu for the "Admin" section based on the user's role.
-
-            Args:
-                role (Optional[Role]): The role of the user.
-
-            Returns:
-                Optional[ui.nav_menu]: A navigation menu for admin pages if the user is an admin, otherwise None.
-            """
-            if role != Role.ADMIN:
-                return None
-            admin_children = [
-                _safe_panel(auditlog_events.get_ui()),
-                _safe_panel(usermangement.get_ui()),
-                _safe_panel(settings.get_ui()),
-                _safe_panel(status_application.get_ui())
-            ]
-            admin_children = [c for c in admin_children if c is not None]
-            return ui.nav_menu("Admin", *admin_children) if admin_children else None
-
         def _get_session_user():
-            """
-            Retrieves the current user from the session.
-
-            Returns:
-                Any: The user object stored in the session, or None if no user is set.
-            """
             return getattr(session, "user", None)
 
         def _set_session_user(user):
-            """
-            Sets the current user in the session.
-
-            Args:
-                user: The user object to store in the session.
-            """
             setattr(session, "user", user)
 
         def _clear_session_user():
-            """
-            Clears the current user from the session.
-            """
             if hasattr(session, "user"):
                 delattr(session, "user")
 
-        def build_main_navbar():
-            """
-            Builds the main navigation bar based on the user's role.
+        def _safe_panel(panel: Optional[Any]) -> Optional[ui.Tag]:
+            return panel if panel is not None else None
 
-            Returns:
-                ui.page_navbar: The main navigation bar for the application.
-            """
+        def _build_menu(group: str, pages_for_role: list[PageSpec]) -> Optional[ui.Tag]:
+            children = [
+                _safe_panel(p.ui_factory())
+                for p in pages_for_role
+                if p.group == group
+            ]
+            children = [c for c in children if c is not None]
+            return ui.nav_menu(group, *children) if children else None
+
+        def build_main_navbar():
             user = _get_session_user()
             role = getattr(user, "role", None)
+            pages_for_role = FitnessWarriorApp._pages_for_role(role)
+
             nav_items: list[Any] = []
 
-            admin_menu = _build_admin_menu(role)
-            if role is Role.ADMIN:
-                if admin_menu is not None:
-                    nav_items.append(_safe_panel(status_login_user.get_ui()))
-                    nav_items.append(_safe_panel(dashboard_own_unit.get_ui()))
-                    nav_items.append(own_unit.get_ui())
-                    nav_items.append(_build_test_menu())
-                    nav_items.append(_safe_panel(reports.get_ui()))
-                    nav_items.append(_build_cross_menu())
-                    nav_items.append(_safe_panel(reserve_fitness_room.get_ui()))
-                    nav_items.append(admin_menu)
-            elif role is Role.GUEST:
-                nav_items.append(_safe_panel(own_unit.get_ui()))
-                nav_items.append(_safe_panel(ind_test_show.get_ui()))
-            elif role is Role.PTI:
-                nav_items.append(_safe_panel(status_login_user.get_ui()))
-                nav_items.append(dashboard_own_unit.get_ui())
-                nav_items.append(own_unit.get_ui())
-                nav_items.append(_build_test_menu())
-                nav_items.append(_build_cross_menu())
-                nav_items.append(_safe_panel(reports.get_ui()))
-                nav_items.append(_safe_panel(reserve_fitness_room.get_ui()))
-            elif role is Role.APTI:
-                nav_items.append(_safe_panel(status_login_user.get_ui()))
-                nav_items.append(dashboard_own_unit.get_ui())
-                nav_items.append(own_unit.get_ui())
-                nav_items.append(_build_test_menu())
-                nav_items.append(_safe_panel(reports.get_ui()))
-                nav_items.append(_build_cross_menu())
-                nav_items.append(_safe_panel(reserve_fitness_room.get_ui()))
-            elif role is Role.PLANNER:
-                nav_items.append(_safe_panel((sessions.get_ui())))
+            # Root pages first (flat)
+            for p in pages_for_role:
+                if p.group == "root":
+                    nav_items.append(_safe_panel(p.ui_factory()))
+
+            # Grouped menus
+            nav_items.append(_build_menu("Psychical Tests", pages_for_role))
+            nav_items.append(_build_menu("Cross/Runs", pages_for_role))
+            nav_items.append(_build_menu("Admin", pages_for_role))
+
+            # Global controls
             nav_items.append(ui.nav_spacer())
             nav_items.append(
                 ui.nav_control(
                     ui.div(ui.output_text("login_user"), style="display: flex; align-items: center; height: 100%;")
                 )
             )
-            nav_items.append(ui.nav_control(
-                ui.input_action_button("open_personal_calendar_modal_global", "Personal Calendar",
-                                       class_="btn btn-primary")))
-            nav_items.append(ui.nav_control(
-                ui.input_action_button("open_calendar_modal_global", "Open Calendar", class_="btn btn-primary")))
+            nav_items.append(
+                ui.nav_control(
+                    ui.input_action_button(
+                        "open_personal_calendar_modal_global",
+                        "Personal Calendar",
+                        class_="btn btn-primary",
+                    )
+                )
+            )
+            nav_items.append(
+                ui.nav_control(
+                    ui.input_action_button("open_calendar_modal_global", "Open Calendar", class_="btn btn-primary")
+                )
+            )
             nav_items.append(ui.nav_control(ui.input_action_button("logout_btn", "Logout")))
+
             nav_items = [i for i in nav_items if i is not None]
             return ui.page_navbar(*nav_items, id="main_nav")
 
         @output
         @render.ui
         def main_nav_container():
-            """
-            Render the main navigation container.
-
-            This function updates the navigation bar whenever the `nav_version` changes.
-            """
             _ = nav_version.get()
             return build_main_navbar()
 
         @output
         @render.text
         def login_status():
-            """
-            Render the login status text.
-
-            This function displays the current login status message.
-            """
             return status_text()
 
         @output
         @render.text
         def login_user():
-            """
-            Render the logged-in user information.
-
-            This function displays the username, role, and unit of the currently logged-in user.
-            """
             return login_user_text()
 
         @reactive.Effect
         async def login_dialog():
-            """
-            Display the login dialog modal.
-
-            This function creates and shows a modal for user login, including fields for
-            username and password, and a login button.
-            """
             status_text.set("")
             login = ui.div(
                 ui.h2("Login"),
@@ -417,12 +440,6 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login():
-            """
-            Handle the login process.
-
-            This function validates the user's credentials, sets the session user if valid,
-            and updates the UI accordingly. If the login fails, an error message is displayed.
-            """
             logger = getattr(FitnessWarriorApp, "logger", logging.getLogger(__name__))
             username_login = (input.username_login() or "").lower()
             password_login = input.password_login()
@@ -436,7 +453,8 @@ class FitnessWarriorApp:
                     await user_service.add_audit_log(f"User {username_login} logged in", "login")
                     _set_session_user(user)
                     login_user_text.set(
-                        f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}")
+                        f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}"
+                    )
                     status_text.set("")
                     ui.modal_remove()
                     nav_version.set(nav_version.get() + 1)
@@ -449,12 +467,6 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _mount_on_nav_activation():
-            """
-            Monitor navigation activation.
-
-            This function ensures that the navigation bar is properly mounted and handles
-            any errors during the process.
-            """
             try:
                 _ = input.main_nav()
             except Exception as e:
@@ -463,12 +475,6 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _on_logout_button_click():
-            """
-            Handle the logout button click.
-
-            This function clears the session user, updates the navigation bar, and reloads
-            the page after logging out.
-            """
             try:
                 clicks = input.logout_btn()
             except Exception as e:
@@ -478,19 +484,16 @@ class FitnessWarriorApp:
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You have been logged out.", type="message")
-                ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
+                ui.insert_ui(
+                    selector="body",
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
+                )
 
         last_activity = reactive.Value(time.time())
 
         @output
         @render.ui
         def _activity_probe():
-            """
-            Inject a script to monitor user activity.
-
-            This function adds a script to the page that tracks user interactions and
-            reports activity to the server.
-            """
             return ui.tags.script(
                 """
                 (function(){
@@ -505,11 +508,6 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _record_activity():
-            """
-            Record user activity.
-
-            This function updates the `last_activity` timestamp whenever user activity is detected.
-            """
             try:
                 _ = input.activity_ping()
             except Exception as e:
@@ -519,12 +517,6 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _reset_on_nav_or_login():
-            """
-            Reset the activity timer on navigation or login.
-
-            This function updates the `last_activity` timestamp when the user navigates
-            or logs in.
-            """
             try:
                 _ = input.main_nav()
             except Exception as e:
@@ -535,12 +527,6 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _auto_logout_timer():
-            """
-            Automatically log out inactive users.
-
-            This function checks the `last_activity` timestamp and logs out the user if
-            they have been inactive for 10 minutes.
-            """
             reactive.invalidate_later(5)
             user = _get_session_user()
             if not user:
@@ -550,7 +536,10 @@ class FitnessWarriorApp:
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You were logged out due to 10 minutes of inactivity.", type="warning")
-                ui.insert_ui(selector="body", ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"))
+                ui.insert_ui(
+                    selector="body",
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
+                )
 
 
 FitnessWarriorApp.setup_logger()
