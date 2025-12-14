@@ -11,125 +11,69 @@ from warriorfit.services.service_test import ServiceTest
 class CombatController:
     """
     Represents a controller for managing combat fitness tests.
-
-    This class provides functionality for parsing and formatting time values, validating
-    form data, and performing CRUD operations related to combat fitness tests. It also
-    facilitates interaction with test sessions, military service, and generates data for
-    grid representation of combat tests.
-
-    :ivar be_mil_service: Instance of the MilitaryService class used for managing
-        servicemen-related operations.
-    :type be_mil_service: MilitaryService
     """
     def __init__(self) -> None:
         self._service = ServiceTest()
-        self.be_mil_service =MilitaryService()
-        self._logger=logging.getLogger(__name__)
+        self.be_mil_service = MilitaryService()
+        self._logger = logging.getLogger(__name__)
 
     # ----- Helpers -----
     @staticmethod
     def parse_time_to_seconds(val: str) -> Tuple[bool, int | str]:
         """
-        Parses a provided time string into total seconds.
+        Accepts:
+          - "mm:ss"  (minutes + seconds)  -> returns total seconds (int)
+          - "ss"     (numeric seconds)    -> returns total seconds (int)
 
-        This method takes in a time string formatted as either "mm:ss" or a single
-        value representing the total seconds. It validates the input to ensure it
-        meets the appropriate format and returns a tuple indicating success or failure
-        along with a corresponding value or error message.
-
-        :param val: The time string to parse. It should be in the format "mm:ss" or
-            a numeric string representing total seconds.
-        :type val: str
-        :return: A tuple where the first element is a boolean indicating success or
-            failure, and the second element is either an integer representing total
-            seconds (if successful) or a string containing an error message.
-        :rtype: Tuple[bool, int | str]
+        Validation:
+          - must be > 0
+          - must be <= 120 minutes total (<= 7200 seconds)
+          - if mm:ss: seconds part must be 0..59
         """
         txt = (val or "").strip()
         if not txt:
             return False, "Time value is required."
+
+        MAX_SECONDS = 120 * 60  # 120 minutes
+
         try:
             if ":" in txt:
                 parts = txt.split(":")
                 if len(parts) != 2:
                     return False, "Time must be in mm:ss or seconds."
-                m = int(parts[0])
-                s = int(parts[1])
-                total = m * 60 + s
+
+                m = int(parts[0])  # total minutes
+                s = int(parts[1])  # seconds (0..59)
+
+                if m < 0:
+                    return False, "Minutes must be >= 0."
+                if s < 0 or s >= 60:
+                    return False, "Seconds must be between 0 and 59."
+
+                total_seconds = m * 60 + s
             else:
-                total = int(float(txt))
-            if total <= 0:
+                # numeric input is interpreted as total seconds
+                total_seconds = int(float(txt))
+
+            if total_seconds <= 0:
                 return False, "Time must be positive."
-            return True, int(total)
+            if total_seconds > MAX_SECONDS:
+                return False, total_seconds
+
+            return True, int(total_seconds)
         except Exception:
             return False, "Time must be numeric (mm:ss or seconds)."
 
     @staticmethod
     def format_seconds(sec: float | int) -> str:
-        """
-        Converts a given time in seconds into a formatted string in the "MM:SS" format.
-
-        The static method takes an input number representing seconds, which can be an
-        integer or float, and returns a string formatted as minutes and seconds, with
-        leading zeros for single-digit seconds.
-
-        :param sec: Time in seconds to be converted.
-        :type sec: float | int
-        :return: A string representing the time in the "MM:SS" format.
-        :rtype: str
-        """
         m = int(sec) // 60
         s = int(sec) % 60
         return f"{int(m)}:{int(s):02d}"
 
     @staticmethod
     def overall_passed(obstacle_passed: bool, rope_passed: bool, running_time_s: int) -> bool:
-        """
-        Determines if a participant successfully passes all requirements in a challenge.
-
-        :param obstacle_passed: Indicates if the obstacle course was passed successfully.
-        :type obstacle_passed: bool
-        :param rope_passed: Indicates if the rope course was passed successfully.
-        :type rope_passed: bool
-        :param running_time_s: The running time of the participant in seconds, used to
-            verify if they completed the challenge within the given limit.
-        :type running_time_s: int
-        :return: A boolean value that represents whether the participant successfully
-            completed the challenge requirements, including both courses and the
-            time constraint.
-        :rtype: bool
-        """
         return obstacle_passed and rope_passed and running_time_s <= 7200
 
-    @staticmethod
-    def validate_form(data: Dict[str, Any]) -> Tuple[bool, Dict[str, Any] | str]:
-        """
-        Validates form data based on predefined rules and parses specific field values.
-
-        :param data: Contains form values to validate. The dictionary is expected to have
-            the following keys:
-            - serialnr: str, representing the serial number. This field is mandatory.
-            - combat_speedmars: str, representing speed mars value. It should be parseable
-              to seconds.
-            - combat_obstacle: Any, representing obstacle data. It will be converted to a
-              boolean.
-            - combat_robe: Any, representing robe data. It will be converted to a boolean.
-        :return: A tuple where the first element is a boolean indicating if the validation
-            passed or failed, and the second element is a detailed dictionary of the parsed
-            data if validation passes, or an error message string if validation fails.
-        """
-        if not (data.get("serialnr") or "").strip():
-            return False, "Serial number is required."
-        ok_run, run = CombatController.parse_time_to_seconds(data.get("combat_speedmars") or "")
-        if not ok_run:
-            return False, f"combat_speedmars: {run}"
-        return True, {
-            "combat_speedmars": run,
-            "combat_obstacle": bool(data.get("combat_obstacle")),
-            "combat_robe": bool(data.get("combat_robe")),
-        }
-
-   
     async def load_sessions(self):
         """
         Asynchronously loads all test sessions of type "COMBAT".
@@ -139,7 +83,7 @@ class CombatController:
         `get_all_test_sessions_type_fitness_test` method.
 
         :return: A coroutine that resolves to the list of test sessions.
-        :rtype: list
+        :rtype: listfTime must be <=
         """
         return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT)
 
@@ -305,3 +249,32 @@ class CombatController:
             ID.
         """
         return await self._service.get_test_session_by_id(param)
+
+    def validate_form(dself, data: Dict[str, Any]) -> Tuple[bool, Dict[str, Any] | str]:
+        """
+        Validates combat form data and normalizes it for storage.
+
+        Required:
+          - serialnr (non-empty)
+          - combat_speedmars (mm:ss or seconds)
+
+        Returns:
+          - (True, normalized_dict) on success
+          - (False, error_message) on failure
+        """
+        serial = (data.get("serialnr") or "").strip()
+        if not serial:
+            return False, "Serial number is required."
+
+        _, run_seconds = CombatController.parse_time_to_seconds(
+            (data.get("combat_speedmars") or "").strip()
+        )
+        if not run_seconds:
+            return False, f"combat_speedmars: {run_seconds}"
+
+        return True, {
+            "serialnr": serial,
+            "combat_speedmars": int(run_seconds),  # total seconds
+            "combat_obstacle": bool(data.get("combat_obstacle")),
+            "combat_robe": bool(data.get("combat_robe")),
+        }

@@ -5,6 +5,7 @@ from typing import Any, Final, Optional
 
 import pandas as pd
 from shiny import ui, render, reactive
+from shiny.ui._navs import NavPanel
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.logic.phef_calculator import PhefCalculator
@@ -47,7 +48,7 @@ class PhefPage(Page):
         # Used by app-level refresh triggers (e.g., calendar modal or nav hooks)
         self.refresh_tick.set(self.refresh_tick.get() + 1)
 
-    def get_ui(self) -> ui.Tag:
+    def get_ui(self) -> NavPanel:
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE custom-message handler to toggle disabling inputs.
@@ -177,10 +178,10 @@ class PhefPage(Page):
         # ----------------------------
         # UI state helpers
         # ----------------------------
-        def _toggle_inputs(disabled: bool) -> None:
+        async def _toggle_inputs(disabled: bool) -> None:
             # One custom message instead of inserting script repeatedly.
             try:
-                session.send_custom_message(
+                await session.send_custom_message(
                     "wf_toggle_disabled",
                     {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
                 )
@@ -192,7 +193,7 @@ class PhefPage(Page):
             ui.update_action_button("ph_add_btn", disabled=not can_add)
             ui.update_action_button("ph_update_btn", disabled=not can_update)
 
-        def _clear_form() -> None:
+        async def _clear_form() -> None:
             session.send_input_message("ph_serialnr", {"value": ""})
             session.send_input_message("ph_side_bridge_r", {"value": ""})
             session.send_input_message("ph_side_bridge_l", {"value": ""})
@@ -205,7 +206,7 @@ class PhefPage(Page):
             side_l_score.set("")
             run_score.set("")
 
-            _toggle_inputs(disabled=True)
+            await _toggle_inputs(disabled=True)
             _set_buttons(can_add=False, can_update=False)
 
         def _read_form() -> PhefFormData:
@@ -301,16 +302,16 @@ class PhefPage(Page):
         @reactive.Effect
         async def _init() -> None:
             await _refresh_session_choices()
-            _clear_form()
+            await _clear_form()
             status.set("Ready.")
 
         @reactive.Effect
-        def _on_session_change() -> None:
+        async def _on_session_change() -> None:
             val = (input.ph_session_id() or "").strip()
             selected_session_id.set(val)
 
             # Changing sessions should reset form state (avoid mixing records/scores).
-            _clear_form()
+            await _clear_form()
 
             if not val:
                 self.selected_session = None
@@ -343,7 +344,7 @@ class PhefPage(Page):
             serial = (input.ph_serialnr() or "").strip()
             if not serial:
                 status.set("Enter a serial number.")
-                _clear_form()
+                await _clear_form()
                 return
 
             try:
@@ -355,7 +356,7 @@ class PhefPage(Page):
             if val is None:
                 military_text.set("Not found")
                 status.set("Serial not found.")
-                _toggle_inputs(disabled=True)
+                await _toggle_inputs(disabled=True)
                 _set_buttons(can_add=False, can_update=False)
                 return
 
@@ -364,7 +365,7 @@ class PhefPage(Page):
                 f"{val.gender} {val.age_from_birthdate()} years old"
             )
             status.set("Serial confirmed. Enter results.")
-            _toggle_inputs(disabled=False)
+            await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
 
         # ----------------------------
@@ -489,7 +490,7 @@ class PhefPage(Page):
             except Exception:
                 self.selected_military = None
 
-            _toggle_inputs(disabled=(self.selected_military is None))
+            await _toggle_inputs(disabled=(self.selected_military is None))
             status.set(f"Selected PHEF record for: {serial}" if serial else "Selected PHEF record.")
 
         # ----------------------------
@@ -542,7 +543,7 @@ class PhefPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Added PHEF test for {form.serialnr} in session {form.session_id}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.ph_update_btn)
@@ -576,7 +577,7 @@ class PhefPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated PHEF test for {form.serialnr} in session {form.session_id}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.ph_delete_btn)
@@ -595,7 +596,7 @@ class PhefPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("PHEF record deleted successfully.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.ph_clear_btn)
@@ -607,7 +608,7 @@ class PhefPage(Page):
 _page = PhefPage()
 
 
-def get_ui() -> ui.Tag:
+def get_ui() -> NavPanel:
     return _page.get_ui()
 
 

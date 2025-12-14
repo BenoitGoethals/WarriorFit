@@ -29,9 +29,9 @@ class CalendarPage(Page):
 
                         shiny_calendar("my_calendar"),
                     ),
-                    col_widths=(12,),
+
                 ),
-                fillable=True,
+
             ),
         )
 
@@ -48,9 +48,9 @@ class CalendarPage(Page):
                       ui.card_header(CalendarPage.TITLE_PERSONAL),
                         shiny_calendar("my_calendar"),
                     ),
-                    col_widths=(12,),
+
                 ),
-                fillable=True,
+
             ),
         )
 

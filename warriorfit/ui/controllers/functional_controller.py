@@ -133,13 +133,24 @@ class FunctionalController:
             return df
         out = df.copy()
         if "Total Score" in out.columns:
-            def _fmt(v):
+            def _fmt(v, row_idx):
                 try:
                     n = float(v)
-                    return f"🟥 {n:.0f}" if n < 50 else f"🟩 {n:.0f}"
+                    # Check if all component scores are > 10
+                    row = out.iloc[row_idx]
+                    push_score = float(row.get("Push-ups-score", 0))
+                    sit_score = float(row.get("Sit-ups-score", 0))
+                    pull_score = float(row.get("Pull-ups-score", 0))
+
+                    all_scores_valid = (push_score > 10 and sit_score > 10 and pull_score > 10)
+                    passes = n >= 50 and all_scores_valid
+
+                    return f"🟩 {n:.0f}" if passes else f"❌ {n:.0f}"
                 except Exception:
                     return v
-            out["Total Score"] = out["Total Score"].apply(_fmt)
+
+            out["Total Score"] = out["Total Score"].apply(
+                lambda v: _fmt(v, out[out["Total Score"] == v].index[0]) if v in out["Total Score"].values else v)
         return out
 
     # ----- Commands (only here) -----

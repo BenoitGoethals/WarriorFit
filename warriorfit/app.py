@@ -323,6 +323,7 @@ class FitnessWarriorApp:
                     size="xl",
                     footer=ui.input_action_button("close_calendar_modal_global", "Close"),
                 )
+
             )
 
         @reactive.Effect

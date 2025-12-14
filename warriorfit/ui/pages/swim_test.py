@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from typing import Any, Final, Optional
 
 import pandas as pd
-from shiny import ui, render, reactive
+from shiny import reactive, render, ui
+from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import TestSession, ServiceMen
+from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.pages.page import Page
 
@@ -37,7 +38,7 @@ class SwimTestPage(Page):
     def refresh(self) -> None:
         self.refresh_tick.set(self.refresh_tick.get() + 1)
 
-    def get_ui(self) -> ui.Tag:
+    def get_ui(self) -> NavPanel:
         return ui.nav_panel(
             self.TAB_NAME,
             # One JS custom message handler to toggle input disabling (no repeated script injection).
@@ -136,20 +137,22 @@ class SwimTestPage(Page):
         # ----------------------------
         # UI state helpers
         # ----------------------------
-        def _toggle_inputs(disabled: bool) -> None:
+        async def _toggle_inputs(disabled: bool) -> None:
+            # NOTE: send_custom_message is async; must be awaited (otherwise RuntimeWarning).
             try:
-                session.send_custom_message(
+                await session.send_custom_message(
                     "wf_toggle_disabled",
                     {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
                 )
             except Exception:
+                # Fail open; app stays usable even if custom message fails.
                 pass
 
         def _set_buttons(*, can_add: bool, can_update: bool) -> None:
             ui.update_action_button("swim_add_btn", disabled=not can_add)
             ui.update_action_button("swim_update_btn", disabled=not can_update)
 
-        def _clear_form() -> None:
+        async def _clear_form() -> None:
             session.send_input_message("swim_serialnr", {"value": ""})
             session.send_input_message("swim_passed", {"value": False})
 
@@ -157,7 +160,7 @@ class SwimTestPage(Page):
             selected_swim_id.set("")
             swim_passed_val.set(False)
 
-            _toggle_inputs(disabled=True)
+            await _toggle_inputs(disabled=True)
             _set_buttons(can_add=False, can_update=False)
 
         def _read_form() -> SwimFormData:
@@ -225,16 +228,16 @@ class SwimTestPage(Page):
         @reactive.Effect
         async def _init() -> None:
             await _refresh_session_choices()
-            _clear_form()
+            await _clear_form()
             status.set("Ready.")
 
         @reactive.Effect
-        def _on_session_change() -> None:
+        async def _on_session_change() -> None:
             val = (input.swim_session_id() or "").strip()
             selected_session_id.set(val)
 
             # Switching sessions should reset form state.
-            _clear_form()
+            await _clear_form()
             self.selected_session = None
 
             if not val:
@@ -266,7 +269,7 @@ class SwimTestPage(Page):
             serial = (input.swim_serialnr() or "").strip()
             if not serial:
                 status.set("Enter a serial number.")
-                _clear_form()
+                await _clear_form()
                 return
 
             try:
@@ -278,13 +281,13 @@ class SwimTestPage(Page):
             if val is None:
                 military_text.set("Not found")
                 status.set("Serial not found.")
-                _toggle_inputs(disabled=True)
+                await _toggle_inputs(disabled=True)
                 _set_buttons(can_add=False, can_update=False)
                 return
 
             military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             status.set("Serial confirmed. Set result and save.")
-            _toggle_inputs(disabled=False)
+            await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
 
         # ----------------------------
@@ -312,8 +315,7 @@ class SwimTestPage(Page):
             return render.DataGrid(
                 df,
                 filters=False,
-                selection_mode="rows",
-                row_selection_mode="single",
+                selection_mode="row",
                 width="100%",
             )
 
@@ -357,7 +359,7 @@ class SwimTestPage(Page):
             except Exception:
                 self.selected_military = None
 
-            _toggle_inputs(disabled=(self.selected_military is None))
+            await _toggle_inputs(disabled=(self.selected_military is None))
             status.set(f"Selected Swimming Test: {serial}" if serial else "Selected Swimming Test.")
 
         # ----------------------------
@@ -399,7 +401,7 @@ class SwimTestPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Added Swimming test for {payload['serialnr']} in session {payload['id']}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.swim_update_btn)
@@ -437,7 +439,7 @@ class SwimTestPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Swimming test for {payload['serialnr']}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.swim_delete_btn)
@@ -455,12 +457,12 @@ class SwimTestPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Swimming test deleted successfully.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.swim_clear_btn)
-        def _on_clear() -> None:
-            _clear_form()
+        async def _on_clear() -> None:
+            await _clear_form()
             status.set("Form cleared.")
 
 
