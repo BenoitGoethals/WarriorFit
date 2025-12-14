@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from typing import Any, Final, Optional
 
 import pandas as pd
-from shiny import ui, render, reactive
+from shiny import reactive, render, ui
+from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import TestSession, ServiceMen
+from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.functional_controller import FunctionalController
@@ -46,7 +47,7 @@ class FunctionalPage(Page):
     def refresh(self) -> None:
         self.refresh_tick.set(self.refresh_tick.get() + 1)
 
-    def get_ui(self) -> ui.Tag:
+    def get_ui(self) -> NavPanel:
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
@@ -162,20 +163,22 @@ class FunctionalPage(Page):
         # ----------------------------
         # Helpers
         # ----------------------------
-        def _toggle_inputs(disabled: bool) -> None:
+        async def _toggle_inputs(disabled: bool) -> None:
+            # NOTE: send_custom_message is async; must be awaited (otherwise RuntimeWarning).
             try:
-                session.send_custom_message(
+                await session.send_custom_message(
                     "wf_toggle_disabled",
                     {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
                 )
             except Exception:
+                # Fail open; app stays usable even if custom message fails.
                 pass
 
         def _set_buttons(*, can_add: bool, can_update: bool) -> None:
             ui.update_action_button("functional_add_btn", disabled=not can_add)
             ui.update_action_button("functional_update_btn", disabled=not can_update)
 
-        def _clear_form() -> None:
+        async def _clear_form() -> None:
             session.send_input_message("functional_serialnr", {"value": ""})
             session.send_input_message("functional_push_ups", {"value": 0})
             session.send_input_message("functional_sit_ups", {"value": 0})
@@ -188,7 +191,7 @@ class FunctionalPage(Page):
             sit_val.set("0")
             pull_val.set("0")
 
-            _toggle_inputs(disabled=True)
+            await _toggle_inputs(disabled=True)
             _set_buttons(can_add=False, can_update=False)
 
         def _read_form() -> FunctionalFormData:
@@ -324,7 +327,6 @@ class FunctionalPage(Page):
                 p = _calc_score_pushups(push_reps) or 0
                 s = _calc_score_situps(sit_reps) or 0
                 pu = _calc_score_pullups(pull_reps) or 0
-                # Fixes old bug: `a>10 or b>10 + c>10` (operator precedence & wrong logic)
                 return (p > 10) and (s > 10) and (pu > 10)
             except Exception:
                 return False
@@ -376,16 +378,16 @@ class FunctionalPage(Page):
         @reactive.Effect
         async def _init() -> None:
             await _refresh_session_choices()
-            _clear_form()
+            await _clear_form()
             status.set("Ready.")
 
         @reactive.Effect
-        def _on_session_change() -> None:
+        async def _on_session_change() -> None:
             val = (input.functional_session_id() or "").strip()
             selected_session_id.set(val)
 
             # changing session resets selection + input lock
-            _clear_form()
+            await _clear_form()
 
             if not val:
                 self.selected_session = None
@@ -418,7 +420,7 @@ class FunctionalPage(Page):
             serial = (input.functional_serialnr() or "").strip()
             if not serial:
                 status.set("Enter a serial number.")
-                _clear_form()
+                await _clear_form()
                 return
 
             try:
@@ -430,13 +432,13 @@ class FunctionalPage(Page):
             if val is None:
                 military_text.set("Not found")
                 status.set("Serial not found.")
-                _toggle_inputs(disabled=True)
+                await _toggle_inputs(disabled=True)
                 _set_buttons(can_add=False, can_update=False)
                 return
 
             military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             status.set("Serial confirmed. Enter results.")
-            _toggle_inputs(disabled=False)
+            await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
 
         # ----------------------------
@@ -461,7 +463,12 @@ class FunctionalPage(Page):
                 df = self.controller.decorate_grid(df)
             except Exception:
                 pass
-            return render.DataGrid(df, filters=False, selection_mode="rows", row_selection_mode="single", width="100%")
+            return render.DataGrid(
+                df,
+                filters=False,
+                selection_mode="row",
+                width="100%",
+            )
 
         # ----------------------------
         # Row selection -> populate form
@@ -509,7 +516,7 @@ class FunctionalPage(Page):
             except Exception:
                 self.selected_military = None
 
-            _toggle_inputs(disabled=(self.selected_military is None))
+            await _toggle_inputs(disabled=(self.selected_military is None))
             status.set(f"Selected Functional Test: {serial}" if serial else "Selected Functional Test.")
 
         # ----------------------------
@@ -555,7 +562,7 @@ class FunctionalPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Added Functional test for {record['serialnr']} in session {record['id']}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.functional_update_btn)
@@ -597,7 +604,7 @@ class FunctionalPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Functional test for {payload['serialnr']}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.functional_delete_btn)
@@ -615,12 +622,12 @@ class FunctionalPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Functional test deleted successfully.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.functional_clear_btn)
-        def _on_clear() -> None:
-            _clear_form()
+        async def _on_clear() -> None:
+            await _clear_form()
             status.set("Form cleared.")
 
 
@@ -628,7 +635,7 @@ class FunctionalPage(Page):
 _page = FunctionalPage()
 
 
-def get_ui() -> ui.Tag:
+def get_ui() -> NavPanel:
     return _page.get_ui()
 
 

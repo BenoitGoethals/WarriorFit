@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Final, Optional
 
 import pandas as pd
-from shiny import ui, render, reactive
+from shiny import reactive, render, ui
+from shiny.ui._navs import NavPanel
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.services.military_service import MilitaryService
@@ -45,7 +46,7 @@ class CombatPage(Page):
     def refresh(self) -> None:
         self.refresh_tick.set(self.refresh_tick.get() + 1)
 
-    def get_ui(self) -> ui.Tag:
+    def get_ui(self) -> NavPanel:
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE JS custom message handler (same pattern as PHEF)
@@ -158,20 +159,21 @@ class CombatPage(Page):
         # ----------------------------
         # UI state helpers
         # ----------------------------
-        def _toggle_inputs(disabled: bool) -> None:
+        async def _toggle_inputs(disabled: bool) -> None:
             try:
-                session.send_custom_message(
+                await session.send_custom_message(
                     "wf_toggle_disabled",
                     {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
                 )
             except Exception:
+                # Fail open; app stays usable even if custom message fails.
                 pass
 
         def _set_buttons(*, can_add: bool, can_update: bool) -> None:
             ui.update_action_button("combat_add_btn", disabled=not can_add)
             ui.update_action_button("combat_update_btn", disabled=not can_update)
 
-        def _clear_form() -> None:
+        async def _clear_form() -> None:
             session.send_input_message("combat_serialnr", {"value": ""})
             session.send_input_message("combat_obstacle", {"value": False})
             session.send_input_message("combat_robe", {"value": False})
@@ -181,7 +183,7 @@ class CombatPage(Page):
             selected_combat_id.set("")
             speedmars_pass_fail.set("")
 
-            _toggle_inputs(disabled=True)
+            await _toggle_inputs(disabled=True)
             _set_buttons(can_add=False, can_update=False)
 
         def _read_form() -> CombatFormData:
@@ -262,16 +264,16 @@ class CombatPage(Page):
         @reactive.Effect
         async def _init() -> None:
             await _refresh_session_choices()
-            _clear_form()
+            await _clear_form()
             status.set("Ready.")
 
         @reactive.Effect
-        def _on_session_change() -> None:
+        async def _on_session_change() -> None:
             val = (input.combat_session_id() or "").strip()
             selected_session_id.set(val)
 
             # Prevent mixing records between sessions
-            _clear_form()
+            await _clear_form()
             self.selected_session = None
 
             if not val:
@@ -303,7 +305,7 @@ class CombatPage(Page):
             serial = (input.combat_serialnr() or "").strip()
             if not serial:
                 status.set("Enter a serial number.")
-                _clear_form()
+                await _clear_form()
                 return
 
             try:
@@ -315,7 +317,7 @@ class CombatPage(Page):
             if val is None:
                 military_text.set("Not found")
                 status.set("Serial not found.")
-                _toggle_inputs(disabled=True)
+                await _toggle_inputs(disabled=True)
                 _set_buttons(can_add=False, can_update=False)
                 return
 
@@ -324,7 +326,7 @@ class CombatPage(Page):
                 f"{val.gender} {val.age_from_birthdate()} years old"
             )
             status.set("Serial confirmed. Enter results.")
-            _toggle_inputs(disabled=False)
+            await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
 
         # ----------------------------
@@ -343,9 +345,9 @@ class CombatPage(Page):
                 speedmars_pass_fail.set("")
                 return
 
-            # Domain rule from old code: pass if < 2400 seconds (40:00)
+
             try:
-                speedmars_pass_fail.set("Passes" if float(seconds) < 2400 else "Fails")
+                speedmars_pass_fail.set("Passes" if float(seconds) < 120 * 60 else "Fails")
             except Exception:
                 speedmars_pass_fail.set("")
 
@@ -376,8 +378,7 @@ class CombatPage(Page):
             return render.DataGrid(
                 df,
                 filters=False,
-                selection_mode="rows",
-                row_selection_mode="single",
+                selection_mode="row",
                 width="100%",
             )
 
@@ -427,7 +428,7 @@ class CombatPage(Page):
             except Exception:
                 self.selected_military = None
 
-            _toggle_inputs(disabled=(self.selected_military is None))
+            await _toggle_inputs(disabled=(self.selected_military is None))
             status.set(f"Selected Combat record for: {serial}" if serial else "Selected Combat record.")
 
         # ----------------------------
@@ -480,7 +481,7 @@ class CombatPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Added Combat test for {form.serialnr} in session {form.session_id}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.combat_update_btn)
@@ -512,7 +513,7 @@ class CombatPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Combat test for {form.serialnr} in session {form.session_id}.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.combat_delete_btn)
@@ -530,19 +531,19 @@ class CombatPage(Page):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Combat record deleted successfully.")
-            _clear_form()
+            await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.combat_clear_btn)
-        def _on_clear() -> None:
-            _clear_form()
+        async def _on_clear() -> None:
+            await _clear_form()
             status.set("Form cleared.")
 
 
 _page = CombatPage()
 
 
-def get_ui() -> ui.Tag:
+def get_ui() -> NavPanel:
     return _page.get_ui()
 
 
