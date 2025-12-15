@@ -444,11 +444,18 @@ class PhefPage(Page):
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
+        @reactive.calc
+        async def sessions_phef__data_view() -> pd.DataFrame:
+            df = await sessions_phef__data()
+            df.sort_values(by=["Serial"])
+            # Hide ID in the grid, but keep it in sessions_phef__data() for selection/update/delete logic
+            return df.drop(columns=["ID"], errors="ignore")
+
         @output
         @render.data_frame
         async def ph_grid():
-            df = await sessions_phef__data()
-            return render.DataGrid(df, filters=False, selection_mode="rows", width="100%")
+            df_view = await sessions_phef__data_view()
+            return render.DataGrid(df_view, filters=False, selection_mode="rows", width="100%")
 
         # ----------------------------
         # Row selection -> populate form

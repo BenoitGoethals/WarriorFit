@@ -312,8 +312,12 @@ class SwimTestPage(Page):
                 df = self.controller.decorate_grid(df)
             except Exception:
                 pass
+
+            df.sort_values(by=["Serial"], inplace=True)
+            df_view = df.drop(columns=["ID"], errors="ignore")  # hide in UI only
+
             return render.DataGrid(
-                df,
+                df_view,
                 filters=False,
                 selection_mode="row",
                 width="100%",

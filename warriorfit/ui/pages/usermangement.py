@@ -92,7 +92,8 @@ class UserManagementPage(Page):
         @reactive.calc
         async def users_list():
             _ = self.refresh_tick.get()
-            return await self.controller.list_users_df()
+            lst_df = await self.controller.list_users_df()
+            return lst_df.sort_values(by=self.COLUMN_SERIAL)
 
         @output
         @render.data_frame
@@ -101,6 +102,7 @@ class UserManagementPage(Page):
             to_drop = [c for c in ["Password", "ID"] if c in df.columns]
             if to_drop:
                 df = df.drop(columns=to_drop)
+
             return render.DataGrid(df, filters=True, selection_mode="rows", width="100%")
 
         @output
@@ -143,7 +145,7 @@ class UserManagementPage(Page):
             created = await self.controller.create_user(form)
             if created:
                 self.status.set(f"Created user '{form.serial}'.")
-                self.refresh_tick.set(self.refresh_tick.get() + 1)
+            #    self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
                 self.status.set(f"Failed to create user '{form.serial}'.")
