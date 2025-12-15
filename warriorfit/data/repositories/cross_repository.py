@@ -70,7 +70,7 @@ class CrossRepository(ABCRepository):
         if not lazy:
             query = select(Cross).options(selectinload(Cross.runners))
         else:
-            query = select(Cross)
+            query = select(Cross).order_by(Cross.datetime_start)
         results = await self.fetch_and_log(query, "crosses")
         return results if results else []
 

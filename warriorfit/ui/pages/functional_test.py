@@ -459,12 +459,16 @@ class FunctionalPage(Page):
         @render.data_frame
         async def functional_grid():
             df = await sessions_functional_data()
+
             try:
                 df = self.controller.decorate_grid(df)
             except Exception:
                 pass
+            df.sort_values(by=["Serial"])
+            df_view = df.drop(columns=["ID"], errors="ignore")  # hide ID in UI only
+
             return render.DataGrid(
-                df,
+                df_view,
                 filters=False,
                 selection_mode="row",
                 width="100%",

@@ -41,7 +41,7 @@ class CrossPlanningPage(Page):
                         ui.input_action_button("cr_add_btn", "Add", width="120px", class_="btn-primary w-100"),
                         ui.input_action_button("cr_update_btn", "Update", width="120px", class_="btn-warning w-100"),
                         ui.input_action_button("cr_clear_btn", "Clear", width="120px", class_="btn-secondary w-100"),
-                        ui.input_action_button("cr_delete_btn", "Delete Selected", width="170px"),
+                        ui.input_action_button("cr_delete_btn", "Delete Selected", width="170px",class_="btn-danger w-100"),
                         col_widths=(4,),
                     ),
                     ui.output_text("cr_status"),
@@ -128,7 +128,7 @@ class CrossPlanningPage(Page):
         def cr_status():
             return status.get()
 
-        # Data
+        # Data (full df keeps ID)
         @reactive.calc
         async def cross_df() -> pd.DataFrame:
             _ = self.refresh_tick.get()
@@ -140,18 +140,29 @@ class CrossPlanningPage(Page):
                     "Executed": r["executed"],
                     "Distance": r.get("distance", 0),
                     "Description": r["description"] or "",
-
                 }
                 for r in rows
             ]
-            return pd.DataFrame(data) if data else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", "Distance" ])
+            df = (
+                pd.DataFrame(data)
+                if data
+                else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", "Distance"])
+            )
+            df = df.sort_values(by=["Start"], kind="stable").reset_index(drop=True)
+            return df
+
+        # Data shown in the grid (ID hidden, but still present in cross_df)
+        @reactive.calc
+        async def cross_df_view() -> pd.DataFrame:
+            df = await cross_df()
+            return df.drop(columns=["ID"])
 
         @output
         @render.data_frame
         async def cr_grid():
-            df = await cross_df()
+            df_view = await cross_df_view()
             return render.DataGrid(
-                df,
+                df_view,
                 selection_mode="rows",
                 filters=False,
                 row_selection_mode="single",

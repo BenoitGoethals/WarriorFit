@@ -89,39 +89,7 @@ class SessionsPage(Page):
         async def _populate_pti_choices_effect():
             await _populate_pti_choices()
 
-        # async def _load_initial():
-        #     items = await self.controller.list_sessions()
-        #
-        #     def _to_dict_session(r: Any) -> Dict[str, Any]:
-        #         return {
-        #             "id": getattr(r, "id", None),
-        #             "serial_number_pti": getattr(r, "serial_number_pti", None),
-        #             "datetime_start": getattr(r, "datetime_start", None),
-        #             "canceled": bool(getattr(r, "canceled", False)),
-        #             "description": getattr(r, "description", None),
-        #             "type_test": getattr(getattr(r, "type_test", None), "name", getattr(r, "type_test", None)),
-        #         }
-        #
-        #     converted = [_to_dict_session(r) for r in items]
-        #     sessions.set(converted)
-        #     try:
-        #         max_id = max((rec["id"] for rec in converted if rec["id"] is not None), default=0)
-        #     except ValueError:
-        #         max_id = 0
-        #     next_id.set(max_id + 1)
-        #     return pd.DataFrame(
-        #         [
-        #             {
-        #                 "ID": r.get("id", ""),
-        #                 "Type": r.get("type_test", "") or "",
-        #                 "Start": r.get("datetime_start", "") or "",
-        #                 "Description": r.get("description", "") or "",
-        #                 "Serial PTI": r.get("serial_number_pti", "") or "",
-        #                 "canceled": "Yes" if r.get("canceled", False) else "No",
-        #             }
-        #             for r in converted
-        #         ]
-        #     )
+
 
         def _read_form() -> Dict[str, Any]:
             dt_date = input.se_date()
@@ -185,12 +153,15 @@ class SessionsPage(Page):
         @reactive.calc
         async def session_list():
             _ = self.refresh_tick.get()
-            return await self.controller.list_sessions_df()
+            val = await self.controller.list_sessions_df()
+            val.sort_values(by=["Start"])
+            return val
 
         @output
         @render.data_frame
         async def se_grid():
             df = await session_list()
+
             df = df.drop(columns=["ID"])
             return render.DataGrid(
                 df,

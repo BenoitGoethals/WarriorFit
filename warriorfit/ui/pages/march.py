@@ -10,7 +10,7 @@ from warriorfit.ui.pages.page import Page
 class MarchPage(Page):
 
     def __init__(self):
-        self.controller:MarchController = MarchController()
+        self.controller: MarchController = MarchController()
 
     def refresh(self):
         pass
@@ -21,33 +21,30 @@ class MarchPage(Page):
             ui.h2("🧪 March Tests"),
             ui.layout_columns(
                 ui.div(
-                     ui.card(
-
-                         ui.input_text("service_number_march", "Service Number", placeholder="Service Number"),
-                         ui.input_action_button("march_search", "Conform Serial", width="150px"),
-                         ui.output_text("march_military"),
-                         ui.br(),
-                         ui.input_numeric("distance", "Distance (km)", value=30, min=0),
-                         ui.input_date("datetime_executed", "Date Executed", value=str(datetime.now().date())),
-                         ui.input_checkbox("succeeded", "Succeeded", value=False),
+                    ui.card(
+                        ui.input_text("service_number_march", "Service Number", placeholder="Service Number"),
+                        ui.input_action_button("march_search", "Conform Serial", width="150px"),
+                        ui.output_text("march_military"),
+                        ui.br(),
+                        ui.input_numeric("distance", "Distance (km)", value=30, min=0),
+                        ui.input_date("datetime_executed", "Date Executed", value=str(datetime.now().date())),
+                        ui.input_checkbox("succeeded", "Succeeded", value=False),
                         ui.br(),
                         ui.layout_columns(
-                             ui.input_action_button("add_march_bn", "Add", class_="btn-primary w-100"),
+                            ui.input_action_button("add_march_bn", "Add", class_="btn-primary w-100"),
                             ui.input_action_button("update_march_bn", "Update", class_="btn-warning w-100"),
                             ui.input_action_button("delete_march_bn", "Delete", class_="btn-danger w-100"),
                             ui.input_action_button("clear_march_bn", "Clear", class_="btn-secondary w-100"),
                             col_widths=(4,),
                         ),
-                       ui.output_text("march_status", ),
+                        ui.output_text("march_status"),
                         ui.br(),
-                        #  ui.output_text("march_status"),
                         full_screen=False,
                     ),
                 ),
                 ui.card(
                     ui.card_header("March Tests  (To pass the march)"),
                     ui.output_data_frame("march_grid"),
-
                     full_screen=False,
                 ),
                 col_widths=(4, 8),  # Records occupies ~2/3 width
@@ -55,7 +52,7 @@ class MarchPage(Page):
         )
 
     def server(self, input, output, session):
-        
+
         # State to track the ID of the currently selected row for Update/Delete
         selected_id = reactive.Value(None)
         status = reactive.Value("Ready.")
@@ -85,25 +82,30 @@ class MarchPage(Page):
                 return pd.DataFrame(columns=["service_number", "distance", "succeeded", "datetime_executed"])
 
             # Convert list of march objects to DataFrame
-            df = pd.DataFrame([
-                {
-                    "id": m.id,
-                    "service_number": m.service_number,
-                    "distance": m.distance,
-                    "succeeded": m.succeeded,
-                    "datetime_executed": m.datetime_executed.date() if m.datetime_executed else None
-                }
-                for m in march_data
-            ])
-
-            # Set the 'id' column as the index to keep it in the DataFrame but hide it from view
-
+            df = pd.DataFrame(
+                [
+                    {
+                        "id": m.id,
+                        "service_number": m.service_number,
+                        "distance": m.distance,
+                        "succeeded": m.succeeded,
+                        "datetime_executed": m.datetime_executed.date() if m.datetime_executed else None,
+                    }
+                    for m in march_data
+                ]
+            )
 
             return df
+
         @render.data_frame
         async def march_grid():
             df = await get_march_df()
-            return render.DataGrid(df, selection_mode="row",filters=False, width="100%")
+
+            # Hide "id" from the grid, but keep it in df for selection/update/delete logic
+            display_df = df.drop(columns=["id"]) if "id" in df.columns else df
+            display_df.sort_values(by=["service_number"])
+
+            return render.DataGrid(display_df, selection_mode="row", filters=False, width="100%")
 
         @reactive.Effect
         @reactive.event(input.march_grid_selected_rows)
@@ -111,7 +113,7 @@ class MarchPage(Page):
             indices = input.march_grid_selected_rows()
 
             if indices:
-                # Get the data from the reactive calc
+                # Get the data from the reactive calc (this still contains "id")
                 df = await get_march_df()
                 if df is not None and not df.empty:
                     row_idx = indices[0]
@@ -135,7 +137,7 @@ class MarchPage(Page):
                 service_number=input.service_number_march(),
                 distance=float(input.distance()),
                 succeeded=input.succeeded(),
-                datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time())
+                datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time()),
             )
             await self.controller.add_march(new_march)
             _clear_form()
@@ -152,7 +154,7 @@ class MarchPage(Page):
                     service_number=input.service_number_march(),
                     distance=float(input.distance()),
                     succeeded=input.succeeded(),
-                    datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time())
+                    datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time()),
                 )
                 await self.controller.update_march(updated_march)
                 _clear_form()
@@ -182,7 +184,7 @@ class MarchPage(Page):
         @reactive.effect
         @reactive.event(input.march_search, ignore_none=False)
         async def march_search():
-            if input.service_number_march() is None :
+            if input.service_number_march() is None:
                 ui.update_action_button("add_march_bn", disabled=True)
                 ui.update_action_button("update_march_bn", disabled=True)
                 return
@@ -197,7 +199,9 @@ class MarchPage(Page):
                 ui.update_action_button("add_march_bn", disabled=False)
                 ui.update_action_button("update_march_bn", disabled=False)
                 military.set(
-                    f"{val.rank} {val.service_number} {val.first_name} {val.last_name} {val.gender} {val.age_from_birthdate()} years old")
+                    f"{val.rank} {val.service_number} {val.first_name} {val.last_name} "
+                    f"{val.gender} {val.age_from_birthdate()} years old"
+                )
                 ui.update_action_button("add_march_bn", disabled=False)
                 ui.update_action_button("update_march_bn", disabled=False)
             except Exception:

@@ -367,7 +367,9 @@ class CombatPage(Page):
                 return pd.DataFrame()
 
             try:
-                return self.controller.decorate_grid(df)
+                df = self.controller.decorate_grid(df)
+                df.sort_values(by=["Serial"], inplace=True)
+                return df
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
@@ -375,8 +377,10 @@ class CombatPage(Page):
         @render.data_frame
         async def combat_grid():
             df = await combat_df()
+            df_view = df.drop(columns=["ID"], errors="ignore")  # hide ID in UI only
+
             return render.DataGrid(
-                df,
+                df_view,
                 filters=False,
                 selection_mode="row",
                 width="100%",

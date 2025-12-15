@@ -24,6 +24,7 @@ class CrossPage(Page):
         self.selected_military = reactive.Value(None)
         self._logger=logging.getLogger(__name__)
         self._last_paths = None
+
     NO_SELECTION_MESSAGE = "No row selected"
 
     def refresh(self):
@@ -133,7 +134,6 @@ class CrossPage(Page):
         @render.data_frame
         async def runners_grid():
             df = await runners_df()
-
             return render.DataGrid(df.drop(columns=["ID"], errors="ignore"), filters=False, selection_mode="rows", width="100%",)
 
         @output
@@ -155,19 +155,12 @@ class CrossPage(Page):
         @reactive.calc
         async def cross_df():
             _ = self.refresh_tick.get()  # dependency for re-render
-            # ... load and return DataFrame ...
+
 
         @reactive.Effect
         async def _init():
             await _refresh_cross_choices()
 
-      #  @reactive.Effect
-        async def _on_cross_change():
-            val = (input.cross_id() or "").strip()
-            self.selected_cross_id.set(val)
-            if val:
-                _ = await self.controller.get_cross_by_id(int(val))
-                self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.runner_search)

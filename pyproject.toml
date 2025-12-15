@@ -33,6 +33,7 @@ dependencies = [
     "rsconnect-python>=1.27.1",
     "shiny>=1.4.0",
     "shiny-calendar>=0.2.0",
+    "shinywidgets>=0.7.0",
     "sqlalchemy>=2.0.43",
     "uvicorn>=0.35.0",
 ]
