@@ -440,14 +440,15 @@ class PhefPage(Page):
                 return pd.DataFrame()
 
             try:
-                return self.controller.decorate_grid(df)
+                df= self.controller.decorate_grid(df)
+                return df.sort_values(by=["Serial"])
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
         @reactive.calc
         async def sessions_phef__data_view() -> pd.DataFrame:
             df = await sessions_phef__data()
-            df.sort_values(by=["Serial"])
+
             # Hide ID in the grid, but keep it in sessions_phef__data() for selection/update/delete logic
             return df.drop(columns=["ID"], errors="ignore")
 

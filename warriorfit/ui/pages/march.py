@@ -99,14 +99,16 @@ class MarchPage(Page):
 
         @render.data_frame
         async def march_grid():
-            df = await get_march_df()
+            try:
+                df = await get_march_df()
 
-            # Hide "id" from the grid, but keep it in df for selection/update/delete logic
-            display_df = df.drop(columns=["id"]) if "id" in df.columns else df
-            display_df.sort_values(by=["service_number"])
-
-            return render.DataGrid(display_df, selection_mode="row", filters=False, width="100%")
-
+                display_df = df.drop(columns=["id"]) if "id" in df.columns else df
+                display_df = display_df.sort_values(by=["service_number"])
+                return render.DataGrid(display_df, selection_mode="row", filters=False, width="100%")
+            except Exception as e:
+                # Return empty grid on error
+                empty_df = pd.DataFrame(columns=["service_number", "distance", "succeeded", "datetime_executed"])
+                return render.DataGrid(empty_df, selection_mode="row", filters=False, width="100%")
         @reactive.Effect
         @reactive.event(input.march_grid_selected_rows)
         async def _fill_form_on_select():

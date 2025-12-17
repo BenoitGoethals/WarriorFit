@@ -154,8 +154,8 @@ class SessionsPage(Page):
         async def session_list():
             _ = self.refresh_tick.get()
             val = await self.controller.list_sessions_df()
-            val.sort_values(by=["Start"])
-            return val
+            return val.sort_values(by=["Start"])
+
 
         @output
         @render.data_frame

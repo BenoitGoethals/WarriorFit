@@ -35,7 +35,6 @@ class CrossStaticsPage(Page):
                         ui.strong("Gap between best and worst: "),
                         ui.output_ui("cross_gap"),
                     ),
-
                 ),
                 ui.card(
                     ui.card_header("2. Breakdowns based on demographics", class_="bg-success text-white"),
@@ -47,7 +46,6 @@ class CrossStaticsPage(Page):
                         ui.strong("Gender M / F averages: "),
                         ui.output_ui("cross_gender"),
                     ),
-
                 ),
 
                 col_widths=[3, 3,4]),
@@ -55,7 +53,7 @@ class CrossStaticsPage(Page):
                     ui.card(
                         ui.card_header("3. Best 10 all 5M", class_="bg-success text-white"),
                         ui.div(
-                            ui.output_data_frame("best_10_all_grid")
+                            ui.output_data_frame("best_10_all_grid_5")
                         ),
                     ),
                     ui.layout_columns(
@@ -67,10 +65,6 @@ class CrossStaticsPage(Page):
                         ),
                 ),
             ),
-
-
-
-
         )
 
     def server(self, input, output, session):
@@ -88,19 +82,23 @@ class CrossStaticsPage(Page):
 
         @output
         @render.data_frame
-        async def best_10_all_grid():
-            df = None
-           # _ = self.refresh_tick.get()
-            try:
-                dfc = await self._controller.best_10_all_df()
-                df = dfc[5]
-            except Exception:
-                print("Error fetching data")
-               # df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+        async def best_10_all_grid_5():
+            """
+            Renders the best 10 all-grid data as a DataGrid component.
+
+            This method fetches data asynchronously from the controller and constructs
+            a DataGrid view for the top ten entries. If no data is available, it creates
+            an empty DataFrame with default columns "Type", "Serial", and "Reason".
+
+            :return: A DataGrid representation of the best 10 all-grid data.
+            :rtype: render.DataGrid
+            """
+            dfc = await self._controller.best_10_all_df()
+            df = dfc[5]
             if df is None:
                 df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
             return render.DataGrid(
-                df, # if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
+                df,
                 filters=False,
                 selection_mode="none",
                 width="100%",
@@ -109,18 +107,25 @@ class CrossStaticsPage(Page):
         @output
         @render.data_frame
         async def best_10_all_grid_10():
-            df = None
-            # _ = self.refresh_tick.get()
-            try:
-                dfc = await self._controller.best_10_all_df()
-                df = dfc[10]
-            except Exception:
-                print("Error fetching data")
-            # df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
-            if df is None:
+            """
+            Render a DataGrid showcasing the top 10 items across all grids. If no data is
+            available for the specific index, returns an empty DataFrame with predefined
+            columns: "Type", "Serial", and "Reason".
+
+            This asynchronous function interacts with a controller to retrieve the relevant
+            data and ensures that a fallback mechanism is in place when no result is
+            retrieved for the specified index.
+
+            :return: A DataGrid rendered with the specified content and settings.
+            :rtype: DataGrid
+            """
+            dfc = await self._controller.best_10_all_df()
+            if dfc.get(10) is None:
                 df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            else:
+                df = dfc[10]
             return render.DataGrid(
-                df,  # if isinstance(df, pd.DataFrame) else pd.DataFrame(columns=["Type", "Serial", "Reason"]),
+                df,
                 filters=False,
                 selection_mode="none",
                 width="100%",

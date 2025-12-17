@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Final, Optional
 
 import pandas as pd
+from pandas import DataFrame
 from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
@@ -355,21 +356,19 @@ class CombatPage(Page):
         # Grid data
         # ----------------------------
         @reactive.calc
-        async def combat_df() -> pd.DataFrame:
+        async def combat_df() -> DataFrame | None:
             _ = self.refresh_tick.get()
             sess_id = (selected_session_id.get() or "").strip()
             if not sess_id:
                 return pd.DataFrame()
-
             try:
                 df = await self.controller.list_combat_tests_df(int(sess_id))
             except Exception:
                 return pd.DataFrame()
-
             try:
                 df = self.controller.decorate_grid(df)
-                df.sort_values(by=["Serial"], inplace=True)
-                return df
+                df = df.drop(columns=["id"], errors="ignore")  # hide ID in UI only
+                return df.sort_values(by=["Serial"])
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
@@ -377,10 +376,8 @@ class CombatPage(Page):
         @render.data_frame
         async def combat_grid():
             df = await combat_df()
-            df_view = df.drop(columns=["ID"], errors="ignore")  # hide ID in UI only
-
             return render.DataGrid(
-                df_view,
+                df,
                 filters=False,
                 selection_mode="row",
                 width="100%",

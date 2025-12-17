@@ -7,109 +7,103 @@ from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.logic.singleton import Singleton
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
-
 from warriorfit.services.service_test import ServiceTest
 
 
 class DataCollector(metaclass=Singleton):
     """
     Responsible for collecting and processing fitness test data for servicemen.
-
-    This class is used to manage and aggregate data related to fitness tests conducted
-    for servicemen. It processes results for different test types such as PHEF, Functional,
-    Combat, Swimming, and Mars, organizing the information for further use or analysis.
-
-    :ivar be_mil: Instance of MilitaryService for retrieving servicemen data.
-    :type be_mil: MilitaryService
     """
-    def __init__(self):
+
+    def __init__(self) -> None:
         self._service = ServiceTest()
         self._service_mars = ServiceMarch()
         self.be_mil = MilitaryService()
 
-    async def collect_tests_data_for_serial(self, serial: str, current_year=True) ->pd.DataFrame:
+    # -------------------------
+    # Small helpers
+    # -------------------------
+    @staticmethod
+    def _fmt_dt(dt) -> str:
+        return "-" if dt is None else dt.strftime("%Y-%m-%d %H:%M")
+
+    @staticmethod
+    def _empty_df(columns: list[str]) -> pd.DataFrame:
+        return pd.DataFrame(columns=columns)
+
+    async def _mil_for(self, serial: str):
+        # single lookup + centralized guard
+        return await self.be_mil.get_servicemen_by_serial(serial)
+
+    # -------------------------
+    # Public API
+    # -------------------------
+    async def collect_tests_data_for_serial(self, serial: str, current_year: bool = True) -> pd.DataFrame:
         """
-        Collects and processes test data for a given serial with multiple fitness test types. This function
-        aggregates results from different test categories, including PHEF, Functional, Combat, Swimming, and
-        Mars performance. It formats the data into a structured pandas DataFrame for further use or analysis.
-
-        The function evaluates each test type and calculates comprehensive scores, results, and additional
-        details based on individual test performances.
-
-        :param serial: The serial number of the service member whose test data is to be collected.
-        :type serial: str
-        :param current_year: Optional; Whether to fetch test sessions only from the current year.
-        :type current_year: bool
-        :return: A pandas DataFrame containing the fitness test results of the given serial.
-        :rtype: pd.DataFrame
+        Detailed grid: PHEF shows separate columns (Run/SBR/SBL + points), etc.
         """
-        rows: list[dict] = []
+        frames: list[pd.DataFrame] = []
 
-        # PHEF
+        mil = await self._mil_for(serial)
+        # We keep collecting non-PHEF types even if mil is missing (they don't need age/gender).
+        # PHEF rows will be empty without mil.
+
+        # PHEF (detailed)
+        phef_rows: list[dict] = []
         phef_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
             serial, TypeFitnessTest.PHEF, this_year=current_year
         )
         for sess in phef_sessions or []:
-            phef_tests = sess.fitness_tests
-            for t in phef_tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
+                    continue
+                if mil is None:
                     continue
 
-                mil = await self.be_mil.get_servicemen_by_serial(serial)
-                if not mil:
-                    continue
                 age = mil.age_from_birthdate_and_session_date(sess.datetime_start)
-                run_pts = PhefCalculator.running_result(
-                    getattr(t, "running_time", 0) or 0, age, mil.gender
-                )
-                sbr_pts = PhefCalculator.side_bridge_result(
-                    getattr(t, "sideBridge_r", 0) or 0, age, mil.gender
-                )
-                sbl_pts = PhefCalculator.side_bridge_result(
-                    getattr(t, "sideBridge_l", 0) or 0, age, mil.gender
-                )
+                run_s = int(t.running_time or 0)
+                sbr_s = int(t.sideBridge_r or 0)
+                sbl_s = int(t.sideBridge_l or 0)
+
+                run_pts = PhefCalculator.running_result(run_s, age, mil.gender)
+                sbr_pts = PhefCalculator.side_bridge_result(sbr_s, age, mil.gender)
+                sbl_pts = PhefCalculator.side_bridge_result(sbl_s, age, mil.gender)
+
                 total = (run_pts * (50 / 20.0)) + ((sbr_pts + sbl_pts) * (25 / 20.0))
-                rows.append(
+                phef_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "PHEF",
-                        "Run" : f"{t.running_time}",
-                        "SBR": f"{t.sideBridge_r}",
-                        "SBL": f"{t.sideBridge_l}",
-                        "Run_points" : f"{run_pts}/20",
-                        "SBR_points" : f"{sbr_pts}/20",
-                        "SBL_points" : f"{sbl_pts}/20",
+                        "Run": f"{run_s}",
+                        "SBR": f"{sbr_s}",
+                        "SBL": f"{sbl_s}",
+                        "Run_points": f"{run_pts}/20",
+                        "SBR_points": f"{sbr_pts}/20",
+                        "SBL_points": f"{sbl_pts}/20",
                         "Total": f"{total:.1f}/100",
                         "Result": "Passed" if total >= 50 else "Failed",
-
                     }
                 )
+        if phef_rows:
+            frames.append(pd.DataFrame.from_records(phef_rows))
 
-        # Functional
-        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(serial,
-                                                                                                    TypeFitnessTest.FUNCTIONAL,
-                                                                                                    this_year=current_year
-                                                                                                    )
+        # Functional (detailed)
+        func_rows: list[dict] = []
+        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
+        )
         for sess in func_sessions or []:
-            func_tests = await sess.fitness_tests
-            for t in func_tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
                     continue
-                pu = int(getattr(t, "push_ups", 0) or 0)
-                su = int(getattr(t, "sit_ups", 0) or 0)
-                plu = int(getattr(t, "pull_ups", 0) or 0)
+
+                pu = int(t.push_ups or 0)
+                su = int(t.sit_ups or 0)
+                plu = int(t.pull_ups or 0)
                 total = pu + su + plu
-                rows.append(
+                func_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "Functional",
                         "PU": f"{pu}",
                         "SU": f"{su}",
@@ -119,31 +113,28 @@ class DataCollector(metaclass=Singleton):
                         "PLU_scores": f"{plu}",
                         "Total": f"{total}",
                         "Result": "Passed" if total >= 50 else "Failed",
-
                     }
                 )
+        if func_rows:
+            frames.append(pd.DataFrame.from_records(func_rows))
 
-        # Combat
-        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(serial,
-                                                                                                      TypeFitnessTest.COMBAT,
-                                                                                                      this_year=current_year
-                                                                                                      )
+        # Combat (detailed)
+        combat_rows: list[dict] = []
+        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.COMBAT, this_year=current_year
+        )
         for sess in combat_sessions or []:
-            tests = sess.fitness_tests
-            for t in tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
                     continue
-                rope = bool(getattr(t, "rope_passed", False))
-                obstacle = bool(getattr(t, "obstacle_passed", False))
-                run_s = int(getattr(t, "running_time", 0) or 0)
+
+                rope = bool(t.rope_passed)
+                obstacle = bool(t.obstacle_passed)
+                run_s = int(t.running_time or 0)
                 passed = rope and obstacle and run_s <= 7200
-                rows.append(
+                combat_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "Combat",
                         "Rop": f"{rope}",
                         "Obs": f"{obstacle}",
@@ -152,41 +143,38 @@ class DataCollector(metaclass=Singleton):
                         "Obs_scores": f"{'OK' if obstacle else 'NO'}",
                         "Speed_scores": f"{run_s}",
                         "Result": "Passed" if passed else "Failed",
-
                     }
                 )
+        if combat_rows:
+            frames.append(pd.DataFrame.from_records(combat_rows))
 
-        # Swimming
-        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(serial,
-                                                                                                    TypeFitnessTest.SWIMMING,
-                                                                                                    this_year=current_year
-                                                                                                    )
+        # Swimming (detailed)
+        swim_rows: list[dict] = []
+        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.SWIMMING, this_year=current_year
+        )
         for sess in swim_sessions or []:
-            tests = sess.fitness_tests
-            for t in tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
                     continue
-                ok = bool(getattr(t, "swim_paased", False))
-                rows.append(
+                ok = bool(t.swim_paased)
+                swim_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "Swimming",
                         "Details": "Combat swim",
-
                         "Result": "Passed" if ok else "Failed",
-
                     }
                 )
+        if swim_rows:
+            frames.append(pd.DataFrame.from_records(swim_rows))
 
-        # mars
+        # Mars (detailed)
+        mars_rows: list[dict] = []
         marses = await self._service_mars.get_mars_from_service_men(serial_number=serial, this_year=False)
         for mars in marses or []:
-            ok = bool(getattr(mars, "succeeded", False))
-            rows.append(
+            ok = bool(mars.succeeded)
+            mars_rows.append(
                 {
                     "Date": mars.datetime_executed.strftime("%Y-%m-%d %H:%M"),
                     "Type": "Mars",
@@ -194,9 +182,12 @@ class DataCollector(metaclass=Singleton):
                     "Result": "Passed" if ok else "Failed",
                 }
             )
+        if mars_rows:
+            frames.append(pd.DataFrame.from_records(mars_rows))
 
-        if not rows:
-            return pd.DataFrame(
+        # Finalize
+        if not frames:
+            return self._empty_df(
                 columns=[
                     "Date",
                     "Type",
@@ -204,146 +195,138 @@ class DataCollector(metaclass=Singleton):
                     "Scores",
                     "Total",
                     "Result",
-
                 ]
             )
-        rows.sort(key=lambda r: r["Date"])
-        return pd.DataFrame(rows)
 
-    async def collect_tests_for_serial(self, serial: str,current_year=True) -> pd.DataFrame:
+        df = pd.concat(frames, ignore_index=True, sort=False)
+        # stable sort on the display string (keeps existing behavior)
+        df = df.sort_values(by=["Date"], kind="stable").reset_index(drop=True)
+        return df
 
-        rows: list[dict] = []
+    async def collect_tests_for_serial(self, serial: str, current_year: bool = True) -> pd.DataFrame:
+        """
+        Summary grid: each row has Details/Scores/Total/Result.
+        """
+        frames: list[pd.DataFrame] = []
 
-        # PHEF
+        mil = await self._mil_for(serial)
+
+        # PHEF (summary)
+        phef_rows: list[dict] = []
         phef_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-           serial, TypeFitnessTest.PHEF,this_year=current_year
+            serial, TypeFitnessTest.PHEF, this_year=current_year
         )
         for sess in phef_sessions or []:
-            phef_tests = sess.fitness_tests
-            for t in phef_tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
+                    continue
+                if mil is None:
                     continue
 
-                mil = await self.be_mil.get_servicemen_by_serial(serial)
-                if not mil:
-                    continue
                 age = mil.age_from_birthdate_and_session_date(sess.datetime_start)
-                run_pts = PhefCalculator.running_result(
-                    getattr(t, "running_time", 0) or 0, age, mil.gender
-                )
-                sbr_pts = PhefCalculator.side_bridge_result(
-                    getattr(t, "sideBridge_r", 0) or 0, age, mil.gender
-                )
-                sbl_pts = PhefCalculator.side_bridge_result(
-                    getattr(t, "sideBridge_l", 0) or 0, age, mil.gender
-                )
+                run_s = int(t.running_time or 0)
+                sbr_s = int(t.sideBridge_r or 0)
+                sbl_s = int(t.sideBridge_l or 0)
+
+                run_pts = PhefCalculator.running_result(run_s, age, mil.gender)
+                sbr_pts = PhefCalculator.side_bridge_result(sbr_s, age, mil.gender)
+                sbl_pts = PhefCalculator.side_bridge_result(sbl_s, age, mil.gender)
+
                 total = (run_pts * (50 / 20.0)) + ((sbr_pts + sbl_pts) * (25 / 20.0))
-                rows.append(
+                phef_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "PHEF",
-                        "Details": f"Run {t.running_time}s, SBR {t.sideBridge_r}s, SBL {t.sideBridge_l}s",
+                        "Details": f"Run {run_s}s, SBR {sbr_s}s, SBL {sbl_s}s",
                         "Scores": f"Run {run_pts}/20, SBR {sbr_pts}/20, SBL {sbl_pts}/20",
                         "Total": f"{total:.1f}/100",
                         "Result": "🟢 Passed" if total >= 50 else " 🔴 Failed",
-
                     }
                 )
+        if phef_rows:
+            frames.append(pd.DataFrame.from_records(phef_rows))
 
-        # Functional
-        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(serial,
-            TypeFitnessTest.FUNCTIONAL,this_year=current_year
+        # Functional (summary)
+        func_rows: list[dict] = []
+        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
         )
         for sess in func_sessions or []:
-            func_tests = sess.fitness_tests
-            for t in func_tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
                     continue
-                pu = int(getattr(t, "push_ups", 0) or 0)
-                su = int(getattr(t, "sit_ups", 0) or 0)
-                plu = int(getattr(t, "pull_ups", 0) or 0)
+                pu = int(t.push_ups or 0)
+                su = int(t.sit_ups or 0)
+                plu = int(t.pull_ups or 0)
                 total = pu + su + plu
-                rows.append(
+                func_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "Functional",
                         "Details": f"PU {pu}, SU {su}, PLU {plu}",
                         "Scores": f"PU {pu}, SU {su}, PLU {plu}",
                         "Total": f"{total}",
-                         "Result": "🟢 Passed" if total >= 50 else " 🔴 Failed",
-
+                        "Result": "🟢 Passed" if total >= 50 else " 🔴 Failed",
                     }
                 )
+        if func_rows:
+            frames.append(pd.DataFrame.from_records(func_rows))
 
-        # Combat
-        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(serial,
-            TypeFitnessTest.COMBAT,this_year=current_year
+        # Combat (summary)
+        combat_rows: list[dict] = []
+        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.COMBAT, this_year=current_year
         )
         for sess in combat_sessions or []:
-            tests =  sess.fitness_tests
-            for t in tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
                     continue
-                rope = bool(getattr(t, "rope_passed", False))
-                obstacle = bool(getattr(t, "obstacle_passed", False))
-                run_s = int(getattr(t, "running_time", 0) or 0)
+                rope = bool(t.rope_passed)
+                obstacle = bool(t.obstacle_passed)
+                run_s = int(t.running_time or 0)
                 passed = rope and obstacle and run_s <= 7200
-                rows.append(
+                combat_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "Combat",
                         "Details": f"Rope {'OK' if rope else 'NO'}, Obstacle {'OK' if obstacle else 'NO'}, Speedmars {run_s}s",
                         "Scores": f"Rope {'OK' if rope else 'NO'}, Obstacle {'OK' if obstacle else 'NO'}",
                         "Total": "-",
                         "Result": "🟢 Passed" if passed else "🔴 Failed",
-
                     }
                 )
+        if combat_rows:
+            frames.append(pd.DataFrame.from_records(combat_rows))
 
-        # Swimming
-        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(serial,
-            TypeFitnessTest.SWIMMING,this_year=current_year
+        # Swimming (summary)
+        swim_rows: list[dict] = []
+        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.SWIMMING, this_year=current_year
         )
         for sess in swim_sessions or []:
-            tests =  sess.fitness_tests
-            for t in tests or []:
-                if getattr(t, "serial_number", "") != serial:
+            for t in (sess.fitness_tests or []):
+                if t.serial_number != serial:
                     continue
-                ok = bool(getattr(t, "swim_paased", False))
-                rows.append(
+                ok = bool(t.swim_paased)
+                swim_rows.append(
                     {
-                        "Date": (
-                            "-"
-                            if sess.datetime_start is None
-                            else sess.datetime_start.strftime("%Y-%m-%d %H:%M")
-                        ),
+                        "Date": self._fmt_dt(sess.datetime_start),
                         "Type": "Swimming",
                         "Details": "Combat swim",
                         "Scores": "-",
                         "Total": "-",
                         "Result": "🟢 Passed" if ok else "🔴 Failed",
-
                     }
                 )
+        if swim_rows:
+            frames.append(pd.DataFrame.from_records(swim_rows))
 
-
-        #mars
-        marses= await self._service_mars.get_march_from_service_men(serial_number=serial,this_year=False)
+        # Mars (summary) — keep existing service call name used here
+        mars_rows: list[dict] = []
+        marses = await self._service_mars.get_march_from_service_men(serial_number=serial, this_year=False)
         for mars in marses or []:
-            ok = bool(getattr(mars, "succeeded", False))
-            rows.append(
+            ok = bool(mars.succeeded)
+            mars_rows.append(
                 {
                     "Date": mars.datetime_executed.strftime("%Y-%m-%d %H:%M"),
                     "Type": "Mars",
@@ -353,32 +336,21 @@ class DataCollector(metaclass=Singleton):
                     "Result": "🟢 Passed" if ok else "🔴 Failed",
                 }
             )
+        if mars_rows:
+            frames.append(pd.DataFrame.from_records(mars_rows))
 
-        if not rows:
-            return pd.DataFrame(
-                columns=[
-                    "Date",
-                    "Type",
-                    "Details",
-                    "Scores",
-                    "Total",
-                    "Result",
+        if not frames:
+            return self._empty_df(columns=["Date", "Type", "Details", "Scores", "Total", "Result"])
 
-                ]
-            )
-        rows.sort(key=lambda r: r["Date"])
-        return pd.DataFrame(rows)
+        df = pd.concat(frames, ignore_index=True, sort=False)
+        df = df.sort_values(by=["Date"], kind="stable").reset_index(drop=True)
+        return df
 
     async def collect_all_mil_from_own_unit_not_executed_phefs(self) -> pd.DataFrame:
-        mil_series = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
-        )
-        rows = []
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        rows: list[dict] = []
         for m in mil_series:
-            mils: list[PhefTest] = await self._service.get_all_phef_mil(
-                m.service_number
-            )
-
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
             if len(mils) == 0:
                 rows.append(
                     {
@@ -391,18 +363,13 @@ class DataCollector(metaclass=Singleton):
                 )
         if not rows:
             return pd.DataFrame(columns=["Serial", "Name", "Gender", "Age", "Para"])
-        rows.sort(key=lambda r: r["Name"])
-        return pd.DataFrame(rows)
+        return pd.DataFrame.from_records(rows).sort_values(by=["Name"], kind="stable").reset_index(drop=True)
 
     async def collect_all_mil_from_own_unit_failed_phefs(self) -> pd.DataFrame:
-        mil_series = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
-        )
-        rows = []
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        rows: list[dict] = []
         for m in mil_series:
-            mils: list[PhefTest] = await self._service.get_all_phef_mil(
-                m.service_number
-            )
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
 
             passed = any(
                 [
@@ -431,38 +398,36 @@ class DataCollector(metaclass=Singleton):
             )
         if not rows:
             return pd.DataFrame(columns=["Serial", "Name", "Gender", "Age", "Para"])
-        rows.sort(key=lambda r: r["Name"])
-        return pd.DataFrame(rows)
+        return pd.DataFrame.from_records(rows).sort_values(by=["Name"], kind="stable").reset_index(drop=True)
 
     async def collect_tests_data_for_own_unit(self) -> pd.DataFrame:
-        """
-        Asynchronously collects and aggregates test data for all service members in the
-        own unit. Retrieves and processes results for various fitness test types, along
-        with their statuses, and returns the consolidated data as a pandas DataFrame.
-
-        :return: A pandas DataFrame containing the aggregated fitness test data for each
-            service member in the unit. The DataFrame contains columns such as "Rank",
-            "Serial", "Name", and fitness test statuses ("Phef", "Combat", "Swimming",
-            "Functional", "March").
-        :rtype: pd.DataFrame
-        """
         own_unit = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
-        rows = []
+        rows: list[dict] = []
+
         for m in own_unit:
-            data_phef = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(m.service_number,
-                                                                                                    TypeFitnessTest.PHEF)
+            data_phef = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                m.service_number, TypeFitnessTest.PHEF
+            )
             data_functional = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                m.service_number, TypeFitnessTest.FUNCTIONAL)
-            data_combat = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(m.service_number,
-                                                                                                      TypeFitnessTest.COMBAT)
+                m.service_number, TypeFitnessTest.FUNCTIONAL
+            )
+            data_combat = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                m.service_number, TypeFitnessTest.COMBAT
+            )
             data_swimming = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                m.service_number, TypeFitnessTest.SWIMMING)
-            data_mars = await self._service_mars.get_march_from_service_men(serial_number=m.service_number,
-                                                                           this_year=False)
+                m.service_number, TypeFitnessTest.SWIMMING
+            )
+            data_mars = await self._service_mars.get_march_from_service_men(serial_number=m.service_number, this_year=False)
 
             if data_phef and data_phef[0].fitness_tests:
-                dt:PhefTest = data_phef[0].fitness_tests[0]
-                tp =PhefCalculator.calculate_phef_score(dt.running_time, dt.sideBridge_l, dt.sideBridge_r, m.age_from_birthdate(), m.gender)
+                dt: PhefTest = data_phef[0].fitness_tests[0]
+                tp = PhefCalculator.calculate_phef_score(
+                    dt.running_time,
+                    dt.sideBridge_l,
+                    dt.sideBridge_r,
+                    m.age_from_birthdate(),
+                    m.gender,
+                )
                 phef_status = "Passed" if tp[4] else "Failed"
             else:
                 phef_status = "Not Done"
@@ -472,15 +437,17 @@ class DataCollector(metaclass=Singleton):
                 combat_status = "Passed" if cmt.rope_passed and cmt.obstacle_passed else "Failed"
             else:
                 combat_status = "Not Done"
+
             if data_swimming and data_swimming[0].fitness_tests:
-                dw=data_swimming[0].fitness_tests[0]
+                dw = data_swimming[0].fitness_tests[0]
                 swim_status = "Passed" if dw.swim_paased else "Failed"
             else:
                 swim_status = "Not Done"
+
             if data_functional and data_functional[0].fitness_tests:
-               dfd=data_functional[0].fitness_tests[0]
-               functional_score = (dfd.push_ups + dfd.sit_ups + dfd.pull_ups) / 3
-               func_status = "Passed" if functional_score >= 50 else "Failed"
+                dfd = data_functional[0].fitness_tests[0]
+                functional_score = (dfd.push_ups + dfd.sit_ups + dfd.pull_ups) / 3
+                func_status = "Passed" if functional_score >= 50 else "Failed"
             else:
                 func_status = "Not Done"
 
@@ -491,19 +458,20 @@ class DataCollector(metaclass=Singleton):
             else:
                 mars_status = "Not Done"
 
-
-            rows.append({
-                "Rank": m.rank,
-                "Serial": m.service_number,
-                "Name": f"{m.first_name} {m.last_name}",
-                "Phef": phef_status,
-                "Combat": combat_status,
-                "Swimming": swim_status,
-                "Functional": func_status,
-                "March": mars_status
-            })
+            rows.append(
+                {
+                    "Rank": m.rank,
+                    "Serial": m.service_number,
+                    "Name": f"{m.first_name} {m.last_name}",
+                    "Phef": phef_status,
+                    "Combat": combat_status,
+                    "Swimming": swim_status,
+                    "Functional": func_status,
+                    "March": mars_status,
+                }
+            )
 
         if not rows:
-            return pd.DataFrame(columns=["Rank", "Serial","Name", "Phef", "Combat", "Swimming", "Functional", "Mars"])
+            return pd.DataFrame(columns=["Rank", "Serial", "Name", "Phef", "Combat", "Swimming", "Functional", "Mars"])
 
-        return pd.DataFrame(rows)
+        return pd.DataFrame.from_records(rows)

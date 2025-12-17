@@ -460,13 +460,24 @@ class FunctionalPage(Page):
         async def functional_grid():
             df = await sessions_functional_data()
 
+            # Early return for empty data
+            if df.empty:
+                return render.DataGrid(
+                    df,
+                    filters=False,
+                    selection_mode="row",
+                    width="100%",
+                )
+
             try:
                 df = self.controller.decorate_grid(df)
-            except Exception:
-                pass
-            df.sort_values(by=["Serial"])
-            df_view = df.drop(columns=["ID"], errors="ignore")  # hide ID in UI only
-
+                df = df.sort_values(by=["Serial"])
+                df_view = df.drop(columns=["ID"], errors="ignore")
+            except Exception as e:
+                # Log the error for debugging (consider using proper logging)
+                # For now, fall back to showing undecorated data
+                df_view = df.drop(columns=["ID"], errors="ignore")
+        
             return render.DataGrid(
                 df_view,
                 filters=False,
