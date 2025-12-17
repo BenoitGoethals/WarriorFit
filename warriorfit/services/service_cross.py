@@ -1,36 +1,45 @@
+from __future__ import annotations
+
+import asyncio
 from typing import Any
-from numpy import floating
-from numpy.ma.extras import average
+
+import pandas as pd
+from numpy import floating  # kept for return type compatibility
+
 from warriorfit.core.Gender import Gender
-from warriorfit.data.repositories.cross_repository import CrossRepository
 from warriorfit.data.model.db_model import Cross, Runner, ServiceMen
+from warriorfit.data.repositories.cross_repository import CrossRepository
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service import Service
 
 
 class ServiceCross(Service):
     """
-    Provides functionality for managing and retrieving data related to crosses
-    and their associated runners. This class interfaces with a repository for
-    persisting and fetching cross and runner-related information. It also offers
-    compute capabilities for cross statistics, runner management, and auditing changes.
+    Handles operations related to cross management and runners.
 
-    :ivar be_mil_service: An instance of MilitaryService used for fetching
-        service-related details.
+    The `ServiceCross` class extends the `Service` class, providing methods to
+    manage cross events and participants (runners). The operations include adding,
+    updating, retrieving, and deleting cross events and runners while maintaining
+    audit logs for changes. It offers advanced statistics functionality using
+    data processing libraries like `pandas` for faster aggregation and parallel
+    processing techniques for performance optimization.
+
+    :ivar be_mil_service: An instance of the `MilitaryService` class used for
+        servicemen-related lookups.
     :type be_mil_service: MilitaryService
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._cross_repo = CrossRepository()
         self.be_mil_service = MilitaryService()
 
-    async def get_runner(self, runner_id:int) -> Runner | None:
+    async def get_runner(self, runner_id: int) -> Runner | None:
         return await self._cross_repo.get_runner(runner_id)
 
-    async def get_cross(self, cross_id) -> Cross | None:
+    async def get_cross(self, cross_id: int) -> Cross | None:
         return await self._cross_repo.get_cross(cross_id)
 
-    async def add(self, cross:Cross) -> Cross | None:
+    async def add(self, cross: Cross) -> Cross | None:
         added = await self._cross_repo.add_cross(cross)
         if added:
             await self.add_audit_log(details=f"Cross {cross} added", action="add")
@@ -45,22 +54,21 @@ class ServiceCross(Service):
     async def delete_cross(self, id_nr: int) -> bool:
         deleted = await self._cross_repo.remove_cross(id_nr)
         if deleted:
-            await self.add_audit_log(details=f"Cross {id} deleted", action="delete")
+            await self.add_audit_log(details=f"Cross {id_nr} deleted", action="delete")
         return deleted
 
     async def get_all_crosses(self) -> list[Cross]:
         return await self._cross_repo.get_all_cross()
 
-    async def get_cross_by_id(self, id_nr, lazy=True) -> Cross | None:
+    async def get_cross_by_id(self, id_nr: int, lazy: bool = True) -> Cross | None:
         if lazy:
             return await self._cross_repo.get_cross(id_nr)
-        else:
-            return await self._cross_repo.get_cross_full(id_nr)
+        return await self._cross_repo.get_cross_full(id_nr)
 
-    async def get_cross_with_runners(self, id_nr) -> list[Runner]:
+    async def get_cross_with_runners(self, id_nr: int) -> list[Runner]:
         return await self._cross_repo.get_runners_from_a_cross(id_nr)
 
-    async def add_runner_to_cross(self, id_cross, r) -> Runner:
+    async def add_runner_to_cross(self, id_cross: int, r: Runner) -> Runner:
         r.cross_id = id_cross
         added = await self._cross_repo.add_runner_to_cross(id_cross, r)
         if added:
@@ -79,206 +87,218 @@ class ServiceCross(Service):
             )
         return updated
 
-    async def remove_runner_from_cross(self, id_nr:int) -> bool:
+    async def remove_runner_from_cross(self, id_nr: int) -> bool:
         removed = await self._cross_repo.remove_runner(id_nr)
         if removed:
-            await self.add_audit_log(
-                details=f"Runner {id_nr} removed from cross", action="delete"
-            )
+            await self.add_audit_log(details=f"Runner {id_nr} removed from cross", action="delete")
         return removed
 
-    async def update_cross(self, cross:Cross):
+    async def update_cross(self, cross: Cross) -> Cross | None:
         updated = await self._cross_repo.update_cross(cross)
         if updated:
-            await self.add_audit_log(
-                details=f"Cross {cross} updated", action="update"
-            )
+            await self.add_audit_log(details=f"Cross {cross} updated", action="update")
         return updated
 
-    async def exist_in_cross(self, serial, cross_id):
+    async def exist_in_cross(self, serial: str, cross_id: int) -> bool:
         return await self._cross_repo.exist_in_cross(serial, cross_id)
 
+    # ----------------------------
+    # Fast stats (pandas + async gather)
+    # ----------------------------
+
+    @staticmethod
+    def _bucket_age(age: int) -> str:
+        if age < 18:
+            return "<18"
+        if age <= 25:
+            return "18-25"
+        if age <= 35:
+            return "26-35"
+        if age <= 45:
+            return "36-45"
+        if age <= 56:
+            return "46-56"
+        return "57+"
+
+    @staticmethod
+    def _runners_df(all_cross: list[Cross]) -> pd.DataFrame:
+
+        rows: list[dict[str, Any]] = []
+        for c in all_cross:
+            # If relationship isn't loaded for some reason, this will raise; we fail-safe to empty.
+            try:
+                runners = c.runners
+            except Exception:
+                runners = []
+
+            for r in runners:
+                rows.append(
+                    {
+                        "cross_id": c.id,
+                        "distance": c.distance,
+                        "serial_number": r.serial_number,
+                        "running_time": r.running_time,
+                        "runner_obj": r,  # keep original objects for output format
+                    }
+                )
+        return pd.DataFrame.from_records(rows)
+
     async def get_cross_stats(self):
-        """
-        Asynchronously fetches and processes statistical data for all cross events.
 
-        This method retrieves a list of all cross events and calculates various statistical
-        data such as average time, gap time, best time, age group data, gender-based times,
-        and the top 10 runners based on running time. Returns a tuple of these statistics.
-
-        :return: A tuple containing the following statistics:
-            - Average time across all cross events (float)
-            - Gap time across all cross events (float)
-            - Best time in all cross events (float)
-            - Age group statistics (dict)
-            - Gender-based times in cross events as a tuple of (float, float)
-            - Top 10 runners based on running time (dict)
-        :rtype: tuple
-        """
         all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
-        if len(all_cross) > 0:
-            return (
-                await self.get_average(all_cross) if all_cross else 0.0,
-                await self.get_gap_time(all_cross)if all_cross else 0.0,
-                await self.get_best_time(all_cross) if all_cross else 0.0,
-                await self.get_age_group(all_cross) if all_cross else {},
-                await self.get_gender_time(all_cross) if all_cross else (0.0, 0.0),
-                await self.get_top_10_runners_based_on_running_time(all_cross) if all_cross else {},
-            )
-        else:
-          return 0.0, 0.0, 0.0, {}, (0.0, 0.0), {}
+        if not all_cross:
+            return 0.0, 0.0, 0.0, {}, (0.0, 0.0), {}
 
-    async def get_average(self, all_cross) -> float:
-        average = 0.0
+        df = self._runners_df(all_cross)
+        if df.empty:
+            return 0.0, 0.0, 0.0, {}, (0.0, 0.0), {}
+
+        df["running_time"] = pd.to_numeric(df["running_time"], errors="coerce")
+        df = df.dropna(subset=["running_time"])
+        if df.empty:
+            return 0.0, 0.0, 0.0, {}, (0.0, 0.0), {}
+
+
+        total_time = float(df["running_time"].sum())
+        avg_time = total_time / float(len(all_cross)) if all_cross else 0.0
+
+        best_time = float(df["running_time"].max())
+        gap_time = float(df["running_time"].max() - df["running_time"].min())
+
+        # Fetch servicemen once per unique serial, concurrently
+        serials = df["serial_number"].dropna().astype(str).unique().tolist()
+        servicemen_list = await asyncio.gather(
+            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials),
+            return_exceptions=True,
+        )
+
+        sm_rows: list[dict[str, Any]] = []
+        for serial, sm in zip(serials, servicemen_list, strict=False):
+            if isinstance(sm, Exception) or sm is None:
+                continue
+            try:
+                sm_rows.append(
+                    {
+                        "serial_number": str(serial),
+                        "gender": sm.gender,
+                        "age_group": self._bucket_age(sm.age_from_birthdate()),
+                    }
+                )
+            except Exception:
+                continue
+
+        sm_df = pd.DataFrame.from_records(sm_rows)
+        if not sm_df.empty:
+            df2 = df.copy()
+            df2["serial_number"] = df2["serial_number"].astype(str)
+            df2 = df2.merge(sm_df, on="serial_number", how="left")
+        else:
+            df2 = df.copy()
+            df2["gender"] = pd.NA
+            df2["age_group"] = pd.NA
+
+        # Age groups
+        age_group_stats: dict[str, int] = (
+            df2["age_group"]
+            .dropna()
+            .value_counts()
+            .astype(int)
+            .to_dict()
+        )
+
+        # Gender avg times
+        female_avg = float(df2.loc[df2["gender"] == Gender.F, "running_time"].mean()) if (df2["gender"] == Gender.F).any() else 0.0
+        male_avg = float(df2.loc[df2["gender"] != Gender.F, "running_time"].mean()) if df2["gender"].notna().any() else 0.0
+
+        # Top 10 per distance, ascending running_time (best first), return Runner objects
+        top_10_by_distance: dict[Any, list[Runner]] = {}
+        df_sorted = df2.sort_values(["distance", "running_time"], ascending=[True, True])
+        for distance, group in df_sorted.groupby("distance", dropna=False, sort=False):
+            top_10_by_distance[distance] = group["runner_obj"].head(10).tolist()
+
+        return avg_time, gap_time, best_time, age_group_stats, (female_avg, male_avg), top_10_by_distance
+
+
+    async def get_average(self, all_cross: list[Cross]) -> float:
+        # Preserves old semantics: sum(all runners) / len(all_cross)
+        total = 0.0
         for cross in all_cross:
             for runner in cross.runners:
-                average += runner.running_time
-        average = average / len(all_cross)
-        return average
+                total += float(runner.running_time)
+        return total / float(len(all_cross)) if all_cross else 0.0
 
-    async def get_gap_time(self, all_cross):
-        """
-        Computes the time gap between the fastest and slowest runner across a collection
-        of given cross groups. If there are no runners, the gap is defaulted to 0.0.
-
-        :param all_cross: A list of cross objects, each containing a collection of
-            runners with their running times
-        :type all_cross: list
-        :return: The calculated time gap between the fastest and slowest runner's
-            running times. Returns 0.0 if no valid runners exist.
-        :rtype: float
-        """
+    async def get_gap_time(self, all_cross: list[Cross]) -> float:
         worst_time = float("-inf")
         best_time = float("inf")
 
         for cross in all_cross:
             for runner in cross.runners:
-                if runner.running_time > worst_time:
-                    worst_time = runner.running_time
-                if runner.running_time < best_time:
-                    best_time = runner.running_time
+                rt = float(runner.running_time)
+                if rt > worst_time:
+                    worst_time = rt
+                if rt < best_time:
+                    best_time = rt
 
-        return (
-            worst_time - best_time
-            if worst_time != float("-inf") and best_time != float("inf")
-            else 0.0
-        )
+        if worst_time == float("-inf") or best_time == float("inf"):
+            return 0.0
+        return worst_time - best_time
 
-    async def get_best_time(self, all_cross):
-
+    async def get_best_time(self, all_cross: list[Cross]) -> float:
+        # Preserves old behavior: returns the MAX running_time
         best_time = 0.0
         for cross in all_cross:
             for runner in cross.runners:
-                if runner.running_time > best_time:
-                    best_time = runner.running_time
+                rt = float(runner.running_time)
+                if rt > best_time:
+                    best_time = rt
         return best_time
 
-    async def get_age_group(self, all_cross):
-        """
-        Calculates age group distributions based on a list of cross objects. The method uses
-        a helper function to determine the age group of a serviceman based on their age. The
-        distribution is returned as a dictionary where keys are age groups and values are
-        counts of servicemen in each group.
-
-        :param all_cross: List of cross objects containing runner information.
-        :type all_cross: list
-        :return: A dictionary containing age group distribution of servicemen.
-        :rtype: dict[str, int]
-        """
+    async def get_age_group(self, all_cross: list[Cross]) -> dict[str, int]:
         age_groups: dict[str, int] = {}
 
-        def bucket(age: int) -> str:
-            if age < 18:
-                return "<18"
-            if age <= 25:
-                return "18-25"
-            if age <= 35:
-                return "26-35"
-            if age <= 45:
-                return "36-45"
-            if age <= 56:
-                return "46-56"
-            return "57+"
-
-        missing: list[str] = []
         for cross in all_cross:
-            for r in getattr(cross, "runners", []):
+            for r in cross.runners:
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if sm is None:
-                    missing.append(r.serial_number)
                     continue
                 try:
-                    g = bucket(sm.age_from_birthdate())
+                    g = self._bucket_age(sm.age_from_birthdate())
                     age_groups[g] = age_groups.get(g, 0) + 1
                 except Exception:
-                    missing.append(r.serial_number)
+                    continue
 
         return age_groups
 
-    async def get_gender_time(self, all_cross) -> tuple[floating[Any], floating[Any]]:
-        """
-        Calculates the average running times for male and female runners from a list of cross
-        sessions.
+    async def get_gender_time(self, all_cross: list[Cross]) -> tuple[floating[Any], floating[Any]]:
+        all_runners_f: list[float] = []
+        all_runners_m: list[float] = []
 
-        :param all_cross: A list of cross session objects. Each cross object should contain
-            data about the runners and their performance.
-        :type all_cross: list
-
-        :return: A tuple containing the average running time for female runners and the average
-            running time for male runners. Each value will be a floating-point number. If no
-            female or male runners are found, the corresponding value will default to 0.0.
-        :rtype: tuple[float, float]
-        """
-        all_runners_f = []
-        all_runners_m = []
         for cross in all_cross:
             for runner in cross.runners:
-                service_man: ServiceMen = (
-                    await self.be_mil_service.get_servicemen_by_serial(
-                        runner.serial_number
-                    )
+                service_man: ServiceMen | None = await self.be_mil_service.get_servicemen_by_serial(
+                    runner.serial_number
                 )
                 if service_man is None:
                     continue
                 if service_man.gender == Gender.F:
-                    all_runners_f.append(runner.running_time)
+                    all_runners_f.append(float(runner.running_time))
                 else:
-                    all_runners_m.append(runner.running_time)
+                    all_runners_m.append(float(runner.running_time))
 
-        return average(all_runners_f) if all_runners_f else 0.0, (
-            average(all_runners_m) if all_runners_m else 0.0
-        )
+        # keep return types compatible (numpy floating-ish)
+        f_avg = float(pd.Series(all_runners_f).mean()) if all_runners_f else 0.0
+        m_avg = float(pd.Series(all_runners_m).mean()) if all_runners_m else 0.0
+        return f_avg, m_avg
 
-    async def get_top_10_runners_based_on_running_time(self, all_cross):
-        """
-        Asynchronously retrieves the top 10 runners ordered by their running times for
-        each unique distance. This function groups runners based on the distance they
-        covered, and then sorts them based on their running times in ascending order
-        (best times first). Only the top 10 runners for each distance are included
-        in the result.
+    async def get_top_10_runners_based_on_running_time(self, all_cross: list[Cross]) -> dict[Any, list[Runner]]:
+        top_runners_by_distance: dict[Any, list[Runner]] = {}
 
-        :param all_cross: List of cross objects. Each cross object contains a distance
-            attribute and a list of runners. Each runner must have a running_time
-            attribute indicating the running time of the runner.
-        :type all_cross: list
-        :return: A dictionary where the keys are unique distances and the values
-            are lists of the top 10 runners sorted by their running times.
-        :rtype: dict
-        """
-        top_runners_by_distance = {}
-
-        # Group runners by distance
         for cross in all_cross:
             distance = cross.distance
-            if distance not in top_runners_by_distance:
-                top_runners_by_distance[distance] = []
-            top_runners_by_distance[distance].extend(cross.runners)
+            top_runners_by_distance.setdefault(distance, []).extend(cross.runners)
 
-        # Sort and get top 10 for each distance
-        for distance in top_runners_by_distance:
-            top_runners_by_distance[distance].sort(
-                key=lambda x: x.running_time
-            )  # Sort ascending (best times first)
-            top_runners_by_distance[distance] = top_runners_by_distance[distance][:10]
+        for distance, runners in top_runners_by_distance.items():
+            runners.sort(key=lambda x: x.running_time)
+            top_runners_by_distance[distance] = runners[:10]
 
         return top_runners_by_distance

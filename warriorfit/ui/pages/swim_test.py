@@ -308,13 +308,14 @@ class SwimTestPage(Page):
         @render.data_frame
         async def swim_grid():
             df = await sessions_swim_data()
+            df_view = pd.DataFrame()
+
             try:
                 df = self.controller.decorate_grid(df)
+                df.sort_values(by=["Serial"], inplace=True)
+                df_view = df.drop(columns=["ID"], errors="ignore")
             except Exception:
-                pass
-
-            df.sort_values(by=["Serial"], inplace=True)
-            df_view = df.drop(columns=["ID"], errors="ignore")  # hide in UI only
+                df_view = df if not df.empty else pd.DataFrame()
 
             return render.DataGrid(
                 df_view,
