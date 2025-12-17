@@ -94,9 +94,10 @@ class CrossStaticsPage(Page):
             :rtype: render.DataGrid
             """
             dfc = await self._controller.best_10_all_df()
-            df = dfc[5]
-            if df is None:
+            if dfc.get(5) is None:
                 df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
+            else:
+                df = dfc[5]
             return render.DataGrid(
                 df,
                 filters=False,
