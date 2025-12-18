@@ -1,5 +1,5 @@
 db:
-  database: warriorfit
+  database: warriorfit_test
   host: 192.168.0.30
   password: ranger14
   port: 5432
