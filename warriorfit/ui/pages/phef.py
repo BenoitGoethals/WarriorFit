@@ -608,8 +608,8 @@ class PhefPage(Page):
 
         @reactive.Effect
         @reactive.event(input.ph_clear_btn)
-        def _on_clear() -> None:
-            _clear_form()
+        async def _on_clear() -> None:
+            await _clear_form()
             status.set("Form cleared.")
 
 

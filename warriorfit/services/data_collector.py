@@ -171,7 +171,7 @@ class DataCollector(metaclass=Singleton):
 
         # Mars (detailed)
         mars_rows: list[dict] = []
-        marses = await self._service_mars.get_mars_from_service_men(serial_number=serial, this_year=False)
+        marses = await self._service_mars.get_march_from_service_men(serial_number=serial, this_year=False)
         for mars in marses or []:
             ok = bool(mars.succeeded)
             mars_rows.append(
