@@ -99,6 +99,7 @@ class OwnUnitPage(Page):
         @reactive.Effect
         @reactive.event(input.servicemen_grid_selected_rows)
         async def _on_row_selected():
+            # Handles row selection; shows modal with serviceman tests
             try:
                 sel = input.servicemen_grid_selected_rows()
                 if not sel:
@@ -122,7 +123,7 @@ class OwnUnitPage(Page):
                     )
                 )
             except Exception:
-                pass
+                ui.notification_show("Error loading serviceman tests", type="error", duration=2)
 
         @output
         @render.data_frame

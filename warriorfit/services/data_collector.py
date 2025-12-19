@@ -8,6 +8,7 @@ from warriorfit.logic.singleton import Singleton
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
 from warriorfit.services.service_test import ServiceTest
+from warriorfit.utils.BenchmarkDecorator import benchmark
 
 
 class DataCollector(metaclass=Singleton):
@@ -203,6 +204,7 @@ class DataCollector(metaclass=Singleton):
         df = df.sort_values(by=["Date"], kind="stable").reset_index(drop=True)
         return df
 
+    @benchmark
     async def collect_tests_for_serial(self, serial: str, current_year: bool = True) -> pd.DataFrame:
         """
         Summary grid: each row has Details/Scores/Total/Result.

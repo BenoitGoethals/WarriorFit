@@ -471,7 +471,7 @@ class FitnessTestRepository(ABCRepository):
 
         if current_year:
             end, start = await self.running_year()
-            query =select(FitnessTest).where(
+            query = select(FitnessTest).join(FitnessTest.test_sessions).where(
                 TestSession.datetime_start.between(start, end))
         else:
             query = select(FitnessTest)
@@ -866,7 +866,12 @@ class FitnessTestRepository(ABCRepository):
                 async with session.begin():  # Add transaction context
                     if current_year:
                         end, start = await self.running_year()
-                        query = select(PhefTest).where(PhefTest.serial_number == serial).where(TestSession.datetime_start.between(start, end))
+                        query = (
+                            select(PhefTest)
+                            .join(PhefTest.test_sessions)
+                            .where(PhefTest.serial_number == serial)
+                            .where(TestSession.datetime_start.between(start, end))
+                        )
                     else :
                         query = (
                             select(PhefTest)
@@ -901,18 +906,22 @@ class FitnessTestRepository(ABCRepository):
                 async with session.begin():  # Add transaction context
                     if current_year:
                         end, start = await self.running_year()
-                        query = select(CombatTestParatrooper).where(PhefTest.serial_number == service_number).where(
-                            TestSession.datetime_start.between(start, end))
+                        query = (
+                            select(CombatTestParatrooper)
+                            .join(CombatTestParatrooper.test_sessions)
+                            .where(CombatTestParatrooper.serial_number == service_number)
+                            .where(TestSession.datetime_start.between(start, end))
+                        )
                     else:
                         query = (
-                            select(PhefTest)
-                            .where(PhefTest.serial_number == service_number)
+                            select(CombatTestParatrooper)
+                            .where(CombatTestParatrooper.serial_number == service_number)
                         )
                     result = await session.execute(query)
-                    phef_tests = result.scalars().all()
-                    return list(phef_tests) if phef_tests else []
+                    combat_tests = result.scalars().all()
+                    return list(combat_tests) if combat_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self._logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
+            self._logger.error(f"Error fetching Combat tests for military unit {service_number}: {str(e)}")
             return []
 
     async def get_all_swim_from_mil(self, service_number, current_year)->List[CombatSwimmingTest]:
@@ -938,18 +947,22 @@ class FitnessTestRepository(ABCRepository):
                 async with session.begin():  # Add transaction context
                     if current_year:
                         end, start = await self.running_year()
-                        query = select(CombatSwimmingTest).where(PhefTest.serial_number == service_number).where(
-                            TestSession.datetime_start.between(start, end))
+                        query = (
+                            select(CombatSwimmingTest)
+                            .join(CombatSwimmingTest.test_sessions)
+                            .where(CombatSwimmingTest.serial_number == service_number)
+                            .where(TestSession.datetime_start.between(start, end))
+                        )
                     else:
                         query = (
-                            select(PhefTest)
-                            .where(PhefTest.serial_number == service_number)
+                            select(CombatSwimmingTest)
+                            .where(CombatSwimmingTest.serial_number == service_number)
                         )
                     result = await session.execute(query)
-                    phef_tests = result.scalars().all()
-                    return list(phef_tests) if phef_tests else []
+                    swim_tests = result.scalars().all()
+                    return list(swim_tests) if swim_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self._logger.error(f"Error fetching PHEF tests for military unit {service_number}: {str(e)}")
+            self._logger.error(f"Error fetching Swimming tests for military unit {service_number}: {str(e)}")
             return []
 
     async def get_upcoming_session_for_pti(self, serial_number_pti: str) -> Any | None:
