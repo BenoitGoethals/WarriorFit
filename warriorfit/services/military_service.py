@@ -1,6 +1,7 @@
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
 from warriorfit.services.be_mil_service import BEMILService
+from warriorfit.utils.BenchmarkDecorator import benchmark
 
 
 class MilitaryService:
@@ -106,6 +107,7 @@ class MilitaryService:
         """
         return self._repo.get_by_unit_id(ind_id)
 
+    @benchmark
     async def get_all_be_mil_from_unit(self, own_unit):
         """
         Retrieves all servicemen belonging to a specific unit.
