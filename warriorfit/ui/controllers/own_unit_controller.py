@@ -13,6 +13,7 @@ from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
 
 from warriorfit.services.service_test import ServiceTest
+from warriorfit.utils.BenchmarkDecorator import benchmark
 
 
 class OwnUnitController:
@@ -30,6 +31,7 @@ class OwnUnitController:
         self._service = ServiceTest()
         self._service_mars = ServiceMarch()
 
+    @benchmark
     async def fetch_servicemen_df(self) -> pd.DataFrame:
         """
         Asynchronously fetches a DataFrame containing structured information about
