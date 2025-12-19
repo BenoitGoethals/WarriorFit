@@ -20,5 +20,5 @@ path:
 unit:
   name: 3Para
 version:
-  number: 0.1.2
+  number: pre-alpha 1.0
   status: development
