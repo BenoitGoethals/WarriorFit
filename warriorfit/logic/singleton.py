@@ -34,7 +34,6 @@ class ThreadSafeSingleton(metaclass=ABCMeta):
         """
         # Acquire the lock to ensure thread safety
         with cls._lock:
-            print(f'<SingletonMeta> in the __call__...')
             # Check if an instance of this class already exists
             if cls not in cls._instances:
                 # Create a new instance and store it in the dictionary
