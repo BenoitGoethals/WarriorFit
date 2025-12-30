@@ -16,35 +16,29 @@ class Singleton(ABCMeta):
         return cls._instances[cls]
 
 
-class ThreadSafeSingleton:
+class ThreadSafeSingleton(metaclass=ABCMeta):
     """
-    A thread-safe singleton implementation.
-    Only one instance of this class can exist.
-    """
-    # Class-level variable to store the single instance
-    _instance = None
+       Metaclass for creating thread-safe Singleton classes.
+       Any class using this metaclass will automatically be a singleton.
+       """
+    # Dictionary to store instances of different classes
+    _instances = {}
 
-    # Class-level lock to ensure thread safety
+    # Lock to ensure thread-safe singleton instantiation
     _lock = threading.Lock()
 
-    def __new__(cls):
+    def __call__(cls, *args, **kwargs):
         """
-        Override __new__ method for thread-safe singleton implementation.
+        Override __call__ to control instance creation.
+        This method is called when a class is instantiated.
         """
         # Acquire the lock to ensure thread safety
         with cls._lock:
-            # Check if instance has been created yet
-            if not cls._instance:
-                # Create the single instance of the class
-                cls._instance = super().__new__(cls)
-            # Return the single instance
-            return cls._instance
-
-    def __init__(self):
-        """
-        Initialize the singleton instance.
-        Note: This will be called every time the class is instantiated,
-        but __new__ ensures only one instance exists.
-        """
-        pass
+            print(f'<SingletonMeta> in the __call__...')
+            # Check if an instance of this class already exists
+            if cls not in cls._instances:
+                # Create a new instance and store it in the dictionary
+                cls._instances[cls] = super().__call__(*args, **kwargs)
+            # Return the singleton instance
+            return cls._instances[cls]
 
