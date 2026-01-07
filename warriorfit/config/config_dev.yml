@@ -1,6 +1,6 @@
 db:
   database: warriorfit
-  host: 192.168.0.30
+  host: 78.21.255.210
   password: ranger14
   port: 5432
   username: benoi
