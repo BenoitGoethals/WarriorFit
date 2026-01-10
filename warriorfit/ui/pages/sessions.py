@@ -163,12 +163,14 @@ class SessionsPage(Page):
             df = await session_list()
 
             df = df.drop(columns=["ID"])
-            return render.DataGrid(
-                df,
-                filters=True,
-                selection_mode="row",
-                width="100%",
-            )
+            if not df.empty:
+                return render.DataGrid(
+                    df,
+                    filters=True,
+                    selection_mode="row",
+                    width="100%",
+                )
+            return None
 
         @output
         @render.text
