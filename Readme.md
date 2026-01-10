@@ -75,7 +75,7 @@ The project documentation is structured in different documents:
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
 
-## 2. Project Roadmap
+## 2. Project Roadmap (PLANNING)
 ![progress.png](documentation/progress.png)
 
 ### **Phase 1 — Initiation & Project Charter (Sept 2025)** (Done)
