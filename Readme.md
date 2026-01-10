@@ -83,19 +83,19 @@ if you want to see the project in action, you can check  :
 * Project scope and vision
 * Initialize backlog and repository
 
-### **Phase 2 — Architecture & Structure (Okt 2026)** (Done)
+### **Phase 2 — Architecture & Structure (Okt 2025)** (Done)
 
 * Technical foundation, layer structure, and UML
 * Working skeleton project
 * Proof of concept, working demo
 
-### **Phase 3 — Development/enhancements/testing & Iterations (Okt–april 2026 (DONE))**
+### **Phase 3 — Development/enhancements/testing & Iterations (Okt 2025–April 2026 (DONE))**
 
 * Incremental deliveries via Agile sprints
 * Enhancements and bug fixes
 * Testing and validation
 
-### **Phase 4 — Testing & Validation (april 2026)**
+### **Phase 4 — Testing & Validation (April 2026)**
 
 * Acceptance testing and bug fixing
 
