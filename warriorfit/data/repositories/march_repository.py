@@ -39,7 +39,7 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results
 
-    async def get_all_march(self) -> list[March]:
+    async def get_all_march(self,this_year=True) -> list[March]:
         """
         Asynchronously retrieves all `March` objects from the database.
 
@@ -52,13 +52,20 @@ class MarchRepository(ABCRepository):
             database or an empty list if no objects are found.
         :rtype: list[March]
         """
-        query = select(March)
+        if this_year:
+            end, start = await self.running_year()
+            query = select(March).where(March.datetime_executed.between(start, end))
+        else:
+            query = select(March)
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def get_all_march_by_unit_name(self, unit_name: str) -> list[March]:
-
-        query = select(March).join(March.service_men).join(ServiceMen.unit).where(Unit.name == unit_name)
+    async def get_all_march_by_unit_name(self, unit_name: str,this_year=True) -> list[March]:
+        if this_year:
+            end, start = await self.running_year()
+            query = select(March).join(March.service_men).join(ServiceMen.unit).where(Unit.name == unit_name).where(March.datetime_executed.between(start, end))
+        else:
+            query = select(March).join(March.service_men).join(ServiceMen.unit).where(Unit.name == unit_name)
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
