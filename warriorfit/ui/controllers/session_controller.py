@@ -50,6 +50,8 @@ class SessionsController:
         :rtype: pd.DataFrame
         """
         items = await self.list_sessions()
+        if not items:
+            return pd.DataFrame(columns=["ID", "Type", "Start", "Description", "Serial PTI", "Canceled"])
         return pd.DataFrame(
             [
                 {
