@@ -14,7 +14,7 @@
 
 **Project Language:** Python
 
-**Project devlopment methodology:** Agile
+**Project development methodology:** Agile
 
 **Project Development server:** http://78.21.255.210:8500/  
 username: tester
@@ -78,18 +78,18 @@ if you want to see the project in action, you can check  :
 ## 2. Project Roadmap
 ![progress.png](documentation/progress.png)
 
-### **Phase 1 — Initiation & Project Charter (Nov 2025)** (Done)
+### **Phase 1 — Initiation & Project Charter (Sept 2025)** (Done)
 
 * Project scope and vision
 * Initialize backlog and repository
 
-### **Phase 2 — Architecture & Structure (Jan 2026)** (in final fase)
+### **Phase 2 — Architecture & Structure (Okt 2026)** (Done)
 
 * Technical foundation, layer structure, and UML
 * Working skeleton project
 * Proof of concept, working demo
 
-### **Phase 3 — Development/enhancements/testing & Iterations (Jan–april 2026)**
+### **Phase 3 — Development/enhancements/testing & Iterations (Okt–april 2026 (DONE))**
 
 * Incremental deliveries via Agile sprints
 * Enhancements and bug fixes
