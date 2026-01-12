@@ -26,7 +26,7 @@ class Os:
         return None
 
     @staticmethod
-    def is_alive(host):
+    def is_alive(host)-> bool:
         try:
             response = ping(host, count=2, timeout=1)
         except Exception as e:

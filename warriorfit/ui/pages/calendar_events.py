@@ -21,7 +21,6 @@ class CalendarPage(Page):
     def get_ui_all_test(self):
         self._all = True
         return ui.page_fluid(
-            ui.h2(CalendarPage.TITLE),
             ui.page_fillable(
                 ui.layout_columns(
                     ui.card(
@@ -41,7 +40,6 @@ class CalendarPage(Page):
     def get_ui(self):
         self._all = False
         return ui.page_fluid(
-            ui.h2(CalendarPage.TITLE),
             ui.page_fillable(
                 ui.layout_columns(
                     ui.card(

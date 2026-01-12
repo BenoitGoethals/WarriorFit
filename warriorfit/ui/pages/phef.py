@@ -45,7 +45,6 @@ class PhefPage(Page):
         self.controller = PhefController()
 
     def refresh(self) -> None:
-        # Used by app-level refresh triggers (e.g., calendar modal or nav hooks)
         self.refresh_tick.set(self.refresh_tick.get() + 1)
 
     def get_ui(self) -> NavPanel:
@@ -301,6 +300,8 @@ class PhefPage(Page):
 
         @reactive.Effect
         async def _init() -> None:
+            # Triggered on init and whenever refresh_tick changes
+            self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
             status.set("Ready.")
