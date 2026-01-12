@@ -36,6 +36,7 @@ class UserManagementController:
     :type selected_user: Optional[UserForm]
     """
     EMAIL_REGEX = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+    USER_REGEX = re.compile(r'^[a-zA-Z0-9_]+$')
     def __init__(self,):
         self._service =  UserService()
         self.selected_user=None
@@ -116,6 +117,8 @@ class UserManagementController:
                 return False, f"Field '{f}' is required."
         if "@" not in form.email or "." not in form.email.split("@")[-1]:
             return False, "Invalid email address."
+        if not self.USER_REGEX.match(form.username) or not (3 < len(form.username) < 30):
+            return False, "Username must be valid (a..z,A..Z,0..9,_). Length must be between 3 and 30. "
         exists = await self._service.serial_exists(form.serial.strip())
         mail_unique = await self._service.user_mail_exist(form.email)
         user_name_exist = await self._service.get_user_by_username(form.username)
