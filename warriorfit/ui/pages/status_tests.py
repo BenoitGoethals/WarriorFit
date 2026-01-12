@@ -41,14 +41,13 @@ class StatusTests(Page):
             try:
                 df = await self._controller.get_data()
             except Exception as e:
-                # Fallback empty frame to keep UI alive
                 import pandas as pd
                 df = pd.DataFrame(columns=["Message"])
                 df.loc[len(df)] = [f"Error loading data: {e}"]
             return render.DataGrid(
                 df,
                 filters=True,
-                selection_mode="rows",  # fix: plural expected by DataGrid
+                selection_mode="rows",
                 width="100%",
             )
 
