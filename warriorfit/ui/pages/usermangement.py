@@ -17,6 +17,8 @@ class UserManagementPage(Page):
         self.selected_serial = reactive.Value(None)
         self.selected_id = reactive.Value(0)
 
+
+
     def refresh(self):
         pass
 
@@ -145,7 +147,7 @@ class UserManagementPage(Page):
             created = await self.controller.create_user(form)
             if created:
                 self.status.set(f"Created user '{form.serial}'.")
-            #    self.refresh_tick.set(self.refresh_tick.get() + 1)
+                self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
                 self.status.set(f"Failed to create user '{form.serial}'.")
