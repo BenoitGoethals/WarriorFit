@@ -204,5 +204,5 @@ class ServicemenRepository(ABCRepository):
         :rtype: list[ServiceMen]
         """
         query = select(ServiceMen).join(Unit, ServiceMen.unit_id == Unit.id).where(Unit.name == own_unit)
-        query = query.options(selectinload(ServiceMen.unit))  # Add explicit loading
+        query = query.options(selectinload(ServiceMen.unit))
         return await self.fetch_and_log(query, "unit")

@@ -5,7 +5,6 @@ from warriorfit.data.model.db_model import March, ServiceMen, Unit
 from warriorfit.data.repositories.abc_repository import ABCRepository
 
 
-
 class MarchRepository(ABCRepository):
     """
     MarchRepository provides operations for managing and querying March records.
