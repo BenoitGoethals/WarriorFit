@@ -258,7 +258,7 @@ class PhefCalculator:
         side_l_score = PhefCalculator.side_bridge_result(side_time_l, age, gender)
         side_r_score = PhefCalculator.side_bridge_result(side_time_r, age, gender)
         total_score = running_score + side_l_score + side_r_score
-        passed = running_score >= 10 and side_l_score >= 10 and side_r_score >= 10
+        passed = running_score >= 10 and (side_l_score +side_r_score >= 20)
         return running_score, side_l_score, side_r_score, total_score,passed
 
 

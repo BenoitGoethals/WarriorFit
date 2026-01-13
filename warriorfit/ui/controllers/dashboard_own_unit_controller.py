@@ -82,7 +82,7 @@ class DashboardOwnUnitController:
         except Exception as e:
             return {}
 
-    async def phef_total_score(self, test: PhefTest) -> float:
+    async def phef_total_score(self, test: PhefTest) -> tuple[float, bool]:
         """
         Calculate the total PHEF (Physical Fitness Evaluation Framework) score for a given test.
 
@@ -103,7 +103,8 @@ class DashboardOwnUnitController:
         score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, age, gender)
         score_l = PhefCalculator.side_bridge_result(test.sideBridge_l, age, gender)
         score_run = PhefCalculator.running_result(test.running_time, age, gender)
-        return (score_run * (50 / 20)) + ((score_r + score_l) * (25 / 20))
+        passed = score_run >= 10 and score_r + score_l >= 20
+        return (score_run * (50 / 20)) + ((score_r + score_l) * (25 / 20)), passed
 
     def reset_cache(self):
         self._mils=None
@@ -160,12 +161,13 @@ class DashboardOwnUnitController:
         serials = await self.own_unit_serials()
         phef_tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
         passed = failed = 0
+        passed_test = False
         for t in phef_tests:
             try:
-                total = await self.phef_total_score(t)
+                _,passed_test = await self.phef_total_score(t)
             except Exception:
-                total = 0
-            if total >= 50:
+                passed_test = False
+            if passed_test:
                 passed += 1
             else:
                 failed += 1
@@ -175,7 +177,6 @@ class DashboardOwnUnitController:
     async def phef_stats(self) -> Dict[str, Any]:
         """
         Calculate and return PHEF test statistics.
-
         This method retrieves all PHEF tests for a given unit, calculates the total
         number of tests and determines how many of those tests have a passing score.
         The pass rate is evaluated and returned along with the total counts in a
@@ -188,11 +189,12 @@ class DashboardOwnUnitController:
         """
         tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
         total_tests = len(tests)
-        passed = 0
+        passed_tot= 0
         for t in tests:
-            if await self.phef_total_score(t) >= 50:
-                passed += 1
-        pass_rate = (passed / total_tests * 100) if total_tests > 0 else 0
+            _,passed=await self.phef_total_score(t)
+            if passed:
+                passed_tot += 1
+        pass_rate = (passed_tot / total_tests * 100) if total_tests > 0 else 0
         return {"total": total_tests, "sub_value": f"{pass_rate:.1f}%", "sub_label": "Pass Rate", "sub_class": "text-success"}
 
     async def combat_stats(self) -> Dict[str, Any]:
@@ -240,7 +242,11 @@ class DashboardOwnUnitController:
 
     async def pass_fail_bar_html(self) -> str:
         phef_tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
-        phef_pass = len([t for t in phef_tests if await self.phef_total_score(t) >= 50])
+        phef_pass = 0
+        for t in phef_tests:
+            _,passed = await self.phef_total_score(t)
+            if passed:
+                phef_pass += 1
         phef_fail = len(phef_tests) - phef_pass
 
         combat_tests: List[CombatTestParatrooper] = await self._tests_for_unit(TypeFitnessTest.COMBAT)
@@ -305,7 +311,8 @@ class DashboardOwnUnitController:
         scores = []
         for t in tests:
             if t.serial_number in serials:
-                scores.append(await self.phef_total_score(t))
+                score, _ = await self.phef_total_score(t)
+                scores.append(score)
         if not scores:
             return None
         fig = px.histogram(scores, nbins=20,
@@ -322,11 +329,13 @@ class DashboardOwnUnitController:
         rows = []
         for t in tests:
             total = 0
+            passed = False
             try:
-                total = await self.phef_total_score(t)
+                total,passed = await self.phef_total_score(t)
+
             except Exception:
                 pass
-            if total < 50:
+            if passed:
                 rows.append({"Type": "PHEF", "Serial": t.serial_number, "Reason": f"Total {total:.1f} < 50"})
         return pd.DataFrame(rows)
 
@@ -335,11 +344,11 @@ class DashboardOwnUnitController:
 
         for t in await self._tests_for_unit(TypeFitnessTest.PHEF):
             try:
-                total = await self.phef_total_score(t)
+                score, passed = await self.phef_total_score(t)
             except Exception:
-                total = 0
-            if total < 50:
-                rows.append({"Type": "PHEF", "Serial": t.serial_number, "Reason": f"Total {total:.1f} < 50"})
+                passed = False
+            if passed:
+                rows.append({"Type": "PHEF", "Serial": t.serial_number, "Reason": f"Passed {passed:.1f}"})
 
         for t in await self._tests_for_unit(TypeFitnessTest.COMBAT):
             rope = bool(getattr(t, "rope_passed", False))
