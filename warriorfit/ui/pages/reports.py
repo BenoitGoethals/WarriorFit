@@ -11,6 +11,7 @@ from warriorfit.ui.pages.page import Page
 
 class ReportsPage(Page):
     def __init__(self) -> None:
+        super().__init__()
         self.controller = ReportsController()
         self._status_msg = reactive.Value(("info", "Click 'Generate Report' to create your report."))
         self._last_paths = reactive.Value([])

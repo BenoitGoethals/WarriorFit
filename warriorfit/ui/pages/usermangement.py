@@ -11,9 +11,9 @@ class UserManagementPage(Page):
     NO_SELECTION_MESSAGE = "No row selected"
 
     def __init__(self) -> None:
+        super().__init__()
         self.controller = UserManagementController()
         self.status = reactive.Value("Ready.")
-        self.refresh_tick = reactive.Value(0)
         self.selected_serial = reactive.Value(None)
         self.selected_id = reactive.Value(0)
 

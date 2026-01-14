@@ -38,7 +38,7 @@ class PhefPage(Page):
     )
 
     def __init__(self) -> None:
-        self.refresh_tick = reactive.Value(0)
+        super().__init__()
         self.be_mil_service = MilitaryService()  # kept for compatibility/side-effects if used elsewhere
         self.selected_military: Optional[ServiceMen] = None
         self.selected_session: Optional[TestSession] = None

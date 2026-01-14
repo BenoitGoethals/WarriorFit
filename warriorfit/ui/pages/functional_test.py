@@ -38,7 +38,7 @@ class FunctionalPage(Page):
     )
 
     def __init__(self) -> None:
-        self.refresh_tick = reactive.Value(0)
+        super().__init__()
         self.be_mil_service = MilitaryService()  # kept for consistency/side-effects if any
         self.selected_military: Optional[ServiceMen] = None
         self.selected_session: Optional[TestSession] = None

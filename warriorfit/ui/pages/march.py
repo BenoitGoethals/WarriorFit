@@ -10,6 +10,7 @@ from warriorfit.ui.pages.page import Page
 class MarchPage(Page):
 
     def __init__(self):
+        super().__init__()
         self.controller: MarchController = MarchController()
 
     def refresh(self):

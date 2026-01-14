@@ -17,6 +17,7 @@ from warriorfit.ui.controllers.cross_controller import CrossController
 
 class CrossPage(Page):
     def __init__(self):
+        super().__init__()
         self.controller = CrossController()
         self.refresh_tick = reactive.Value(0)
         self.selected_cross_id = reactive.Value("")

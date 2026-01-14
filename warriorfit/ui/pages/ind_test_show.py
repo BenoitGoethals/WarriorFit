@@ -11,9 +11,8 @@ from warriorfit.ui.pages.page import Page
 
 class IndTestShowPage(Page):
     def __init__(self):
-
+        super().__init__()
         self.controller = IndTestShowController()
-        self.refresh_tick = reactive.Value(0)
         self.serial = reactive.Value("")
         self.mil_info = reactive.Value("No serviceman selected.")
         self.tests_df = reactive.Value(pd.DataFrame())

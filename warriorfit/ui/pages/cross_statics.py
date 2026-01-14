@@ -8,8 +8,9 @@ from warriorfit.utils.formaters import Formatter
 
 class CrossStaticsPage(Page):
     def __init__(self):
+        super().__init__()
         self._controller = CrossStaticsController()
-        self.refresh_tick = reactive.Value(0)
+
 
     async def refresh(self):
         await self._controller.load()
