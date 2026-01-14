@@ -1,4 +1,5 @@
 from sqlalchemy.dialects.mssql import TIMESTAMP
+from sqlalchemy.orm import Mapped
 
 from warriorfit.core.Gender import Gender
 import pandas as pd
@@ -111,7 +112,7 @@ class PhefCalculator:
 
 
     @classmethod
-    def side_bridge_result(cls, side_time: float | str, age: int, gender: Gender)-> int:
+    def side_bridge_result(cls, side_time: float | str, age: int, gender: Mapped[Gender])-> int:
         """
         Calculates the result of the side bridge test based on the provided time, age, and gender.
         The method determines the age group and gender category to match the corresponding score in
@@ -168,7 +169,7 @@ class PhefCalculator:
 
 
     @classmethod
-    def running_result(cls, running_time: float|str|TIMESTAMP, age: int, gender: Gender|str)->int:
+    def running_result(cls, running_time: float|str|TIMESTAMP, age: int, gender: Mapped[Gender]|str)->int:
         """
         Determines the running score based on the provided running time, age, and gender. The method calculates the age
         category, resolves the column name based on gender and age category, and compares the running time against timing norms

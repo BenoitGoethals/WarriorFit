@@ -105,7 +105,7 @@ class GeneratorReport(ABC):
                 total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
                 phef_passed=(score_r + score_l) >= 20 and score_run >= 10
                 row = {
-                    "session_id": sess.id,
+
                     "session_date": getattr(sess, "datetime_start", None),
                     "serial": getattr(test, "serial_number", ""),
                     "run_score": score_run,
@@ -119,7 +119,7 @@ class GeneratorReport(ABC):
                 (passed if phef_passed else failed).append(row)
 
         headers = [
-            "Session ID",
+
             "Date",
             "Serial",
             "Run (pts)",
@@ -175,7 +175,6 @@ class GeneratorReport(ABC):
                 plu = getattr(t, "pull_ups", 0) or 0
                 total = int(pu) + int(su) + int(plu)
                 row = {
-                    "session_id": sess.id,
                     "session_date": getattr(sess, "datetime_start", None),
                     "serial": getattr(t, "serial_number", ""),
                     "push_ups": pu,
@@ -186,7 +185,6 @@ class GeneratorReport(ABC):
                 (passed if total >= 50 else failed).append(row)
 
         headers = [
-            "Session ID",
             "Date",
             "Serial",
             "Push-ups",
@@ -241,7 +239,6 @@ class GeneratorReport(ABC):
                 run_s = int(getattr(t, "running_time", 0) or 0)
                 is_pass = rope and obstacle and run_s <= 7200
                 row = {
-                    "session_id": sess.id,
                     "session_date": getattr(sess, "datetime_start", None),
                     "serial": getattr(t, "serial_number", ""),
                     "rope": rope,
@@ -252,7 +249,6 @@ class GeneratorReport(ABC):
                 (passed if is_pass else failed).append(row)
 
         headers = [
-            "Session ID",
             "Date",
             "Serial",
             "Rope",
@@ -297,12 +293,12 @@ class GeneratorReport(ABC):
                         continue
                 ok = bool(getattr(t, "swim_paased", False))
                 row = {
-                    "session_id": sess.id,
+
                     "session_date": getattr(sess, "datetime_start", None),
                     "serial": getattr(t, "serial_number", ""),
                     "result": "Passed" if ok else "Failed",
                 }
                 (passed if ok else failed).append(row)
 
-        headers = ["Session ID", "Date", "Serial", "Result"]
+        headers = [ "Date", "Serial", "Result"]
         return failed, headers, passed

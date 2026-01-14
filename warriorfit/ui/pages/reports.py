@@ -51,7 +51,6 @@ class ReportsPage(Page):
                     ),
                     ui.input_action_button("generate_report", "Generate Report", class_="btn-primary"),
                     ui.download_button("download_report", "Download", class_="btn-primary"),
-
                     width=300,
                 ),
                 ui.card(
@@ -98,7 +97,6 @@ class ReportsPage(Page):
             return ui.div(
                 ui.tags.h4("Generated files"),
                 ui.tags.ul(*items),
-                ui.download_button("download_button", "Download Reports", class_="btn-primary"),
             )
 
         @render.download(filename=lambda: "reports.zip")

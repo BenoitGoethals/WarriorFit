@@ -123,7 +123,6 @@ class ReportGeneratorCsv(GeneratorReport):
 
             def row_builder(r: dict) -> List[Any]:
                 return [
-                    r["session_id"],
                     (
                         "-"
                         if r["session_date"] is None
@@ -173,7 +172,6 @@ class ReportGeneratorCsv(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
                 (
                     "-"
                     if r["session_date"] is None
@@ -219,7 +217,6 @@ class ReportGeneratorCsv(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
                 (
                     "-"
                     if r["session_date"] is None
@@ -247,7 +244,6 @@ class ReportGeneratorCsv(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
                 (
                     "-"
                     if r["session_date"] is None
