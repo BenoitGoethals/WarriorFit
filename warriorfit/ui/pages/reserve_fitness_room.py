@@ -13,6 +13,7 @@ class ReserveFitnessRoomPage(Page):
 
     def __init__(self):
 
+        super().__init__()
         self.rooms: List[Room] = []
         self.reservations: List[Reservation] = []
         self._controller: ReserveFitnessRoomController = ReserveFitnessRoomController()

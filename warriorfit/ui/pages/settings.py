@@ -11,6 +11,7 @@ from warriorfit.ui.pages.page import Page
 
 class SettingsPage(Page):
     def __init__(self):
+        super().__init__()
         self.controller = SettingsController()
         self._status = reactive.Value("")
         self._unit_status = reactive.Value("")

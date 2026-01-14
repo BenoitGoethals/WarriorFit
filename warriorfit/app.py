@@ -53,7 +53,6 @@ class FitnessWarriorApp:
     """
     Main application class for the Fitness Warrior app.
     """
-
     APP_TITLE = "Fitness Warrior"
     DEFAULT_PORT = 8000
     _broker = Broker()

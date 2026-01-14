@@ -14,9 +14,9 @@ class CalendarPage(Page):
     TITLE_PERSONAL = "Personal Calendar"
 
     def __init__(self) -> None:
+        super().__init__()
         self._controller = CalendarEventsController()
         self._all = True
-        self._refresh_counter = reactive.Value(0)
 
     def get_ui_all_test(self):
         self._all = True

@@ -12,8 +12,8 @@ from warriorfit.ui.pages.page import Page
 
 class CrossPlanningPage(Page):
     def __init__(self):
+        super().__init__()
         self._controller = CrossPlanningController()
-        self.refresh_tick = reactive.Value(0)
         self.selected_cross_id = reactive.Value("")
 
     NO_SELECTION_MESSAGE = "No row selected"

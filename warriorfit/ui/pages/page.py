@@ -6,6 +6,9 @@ from shiny import reactive, ui
 
 class Page(ABC):
 
+    def __init__(self):
+        self.refresh_tick = reactive.Value(0)
+
     @abstractmethod
     def get_ui(self)-> ui.Tag:
         raise NotImplementedError
