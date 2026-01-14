@@ -252,7 +252,7 @@ class ReportGeneratorPdf(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
+
                 (
                     "-"
                     if r["session_date"] is None
@@ -307,7 +307,7 @@ class ReportGeneratorPdf(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
+
                 (
                     "-"
                     if r["session_date"] is None
@@ -361,7 +361,6 @@ class ReportGeneratorPdf(GeneratorReport):
         failed, headers, passed = await self.calculate_combat_score(own_unit, this_year)
 
         headers = [
-            "Session ID",
             "Date",
             "Serial",
             "Rope",
@@ -386,7 +385,6 @@ class ReportGeneratorPdf(GeneratorReport):
             :rtype: List[Any]
             """
             return [
-                r["session_id"],
                 (
                     "-"
                     if r["session_date"] is None
@@ -435,7 +433,6 @@ class ReportGeneratorPdf(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
                 (
                     "-"
                     if r["session_date"] is None
