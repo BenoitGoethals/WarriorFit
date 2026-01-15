@@ -7,6 +7,9 @@ from warriorfit.ui.controllers.march_controller import MarchController
 from warriorfit.ui.pages.page import Page
 
 
+
+
+
 class MarchPage(Page):
 
     def __init__(self):
@@ -73,10 +76,7 @@ class MarchPage(Page):
 
         @reactive.Calc
         async def get_march_df():
-            # Establish dependency on the trigger
             refresh_trigger.get()
-
-            # Fetch data using the controller
             march_data = await self.controller.get_all_march()
 
             if not march_data:
@@ -102,7 +102,6 @@ class MarchPage(Page):
         async def march_grid():
             try:
                 df = await get_march_df()
-
                 display_df = df.drop(columns=["id"]) if "id" in df.columns else df
                 display_df = display_df.sort_values(by=["service_number"])
                 return render.DataGrid(display_df, selection_mode="row", filters=False, width="100%")
@@ -110,6 +109,7 @@ class MarchPage(Page):
                 # Return empty grid on error
                 empty_df = pd.DataFrame(columns=["service_number", "distance", "succeeded", "datetime_executed"])
                 return render.DataGrid(empty_df, selection_mode="row", filters=False, width="100%")
+
         @reactive.Effect
         @reactive.event(input.march_grid_selected_rows)
         async def _fill_form_on_select():
@@ -133,22 +133,40 @@ class MarchPage(Page):
                 ui.update_action_button("add_march_bn", disabled=True)
                 ui.update_action_button("update_march_bn", disabled=True)
 
+
+
         @reactive.Effect
         @reactive.event(input.add_march_bn)
         async def _add():
+            if not await valid_data():
+                status.set("Invalid data.")
+                return
             new_march = March(
                 service_number=input.service_number_march(),
                 distance=float(input.distance()),
                 succeeded=input.succeeded(),
                 datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time()),
             )
+
             await self.controller.add_march(new_march)
             _clear_form()
             refresh_trigger.set(refresh_trigger.get() + 1)
 
+        async def valid_data()-> bool:
+            # Check if combination of serial number, distance, and date is unique
+            existing_march = await self.controller.get_march_is_unique(
+                service_number=input.service_number_march(),
+                distance=float(input.distance()),
+                datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time()),
+            )
+            return existing_march
+
         @reactive.Effect
         @reactive.event(input.update_march_bn)
         async def _update():
+            if not valid_data():
+                status.set("Invalid data.")
+                return
             current_id = selected_id.get()
             if current_id:
                 # Construct object with ID for update
