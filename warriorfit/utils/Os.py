@@ -29,7 +29,7 @@ class Os:
     def is_alive(host)-> bool:
         try:
             response = ping(host, count=2, timeout=1)
-        except Exception as e:
+        except (socket.gaierror, RuntimeError):
             return False
 
         return response.success()
