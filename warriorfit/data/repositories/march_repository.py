@@ -106,6 +106,19 @@ class MarchRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
+                    # Check if march already exists for this service_number and datetime
+                    query = select(March).where(
+                        March.service_number == mars.service_number,
+                        March.datetime_executed == mars.datetime_executed,
+                    March.distance == mars.distance
+                    )
+                    result = await session.execute(query)
+                    existing_march = result.scalar_one_or_none()
+
+                    if existing_march:
+                        self._logger.info(f"March already exists for service_number {mars.service_number} at {mars.datetime_executed}")
+                        return existing_march
+
                     session.add(mars)
                     await session.flush()
                     await session.refresh(mars)
@@ -196,3 +209,24 @@ class MarchRepository(ABCRepository):
                 except Exception as rollback_error:
                     self._logger.exception(f"Rollback failed: {str(rollback_error)}")
             return None
+
+    async def get_march_is_unique(self, service_number, distance, datetime_executed):
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    # Check if march already exists for this service_number and datetime
+                    query = select(March).where(
+                        March.service_number == service_number,
+                        March.datetime_executed == datetime_executed,
+                        March.distance == distance
+                    )
+                    result = await session.execute(query)
+                    existing_march = result.scalar_one_or_none()
+
+                    if existing_march:
+                        return False
+                    return True
+        except SQLAlchemyError as e:
+            self._logger.exception(e)
+            return False
+
