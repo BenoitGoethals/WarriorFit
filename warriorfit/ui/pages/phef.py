@@ -81,7 +81,11 @@ class PhefPage(Page):
                         full_screen=False,
                     ),
                     ui.card(
-                        ui.input_text("ph_serialnr", "Serial Number"),
+                        ui.div(
+                            ui.input_text("ph_serialnr", "Serial Number"),
+                            ui.input_action_button("ph_serial_search_btn", "🔍 Search", class_="btn-info btn-sm",
+                                                  style="margin-top: 5px;"),
+                        ),
                         ui.input_action_button("ph_search", "Confirm Serial", width="150px"),
                         ui.output_text("ph_military"),
                         ui.layout_columns(
@@ -612,6 +616,58 @@ class PhefPage(Page):
         async def _on_clear() -> None:
             await _clear_form()
             status.set("Form cleared.")
+
+        # Serial number search modal
+        @reactive.Effect
+        @reactive.event(input.ph_serial_search_btn)
+        async def _open_serial_search_modal() -> None:
+            modal_content = ui.modal(
+                ui.card(
+                    ui.card_header("Select Serial Number"),
+                    ui.output_data_frame("phef_serial_search_grid"),
+                    full_screen=False,
+                ),
+                size="l",
+                easy_close=True,
+            )
+            ui.modal_show(modal_content)
+
+        @reactive.calc
+        async def get_all_servicemen_df() -> pd.DataFrame:
+            servicemen = await self.controller.be_mil_service.get_all_service_men()
+            if not servicemen:
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
+
+            df = pd.DataFrame(
+                [
+                    {
+                        "service_number": s.service_number,
+
+                        "first_name": s.first_name,
+                        "last_name": s.last_name,
+                        "gender": s.gender,
+                    }
+                    for s in servicemen
+                ]
+            )
+            return df.sort_values(by=["service_number"])
+
+        @render.data_frame
+        async def phef_serial_search_grid():
+            df = await get_all_servicemen_df()
+            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+
+        @reactive.Effect
+        @reactive.event(input.phef_serial_search_grid_selected_rows)
+        async def _on_serial_selected() -> None:
+            indices = input.phef_serial_search_grid_selected_rows()
+            if indices:
+                df = await get_all_servicemen_df()
+                if df is not None and not df.empty:
+                    row_idx = indices[0]
+                    row = df.iloc[row_idx]
+                    ui.update_text("ph_serialnr", value=str(row["service_number"]))
+                    ui.modal_remove()
 
 
 _page = PhefPage()
