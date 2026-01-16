@@ -571,13 +571,12 @@ class CombatPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number", "rank", "first_name", "last_name", "gender"])
+                return pd.DataFrame(columns=["service_number",  "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
                     {
                         "service_number": s.service_number,
-                        "rank": s.rank,
                         "first_name": s.first_name,
                         "last_name": s.last_name,
                         "gender": s.gender,
