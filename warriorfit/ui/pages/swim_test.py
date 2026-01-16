@@ -30,7 +30,7 @@ class SwimTestPage(Page):
     )
 
     def __init__(self) -> None:
-        self.refresh_tick = reactive.Value(0)
+        super().__init__()
         self.selected_military: Optional[ServiceMen] = None
         self.selected_session: Optional[TestSession] = None
         self.controller = SwimmingController()

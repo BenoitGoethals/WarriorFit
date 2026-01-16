@@ -15,8 +15,8 @@ from warriorfit.ui.pages.page import Page
 
 class OwnUnitPage(Page):
     def __init__(self, mil_service: Optional[MilitaryService] = None):
+        super().__init__()
         self.controller = OwnUnitController(mil_service or MilitaryService())
-        self.refresh_tick = reactive.Value(0)
         self._selected_serial = reactive.Value(None)
         self.report_path = reactive.Value(None)
 

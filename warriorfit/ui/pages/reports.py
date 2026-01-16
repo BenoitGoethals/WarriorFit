@@ -11,6 +11,7 @@ from warriorfit.ui.pages.page import Page
 
 class ReportsPage(Page):
     def __init__(self) -> None:
+        super().__init__()
         self.controller = ReportsController()
         self._status_msg = reactive.Value(("info", "Click 'Generate Report' to create your report."))
         self._last_paths = reactive.Value([])
@@ -50,7 +51,6 @@ class ReportsPage(Page):
                     ),
                     ui.input_action_button("generate_report", "Generate Report", class_="btn-primary"),
                     ui.download_button("download_report", "Download", class_="btn-primary"),
-
                     width=300,
                 ),
                 ui.card(
@@ -97,7 +97,6 @@ class ReportsPage(Page):
             return ui.div(
                 ui.tags.h4("Generated files"),
                 ui.tags.ul(*items),
-                ui.download_button("download_button", "Download Reports", class_="btn-primary"),
             )
 
         @render.download(filename=lambda: "reports.zip")

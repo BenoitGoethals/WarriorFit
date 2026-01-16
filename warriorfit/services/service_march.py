@@ -44,3 +44,6 @@ class ServiceMarch(Service):
 
     async def update_march(self,march):
         return await self.__repo.update_march(march)
+
+    async def get_march_is_unique(self, service_number, distance, datetime_executed):
+        return await self.__repo.get_march_is_unique(service_number, distance, datetime_executed)

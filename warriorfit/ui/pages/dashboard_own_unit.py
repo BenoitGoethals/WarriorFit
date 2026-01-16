@@ -15,6 +15,7 @@ class DashboardOwnUnitPage(Page):
     TAB_NAME: Final[str] = "Dashboard"
 
     def __init__(self) -> None:
+        super().__init__()
         self.controller = DashboardOwnUnitController()
 
     def refresh(self) -> None:

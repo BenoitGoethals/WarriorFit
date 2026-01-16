@@ -62,7 +62,7 @@ class ServiceTest(Service):
 
     async def get_all_test_sessions_type_fitness_test(self, type_test, this_year=True):
         return await self._test_repo.get_all_test_sessions_type_fitness_test(
-            type_test, True
+            type_test, this_year
         )
 
     async def get_all_test_sessions_type_fitness_test_for_service_men(self, serial:str,type_test, this_year=True):

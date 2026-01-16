@@ -38,7 +38,7 @@ class CombatPage(Page):
     )
 
     def __init__(self) -> None:
-        self.refresh_tick = reactive.Value(0)
+        super().__init__()
         self.be_mil_service = MilitaryService()  # kept for compatibility
         self.selected_military: Optional[ServiceMen] = None
         self.selected_session: Optional[TestSession] = None
@@ -156,6 +156,14 @@ class CombatPage(Page):
         selected_combat_id = reactive.Value("")
 
         speedmars_pass_fail = reactive.Value("")  # "Passes" / "Fails" / ""
+
+        @reactive.Effect
+        async def _init() -> None:
+            # Triggered on init and whenever refresh_tick changes
+            self.refresh_tick.get()
+            await _refresh_session_choices()
+            await _clear_form()
+            status.set("Ready.")
 
         # ----------------------------
         # UI state helpers

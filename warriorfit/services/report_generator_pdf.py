@@ -32,7 +32,6 @@ class ReportGeneratorPdf(GeneratorReport):
             self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool
     ):
         if report_type is ReportType.PHEF:
-            print(f"Generating PHEF report for {report_name}")
             return await self.generate_phef_report(report_name, own_unit, this_year)
         elif report_type is ReportType.FUNCTIONAL:
             return await self.generate_functional_report(
@@ -253,7 +252,7 @@ class ReportGeneratorPdf(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
+
                 (
                     "-"
                     if r["session_date"] is None
@@ -308,7 +307,7 @@ class ReportGeneratorPdf(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
+
                 (
                     "-"
                     if r["session_date"] is None
@@ -362,7 +361,6 @@ class ReportGeneratorPdf(GeneratorReport):
         failed, headers, passed = await self.calculate_combat_score(own_unit, this_year)
 
         headers = [
-            "Session ID",
             "Date",
             "Serial",
             "Rope",
@@ -387,7 +385,6 @@ class ReportGeneratorPdf(GeneratorReport):
             :rtype: List[Any]
             """
             return [
-                r["session_id"],
                 (
                     "-"
                     if r["session_date"] is None
@@ -436,7 +433,6 @@ class ReportGeneratorPdf(GeneratorReport):
 
         def row_builder(r: dict) -> List[Any]:
             return [
-                r["session_id"],
                 (
                     "-"
                     if r["session_date"] is None

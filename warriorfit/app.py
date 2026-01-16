@@ -53,7 +53,6 @@ class FitnessWarriorApp:
     """
     Main application class for the Fitness Warrior app.
     """
-
     APP_TITLE = "Fitness Warrior"
     DEFAULT_PORT = 8000
     _broker = Broker()
@@ -262,7 +261,7 @@ class FitnessWarriorApp:
     @staticmethod
     def build_app_ui():
         return ui.page_fillable(
-            ui.output_ui("main_nav_container"),
+            ui.output_ui("main_content_container"),
         )
 
     @staticmethod
@@ -310,40 +309,69 @@ class FitnessWarriorApp:
         login_user_text = reactive.Value("")
         nav_version = reactive.Value(0)
 
-        # Open/close Calendar modal from app-level button
+        # Open/close Calendar panel from app-level button
+        show_calendar = reactive.Value(False)
+
         @reactive.Effect
         @reactive.event(input.open_calendar_modal_global)
-        def _open_calendar_modal():
+        def _toggle_calendar():
             calendar_events.refresh()
-            ui.modal_show(
-                ui.modal(
-                    calendar_events.get_ui(),
-                    title="Calendar",
-                    easy_close=True,
-                    size="xl",
-                    footer=ui.input_action_button("close_calendar_modal_global", "Close"),
-                )
+            show_calendar.set(not show_calendar.get())
+            if show_calendar.get():
+                show_personal_calendar.set(False)
 
-            )
+        @reactive.Effect
+        @reactive.event(input.close_calendar)
+        def _close_calendar():
+            show_calendar.set(False)
+
+        show_personal_calendar = reactive.Value(False)
 
         @reactive.Effect
         @reactive.event(input.open_personal_calendar_modal_global)
-        def _open_personal_calendar_modal():
+        def _toggle_personal_calendar():
             calendar_events.refresh()
-            ui.modal_show(
-                ui.modal(
-                    calendar_events.get_ui(all_test=False),
-                    title="Personal Calendar",
-                    easy_close=True,
-                    size="xl",
-                    footer=ui.input_action_button("close_calendar_modal_global", "Close"),
-                )
-            )
+            show_personal_calendar.set(not show_personal_calendar.get())
+            if show_personal_calendar.get():
+                show_calendar.set(False)
 
         @reactive.Effect
-        @reactive.event(input.close_calendar_modal_global)
-        def _close_calendar_modal():
-            ui.modal_remove()
+        @reactive.event(input.close_personal_calendar)
+        def _close_personal_calendar():
+            show_personal_calendar.set(False)
+
+        @output
+        @render.ui
+        def main_content_container():
+            if show_calendar.get():
+                return ui.div(
+                    ui.div(
+                        ui.h3("Calendar", style="display: inline-block; margin-right: 20px;"),
+                        ui.input_action_button("close_calendar", "Close", class_="btn btn-secondary"),
+                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;"
+                    ),
+                    ui.div(
+                        calendar_events.get_ui(),
+                        style="padding: 15px;"
+                    ),
+                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;"
+                )
+            elif show_personal_calendar.get():
+                return ui.div(
+                    ui.div(
+                        ui.h3("Personal Calendar", style="display: inline-block; margin-right: 20px;"),
+                        ui.input_action_button("close_personal_calendar", "Close", class_="btn btn-secondary"),
+                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;"
+                    ),
+                    ui.div(
+                        calendar_events.get_ui(all_test=False),
+                        style="padding: 15px;"
+                    ),
+                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;"
+                )
+            else:
+                _ = nav_version.get()
+                return build_main_navbar()
 
         def _get_session_user():
             return getattr(session, "user", None)
@@ -409,12 +437,6 @@ class FitnessWarriorApp:
 
             nav_items = [i for i in nav_items if i is not None]
             return ui.page_navbar(*nav_items, id="main_nav")
-
-        @output
-        @render.ui
-        def main_nav_container():
-            _ = nav_version.get()
-            return build_main_navbar()
 
         @output
         @render.text

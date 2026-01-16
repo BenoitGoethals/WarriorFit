@@ -7,7 +7,7 @@ from warriorfit.ui.pages.page import Page
 
 class AuditLogEventsPage(Page):
     def __init__(self) -> None:
-        self.refresh_tick = reactive.Value(0)
+        super().__init__()
         self.ctrl = AuditLogEventsController()
 
     def refresh(self):
