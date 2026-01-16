@@ -1,7 +1,7 @@
 import base64
 from pathlib import Path
 
-from shiny import ui, render
+from shiny import ui, render, reactive
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.role import Role
@@ -13,10 +13,11 @@ from warriorfit.ui.user_store import UserStore
 class StatusLoginUser(Page):
 
     def __init__(self):
+        super().__init__()
         self.controller = StatusLogUserController()
 
     def refresh(self):
-        pass
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
 
     def get_ui(self):
         return ui.nav_panel(
@@ -40,6 +41,12 @@ class StatusLoginUser(Page):
         )
 
     def server(self, input, output, session):
+
+        @reactive.Effect
+        async def _init() -> None:
+            # Triggered on init and whenever refresh_tick changes
+            self.refresh_tick.get()
+
 
         @output
         @render.ui
@@ -69,6 +76,7 @@ class StatusLoginUser(Page):
 
         @render.ui
         def pti_dashboard_section():
+            self.refresh_tick.get()
             user = UserStore.get_user()
             # Check if user is PTI or APTI
             if user and user.role in [Role.PTI, Role.APTI]:
@@ -92,8 +100,10 @@ class StatusLoginUser(Page):
                 )
             return ui.div()
 
+        @output
         @render.data_frame
         async def sessions_grid():
+            self.refresh_tick.get()
             df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)
             return render.DataGrid(
                 df, 

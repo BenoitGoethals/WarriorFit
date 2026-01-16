@@ -13,6 +13,7 @@ class ReserveFitnessRoomPage(Page):
 
     def __init__(self):
 
+        super().__init__()
         self.rooms: List[Room] = []
         self.reservations: List[Reservation] = []
         self._controller: ReserveFitnessRoomController = ReserveFitnessRoomController()
@@ -684,6 +685,13 @@ class ReserveFitnessRoomPage(Page):
                 )
             return ui.div(*room_buttons)
 
+        @reactive.Effect
+        def _handle_room_selection():
+            # Listen to all possible room buttons
+            for room in rooms.get():
+                button_id = f"room_{room.id}"
+                if input[button_id]() > 0:
+                    selected_room.set(room.id)
 
         @reactive.Effect
         @reactive.event(input.reserve)

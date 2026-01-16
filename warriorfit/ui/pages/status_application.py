@@ -7,6 +7,7 @@ from warriorfit.ui.pages.page import Page
 class StatusApplicationPage(Page):
 
     def __init__(self):
+        super().__init__()
         self._controller=StatusApplicationController()
 
     def refresh(self):

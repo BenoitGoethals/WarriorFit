@@ -1,4 +1,6 @@
 import pandas as pd
+from sqlalchemy.orm import Mapped
+
 from warriorfit.services.service_test import ServiceTest
 
 
@@ -16,7 +18,7 @@ class StatusLogUserController:
         self._service = ServiceTest()
 
 
-    async def get_upcoming_session(self, serial_number_pti)->pd.DataFrame:
+    async def get_upcoming_session(self, serial_number_pti: Mapped[str])->pd.DataFrame:
         """
         Retrieve upcoming session details for a given PTI serial number.
 

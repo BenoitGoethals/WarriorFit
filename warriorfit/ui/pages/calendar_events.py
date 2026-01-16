@@ -14,14 +14,14 @@ class CalendarPage(Page):
     TITLE_PERSONAL = "Personal Calendar"
 
     def __init__(self) -> None:
+        super().__init__()
+        self._refresh_counter = reactive.Value(0)
         self._controller = CalendarEventsController()
         self._all = True
-        self._refresh_counter = reactive.Value(0)
 
     def get_ui_all_test(self):
         self._all = True
         return ui.page_fluid(
-            ui.h2(CalendarPage.TITLE),
             ui.page_fillable(
                 ui.layout_columns(
                     ui.card(
@@ -36,12 +36,11 @@ class CalendarPage(Page):
         )
 
     def refresh(self):
-        pass
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
 
     def get_ui(self):
         self._all = False
         return ui.page_fluid(
-            ui.h2(CalendarPage.TITLE),
             ui.page_fillable(
                 ui.layout_columns(
                     ui.card(

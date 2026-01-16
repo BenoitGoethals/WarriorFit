@@ -17,9 +17,9 @@ class SessionsPage(Page):
 
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def __init__(self, ) -> None:
+    def __init__(self) -> None:
+        super().__init__()
         self.be_mil_service = MilitaryService()
-        self.refresh_tick = reactive.Value(0)
         self.controller = SessionsController()
 
     def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
@@ -32,7 +32,7 @@ class SessionsPage(Page):
         return True, "OK"
 
     def refresh(self):
-        pass
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
 
     def get_ui(self):
         return ui.nav_panel(

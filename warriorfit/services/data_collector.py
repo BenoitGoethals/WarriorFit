@@ -235,6 +235,7 @@ class DataCollector(metaclass=Singleton):
                 sbl_pts = PhefCalculator.side_bridge_result(sbl_s, age, mil.gender)
 
                 total = (run_pts * (50 / 20.0)) + ((sbr_pts + sbl_pts) * (25 / 20.0))
+                test_passed = sbl_pts + sbr_pts >= 20 and run_pts >= 10
                 phef_rows.append(
                     {
                         "Date": self._fmt_dt(sess.datetime_start),
@@ -242,7 +243,7 @@ class DataCollector(metaclass=Singleton):
                         "Details": f"Run {run_s}s, SBR {sbr_s}s, SBL {sbl_s}s",
                         "Scores": f"Run {run_pts}/20, SBR {sbr_pts}/20, SBL {sbl_pts}/20",
                         "Total": f"{total:.1f}/100",
-                        "Result": "🟢 Passed" if total >= 50 else " 🔴 Failed",
+                        "Result": "🟢 Passed" if test_passed else " 🔴 Failed",
                     }
                 )
         if phef_rows:
