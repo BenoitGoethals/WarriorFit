@@ -1,6 +1,7 @@
 # User Stories – Overview per Epic
 
 User stories are used instead of Use Cases for more flexibility in agile development.
+The points are just for planning and prioritization.
 
 ### Total Overview
 
@@ -350,7 +351,6 @@ User stories are used instead of Use Cases for more flexibility in agile develop
 **Acceptance criteria:**
 
 * Fields:
-
   * 2400m run: time mm:ss
   * Side-bridge left/right: mm:ss
 * Format validation (00:00 to 99:59)

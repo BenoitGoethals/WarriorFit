@@ -31,6 +31,7 @@ password: tester007!
 * 2025-12-13: video demo done https://youtu.be/SdIgCeE7cGY
 * 2026-01-04: Project first release ready for testing
 * 2026-01-11: Start testing, test cases 
+* 2026-01-18: Testing completed, release to 1.0 RC
 
 
 ## Project Description
@@ -59,19 +60,19 @@ The project is managed using Github.
 
 ## 1. Project Structure (click links)
 The project documentation is structured in different documents:
-1. * [Design](documentation/Design.md) (In Review)
-2. * [Business Logic](documentation/business_logic.md) (In Review)
-3. * [Datamodel/ERD](documentation/datamodel.md) (In Review)
-4. * [Stories](documentation/stories.md) (In Review)
+1. * [Design](documentation/Design.md) (Done)
+2. * [Business Logic](documentation/business_logic.md) (Done)
+3. * [Datamodel/ERD](documentation/datamodel.md) (Done)
+4. * [Stories](documentation/stories.md) (Done)
 5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (Done)
-6. * [Module Structures](documentation/module_structure.md) (In Review)
-7. * [MOM (broker)](documentation/broker.md) (In Development) Message-Oriented Middleware
-8. * [Install and deply](documentation/install.md) (In Development)
+6. * [Module Structures](documentation/module_structure.md) (Done)
+7. * [MOM (broker)](documentation/broker.md) (In testing) Message-Oriented Middleware
+8. * [Install and deply](documentation/install.md) (Done)
 9. * [Retrospective](documentation/retrospective.md) 
 10. * [Reservation Rooms](documentation/reservation_rooms.md) (out of scope,In Development)
-11. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (In Development)
+11. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (Done)
 12. * [Testing](documentation/testcases.md) (In Development)
-13. * [Cross App](documentation/crsossapp.md) (In Development)
+13. * [Cross App](documentation/crsossapp.md) (out of scope/In Development)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
