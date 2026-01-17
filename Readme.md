@@ -32,6 +32,7 @@ password: tester007!
 * 2026-01-04: Project first release ready for testing
 * 2026-01-11: Start testing, test cases 
 * 2026-01-18: Testing completed, release to 1.0 RC
+* 2026-02-01: added search in tests sessions
 
 
 ## Project Description
@@ -46,8 +47,8 @@ The system includes user management, test input, calculations, PDF reporting, an
 The main goals of this project are:
 * To develop a comprehensive fitness military management application
 * To integrate data collection, statistical analysis, and reporting capabilities tailored for military fitness standards
-* Cross (running event) management
-* Reservation of rooms
+* Cross (running event) management (out of scope)
+* Reservation of rooms (out of scope)
 * To integrate with existing Defence systems (HRM)
 * To integrate with existing Defence systems (SIMULATOR)
 
