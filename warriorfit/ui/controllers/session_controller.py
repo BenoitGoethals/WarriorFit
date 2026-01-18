@@ -70,6 +70,11 @@ class SessionsController:
         pts = await self._service.get_all_pti()
         return [p.serial_number for p in pts]
 
+    async def get_all_pti_choices(self) -> Dict[str, str]:
+        """Returns a dict mapping serial_number to 'serial - username' for display"""
+        pts = await self._service.get_all_pti()
+        return {p.serial_number: f"{p.serial_number} - {p.username}" for p in pts if p.serial_number}
+
     async def add_session(self, payload: Dict[str, Any]) -> Optional[TestSession]:
         """
         Asynchronously adds a new test session based on the provided payload. The method
