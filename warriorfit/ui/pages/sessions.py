@@ -75,12 +75,12 @@ class SessionsPage(Page):
         next_id = reactive.Value(1)
         status = reactive.Value("Ready.")
         selected_session_id = reactive.Value("")
-        async def all_pti() -> List[str]:
-            return await self.controller.get_all_pti_serials()
+        async def all_pti_choices() -> Dict[str, str]:
+            return await self.controller.get_all_pti_choices()
 
         async def _populate_pti_choices():
             try:
-                choices = await all_pti()
+                choices = await all_pti_choices()
                 ui.update_select("se_serial", choices=choices, selected=None)
             except Exception:
                 ui.update_select("se_serial", choices=[], selected=None)
@@ -186,7 +186,7 @@ class SessionsPage(Page):
                 return
             row = df.iloc[row_idx]
             selected_session_id.set(row["ID"] or "")
-            choices = await all_pti()
+            choices = await all_pti_choices()
             serial = str(row["Serial PTI"])
             ui.update_select("se_serial", choices=choices, selected=serial)
             start_dt = row["Start"]
