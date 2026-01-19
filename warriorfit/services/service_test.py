@@ -83,10 +83,25 @@ class ServiceTest(Service):
         military: ServiceMen = None,
         session: TestSession = None,
     ):
+        """
+        Asynchronously adds a fitness test to a test session and handles specific follow-up
+        actions such as sending notifications and logging audit details based on the type
+        of test. Supports additional handling for various test types like PHEF, combat
+        swimming, functional, and combat tests.
+
+        :param fitness_test: A fitness test object to be added to the test session.
+        :param test: An instance of FitnessTest representing the test details.
+        :param military: An optional ServiceMen object representing the personnel
+            associated with the test. Defaults to None.
+        :param session: An optional TestSession object representing the test session
+            context. Defaults to None.
+        :return: Returns a boolean indicating whether the fitness test was successfully
+            added to the test session.
+        """
         from warriorfit.app import FitnessWarriorApp
         add_test = await self._test_repo.add_fitness_test_to_TestSession(fitness_test, test)
         body = ""
-        if add_test:
+        if add_test or military.unit is None:
             match test.type:
                 case "phef_test":
                     body = self.build_email_body_phef(military, session, test)
