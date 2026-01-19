@@ -74,6 +74,20 @@ class BEMILService(metaclass=Singleton):
                 return None
 
     async def sent_hr_message_to_hr(self, message:Message):
+        """
+        Sends a message to the HR system via an asynchronous HTTP POST request.
+
+        This method sends a JSON-encoded message to the HR system's API endpoint. Upon
+        completion, it logs the message and raises an HTTP-related exception if the
+        request fails.
+
+        :param message: The message object to be sent to the HR system. It must
+            implement a `to_dict` method to convert to a dictionary format.
+        :type message: Message
+        :return: The JSON response from the HR system.
+        :rtype: dict
+        :raises httpx.HTTPStatusError: Raised if the response status is not successful.
+        """
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self.BASE_URL + "/hrmessages",
