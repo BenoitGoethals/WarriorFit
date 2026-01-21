@@ -52,7 +52,8 @@ class StatusApplicationController:
         async with aiofiles.open(log_path, "r") as f:
             lines = await f.readlines()
             last_100_lines = lines[-100:] if len(lines) > 100 else lines
-            return ''.join(last_100_lines)
+            last_100_lines_error=[line for line in last_100_lines if not "info" in line.lower()]
+            return ''.join(last_100_lines_error)
 
     def check_log_modified(self):
         from warriorfit.utils.Os import Os
