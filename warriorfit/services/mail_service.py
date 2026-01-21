@@ -157,7 +157,10 @@ class MailService(metaclass=Singleton):
 
     def _maybe_login(self, server: smtplib.SMTP) -> None:
         if self.config.username and self.config.password:
-            server.login(self.config.username, self.config.password)
+            if server.has_extn('AUTH'):
+                server.login(self.config.username, self.config.password)
+            else:
+                self._logger.warning("SMTP server does not support authentication, skipping login")
 
     @staticmethod
     def _ensure_list(val: Optional[Iterable[str] | str]) -> Optional[list[str]]:

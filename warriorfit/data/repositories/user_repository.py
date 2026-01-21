@@ -1,12 +1,13 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 
 import bcrypt
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
+from warriorfit.core.role import Role
 from warriorfit.data.model.db_model import User
 from warriorfit.data.repositories.abc_repository import ABCRepository
-
+from sqlalchemy import or_
 
 
 class UserRepository(ABCRepository):
@@ -315,3 +316,19 @@ class UserRepository(ABCRepository):
             return None
 
 
+
+    async def get_all_pti(self) -> list[Any] | None:
+        try:
+            query = select(User).where(
+                or_(
+                    User.role == Role.PTI,
+                    User.role == Role.ADMIN,
+                    User.role == Role.APTI,
+                    User.role == Role.PLANNER
+                )
+            )
+            results = await self.fetch_and_log(query, "user")
+            return results
+        except SQLAlchemyError as e:
+            self._logger.error(f"Database error fetching all pti: {str(e)}")
+            return None
