@@ -27,16 +27,23 @@ class StatusApplicationPage(Page):
                     ui.output_text("hr_status_display")
                 ),
                 ui.card(
+                    ui.card_header("Mail Server Status"),
+                    ui.output_text("mail_server_status_display")
+                ),
+                ui.card(
                     ui.card_header("Server Status"),
                     ui.output_text("server_status_display")
                 ),
             ),
             ui.layout_columns(
-                    ui.card(
-                        ui.card_header("Log File"),
-                        ui.output_text_verbatim("lof_file")
-                    ),
-                )
+                ui.card(
+                    ui.card_header("Log File"),
+                    ui.div(
+                        ui.output_text_verbatim("lof_file"),
+                        style="max-height: 600px; overflow-y: auto;"
+                    )
+                ),
+            )
         )
 
     def server(self, input, output, session):
@@ -54,6 +61,11 @@ class StatusApplicationPage(Page):
         @render.text
         async def hr_status_display():
             return await self._controller.status_hr()
+
+        @output
+        @render.text
+        async def mail_server_status_display():
+            return await self._controller.status_mail_server()
 
         @output
         @render.text
