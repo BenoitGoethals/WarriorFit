@@ -51,7 +51,7 @@ class StatusApplicationController:
         log_path = project_root / "logs" / "application.log"
         async with aiofiles.open(log_path, "r") as f:
             lines = await f.readlines()
-            last_100_lines = lines[-100:] if len(lines) > 100 else lines
+            last_100_lines = lines[-300:] if len(lines) > 300 else lines
             last_100_lines_error=[line for line in last_100_lines if not "info" in line.lower()]
             return ''.join(last_100_lines_error)
 
