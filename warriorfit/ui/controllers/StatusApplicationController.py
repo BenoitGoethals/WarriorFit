@@ -9,23 +9,29 @@ import aiofiles
 class StatusApplicationController:
     async def status_db(self):
         repo = ABCRepository()
-        status =  await repo.check_if_db_is_operational()
-        if status:
-            return "✅ OPERATIONAL"
-        else:
-            return "❌ DOWN"
+        status = await repo.check_if_db_is_operational()
+        return self._format_status(status)
 
     async def status_hr(self):
         url = ApplicationConfig().hr_url
+        return await self._check_http_status(url)
+
+    async def status_mail_server(self):
+        ip = ApplicationConfig().mail_server.host
+        server_ok=Os.is_alive(ip)
+        return self._format_status(server_ok)
+
+    async def _check_http_status(self, url: str) -> str:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
-                    if response.status == 200:
-                        return "✅ OPERATIONAL"
-                    else:
-                        return "❌ DOWN"
+                    return self._format_status(response.status == 200)
         except aiohttp.ClientError:
-            return "❌ DOWN"
+            return self._format_status(False)
+
+    @staticmethod
+    def _format_status(is_operational: bool) -> str:
+        return "✅ OPERATIONAL" if is_operational else "❌ DOWN"
 
     async def status_server(self):
         project_root = Os.get_project_root()
