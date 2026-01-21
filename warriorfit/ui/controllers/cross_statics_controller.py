@@ -54,14 +54,15 @@ class CrossStaticsController:
             data_p = []
             for runner in value:
                 service_men: ServiceMen = await self._mil_service.get_servicemen_by_serial(runner.serial_number)
-                data_p.append({
-                    'serial_number': runner.serial_number,
-                    'rank': service_men.rank,
-                    'Name': service_men.first_name + ' ' + service_men.last_name,  # Added space
-                    'running_time': Formatter.format_time(runner.running_time),
-                    'distance': key,  # Added value for distance
-                    'age': service_men.age_from_birthdate(),
-                })
+                if service_men:
+                    data_p.append({
+                        'serial_number': runner.serial_number,
+                        'rank': service_men.rank,
+                        'Name': service_men.first_name + ' ' + service_men.last_name,  # Added space
+                        'running_time': Formatter.format_time(runner.running_time),
+                        'distance': key,  # Added value for distance
+                        'age': service_men.age_from_birthdate(),
+                    })
             data_panda = pd.DataFrame(
                 data_p
             )
