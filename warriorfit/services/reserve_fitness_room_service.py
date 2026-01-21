@@ -1,6 +1,8 @@
-from warriorfit.data.model.db_model import Reservation
+from warriorfit.data.model.db_model import Reservation, User
 from warriorfit.data.repositories.reservation_repository import ReservationRepository
 from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
+from warriorfit.data.repositories.user_repository import UserRepository
+from warriorfit.services.military_service import MilitaryService
 
 from warriorfit.services.service import Service
 from warriorfit.ui.pages.notify_mail import NotifyMail
@@ -50,6 +52,7 @@ class ReserveFitnessRoomService(Service):
         super().__init__()
         self._repo=ReservationRepository()
         self._repo_service_men=ServicemenRepository()
+        self.user_repo=UserRepository()
 
 
     async def add_reservation(self, reservation)-> Reservation | None:
@@ -85,3 +88,8 @@ class ReserveFitnessRoomService(Service):
 
     async def get_rooms(self):
         return await self._repo.get_rooms()
+
+
+
+    async def get_all_pti(self)->list[User]:
+        return await self.user_repo.get_all_pti()

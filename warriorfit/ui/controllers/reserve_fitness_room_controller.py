@@ -26,3 +26,6 @@ class ReserveFitnessRoomController:
 
     async def get_reservation_by_id(self, id_r)->Reservation|None:
         return await self._service.get_reservation_by_id(id_r)
+
+    async def get_all_pti(self):
+        return await self._service.get_all_pti()

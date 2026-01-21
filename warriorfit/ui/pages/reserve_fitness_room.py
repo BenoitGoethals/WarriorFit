@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List
 import calendar
 
-from warriorfit.data.model.db_model import Room, Reservation
+from warriorfit.data.model.db_model import Room, Reservation, User
 from warriorfit.ui.controllers.reserve_fitness_room_controller import ReserveFitnessRoomController
 from warriorfit.ui.pages.page import Page
 
@@ -16,6 +16,7 @@ class ReserveFitnessRoomPage(Page):
         super().__init__()
         self.rooms: List[Room] = []
         self.reservations: List[Reservation] = []
+        self.pti_s: List[User] = []
         self._controller: ReserveFitnessRoomController = ReserveFitnessRoomController()
 
         # Time slots from 06:00 to 23:00
@@ -308,6 +309,7 @@ class ReserveFitnessRoomPage(Page):
         async def _load_rooms():
             self.rooms = await self._controller.rooms()
             self.reservations = await self._controller.reservations()
+            self.pti_s = await self._controller.get_all_pti()
             reservations.set(self.reservations)
             rooms.set(self.rooms)
 
@@ -639,7 +641,11 @@ class ReserveFitnessRoomPage(Page):
                             ui.input_action_button("close_modal", "✕", class_="modal-close"),
                             class_="modal-header"
                         ),
-                        ui.input_text("pti_name", "PTI Name *", placeholder="Your name"),
+                        ui.input_select(
+                            "pti_name",
+                            "PTI Name *",
+                            choices=[""] + [f"{pti.serial_number} - {pti.username} " for pti in self.pti_s]
+                        ),
                         ui.input_text("activity", "Activity", placeholder="E.g. Personal Training"),
                         ui.input_date("date", "Date *", value=datetime.now().date()),
                         ui.layout_columns(
@@ -698,7 +704,7 @@ class ReserveFitnessRoomPage(Page):
         async def _():
             # Validation
             if not input.pti_name():
-                ui.notification_show("Please enter your name", type="error")
+                ui.notification_show("Please select a PTI", type="error")
                 return
 
             if not input.start_time():
@@ -756,6 +762,10 @@ class ReserveFitnessRoomPage(Page):
             # Combine date with end time string to create full datetime
             end_time = datetime.strptime(f"{date_str} {input.end_time()}", "%Y-%m-%d %H:%M")
 
+            # Extract service number from selected PTI (format: "service_number - First Last")
+            pti_selection = input.pti_name()
+            service_number = pti_selection.split(" - ")[0] if " - " in pti_selection else pti_selection
+
             # Create new reservation
             new_reservation = Reservation(
                 #  id=len(current_reservations) + 1,
@@ -764,7 +774,7 @@ class ReserveFitnessRoomPage(Page):
                 date=date_res,
                 start_time=start_time,
                 end_time=end_time,
-                serial_number=input.pti_name(),
+                serial_number=service_number,
                 activity=input.activity() or "Training"
             )
 
