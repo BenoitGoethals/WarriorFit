@@ -64,7 +64,6 @@ class ReserveFitnessRoomService(Service):
             if military:
                 await NotifyMail().send_mail(
                     body=build_email_add_reservation(reservation), subject="Result Test", to=str(military.mail))
-
         return res
 
     async def get_reservation_by_id(self, id_r)->Reservation|None:
