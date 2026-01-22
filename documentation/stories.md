@@ -664,7 +664,7 @@ The points are just for planning and prioritization.
 
 **As** PTI
 **I want** to view functional test results
-**So that** I can compare performance
+**So that** I can compare performance and have a record of all attempts
 
 **Acceptance criteria:**
 
@@ -1135,9 +1135,7 @@ The points are just for planning and prioritization.
   - Serial number
   - Name
   - Rank
-  - Unit
-  - Number of marches this year
-  - Last march date
+  - Unit  
   - Last march distance (km)
   - Last march status (Passed/Failed)
 - Sortable on all columns
