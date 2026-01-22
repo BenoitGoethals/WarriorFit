@@ -49,10 +49,13 @@ server deploy
 docker ps -a
 
 # 2. Stop it if running
-docker stop my_container
+docker stop  api-warriorfit-app
 
 # 3. Remove it
-docker rm my_container
+sudo docker rm  api-warriorfit-app
+
+sudo docker build -t api-warriorfit-app .
+
 
 sudo docker run -d --restart unless-stopped --name warriorfit-app -p 8500:8000 warriorfit-app
 ```
