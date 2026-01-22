@@ -32,7 +32,7 @@ password: tester007!
 * 2026-01-04: Project first release ready for testing
 * 2026-01-11: Start testing, test cases 
 * 2026-01-18: Testing completed, release to 1.0 RC
-* 2026-02-01: added search in tests sessions
+* 2026-01-19: added search in tests sessions
 
 
 ## Project Description
