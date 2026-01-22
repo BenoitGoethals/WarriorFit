@@ -3,6 +3,10 @@
 ### Summary
 **WarriorFit (fletTestCase)** is a **Python + Flet** client application that provides a simple UI for timing “cross/running” events, recording results, and persisting those results locally (and typically syncing them to a backend service).
 
+## Git
+- [flet client]https://github.com/BenoitGoethals/fletTestCase
+- [backend API]https://github.com/BenoitGoethals/CrossClientAPIWarriorFit
+
 ## Goals
 - Provide a simple, easy-to-use UI for timing and recording cross/running events.
 - Persist recorded timings locally (for offline/unstable network scenarios).
