@@ -20,6 +20,9 @@
 username: tester
 password: tester007!
 
+**Test mailserver : http://78.21.255.210:8025/
+**Test HR Simulator : http://78.21.255.210:8550/
+
 
 ## Updates
 * 2025-09-1: Project started
