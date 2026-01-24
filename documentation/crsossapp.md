@@ -21,6 +21,9 @@
   - event selection
   - timer and recording actions
   - results / status views
+![Screenshot From 2026-01-24 18-26-31.png](Screenshot%20From%202026-01-24%2018-26-31.png)
+
+![Screenshot From 2026-01-24 18-28-18.png](Screenshot%20From%202026-01-24%2018-28-18.png)
 
 **Responsibility:** Render screens, collect user actions, and display the current timing/session state.
 
