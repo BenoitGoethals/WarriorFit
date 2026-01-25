@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DatabaseError
 from sqlalchemy.orm import selectinload
@@ -11,7 +13,7 @@ class ReservationRepository(ABCRepository):
     def __init__(self):
         super().__init__()
 
-    async def add_reservation(self, reservation: Reservation) -> Reservation:
+    async def add_reservation(self, reservation: Reservation) -> Any | None:
         async with self.SessionLocal() as session:
             try:
                 session.add(reservation)

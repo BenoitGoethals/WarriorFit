@@ -60,10 +60,10 @@ class ReserveFitnessRoomService(Service):
         res= await self._repo.add_reservation(reservation)
         if res:
             await self.add_audit_log(details=f"Reservation {reservation.id} added", action="add")
-            military= await self._repo_service_men.get_by_service_number(reservation.serial_number)
-            if military:
+            user= await self.user_repo.get_user_by_serial(reservation.serial_number)
+            if user:
                 await NotifyMail().send_mail(
-                    body=build_email_add_reservation(reservation), subject="Result Test", to=str(military.mail))
+                    body=build_email_add_reservation(reservation), subject="Room reservation", to=str(user.email))
         return res
 
     async def get_reservation_by_id(self, id_r)->Reservation|None:

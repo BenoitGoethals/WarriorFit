@@ -644,7 +644,8 @@ class ReserveFitnessRoomPage(Page):
                         ui.input_select(
                             "pti_name",
                             "PTI Name *",
-                            choices=[""] + [f"{pti.serial_number} - {pti.username} " for pti in self.pti_s]
+                            choices=[f"{pti.serial_number} - {pti.username} " for pti in self.pti_s],
+
                         ),
                         ui.input_text("activity", "Activity", placeholder="E.g. Personal Training"),
                         ui.input_date("date", "Date *", value=datetime.now().date()),
