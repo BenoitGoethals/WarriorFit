@@ -332,3 +332,8 @@ class UserRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.error(f"Database error fetching all pti: {str(e)}")
             return None
+
+    async def get_user_by_serial(self, serial_number)->User | None:
+        query = select(User).where(User.serial_number==serial_number)
+        results = await self.fetch_and_log(query, "user")
+        return results[0] if results else None
