@@ -43,25 +43,7 @@ class SwimTestPage(Page):
             self.TAB_NAME,
             # One JS custom message handler to toggle input disabling (no repeated script injection).
             ui.tags.script(
-                """
-                (function () {
-                  if (window.__wf_toggle_disabled_registered) return;
-                  window.__wf_toggle_disabled_registered = true;
-
-                  Shiny.addCustomMessageHandler("wf_toggle_disabled", function (payload) {
-                    try {
-                      const ids = (payload && payload.ids) ? payload.ids : [];
-                      const disabled = !!(payload && payload.disabled);
-                      ids.forEach((id) => {
-                        const el = document.getElementById(id);
-                        if (el) el.disabled = disabled;
-                      });
-                    } catch (e) {
-                      // no-op
-                    }
-                  });
-                })();
-                """
+                self.toggle_disabled_registered_func
             ),
             ui.h2("🏊 Swimming Tests"),
             ui.layout_columns(
@@ -73,11 +55,11 @@ class SwimTestPage(Page):
                     ),
                     ui.card(
                         ui.div(
-                            ui.input_text("swim_serialnr", "Serial Number"),
-                            ui.input_action_button("swim_serial_search_btn", "🔍 Search", class_="btn-info btn-sm",
+                            ui.input_text("swim_serialnr", "Serial Number", placeholder="Service Number"),
+                            ui.input_action_button("swim_serial_search_btn", "🔍 Search own Unit", class_="btn-info btn-sm",
                                                   style="margin-top: 5px;"),
                         ),
-                        ui.input_action_button("swim_search", "Confirm Serial", width="150px"),
+                        ui.input_action_button("swim_search", "Confirm Serial", width="200px"),
                         ui.output_text("swim_military"),
                         ui.layout_columns(
                             ui.input_checkbox("swim_passed", "Swimming Test Passed", value=False),
