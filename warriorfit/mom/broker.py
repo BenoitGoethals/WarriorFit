@@ -3,7 +3,8 @@ import json
 import logging
 from sqlalchemy import TIMESTAMP, func
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.model.db_model import PhefTest, HrMessage, TestSession, FitnessTest
+from warriorfit.data.model.db_model import PhefTest, HrMessage, TestSession, FitnessTest, CombatTestParatrooper, \
+    CombatSwimmingTest, March, FunctionalTest
 from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
@@ -85,7 +86,7 @@ class Broker(metaclass=Singleton):
         # 2. Send pending messages
         await self.check_and_send_messages()
 
-    async def send_message(self, pf: PhefTest|FitnessTest):
+    async def send_message(self, test: FitnessTest):
         """
         Send a message to the message queue.
 
@@ -101,9 +102,22 @@ class Broker(metaclass=Singleton):
         :return: None
         :rtype: None
         """
-        pf_dto = PhefTestDto(pf)
+        dto = None
+        if isinstance(test, PhefTest):
+            dto = PhefTestDto(test)
+        elif isinstance(test, CombatTestParatrooper):
+            dto = CombatTestDto(test)
+        elif isinstance(test, CombatSwimmingTest):
+            dto = CombatSwimTestDto(test)
+        elif isinstance(test, March):
+            dto = MarchTestDto(test)
+        elif isinstance(test, FunctionalTest):
+            dto = FunctionalTestDto(test)
+        if dto is None:
+            return
+
         hr_m = HrMessage(
-            message=json.dumps(pf_dto.to_dict()),
+            message=json.dumps(dto.to_dict()),
             datetime_created=func.now()
         )
         await self._msg_queue.put(hr_m)
@@ -188,6 +202,66 @@ class PhefTestDto:
             "running_time": self.running_time,
             "sideBridge_r": self.sideBridge_r,
             "sideBridge_l": self.sideBridge_l,
+        }
+
+
+class CombatTestDto:
+    def __init__(self, test: CombatTestParatrooper):
+        self.serial_number = test.serial_number
+        self.running_time = test.running_time
+        self.obstacle_passed = test.obstacle_passed
+        self.rope_passed = test.rope_passed
+
+    def to_dict(self) -> dict:
+        return {
+            "serial_number": self.serial_number,
+            "running_time": self.running_time,
+            "obstacle_passed": self.obstacle_passed,
+            "rope_passed": self.rope_passed,
+        }
+
+
+class CombatSwimTestDto:
+    def __init__(self, test: CombatSwimmingTest):
+        self.serial_number = test.serial_number
+        self.swim_passed = test.swim_paased
+
+    def to_dict(self) -> dict:
+        return {
+            "serial_number": self.serial_number,
+            "swim_passed": self.swim_passed,
+        }
+
+
+class MarchTestDto:
+    def __init__(self, test: March):
+        self.service_number = test.service_number
+        self.distance = test.distance
+        self.succeeded = test.succeeded
+        self.datetime_executed = test.datetime_executed.isoformat() if test.datetime_executed else None
+
+    def to_dict(self) -> dict:
+        return {
+            "service_number": self.service_number,
+            "distance": self.distance,
+            "succeeded": self.succeeded,
+            "datetime_executed": self.datetime_executed,
+        }
+
+
+class FunctionalTestDto:
+    def __init__(self, test: FunctionalTest):
+        self.serial_number = test.serial_number
+        self.push_ups = test.push_ups
+        self.sit_ups = test.sit_ups
+        self.pull_ups = test.pull_ups
+
+    def to_dict(self) -> dict:
+        return {
+            "serial_number": self.serial_number,
+            "push_ups": self.push_ups,
+            "sit_ups": self.sit_ups,
+            "pull_ups": self.pull_ups,
         }
 
 
