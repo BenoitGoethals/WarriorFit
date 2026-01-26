@@ -122,6 +122,7 @@ class MarchPage(Page):
             if indices:
                 # Get the data from the reactive calc (this still contains "id")
                 df = await get_march_df()
+                df = df.sort_values(by=["service_number"])
                 if df is not None and not df.empty:
                     row_idx = indices[0]
                     row = df.iloc[row_idx]
