@@ -28,10 +28,10 @@ class MarchPage(Page):
                     ui.card(
                         ui.div(
                             ui.input_text("service_number_march", "Service Number", placeholder="Service Number"),
-                            ui.input_action_button("march_serial_search_btn", "🔍 Search", class_="btn-info btn-sm",
+                            ui.input_action_button("march_serial_search_btn", "🔍 Search own Unit", class_="btn-info btn-sm",
                                                   style="margin-top: 5px;"),
                         ),
-                        ui.input_action_button("march_search", "Conform Serial", width="150px"),
+                        ui.input_action_button("march_search", "Conform Serial", width="200px"),
                         ui.output_text("march_military"),
                         ui.br(),
                         ui.input_numeric("distance", "Distance (km)", value=30, min=0),
