@@ -105,13 +105,14 @@ class ServiceTest(Service):
             match test.type:
                 case "phef_test":
                     body = self.build_email_body_phef(military, session, test)
-                    await FitnessWarriorApp.get_broker().send_message(test)
+
                 case "combat_swimming_test":
                     body = self.build_email_body_swim(military, session, test)
                 case "functional_test":
                     body = self.build_email_body_functional(military, session, test)
                 case "combat_test":
                     body = self.build_email_body_combat(test)
+            await FitnessWarriorApp.get_broker().send_message(test)
             if body:
                 await NotifyMail().send_mail(
                     body=body, subject="Result Test", to=str(military.mail)
@@ -137,6 +138,8 @@ class ServiceTest(Service):
 
     async def update_fitness_test(self, param, cp):
         updated = await self._test_repo.update_fitness_test(param, cp)
+        from warriorfit.app import FitnessWarriorApp
+        await FitnessWarriorApp.get_broker().send_message(updated)
         if updated:
             await self.add_audit_log(
                 details=f"Fitness test {cp.serial_number}  {cp.type} updated in test session {param}",
