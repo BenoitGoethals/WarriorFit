@@ -52,25 +52,7 @@ class FunctionalPage(Page):
             self.TAB_NAME,
             # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
             ui.tags.script(
-                """
-                (function () {
-                  if (window.__wf_toggle_disabled_registered) return;
-                  window.__wf_toggle_disabled_registered = true;
-
-                  Shiny.addCustomMessageHandler("wf_toggle_disabled", function (payload) {
-                    try {
-                      const ids = (payload && payload.ids) ? payload.ids : [];
-                      const disabled = !!(payload && payload.disabled);
-                      ids.forEach((id) => {
-                        const el = document.getElementById(id);
-                        if (el) el.disabled = disabled;
-                      });
-                    } catch (e) {
-                      // no-op
-                    }
-                  });
-                })();
-                """
+                self.toggle_disabled_registered_func
             ),
             ui.h2("🧪 Functional Tests"),
             ui.layout_columns(
@@ -82,11 +64,11 @@ class FunctionalPage(Page):
                     ),
                     ui.card(
                         ui.div(
-                            ui.input_text("functional_serialnr", "Serial Number"),
-                            ui.input_action_button("functional_serial_search_btn", "🔍 Search", class_="btn-info btn-sm",
+                            ui.input_text("functional_serialnr", "Serial Number", placeholder="Service Number"),
+                            ui.input_action_button("functional_serial_search_btn", "🔍 Search own Unit", class_="btn-info btn-sm",
                                                   style="margin-top: 5px;"),
                         ),
-                        ui.input_action_button("functional_search", "Confirm Serial", width="150px"),
+                        ui.input_action_button("functional_search", "Confirm Serial", width="200px"),
                         ui.output_text("functional_military"),
                         ui.layout_columns(
                             ui.input_numeric("functional_push_ups", "Push-ups", value=0, min=0),

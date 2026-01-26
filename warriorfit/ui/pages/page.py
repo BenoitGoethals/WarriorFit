@@ -5,6 +5,25 @@ from shiny import reactive, ui
 
 
 class Page(ABC):
+    toggle_disabled_registered_func=   """
+                (function () {
+                  if (window.__wf_toggle_disabled_registered) return;
+                  window.__wf_toggle_disabled_registered = true;
+
+                  Shiny.addCustomMessageHandler("wf_toggle_disabled", function (payload) {
+                    try {
+                      const ids = (payload && payload.ids) ? payload.ids : [];
+                      const disabled = !!(payload && payload.disabled);
+                      ids.forEach((id) => {
+                        const el = document.getElementById(id);
+                        if (el) el.disabled = disabled;
+                      });
+                    } catch (e) {
+                      // no-op
+                    }
+                  });
+                })();
+                """
 
     def __init__(self):
         self.refresh_tick = reactive.Value(0)
