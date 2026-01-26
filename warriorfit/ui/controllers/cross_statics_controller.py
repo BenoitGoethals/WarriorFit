@@ -62,6 +62,8 @@ class CrossStaticsController:
                 continue
             data_p = []
             for runner in value:
+                if runner.serial_number is None:
+                    continue
                 service_men: ServiceMen = await self._mil_service.get_servicemen_by_serial(runner.serial_number)
                 if service_men:
                     data_p.append({

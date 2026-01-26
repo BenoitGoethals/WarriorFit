@@ -168,7 +168,7 @@ class ServiceCross(Service):
         # Fetch servicemen once per unique serial, concurrently
         serials = df["serial_number"].dropna().astype(str).unique().tolist()
         servicemen_list = await asyncio.gather(
-            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials),
+            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials if s is not None),
             return_exceptions=True,
         )
 
@@ -258,6 +258,8 @@ class ServiceCross(Service):
 
         for cross in all_cross:
             for r in cross.runners:
+                if r.serial_number is None:
+                    continue
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if sm is None:
                     continue
@@ -275,6 +277,8 @@ class ServiceCross(Service):
 
         for cross in all_cross:
             for runner in cross.runners:
+                if runner.serial_number is None:
+                    continue
                 service_man: ServiceMen | None = await self.be_mil_service.get_servicemen_by_serial(
                     runner.serial_number
                 )
