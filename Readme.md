@@ -20,8 +20,8 @@
 username: tester
 password: tester007!
 
-**Test mailserver : http://78.21.255.210:8025/
-**Test HR Simulator : http://78.21.255.210:8550/
+**Test mailserver view : http://78.21.255.210:8025/
+**Test HR Simulator view : http://78.21.255.210:8550/
 
 
 ## Updates
@@ -36,6 +36,7 @@ password: tester007!
 * 2026-01-11: Start testing, test cases 
 * 2026-01-18: Testing completed, release to 1.0 RC
 * 2026-01-19: added search in tests sessions
+* 2026-01-27: update retrospective
 
 
 ## Project Description
