@@ -29,8 +29,11 @@ class IndTestShowPage(Page):
                 ui.card(
                     ui.card_header("Lookup"),
                     ui.input_text("ind_serial", "Serial number"),
-                    ui.input_action_button("ind_search", "Search", width="150px"),
-                    ui.input_action_button("full_report_cy", "Generate Full Report", width="150px"),
+                    ui.input_action_button("ind_search_serial_search_btn", "🔍 Search own Unit", class_="btn btn-lm",
+                                           style="margin-top: 5px;",width="200px"),
+                    ui.input_action_button("ind_search", "Confirm Servicemen", width="200px"),
+
+                    ui.input_action_button("full_report_cy", "Generate Full Report", width="200px"),
                     ui.output_ui("download_btn_ui"),
                     ui.br(),
                     ui.output_text("ind_status"),
@@ -59,7 +62,7 @@ class IndTestShowPage(Page):
             if s:
                 status.set("Generating report...")
                 report_generator = ReportGeneratorPdf()
-                output_path = await report_generator.generate_ind_report_current_year(serial_number=s)
+                output_path = await report_generator.generate_ind_report(serial_number=s)
                 if output_path:
                     self.report_path.set(output_path)
                     status.set(f"Full report for {s} generated.")
@@ -132,6 +135,59 @@ class IndTestShowPage(Page):
 
                 
             )
+   # Serial number search modal
+        @reactive.Effect
+        @reactive.event(input.ind_search_serial_search_btn)
+        async def _open_ind_search_serial_search_btn_modal() -> None:
+            modal_content = ui.modal(
+                ui.card(
+                    ui.card_header("Select Serial Number"),
+                    ui.output_data_frame("ind_serial_search_grid"),
+                    full_screen=False,
+                ),
+                size="l",
+                easy_close=True,
+            )
+            ui.modal_show(modal_content)
+
+
+
+        @render.data_frame
+        async def ind_serial_search_grid():
+            df = await get_all_servicemen_df()
+            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+
+        @reactive.Effect
+        @reactive.event(input.ind_serial_search_grid_selected_rows)
+        async def _on_serial_selected() -> None:
+            indices = input.ind_serial_search_grid_selected_rows()
+            if indices:
+                df = await get_all_servicemen_df()
+                if df is not None and not df.empty:
+                    row_idx = indices[0]
+                    row = df.iloc[row_idx]
+                    ui.update_text("ind_serial", value=str(row["service_number"]))
+                    ui.modal_remove()
+
+        @reactive.calc
+        async def get_all_servicemen_df() -> pd.DataFrame:
+            servicemen = await self.controller.be_mil.get_all_service_men()
+            if not servicemen:
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
+
+            df = pd.DataFrame(
+                [
+                    {
+                        "service_number": s.service_number,
+                        "first_name": s.first_name,
+                        "last_name": s.last_name,
+                        "gender": s.gender,
+                    }
+                    for s in servicemen
+                ]
+            )
+            return df.sort_values(by=["service_number"])
+
 
 _page = IndTestShowPage()
 
