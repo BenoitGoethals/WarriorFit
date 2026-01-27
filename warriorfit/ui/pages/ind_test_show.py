@@ -29,8 +29,11 @@ class IndTestShowPage(Page):
                 ui.card(
                     ui.card_header("Lookup"),
                     ui.input_text("ind_serial", "Serial number"),
-                    ui.input_action_button("ind_search", "Search", width="150px"),
-                    ui.input_action_button("full_report_cy", "Generate Full Report", width="150px"),
+                    ui.input_action_button("ind_search_serial_search_btn", "🔍 Search own Unit", class_="btn btn-lm",
+                                           style="margin-top: 5px;",width="200px"),
+                    ui.input_action_button("ind_search", "Confirm Servicemen", width="200px"),
+
+                    ui.input_action_button("full_report_cy", "Generate Full Report", width="200px"),
                     ui.output_ui("download_btn_ui"),
                     ui.br(),
                     ui.output_text("ind_status"),
@@ -132,6 +135,8 @@ class IndTestShowPage(Page):
 
                 
             )
+
+
 
 _page = IndTestShowPage()
 
