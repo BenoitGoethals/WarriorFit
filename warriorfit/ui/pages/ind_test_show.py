@@ -62,7 +62,7 @@ class IndTestShowPage(Page):
             if s:
                 status.set("Generating report...")
                 report_generator = ReportGeneratorPdf()
-                output_path = await report_generator.generate_ind_report_current_year(serial_number=s)
+                output_path = await report_generator.generate_ind_report(serial_number=s)
                 if output_path:
                     self.report_path.set(output_path)
                     status.set(f"Full report for {s} generated.")
