@@ -37,7 +37,8 @@ password: tester007!
 * 2026-01-18: Testing completed, release to 1.0 RC
 * 2026-01-19: added search in tests sessions
 * 2026-01-27: update retrospective
-* 2026-02-02: demo video uploaded https://youtu.be/3xY8XZYLF6U
+* 2026-01-27: demo video uploaded https://youtu.be/3xY8XZYLF6U
+* 2026-01-28: make HRM simulator API secure with key:
 
 
 ## Project Description
