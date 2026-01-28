@@ -14,4 +14,5 @@ class SettingsData:
     own_unit: str = ""
     mail_server: SmtpConfig=None
     hr_url: str = ""
+    hr_api_key: str = ""
 

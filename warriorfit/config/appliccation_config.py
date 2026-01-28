@@ -63,6 +63,12 @@ class ApplicationConfig(metaclass=Singleton):
         return self._settings_data.hr_url
 
     @property
+    def hr_api_key(self) -> str:
+        if not self._settings_data.hr_api_key:
+            raise ValueError("Configuration not loaded. Call load_config() first.")
+        return self._settings_data.hr_api_key
+
+    @property
     def own_unit(self) -> str:
         if not self._settings_data.own_unit:
             raise ValueError("Configuration not loaded. Call load_config() first.")
@@ -98,7 +104,8 @@ class ApplicationConfig(metaclass=Singleton):
                             db_database=config['db']['database'], db_username=config['db']['username'],
                             db_password=config['db']['password'],pdf_path=self._ensure_directory(config["path"]["pdf_path"])
                             ,own_unit=config["unit"]["name"],mail_server=SmtpConfig(**config["mail"]),
-                                           hr_url=config["hr"]["url"]
+                                           hr_url=config["hr"]["url"],
+                                           hr_api_key=config["hr"].get("api_key", "")
                                            )
    
         self.__version = (config["version"]["number"], config["version"]["status"])
@@ -158,7 +165,8 @@ class ApplicationConfig(metaclass=Singleton):
                 'username': config.db_username
             },
             'hr': {
-                'url': config.hr_url
+                'url': config.hr_url,
+                'api_key': config.hr_api_key
             },
             'mail': {
                 'host': config.mail_server.host,

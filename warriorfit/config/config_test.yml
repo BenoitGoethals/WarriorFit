@@ -6,6 +6,7 @@ db:
   username: benoi
 hr:
   url: http://192.168.0.30:8400
+  api_key: "warrior_secret"
 mail:
   host: 192.168.0.30
   password: R@nger&1401!
