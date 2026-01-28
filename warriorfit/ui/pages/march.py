@@ -84,7 +84,7 @@ class MarchPage(Page):
             march_data = await self.controller.get_all_march()
 
             if not march_data:
-                return pd.DataFrame(columns=["service_number", "distance", "succeeded", "datetime_executed"])
+                return pd.DataFrame(columns=["service_number", "distance", "succeeded", "Date"])
 
             # Convert list of march objects to DataFrame
             df = pd.DataFrame(
@@ -94,8 +94,8 @@ class MarchPage(Page):
                         "service_number": m.service_number,
                         "distance": m.distance,
                         "succeeded": m.succeeded,
-                        "succeeded_display": "✓ Passed" if m.succeeded else "✗ Failed",
-                        "datetime_executed": m.datetime_executed.date() if m.datetime_executed else None,
+                        "Succeeded": "✓ Passed" if m.succeeded else "✗ Failed",
+                        "Date": m.datetime_executed.date() if m.datetime_executed else None,
                     }
                     for m in march_data
                 ]
@@ -107,14 +107,14 @@ class MarchPage(Page):
         async def march_grid():
             try:
                 df = await get_march_df()
-                # Drop id and succeeded (keep succeeded_display instead)
+                # Drop id and succeeded (keep Succeeded display column instead)
                 columns_to_drop = ["id", "succeeded"] if "id" in df.columns else ["succeeded"]
                 display_df = df.drop(columns=columns_to_drop)
                 display_df = display_df.sort_values(by=["service_number"])
                 return render.DataGrid(display_df, selection_mode="row", filters=False, width="100%")
             except Exception as e:
                 # Return empty grid on error
-                empty_df = pd.DataFrame(columns=["service_number", "distance", "succeeded_display", "datetime_executed"])
+                empty_df = pd.DataFrame(columns=["service_number", "distance", "Succeeded", "Date"])
                 return render.DataGrid(empty_df, selection_mode="row", filters=False, width="100%")
 
         @reactive.Effect
@@ -135,8 +135,8 @@ class MarchPage(Page):
                     ui.update_text("service_number_march", value=str(row["service_number"]))
                     ui.update_numeric("distance", value=float(row["distance"]))
                     ui.update_checkbox("succeeded", value=bool(row["succeeded"]))
-                    if row["datetime_executed"]:
-                        ui.update_date("datetime_executed", value=row["datetime_executed"])
+                    if row["Date"]:
+                        ui.update_date("datetime_executed", value=row["Date"])
             else:
                 ui.update_action_button("add_march_bn", disabled=True)
                 ui.update_action_button("update_march_bn", disabled=True)
