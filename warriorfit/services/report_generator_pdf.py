@@ -155,6 +155,25 @@ class ReportGeneratorPdf(GeneratorReport):
         return "-" if date_obj is None else date_obj.strftime("%Y-%m-%d %H:%M")
 
     @staticmethod
+    def _fmt_pass_fail(result: str) -> str:
+        """
+        Formats a pass/fail result with colored icons.
+        Returns green checkmark (✓) for passed, red X (✗) for failed.
+
+        :param result: The result string (e.g., "Passed", "Failed")
+        :return: Formatted string with color markup for PDF
+        """
+        if not result or result == "-":
+            return "-"
+
+        result_lower = str(result).lower()
+        if "pass" in result_lower:
+            return '<font color="green">✓ Passed</font>'
+        elif "fail" in result_lower:
+            return '<font color="red">✗ Failed</font>'
+        return result
+
+    @staticmethod
     def _ensure_pdf_deps():
         """
         Ensures that the required dependencies for generating PDFs are available.
@@ -237,7 +256,19 @@ class ReportGeneratorPdf(GeneratorReport):
             deps["Spacer"](1, 12),
         ]
 
-        data = [headers] + [row_builder(r) for r in rows]
+        # Build table data and convert markup strings to Paragraphs
+        data = [headers]
+        for r in rows:
+            row_data = row_builder(r)
+            # Convert any string with markup to Paragraph for colored text
+            processed_row = []
+            for cell in row_data:
+                if isinstance(cell, str) and '<font' in cell:
+                    processed_row.append(deps["Paragraph"](cell, styles["Normal"]))
+                else:
+                    processed_row.append(cell)
+            data.append(processed_row)
+
         tbl = deps["Table"](data, repeatRows=1)
         tbl.setStyle(self._create_table_style(deps))
         story.append(tbl)
@@ -334,10 +365,10 @@ class ReportGeneratorPdf(GeneratorReport):
             return [
                 self._fmt_date(r["session_date"]),
                 r["serial"],
-                "Passed" if r["rope"] else "Failed",
-                "Passed" if r["obstacle"] else "Failed",
+                self._fmt_pass_fail("Passed" if r["rope"] else "Failed"),
+                self._fmt_pass_fail("Passed" if r["obstacle"] else "Failed"),
                 self._fmt_time(r["run_time_s"]),
-                r["result"],
+                self._fmt_pass_fail(r["result"]),
             ]
 
         return self._generate_pass_fail_reports(
@@ -361,7 +392,7 @@ class ReportGeneratorPdf(GeneratorReport):
             return [
                 self._fmt_date(r["session_date"]),
                 r["serial"],
-                r["result"],
+                self._fmt_pass_fail(r["result"]),
             ]
 
         return self._generate_pass_fail_reports(
@@ -513,7 +544,19 @@ class ReportGeneratorPdf(GeneratorReport):
         story.append(deps["Paragraph"](title, styles["Heading3"]))
         story.append(deps["Spacer"](1, 6))
 
-        tbl_data = [headers] + [row_mapper(r) for r in records]
+        # Build table data with markup support
+        tbl_data = [headers]
+        for r in records:
+            row_data = row_mapper(r)
+            # Convert any string with markup to Paragraph for colored text
+            processed_row = []
+            for cell in row_data:
+                if isinstance(cell, str) and '<font' in cell:
+                    processed_row.append(deps["Paragraph"](cell, styles["Normal"]))
+                else:
+                    processed_row.append(cell)
+            tbl_data.append(processed_row)
+
         t = deps["Table"](tbl_data, repeatRows=1)
         t.setStyle(self._create_table_style(deps))
         story.append(t)
@@ -557,21 +600,19 @@ class ReportGeneratorPdf(GeneratorReport):
             r.get("Obs_scores", "-")
         ]
 
-    @staticmethod
-    def _swim_mapper(r: dict) -> List[Any]:
+    def _swim_mapper(self, r: dict) -> List[Any]:
         """Maps Swimming test record to table row."""
         return [
             r.get("Date", "-"),
-            r.get("Result", "-")
+            self._fmt_pass_fail(r.get("Result", "-"))
         ]
 
-    @staticmethod
-    def _mars_mapper(r: dict) -> List[Any]:
+    def _mars_mapper(self, r: dict) -> List[Any]:
         """Maps Mars test record to table row."""
         return [
             r.get("Date", "-"),
             r.get("Details", "-"),
-            r.get("Result", "-")
+            self._fmt_pass_fail(r.get("Result", "-"))
         ]
 
     def _create_test_results_table(self, df: pd.DataFrame, deps: Dict):
