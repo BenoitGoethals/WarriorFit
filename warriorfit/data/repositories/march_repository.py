@@ -88,7 +88,7 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def add_march(self, mars: March):
+    async def add_march(self, mars: March)->March | None:
         """
         Adds a new `March` object to the database asynchronously. This method handles
         the creation of a database session, adding the provided `March` instance,
