@@ -94,6 +94,7 @@ class MarchPage(Page):
                         "service_number": m.service_number,
                         "distance": m.distance,
                         "succeeded": m.succeeded,
+                        "succeeded_display": "✓ Passed" if m.succeeded else "✗ Failed",
                         "datetime_executed": m.datetime_executed.date() if m.datetime_executed else None,
                     }
                     for m in march_data
@@ -106,12 +107,14 @@ class MarchPage(Page):
         async def march_grid():
             try:
                 df = await get_march_df()
-                display_df = df.drop(columns=["id"]) if "id" in df.columns else df
+                # Drop id and succeeded (keep succeeded_display instead)
+                columns_to_drop = ["id", "succeeded"] if "id" in df.columns else ["succeeded"]
+                display_df = df.drop(columns=columns_to_drop)
                 display_df = display_df.sort_values(by=["service_number"])
                 return render.DataGrid(display_df, selection_mode="row", filters=False, width="100%")
             except Exception as e:
                 # Return empty grid on error
-                empty_df = pd.DataFrame(columns=["service_number", "distance", "succeeded", "datetime_executed"])
+                empty_df = pd.DataFrame(columns=["service_number", "distance", "succeeded_display", "datetime_executed"])
                 return render.DataGrid(empty_df, selection_mode="row", filters=False, width="100%")
 
         @reactive.Effect
