@@ -12,9 +12,12 @@ from warriorfit.mom.message import Message
 
 class BEMILService(metaclass=Singleton):
     BASE_URL = ApplicationConfig().hr_url
+    API_KEY = ApplicationConfig().hr_api_key
+
 
     def __init__(self):
         self.__logger = logging.getLogger(__name__)
+
 
     def _build_serviceman(self, data: dict) -> ServiceMen:
         if "gender" in data and isinstance(data["gender"], str):
@@ -46,7 +49,8 @@ class BEMILService(metaclass=Singleton):
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
-                    f"{self.BASE_URL}/servicemen?serial={be_mil_serial_number}"
+                    f"{self.BASE_URL}/servicemen?serial={be_mil_serial_number}",
+                    headers={'X-API-Key': self.API_KEY}
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -65,7 +69,10 @@ class BEMILService(metaclass=Singleton):
     ) -> list[ServiceMen] | None:
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(f"{self.BASE_URL}/servicemen/unit/{unit_name}")
+                response = await client.get(
+                    f"{self.BASE_URL}/servicemen/unit/{unit_name}",
+                    headers={'X-API-Key': self.API_KEY}
+                )
                 response.raise_for_status()  # raises error if status != 200
                 resp = response.json()
                 return [self._build_serviceman(item) for item in resp]
@@ -92,7 +99,11 @@ class BEMILService(metaclass=Singleton):
             response = await client.post(
                 self.BASE_URL + "/hrmessages",
                 json=message.to_dict(),
-                headers={'accept': 'application/json', 'Content-Type': 'application/json'}
+                headers={
+                    'accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-API-Key': self.API_KEY
+                }
             )
             self.__logger.info(json.dumps(message.to_dict(), indent=2))
             response.raise_for_status()
