@@ -9,9 +9,8 @@ from shiny.ui._navs import NavPanel
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
-from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.functional_controller import FunctionalController
-from warriorfit.ui.pages.page import Page
+from warriorfit.ui.pages.base_test_page import BaseTestPage
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,7 +22,7 @@ class FunctionalFormData:
     pull_ups: int
 
 
-class FunctionalPage(Page):
+class FunctionalPage(BaseTestPage):
     TAB_NAME: Final[str] = "Functional Tests"
     NO_SELECTION_MESSAGE: Final[str] = "No row selected"
 
@@ -39,13 +38,13 @@ class FunctionalPage(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.be_mil_service = MilitaryService()  # kept for consistency/side-effects if any
-        self.selected_military: Optional[ServiceMen] = None
-        self.selected_session: Optional[TestSession] = None
         self.controller = FunctionalController()
 
-    def refresh(self) -> None:
-        self.refresh_tick.set(self.refresh_tick.get() + 1)
+    def get_prefix(self) -> str:
+        return "functional"
+
+    def get_tab_name(self) -> str:
+        return self.TAB_NAME
 
     def get_ui(self) -> NavPanel:
         return ui.nav_panel(
@@ -149,36 +148,17 @@ class FunctionalPage(Page):
         # ----------------------------
         # Helpers
         # ----------------------------
-        async def _toggle_inputs(disabled: bool) -> None:
-            # NOTE: send_custom_message is async; must be awaited (otherwise RuntimeWarning).
-            try:
-                await session.send_custom_message(
-                    "wf_toggle_disabled",
-                    {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
-                )
-            except Exception:
-                # Fail open; app stays usable even if custom message fails.
-                pass
-
-        def _set_buttons(*, can_add: bool, can_update: bool) -> None:
-            ui.update_action_button("functional_add_btn", disabled=not can_add)
-            ui.update_action_button("functional_update_btn", disabled=not can_update)
 
         async def _clear_form() -> None:
-            session.send_input_message("functional_serialnr", {"value": ""})
-            session.send_input_message("functional_push_ups", {"value": 0})
-            session.send_input_message("functional_sit_ups", {"value": 0})
-            session.send_input_message("functional_pull_ups", {"value": 0})
-
-            self.selected_military = None
+            await self._clear_form_hook(input, session)
             selected_functional_id.set("")
 
             push_val.set("0")
             sit_val.set("0")
             pull_val.set("0")
 
-            await _toggle_inputs(disabled=True)
-            _set_buttons(can_add=False, can_update=False)
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled=True)
+            self.set_buttons(self.get_prefix(), can_add=False, can_update=False)
 
         def _read_form() -> FunctionalFormData:
             def _to_int(v: Any) -> int:
@@ -196,29 +176,7 @@ class FunctionalPage(Page):
             )
 
         async def _refresh_session_choices() -> None:
-            try:
-                test_sessions = await self.controller.load_sessions()
-            except Exception:
-                test_sessions = []
-
-            items = {
-                str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
-                for s in (test_sessions or [])
-            }
-            current = (input.functional_session_id() or "").strip()
-            ui.update_select("functional_session_id", choices=items, selected=(current if current in items else None))
-
-        def _require_session_selected() -> bool:
-            if not (selected_session_id.get() or "").strip():
-                status.set("Select a session first.")
-                return False
-            return True
-
-        def _require_military_selected() -> bool:
-            if self.selected_military is None:
-                status.set("Confirm a valid serial first.")
-                return False
-            return True
+            await self.refresh_session_choices(input, self.controller)
 
         # ----------------------------
         # Outputs
@@ -363,36 +321,13 @@ class FunctionalPage(Page):
         # ----------------------------
         @reactive.Effect
         async def _init() -> None:
+            _ = self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
             status.set("Ready.")
 
-        @reactive.Effect
-        async def _on_session_change() -> None:
-            val = (input.functional_session_id() or "").strip()
-            selected_session_id.set(val)
-
-            # changing session resets selection + input lock
-            await _clear_form()
-
-            if not val:
-                self.selected_session = None
-                status.set("Select a session.")
-                return
-
-            status.set("Session selected. Confirm a serial to enter results.")
-
-        @reactive.Effect
-        @reactive.event(input.functional_session_id)
-        async def _load_session_object() -> None:
-            val = (input.functional_session_id() or "").strip()
-            if not val:
-                self.selected_session = None
-                return
-            try:
-                self.selected_session = await self.controller.get_session_by_id(int(val))
-            except Exception:
-                self.selected_session = None
+        # Setup session management using base class
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -400,7 +335,7 @@ class FunctionalPage(Page):
         @reactive.Effect
         @reactive.event(input.functional_search, ignore_none=False)
         async def _on_search() -> None:
-            if not _require_session_selected():
+            if not self.require_session_selected(selected_session_id, status):
                 return
 
             serial = (input.functional_serialnr() or "").strip()
@@ -418,14 +353,14 @@ class FunctionalPage(Page):
             if val is None:
                 military_text.set("Not found")
                 status.set("Serial not found.")
-                await _toggle_inputs(disabled=True)
-                _set_buttons(can_add=False, can_update=False)
+                await self.toggle_inputs(session, self._DISABLE_IDS, disabled=True)
+                self.set_buttons(self.get_prefix(), can_add=False, can_update=False)
                 return
 
             military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             status.set("Serial confirmed. Enter results.")
-            await _toggle_inputs(disabled=False)
-            _set_buttons(can_add=True, can_update=True)
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled=False)
+            self.set_buttons(self.get_prefix(), can_add=True, can_update=True)
 
         # ----------------------------
         # Data grid
@@ -510,14 +445,14 @@ class FunctionalPage(Page):
             ui.update_numeric("functional_pull_ups", value=_safe_int(row.get("Pull-ups", row.get("pull_ups", 0))))
 
             # Selection: allow Update, disable Add (avoids duplicate add)
-            _set_buttons(can_add=False, can_update=True)
+            self.set_buttons(self.get_prefix(), can_add=False, can_update=True)
 
             try:
                 self.selected_military = await self.controller.search_military(serial) if serial else None
             except Exception:
                 self.selected_military = None
 
-            await _toggle_inputs(disabled=(self.selected_military is None))
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled=(self.selected_military is None))
             status.set(f"Selected Functional Test: {serial}" if serial else "Selected Functional Test.")
 
         # ----------------------------
@@ -526,7 +461,7 @@ class FunctionalPage(Page):
         @reactive.Effect
         @reactive.event(input.functional_add_btn)
         async def _on_add() -> None:
-            if not _require_session_selected() or not _require_military_selected():
+            if not self.require_session_selected(selected_session_id, status) or not self.require_military_selected(status):
                 return
 
             form = _read_form()
@@ -568,7 +503,7 @@ class FunctionalPage(Page):
         @reactive.Effect
         @reactive.event(input.functional_update_btn)
         async def _on_update() -> None:
-            if not _require_session_selected() or not _require_military_selected():
+            if not self.require_session_selected(selected_session_id, status) or not self.require_military_selected(status):
                 return
 
             functional_id_raw = (selected_functional_id.get() or "").strip()
@@ -650,7 +585,7 @@ class FunctionalPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number",  "first_name", "last_name", "gender"])
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -681,6 +616,14 @@ class FunctionalPage(Page):
                     row = df.iloc[row_idx]
                     ui.update_text("functional_serialnr", value=str(row["service_number"]))
                     ui.modal_remove()
+
+    async def _clear_form_hook(self, input: Any, session: Any) -> None:
+        """Hook for page-specific form clearing logic."""
+        session.send_input_message("functional_serialnr", {"value": ""})
+        session.send_input_message("functional_push_ups", {"value": 0})
+        session.send_input_message("functional_sit_ups", {"value": 0})
+        session.send_input_message("functional_pull_ups", {"value": 0})
+        self.selected_military = None
 
 
 # Public API: keep same signatures

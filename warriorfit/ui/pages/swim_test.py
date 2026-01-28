@@ -9,7 +9,7 @@ from shiny.ui._navs import NavPanel
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
-from warriorfit.ui.pages.page import Page
+from warriorfit.ui.pages.base_test_page import BaseTestPage
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,7 +19,7 @@ class SwimFormData:
     swim_passed: bool
 
 
-class SwimTestPage(Page):
+class SwimTestPage(BaseTestPage):
     TAB_NAME: Final[str] = "Swimming Tests"
     NO_SELECTION_MESSAGE: Final[str] = "No row selected"
 
@@ -31,12 +31,13 @@ class SwimTestPage(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.selected_military: Optional[ServiceMen] = None
-        self.selected_session: Optional[TestSession] = None
         self.controller = SwimmingController()
 
-    def refresh(self) -> None:
-        self.refresh_tick.set(self.refresh_tick.get() + 1)
+    def get_prefix(self) -> str:
+        return "swim"
+
+    def get_tab_name(self) -> str:
+        return self.TAB_NAME
 
     def get_ui(self) -> NavPanel:
         return ui.nav_panel(
@@ -124,19 +125,10 @@ class SwimTestPage(Page):
         # UI state helpers
         # ----------------------------
         async def _toggle_inputs(disabled: bool) -> None:
-            # NOTE: send_custom_message is async; must be awaited (otherwise RuntimeWarning).
-            try:
-                await session.send_custom_message(
-                    "wf_toggle_disabled",
-                    {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
-                )
-            except Exception:
-                # Fail open; app stays usable even if custom message fails.
-                pass
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled)
 
         def _set_buttons(*, can_add: bool, can_update: bool) -> None:
-            ui.update_action_button("swim_add_btn", disabled=not can_add)
-            ui.update_action_button("swim_update_btn", disabled=not can_update)
+            self.set_buttons("swim", can_add, can_update)
 
         async def _clear_form() -> None:
             session.send_input_message("swim_serialnr", {"value": ""})
@@ -157,29 +149,13 @@ class SwimTestPage(Page):
             )
 
         def _require_session_selected() -> bool:
-            if not (selected_session_id.get() or "").strip():
-                status.set("Select a session first.")
-                return False
-            return True
+            return self.require_session_selected(selected_session_id, status)
 
         def _require_military_selected() -> bool:
-            if self.selected_military is None:
-                status.set("Confirm a valid serial first.")
-                return False
-            return True
+            return self.require_military_selected(status)
 
         async def _refresh_session_choices() -> None:
-            try:
-                sessions = await self.controller.load_sessions()
-            except Exception:
-                sessions = []
-
-            items = {
-                str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
-                for s in (sessions or [])
-            }
-            current = (input.swim_session_id() or "").strip()
-            ui.update_select("swim_session_id", choices=items, selected=(current if current in items else None))
+            await self.refresh_session_choices(input, self.controller)
 
         # ----------------------------
         # Outputs
@@ -213,35 +189,13 @@ class SwimTestPage(Page):
         # ----------------------------
         @reactive.Effect
         async def _init() -> None:
+            _ = self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
             status.set("Ready.")
 
-        @reactive.Effect
-        async def _on_session_change() -> None:
-            val = (input.swim_session_id() or "").strip()
-            selected_session_id.set(val)
-
-            # Switching sessions should reset form state.
-            await _clear_form()
-            self.selected_session = None
-
-            if not val:
-                status.set("Select a session.")
-                return
-            status.set("Session selected. Confirm a serial to enter results.")
-
-        @reactive.Effect
-        @reactive.event(input.swim_session_id)
-        async def _load_session_object() -> None:
-            val = (input.swim_session_id() or "").strip()
-            if not val:
-                self.selected_session = None
-                return
-            try:
-                self.selected_session = await self.controller.get_session_by_id(int(val))
-            except Exception:
-                self.selected_session = None
+        # Setup session management using base class
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -475,7 +429,7 @@ class SwimTestPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number",  "first_name", "last_name", "gender"])
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -506,6 +460,12 @@ class SwimTestPage(Page):
                     row = df.iloc[row_idx]
                     ui.update_text("swim_serialnr", value=str(row["service_number"]))
                     ui.modal_remove()
+
+    async def _clear_form_hook(self, input: Any, session: Any) -> None:
+        """Hook for page-specific form clearing logic."""
+        session.send_input_message("swim_serialnr", {"value": ""})
+        session.send_input_message("swim_passed", {"value": False})
+        self.selected_military = None
 
 
 # Public API

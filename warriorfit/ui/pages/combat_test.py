@@ -9,9 +9,8 @@ from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
-from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.combat_controller import CombatController
-from warriorfit.ui.pages.page import Page
+from warriorfit.ui.pages.base_test_page import BaseTestPage
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,7 +22,7 @@ class CombatFormData:
     combat_speedmars: str
 
 
-class CombatPage(Page):
+class CombatPage(BaseTestPage):
     TAB_NAME: Final[str] = "Combat Tests"
     NO_SELECTION_MESSAGE: Final[str] = "No row selected"
 
@@ -39,13 +38,13 @@ class CombatPage(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.be_mil_service = MilitaryService()  # kept for compatibility
-        self.selected_military: Optional[ServiceMen] = None
-        self.selected_session: Optional[TestSession] = None
         self.controller = CombatController()
 
-    def refresh(self) -> None:
-        self.refresh_tick.set(self.refresh_tick.get() + 1)
+    def get_prefix(self) -> str:
+        return "combat"
+
+    def get_tab_name(self) -> str:
+        return self.TAB_NAME
 
     def get_ui(self) -> NavPanel:
         return ui.nav_panel(
@@ -155,18 +154,10 @@ class CombatPage(Page):
         # UI state helpers
         # ----------------------------
         async def _toggle_inputs(disabled: bool) -> None:
-            try:
-                await session.send_custom_message(
-                    "wf_toggle_disabled",
-                    {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
-                )
-            except Exception:
-                # Fail open; app stays usable even if custom message fails.
-                pass
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled)
 
         def _set_buttons(*, can_add: bool, can_update: bool) -> None:
-            ui.update_action_button("combat_add_btn", disabled=not can_add)
-            ui.update_action_button("combat_update_btn", disabled=not can_update)
+            self.set_buttons("combat", can_add, can_update)
 
         async def _clear_form() -> None:
             session.send_input_message("combat_serialnr", {"value": ""})
@@ -191,16 +182,10 @@ class CombatPage(Page):
             )
 
         def _require_session_selected() -> bool:
-            if not (selected_session_id.get() or "").strip():
-                status.set("Select a session first.")
-                return False
-            return True
+            return self.require_session_selected(selected_session_id, status)
 
         def _require_military_selected() -> bool:
-            if self.selected_military is None:
-                status.set("Confirm a valid serial first.")
-                return False
-            return True
+            return self.require_military_selected(status)
 
         # ----------------------------
         # Outputs
@@ -244,49 +229,17 @@ class CombatPage(Page):
         # Session choices + selection
         # ----------------------------
         async def _refresh_session_choices() -> None:
-            try:
-                test_sessions = await self.controller.load_sessions()
-            except Exception:
-                test_sessions = []
-
-            items = {
-                str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
-                for s in (test_sessions or [])
-            }
-            current = (input.combat_session_id() or "").strip()
-            ui.update_select("combat_session_id", choices=items, selected=(current if current in items else None))
+            await self.refresh_session_choices(input, self.controller)
 
         @reactive.Effect
         async def _init() -> None:
+            _ = self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
             status.set("Ready.")
 
-        @reactive.Effect
-        async def _on_session_change() -> None:
-            val = (input.combat_session_id() or "").strip()
-            selected_session_id.set(val)
-
-            # Prevent mixing records between sessions
-            await _clear_form()
-            self.selected_session = None
-
-            if not val:
-                status.set("Select a session.")
-                return
-            status.set("Session selected. Confirm a serial to enter results.")
-
-        @reactive.Effect
-        @reactive.event(input.combat_session_id)
-        async def _load_session_object() -> None:
-            val = (input.combat_session_id() or "").strip()
-            if not val:
-                self.selected_session = None
-                return
-            try:
-                self.selected_session = await self.controller.get_test_session_by_id(int(val))
-            except Exception:
-                self.selected_session = None
+        # Setup session management using base class
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock form
@@ -553,7 +506,7 @@ class CombatPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number",  "first_name", "last_name", "gender"])
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -584,6 +537,14 @@ class CombatPage(Page):
                     row = df.iloc[row_idx]
                     ui.update_text("combat_serialnr", value=str(row["service_number"]))
                     ui.modal_remove()
+
+    async def _clear_form_hook(self, input: Any, session: Any) -> None:
+        """Hook for page-specific form clearing logic."""
+        session.send_input_message("combat_serialnr", {"value": ""})
+        session.send_input_message("combat_obstacle", {"value": False})
+        session.send_input_message("combat_robe", {"value": False})
+        session.send_input_message("combat_speedmars", {"value": ""})
+        self.selected_military = None
 
 
 _page = CombatPage()
