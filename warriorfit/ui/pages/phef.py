@@ -11,7 +11,7 @@ from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.phef_controller import PhefController
-from warriorfit.ui.pages.page import Page
+from warriorfit.ui.pages.base_test_page import BaseTestPage
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,7 +23,7 @@ class PhefFormData:
     run_2400: str
 
 
-class PhefPage(Page):
+class PhefPage(BaseTestPage):
     TAB_NAME: Final[str] = "PHEF Tests"
     NO_SELECTION_MESSAGE: Final[str] = "No row selected"
 
@@ -39,13 +39,13 @@ class PhefPage(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.be_mil_service = MilitaryService()  # kept for compatibility/side-effects if used elsewhere
-        self.selected_military: Optional[ServiceMen] = None
-        self.selected_session: Optional[TestSession] = None
         self.controller = PhefController()
 
-    def refresh(self) -> None:
-        self.refresh_tick.set(self.refresh_tick.get() + 1)
+    def get_prefix(self) -> str:
+        return "ph"
+
+    def get_tab_name(self) -> str:
+        return self.TAB_NAME
 
     def get_ui(self) -> NavPanel:
         return ui.nav_panel(
@@ -163,36 +163,17 @@ class PhefPage(Page):
         # ----------------------------
         # UI state helpers
         # ----------------------------
-        async def _toggle_inputs(disabled: bool) -> None:
-            # One custom message instead of inserting script repeatedly.
-            try:
-                await session.send_custom_message(
-                    "wf_toggle_disabled",
-                    {"ids": list(self._DISABLE_IDS), "disabled": bool(disabled)},
-                )
-            except Exception:
-                # Fail open; app stays usable even if custom message fails.
-                pass
-
-        def _set_buttons(*, can_add: bool, can_update: bool) -> None:
-            ui.update_action_button("ph_add_btn", disabled=not can_add)
-            ui.update_action_button("ph_update_btn", disabled=not can_update)
 
         async def _clear_form() -> None:
-            session.send_input_message("ph_serialnr", {"value": ""})
-            session.send_input_message("ph_side_bridge_r", {"value": ""})
-            session.send_input_message("ph_side_bridge_l", {"value": ""})
-            session.send_input_message("ph_run_2400", {"value": ""})
-
-            self.selected_military = None
+            await self._clear_form_hook(input, session)
             selected_phef_id.set("")
 
             side_r_score.set("")
             side_l_score.set("")
             run_score.set("")
 
-            await _toggle_inputs(disabled=True)
-            _set_buttons(can_add=False, can_update=False)
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled=True)
+            self.set_buttons(self.get_prefix(), can_add=False, can_update=False)
 
         def _read_form() -> PhefFormData:
             return PhefFormData(
@@ -203,17 +184,6 @@ class PhefPage(Page):
                 run_2400=(input.ph_run_2400() or "").strip(),
             )
 
-        def _require_session_selected() -> bool:
-            if not (selected_session_id.get() or "").strip():
-                status.set("Select a session first.")
-                return False
-            return True
-
-        def _require_military_selected() -> bool:
-            if self.selected_military is None:
-                status.set("Confirm a valid serial first.")
-                return False
-            return True
 
         # ----------------------------
         # Outputs
@@ -272,52 +242,17 @@ class PhefPage(Page):
         # Session choices + selection
         # ----------------------------
         async def _refresh_session_choices() -> None:
-            try:
-                test_sessions = await self.controller.load_sessions()
-            except Exception:
-                test_sessions = []
-
-            items = {
-                str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
-                for s in (test_sessions or [])
-            }
-            current = (input.ph_session_id() or "").strip()
-            ui.update_select("ph_session_id", choices=items, selected=(current if current in items else None))
+            await self.refresh_session_choices(input, self.controller)
 
         @reactive.Effect
         async def _init() -> None:
-            # Triggered on init and whenever refresh_tick changes
-            self.refresh_tick.get()
+            _ = self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
             status.set("Ready.")
 
-        @reactive.Effect
-        async def _on_session_change() -> None:
-            val = (input.ph_session_id() or "").strip()
-            selected_session_id.set(val)
-
-            # Changing sessions should reset form state (avoid mixing records/scores).
-            await _clear_form()
-
-            if not val:
-                self.selected_session = None
-                status.set("Select a session.")
-                return
-
-            status.set("Session selected. Confirm a serial to enter results.")
-
-        @reactive.Effect
-        @reactive.event(input.ph_session_id)
-        async def _load_session_object() -> None:
-            val = (input.ph_session_id() or "").strip()
-            if not val:
-                self.selected_session = None
-                return
-            try:
-                self.selected_session = await self.controller.get_session_by_id(int(val))
-            except Exception:
-                self.selected_session = None
+        # Setup session management using base class
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock form
@@ -325,7 +260,7 @@ class PhefPage(Page):
         @reactive.Effect
         @reactive.event(input.ph_search, ignore_none=False)
         async def _on_search() -> None:
-            if not _require_session_selected():
+            if not self.require_session_selected(selected_session_id, status):
                 return
 
             serial = (input.ph_serialnr() or "").strip()
@@ -343,8 +278,8 @@ class PhefPage(Page):
             if val is None:
                 military_text.set("Not found")
                 status.set("Serial not found.")
-                await _toggle_inputs(disabled=True)
-                _set_buttons(can_add=False, can_update=False)
+                await self.toggle_inputs(session, self._DISABLE_IDS, disabled=True)
+                self.set_buttons(self.get_prefix(), can_add=False, can_update=False)
                 return
 
             military_text.set(
@@ -352,8 +287,8 @@ class PhefPage(Page):
                 f"{val.gender} {val.age_from_birthdate()} years old"
             )
             status.set("Serial confirmed. Enter results.")
-            await _toggle_inputs(disabled=False)
-            _set_buttons(can_add=True, can_update=True)
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled=False)
+            self.set_buttons(self.get_prefix(), can_add=True, can_update=True)
 
         # ----------------------------
         # Live scoring (only if military selected)
@@ -477,7 +412,7 @@ class PhefPage(Page):
             ui.update_text("ph_run_2400", value=str(row.get("runningTime", "") or ""))
 
             # Selecting an existing record means we should allow Update, but not Add.
-            _set_buttons(can_add=False, can_update=True)
+            self.set_buttons(self.get_prefix(), can_add=False, can_update=True)
 
             # Try to resolve military (so scores can compute as user edits)
             try:
@@ -485,7 +420,7 @@ class PhefPage(Page):
             except Exception:
                 self.selected_military = None
 
-            await _toggle_inputs(disabled=(self.selected_military is None))
+            await self.toggle_inputs(session, self._DISABLE_IDS, disabled=(self.selected_military is None))
             status.set(f"Selected PHEF record for: {serial}" if serial else "Selected PHEF record.")
 
         # ----------------------------
@@ -509,7 +444,7 @@ class PhefPage(Page):
         @reactive.Effect
         @reactive.event(input.ph_add_btn)
         async def _on_add() -> None:
-            if not _require_session_selected() or not _require_military_selected():
+            if not self.require_session_selected(selected_session_id, status) or not self.require_military_selected(status):
                 return
 
             form = _read_form()
@@ -543,7 +478,7 @@ class PhefPage(Page):
         @reactive.Effect
         @reactive.event(input.ph_update_btn)
         async def _on_update() -> None:
-            if not _require_session_selected() or not _require_military_selected():
+            if not self.require_session_selected(selected_session_id, status) or not self.require_military_selected(status):
                 return
 
             phef_id_raw = (selected_phef_id.get() or "").strip()
@@ -606,7 +541,7 @@ class PhefPage(Page):
             modal_content = ui.modal(
                 ui.card(
                     ui.card_header("Select Serial Number"),
-                    ui.output_data_frame("phef_serial_search_grid"),
+                    ui.output_data_frame("ph_serial_search_grid"),
                     full_screen=False,
                 ),
                 size="l",
@@ -624,7 +559,6 @@ class PhefPage(Page):
                 [
                     {
                         "service_number": s.service_number,
-
                         "first_name": s.first_name,
                         "last_name": s.last_name,
                         "gender": s.gender,
@@ -635,14 +569,14 @@ class PhefPage(Page):
             return df.sort_values(by=["service_number"])
 
         @render.data_frame
-        async def phef_serial_search_grid():
+        async def ph_serial_search_grid():
             df = await get_all_servicemen_df()
             return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
 
         @reactive.Effect
-        @reactive.event(input.phef_serial_search_grid_selected_rows)
+        @reactive.event(input.ph_serial_search_grid_selected_rows)
         async def _on_serial_selected() -> None:
-            indices = input.phef_serial_search_grid_selected_rows()
+            indices = input.ph_serial_search_grid_selected_rows()
             if indices:
                 df = await get_all_servicemen_df()
                 if df is not None and not df.empty:
@@ -650,6 +584,14 @@ class PhefPage(Page):
                     row = df.iloc[row_idx]
                     ui.update_text("ph_serialnr", value=str(row["service_number"]))
                     ui.modal_remove()
+
+    async def _clear_form_hook(self, input: Any, session: Any) -> None:
+        """Hook for page-specific form clearing logic."""
+        session.send_input_message("ph_serialnr", {"value": ""})
+        session.send_input_message("ph_side_bridge_r", {"value": ""})
+        session.send_input_message("ph_side_bridge_l", {"value": ""})
+        session.send_input_message("ph_run_2400", {"value": ""})
+        self.selected_military = None
 
 
 _page = PhefPage()
