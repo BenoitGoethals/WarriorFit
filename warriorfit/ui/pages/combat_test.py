@@ -314,7 +314,7 @@ class CombatPage(BaseTestPage):
                 return pd.DataFrame()
             try:
                 df = self.controller.decorate_grid(df)
-                df = df.drop(columns=["id"], errors="ignore")  # hide ID in UI only
+                df = df.drop(columns=["ID"], errors="ignore")  # hide ID in UI only
                 return df.sort_values(by=["Serial"])
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
