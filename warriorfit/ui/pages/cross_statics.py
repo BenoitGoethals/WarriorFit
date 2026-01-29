@@ -18,41 +18,23 @@ class CrossStaticsPage(Page):
     def get_ui(self):
         return ui.nav_panel(
             "Cross Statics",
-            ui.h2("Cross Statics"),
+            ui.h2("Cross Statistics"),
             ui.br(),
             ui.layout_columns(
+
                 ui.card(
-                    ui.card_header("1. Basic Performance Metrics", class_="bg-success text-white"),
-                    # Replaced table with simple labels as requested
-                    ui.div(
-                        ui.strong("Average time: "),
-                        ui.output_ui("cross_average_time"),
-                    ),
-                    ui.div(
-                        ui.strong("Best Time: "),
-                        ui.output_ui("cross_best_time"),
-                    ),
-                    ui.div(
-                        ui.strong("Gap between best and worst: "),
-                        ui.output_ui("cross_gap"),
-                    ),
-                ),
-                ui.card(
-                    ui.card_header("2. Breakdowns based on demographics", class_="bg-success text-white"),
+                    ui.card_header("1. Breakdowns based on demographics", class_="bg-success text-white"),
                     ui.div(
                         ui.strong("Age groups : "),
                         ui.output_ui("cross_age_group"),
                     ),
-                    ui.div(
-                        ui.strong("Gender M / F averages: "),
-                        ui.output_ui("cross_gender"),
-                    ),
+
                 ),
 
-                col_widths=[3, 3,4]),
+                col_widths=[3, 3]),
                 ui.layout_columns(
                     ui.card(
-                        ui.card_header("3. Best 10 all 5M", class_="bg-success text-white"),
+                        ui.card_header("2. Best 10 all 5M", class_="bg-success text-white"),
                         ui.div(
                             ui.output_data_frame("best_10_all_grid_5")
                         ),
@@ -70,16 +52,11 @@ class CrossStaticsPage(Page):
 
     def server(self, input, output, session):
         self.refresh_tick = reactive.Value(0)
-        self.refresh_on_nav(input, "Cross Statics", self.refresh_tick)
+        self.refresh_on_nav(input, "Cross Statistics", self.refresh_tick)
         @reactive.Effect
         async def _init():
             await self._controller.load()
 
-        @output
-        @render.ui
-        async def cross_average_time():
-            average = await self._controller.get_average_time()
-            return ui.p(f"{Formatter.format_time(average)}")
 
         @output
         @render.data_frame
@@ -135,17 +112,6 @@ class CrossStaticsPage(Page):
 
 
 
-        @output
-        @render.ui
-        async def cross_best_time():
-            average = await self._controller.get_best_time()
-            return ui.p(f"{Formatter.format_time(average)}")
-
-        @output
-        @render.ui
-        async def cross_gap():
-            average = await self._controller.get_gap_time()
-            return ui.p(f"{Formatter.format_time(average)}")
 
         @output
         @render.ui
@@ -156,11 +122,6 @@ class CrossStaticsPage(Page):
                uv_p.append(ui.p(f"Age {key} - Count {value}"))
             return uv_p
 
-        @output
-        @render.ui
-        async def cross_gender():
-            average_f,average_m = await self._controller.get_gender_time()
-            return ui.p(F" F {Formatter.format_time(average_f)}  /  M {Formatter.format_time(average_m)}")
 
 
 
