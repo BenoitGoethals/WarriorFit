@@ -21,18 +21,28 @@ class CrossStaticsController:
         self._stats = await self._service.get_cross_stats()
 
     async def get_average_time(self) -> float:
+        if self._stats is None:
+            await self.load()
         return self._stats[0]
 
     async def get_gap_time(self):
+        if self._stats is None:
+            await self.load()
         return self._stats[1]
 
     async def get_best_time(self):
+        if self._stats is None:
+            await self.load()
         return self._stats[2]
 
     async def get_age_group(self):
+        if self._stats is None:
+            await self.load()
         return self._stats[3]
 
     async def get_gender_time(self):
+        if self._stats is None:
+            await self.load()
         return self._stats[4]
 
     async def best_10_all_df(self) -> dict[int, pd.DataFrame]:
