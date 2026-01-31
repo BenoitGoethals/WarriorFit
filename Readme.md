@@ -16,7 +16,7 @@
 
 **Project development methodology:** Agile
 
-**Project Development server:** http://78.21.255.210:8500/  
+**Project Development server:** https://bensoft.be/  
 username: tester
 password: tester007!
 
@@ -39,6 +39,7 @@ password: tester007!
 * 2026-01-27: update retrospective
 * 2026-01-27: demo video uploaded https://youtu.be/3xY8XZYLF6U
 * 2026-01-28: make HRM simulator API secure with key:
+* 2026-02-01: setup nginx reverse proxy
 
 
 ## Project Description
