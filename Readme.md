@@ -40,6 +40,7 @@ password: tester007!
 * 2026-01-27: demo video uploaded https://youtu.be/3xY8XZYLF6U
 * 2026-01-28: make HRM simulator API secure with key:
 * 2026-02-01: setup nginx reverse proxy
+* 2026-02-02: Cross app and api SSL/HTTPS Support**: Encrypted communication with SSL certificates
 
 
 ## Project Description
