@@ -82,7 +82,7 @@ The project documentation is structured in different documents:
 11. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (Done)
 12. * [Testing](documentation/testcases.md) (In Development)
 13. * [Cross App](documentation/crsossapp.md) (out of scope/In Development)
-14. * [Server architecture](documentation/server_archicteture.html) (Done)
+14. * [Server architecture](documentation/server.md) (Done)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
