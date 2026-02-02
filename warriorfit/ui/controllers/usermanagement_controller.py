@@ -9,6 +9,7 @@ import pandas as pd
 
 from warriorfit.data.model.db_model import User, Role
 from warriorfit.security.auth_service import Auth
+from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_user import UserService
 
 
@@ -38,6 +39,7 @@ class UserManagementController:
     EMAIL_REGEX = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
     USER_REGEX = re.compile(r'^[a-zA-Z0-9_]+$')
     def __init__(self,):
+        self.be_mil = MilitaryService()
         self._service =  UserService()
         self.selected_user=None
 
