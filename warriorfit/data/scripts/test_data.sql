@@ -8,28 +8,17 @@ INSERT INTO users (username, email, password_hash, created_at, role, is_active, 
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
 ('user1', 'user1@example.com', crypt('password', gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'SN001'),
 ('user2', 'user2@example.com', crypt('password2', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN002'),
-('user3', 'user3@example.com', crypt('password3', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN003'),
-('user4', 'user4@example.com', crypt('password4', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN004'),
-('user5', 'user5@example.com', crypt('password5', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN005'),
-('user6', 'user6@example.com', crypt('password6', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN006'),
-('user7', 'user7@example.com', crypt('password7', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN007'),
-('user8', 'user8@example.com', crypt('password8', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN008'),
-('user9', 'user9@example.com', crypt('password9', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN009'),
+('planner', 'user3@example.com', crypt('password', gen_salt('bf')), NOW(), 'PLANNER', TRUE, 'SN003'),
+('user9', 'user9@example.com', crypt('password9', gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'SN009'),
 ('user10', 'user10@example.com', crypt('password10', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN010'),
 ('pti', 'ptitest@example.com', crypt('pti', gen_salt('bf')), NOW(), 'USER', TRUE, 'pti'),
-('tester', 'tester@example.com', public.crypt('password', public.gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'benoit'),
-('benoit', 'benoit@example.com', public.crypt('tester007!', public.gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'tester');
+('tester', 'tester@example.com', public.crypt('tester007', public.gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'benoit'),
+('benoit', 'benoit@example.com', public.crypt('ranger14!', public.gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'tester');
 
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number)
 VALUES ('pti2', 'ptitest2@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'snpt12'),
        ('pti20', 'pti2@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI2'),
-       ('pti3', 'pti3@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI3'),
-       ('pti4', 'pti4@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI4'),
-       ('pti5', 'pti5@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI5'),
-       ('pti6', 'pti6@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI6'),
-       ('pti7', 'pti7@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI7'),
-       ('pti8', 'pti8@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI8'),
-       ('pti9', 'pti9@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI9'),
+       ('pti3', 'pti3@example.com', crypt('password', gen_salt('bf')), NOW(), 'APTI', TRUE, 'SNPTI3'),
        ('pti10', 'pti10@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI10');
 
 -- Test Sessions data
@@ -43,7 +32,7 @@ VALUES ('SNPTI', '2025-12-06 09:00:00', false, 'Regular fitness evaluation sessi
        ('SNPTI6', '2025-12-11 09:00:00', false, 'Regular training evaluation', 'PHEF'),
        ('SNPTI7', '2025-12-12 09:00:00', false, 'Physical readiness test', 'PHEF'),
        ('SNPTI8', '2025-12-13 09:00:00', false, 'Standard fitness evaluation', 'PHEF'),
-       ('SNPTI9', '2025-12-14 09:00:00', false, 'Combat fitness assessment', 'COMBAT')
+       ('SNPTI9', '2025-12-14 09:00:00', false, 'Combat fitness assessment', 'COMBAT');
 
 
 INSERT INTO march(distance, succeeded, datetime_executed, service_number) VALUES (100, true, '2025-08-06 09:00:00', 'BE-20250001');
