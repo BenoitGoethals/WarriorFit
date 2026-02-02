@@ -56,10 +56,8 @@ class SettingsController:
         :rtype: Tuple[bool, str]
         """
         try:
-
-
-
             ApplicationConfig().save_config(data)
+            ApplicationConfig().load_config()
             return True, "Configuration saved successfully."
         except Exception as e:
             return False, f"Failed to save configuration: {e}"
