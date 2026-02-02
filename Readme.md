@@ -20,8 +20,8 @@
 username: tester
 password: tester007!
 
-**Test mailserver view : http://78.21.255.210:8025/
-**Test HR Simulator view : http://78.21.255.210:8550/
+**Test mailserver view : https://mailstub.bensoft.be/
+**Test HR Simulator view : https://api.bensoft.be/
 
 
 ## Updates
@@ -130,7 +130,7 @@ https://github.com/users/BenoitGoethals/projects/20
 
  ## Licence
 
-Copyright (c) 2025 Goethals Benoit
+Copyright (c) 2026 Goethals Benoit
 
 This source code is provided for viewing purposes only.
 
