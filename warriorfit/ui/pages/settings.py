@@ -16,9 +16,21 @@ class SettingsPage(Page):
         self._status = reactive.Value("")
         self._unit_status = reactive.Value("")
 
-
     def refresh(self):
         pass
+
+    def _inline_label_input(self, *, label: str, input_tag: ui.Tag, label_for: str) -> ui.Tag:
+        """Render label + input on the same line."""
+        return ui.div(
+            ui.tags.label(
+                label,
+                for_=label_for,
+                class_="form-label mb-0",
+                style="min-width: 170px;",  # adjust to taste
+            ),
+            ui.div(input_tag, class_="flex-grow-1"),
+            class_="d-flex align-items-center gap-2",
+        )
 
     def get_ui(self):
         return ui.nav_panel(
@@ -28,36 +40,98 @@ class SettingsPage(Page):
                 ui.card(
                     ui.card_header("Application Configuration"),
                     ui.h5("Unit Settings"),
-                    ui.input_text("own_unit", "Own Unit", placeholder="Enter your unit name"),
+                    self._inline_label_input(
+                        label="Own Unit",
+                        label_for="own_unit",
+                        input_tag=ui.input_text("own_unit", None, placeholder="Enter your unit name"),
+                    ),
                     ui.output_text("unit_status"),
 
                     ui.h5("Database Configuration"),
-                    ui.input_text("db_host", "Host", placeholder="e.g., 78.21.255.25"),
-                    ui.input_numeric("db_port", "Port", value=5432, min=1, max=65535),
-                    ui.input_text("db_database", "Database", placeholder="e.g., warriorfit"),
-                    ui.input_text("db_username", "Username", placeholder="e.g., mike"),
-                    ui.input_password("db_password", "Password"),
+                    self._inline_label_input(
+                        label="Host",
+                        label_for="db_host",
+                        input_tag=ui.input_text("db_host", None, placeholder="e.g., 78.21.255.25"),
+                    ),
+                    self._inline_label_input(
+                        label="Port",
+                        label_for="db_port",
+                        input_tag=ui.input_numeric("db_port", None, value=5432, min=1, max=65535),
+                    ),
+                    self._inline_label_input(
+                        label="Database",
+                        label_for="db_database",
+                        input_tag=ui.input_text("db_database", None, placeholder="e.g., warriorfit"),
+                    ),
+                    self._inline_label_input(
+                        label="Username",
+                        label_for="db_username",
+                        input_tag=ui.input_text("db_username", None, placeholder="e.g., mike"),
+                    ),
+                    self._inline_label_input(
+                        label="Password",
+                        label_for="db_password",
+                        input_tag=ui.input_password("db_password", None),
+                    ),
 
                     ui.h5("HR Configuration"),
-                    ui.input_text("hr_url", "HR URL", placeholder="e.g., http://hr-system/api"),
+                    self._inline_label_input(
+                        label="HR URL",
+                        label_for="hr_url",
+                        input_tag=ui.input_text("hr_url", None, placeholder="e.g., http://hr-system/api"),
+                    ),
+                    self._inline_label_input(
+                        label="Key",
+                        label_for="hr_key",
+                        input_tag=ui.input_text("hr_key", None, placeholder="e.g., 1234567890"),
+                    ),
                 ),
                 ui.card(
                     ui.card_header("Mail & Paths"),
                     ui.h5("Mail Configuration"),
-                    ui.input_text("mail_host", "SMTP Host", placeholder="e.g., smtp.gmail.com"),
-                    ui.input_numeric("mail_port", "SMTP Port", value=587, min=1, max=65535),
-                    ui.input_text("mail_username", "Mail Username", placeholder="e.g., user@example.com"),
-                    ui.input_password("mail_password", "Mail Password"),
-                    ui.input_text("sender_email", "Sender Email", placeholder="e.g., no-reply@warriorfit.com"),
+                    self._inline_label_input(
+                        label="SMTP Host",
+                        label_for="mail_host",
+                        input_tag=ui.input_text("mail_host", None, placeholder="e.g., smtp.gmail.com"),
+                    ),
+                    self._inline_label_input(
+                        label="SMTP Port",
+                        label_for="mail_port",
+                        input_tag=ui.input_numeric("mail_port", None, value=587, min=1, max=65535),
+                    ),
+                    self._inline_label_input(
+                        label="Mail Username",
+                        label_for="mail_username",
+                        input_tag=ui.input_text("mail_username", None, placeholder="e.g., user@example.com"),
+                    ),
+                    self._inline_label_input(
+                        label="Mail Password",
+                        label_for="mail_password",
+                        input_tag=ui.input_password("mail_password", None),
+                    ),
+                    self._inline_label_input(
+                        label="Sender Email",
+                        label_for="sender_email",
+                        input_tag=ui.input_text("sender_email", None, placeholder="e.g., no-reply@warriorfit.com"),
+                    ),
                     ui.layout_columns(
                         ui.input_checkbox("mail_use_ssl", "Use SSL", value=False),
                         ui.input_checkbox("mail_use_tls", "Use TLS", value=True),
                     ),
 
                     ui.h5("Path Configuration"),
-                    ui.input_text("pdf_path", "PDF Path", placeholder="e.g., c:/temp"),
+                    self._inline_label_input(
+                        label="PDF Path",
+                        label_for="pdf_path",
+                        input_tag=ui.input_text("pdf_path", None, placeholder="e.g., c:/temp"),
+                    ),
                     ui.br(),
-                    ui.input_action_button("save_config", "Save All Configuration", width="100%", class_="btn-primary"),
+                    ui.input_action_button(
+                        "save_config",
+                        "Save All Configuration",
+                        width="100%",
+                        class_="btn-primary",
+                    ),
                     ui.output_text("config_status"),
                     full_screen=False,
                 ),
@@ -77,6 +151,7 @@ class SettingsPage(Page):
             ui.update_text("pdf_path", value=data.pdf_path)
             ui.update_text("own_unit", value=data.own_unit)
             ui.update_text("hr_url", value=data.hr_url)
+            ui.update_text("hr_key", value=data.hr_api_key)
 
             if data.mail_server:
                 ui.update_text("mail_host", value=data.mail_server.host)
@@ -121,6 +196,7 @@ class SettingsPage(Page):
                 own_unit=(input.own_unit() or "").strip(),
                 mail_server=smtp_config,
                 hr_url=input.hr_url() or "",
+                hr_api_key=input.hr_key() or "",
             )
             ok, msg = self.controller.save(data)
             self._status.set(("✅ " if ok else "❌ ") + msg)
