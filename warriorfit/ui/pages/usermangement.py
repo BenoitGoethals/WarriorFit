@@ -34,6 +34,8 @@ class UserManagementPage(Page):
                 ui.card(
                     ui.card_header("Create / Edit User"),
                     ui.input_text("um_serial", "Serial Number"),
+                    ui.input_action_button("um_serial_search_btn", "🔍 Search own Unit", class_="btn btn-lm",
+                                           style="margin-top: 5px;", width="250px"),
                     ui.input_text("um_username", "Username"),
                     ui.input_password("um_password", "Password"),
                     ui.input_text("um_email", "Email"),
@@ -86,6 +88,61 @@ class UserManagementPage(Page):
         self._write_form(session, {"serial": "", "username": "", "password": "", "email": "", "role": "", "is_active": ""})
 
     def server(self, input, output, session):
+
+        @reactive.Effect
+        @reactive.event(input.um_serial_search_btn)
+        async def um_create_btn_search__btn_modal() -> None:
+            modal_content = ui.modal(
+                ui.card(
+                    ui.card_header("Select Serial Number"),
+                    ui.output_data_frame("um_serial_search_grid"),
+                    full_screen=False,
+                ),
+                size="l",
+                easy_close=True,
+            )
+            ui.modal_show(modal_content)
+
+        @render.data_frame
+        async def um_serial_search_grid():
+            df = await get_all_servicemen_df()
+            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+
+        @reactive.Effect
+        @reactive.event(input.um_serial_search_grid_selected_rows)
+        async def _on_um__serial_selected() -> None:
+            indices = input.um_serial_search_grid_selected_rows()
+            if indices:
+                df = await get_all_servicemen_df()
+                if df is not None and not df.empty:
+                    row_idx = indices[0]
+                    row = df.iloc[row_idx]
+                    ui.update_text("um_serial", value=str(row["service_number"]))
+                    ui.update_text("um_username", value=row["first_name"]+row["last_name"])
+                    ui.update_text("um_email", value=row["mail"])
+
+                    ui.modal_remove()
+
+        @reactive.calc
+        async def get_all_servicemen_df() -> pd.DataFrame:
+            servicemen = await self.controller.be_mil.get_all_service_men()
+            if not servicemen:
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender", "mail"])
+
+            df = pd.DataFrame(
+                [
+                    {
+                        "service_number": s.service_number,
+                        "first_name": s.first_name,
+                        "last_name": s.last_name,
+                        "gender": s.gender,
+                        "mail": s.mail
+                    }
+                    for s in servicemen
+                ]
+            )
+            return df.sort_values(by=["service_number"])
+
         @output
         @render.text
         def um_status():
