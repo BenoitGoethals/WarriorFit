@@ -36,4 +36,15 @@ dependencies = [
     "shinywidgets>=0.7.0",
     "sqlalchemy>=2.0.43",
     "uvicorn>=0.35.0",
+    "mypy>=1.0",
+    "ruff>=0.3",
 ]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.mypy]
+strict = true
