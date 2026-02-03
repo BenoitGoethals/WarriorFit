@@ -1,11 +1,14 @@
 #!/bin/bash
+set -e  # Exit immediately if a command fails
+
+# Store token in a separate file, not hardcoded in the script
 export GH_TOKEN="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"
 
-cd /home/benoit/projects/WarriorFit
+cd /home/benoit/projects/WarriorFit || exit 1
 
 BEFORE=$(git rev-parse HEAD)
 
-gh repo sync
+gh repo sync 2>&1 || { echo "[$(date)] gh repo sync failed." >> /var/log/deploy.log; exit 1; }
 
 AFTER=$(git rev-parse HEAD)
 
