@@ -61,11 +61,11 @@ class StatusLoginUser(Page):
             user = UserStore.get_user()
             if user:
                 return f"Welcome back, {user.username}!"
-            return "Welcome to WarriorFit"
+            return "Welcome to WarriorFit."
 
         @render.text
         def version_header():
-            return f"Version: {ApplicationConfig().version}"
+            return f"Version : {ApplicationConfig().version}"
 
         @render.text
         def welcome_subheader():
