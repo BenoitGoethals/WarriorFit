@@ -2,19 +2,15 @@
 
 cd /home/benoit/projects/WarriorFit
 
-# Store current commit
 BEFORE=$(git rev-parse HEAD)
 
-# Sync repo
 gh repo sync
 
-# Get latest commit after sync
 AFTER=$(git rev-parse HEAD)
 
-# If repo was updated, run deploy
 if [ "$BEFORE" != "$AFTER" ]; then
-  echo "Update detected! Running deploy..."
-  sudo sh deploy.sh
+  echo "[$(date)] Update detected! Running deploy..." >> /var/log/deploy.log
+  sudo sh deploy.sh >> /var/log/deploy.log 2>&1
 else
-  echo "No update."
+  echo "[$(date)] No update." >> /var/log/deploy.log
 fi
