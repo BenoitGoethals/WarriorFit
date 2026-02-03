@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # post-commit hook
 # Place this file in: .git/hooks/post-commit
 # Then run: chmod +x .git/hooks/post-commit
@@ -12,7 +12,7 @@ DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
 # Get current version from yaml, default to 0.0.0 if not found
 if [ -f "$YAML_PATH" ]; then
-  CURRENT_VERSION=$(grep -oP 'version:\s*\K[0-9]+\.[0-9]+\.[0-9]+' "$YAML_PATH")
+  CURRENT_VERSION=$(grep -oE 'version: [0-9]+\.[0-9]+\.[0-9]+' "$YAML_PATH" | cut -d' ' -f2)
 else
   CURRENT_VERSION="0.0.0"
 fi
@@ -23,9 +23,9 @@ if [ -z "$CURRENT_VERSION" ]; then
 fi
 
 # Split version into major.minor.patch
-MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
-MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
-PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
+MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
 
 # Increment patch version
 PATCH=$((PATCH + 1))
@@ -52,7 +52,7 @@ EOF
 
 # Stage and commit the yaml file (without triggering the hook again)
 cd "$REPO_ROOT"
-git add "$YAML_FILE"
-git commit --no-verify -m "chore: update version to $NEW_VERSION [$DATE]"
+git add "$YAML_FILE" || exit 1
+git commit --no-verify -m "chore: update version to $NEW_VERSION [$DATE]" || exit 1
 
-echo "✓ Version updated to $NEW_VERSION"
+echo "Version updated to $NEW_VERSION"
