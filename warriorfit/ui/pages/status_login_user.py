@@ -11,7 +11,6 @@ from warriorfit.ui.user_store import UserStore
 
 
 class StatusLoginUser(Page):
-
     def __init__(self):
         super().__init__()
         self.controller = StatusLogUserController()
@@ -47,7 +46,6 @@ class StatusLoginUser(Page):
             # Triggered on init and whenever refresh_tick changes
             self.refresh_tick.get()
 
-
         @output
         @render.ui
         def welcome_image():
@@ -61,11 +59,11 @@ class StatusLoginUser(Page):
             user = UserStore.get_user()
             if user:
                 return f"Welcome back, {user.username}!"
-            return "Welcome to WarriorFit"
+            return "Welcome to WarriorFit."
 
         @render.text
         def version_header():
-            return f"Version: {ApplicationConfig().version}"
+            return f"Version : {ApplicationConfig().version}"
 
         @render.text
         def welcome_subheader():
@@ -117,7 +115,6 @@ _page = StatusLoginUser()
 
 def get_ui():
     return _page.get_ui()
-
 
 def server(input, output, session):
     _page.server(input, output, session)
