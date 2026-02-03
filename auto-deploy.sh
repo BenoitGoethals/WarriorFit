@@ -1,5 +1,5 @@
 #!/bin/bash
-export GH_TOKEN="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"
+export GH_TOKEN="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"
 
 cd /home/benoit/projects/WarriorFit
 
