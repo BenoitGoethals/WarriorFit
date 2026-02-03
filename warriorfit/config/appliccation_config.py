@@ -29,6 +29,7 @@ class ApplicationConfig(metaclass=Singleton):
             config_path = "warriorfit/config/config_test.yml"
 
         self.config_path = self._get_project_root() / config_path
+        self.config_path_version = self._get_project_root() / "version.yaml"
         self._settings_data = None
         self.__config_db = None
 
@@ -97,6 +98,7 @@ class ApplicationConfig(metaclass=Singleton):
         Load the application configuration from the YAML file.
         """
         config = self._load_yaml_file()
+        version_config = self._load_version_yaml_file()
         if not config:
             raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
         
@@ -108,7 +110,8 @@ class ApplicationConfig(metaclass=Singleton):
                                            hr_api_key=config["hr"].get("api_key", "")
                                            )
    
-        self.__version = (config["version"]["number"], config["version"]["status"])
+
+        self.__version = (config["version"]["status"],version_config["version"], version_config["date"])
 
 
         self.__config_db = self._setup_database_connection()
@@ -122,6 +125,18 @@ class ApplicationConfig(metaclass=Singleton):
                 return yaml.safe_load(file)
         except FileNotFoundError:
             raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
+        except yaml.YAMLError as error:
+            raise ValueError(f"Error parsing YAML file: {error}")
+
+    def _load_version_yaml_file(self) -> Any:
+        """
+        Load YAML data from the configuration file.
+        """
+        try:
+            with open(self.config_path_version, "r") as file:
+                return yaml.safe_load(file)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"version file not found: {self.config_path}")
         except yaml.YAMLError as error:
             raise ValueError(f"Error parsing YAML file: {error}")
 
