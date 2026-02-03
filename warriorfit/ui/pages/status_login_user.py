@@ -11,7 +11,6 @@ from warriorfit.ui.user_store import UserStore
 
 
 class StatusLoginUser(Page):
-
     def __init__(self):
         super().__init__()
         self.controller = StatusLogUserController()
@@ -46,7 +45,6 @@ class StatusLoginUser(Page):
         async def _init() -> None:
             # Triggered on init and whenever refresh_tick changes
             self.refresh_tick.get()
-
 
         @output
         @render.ui
@@ -117,7 +115,6 @@ _page = StatusLoginUser()
 
 def get_ui():
     return _page.get_ui()
-
 
 def server(input, output, session):
     _page.server(input, output, session)
