@@ -105,16 +105,73 @@ class FunctionalCalculator:
 
         @classmethod
         def get_score_pullup(cls, gender: Gender, age: int, count: int) -> float:
+            """
+            Determines the score for pull-up exercises based on gender, age, and the number
+            of pull-ups performed. The scoring is calculated using predefined scoring tables.
+
+            :param gender: The gender of the individual performing the pull-ups. Acceptable
+                           values are instances of :class:`Gender`.
+            :param age: The age of the individual. Must be a positive integer.
+            :param count: The number of pull-ups performed. Must be a non-negative integer.
+            :return: A floating-point value representing the computed score based on the
+                     provided inputs.
+            :rtype: float
+            """
             return cls._calculate_score(gender, age, count, cls.PULLUPS_MEN, cls.PULLUPS_WOMEN)
 
         @classmethod
         def get_score_situp(cls, gender: Gender, age: int, count: int) -> float:
+            """
+            Calculates the score for sit-ups based on the provided gender, age, and count, using
+            specific scoring metrics for men and women. The method is a class method, allowing
+            access to class-level scoring data for sit-up calculation, and ensures appropriate
+            classification by gender and age.
+
+            :param gender: The gender of the individual performing the sit-ups.
+            :type gender: Gender
+            :param age: The age of the individual, used for determining age-specific benchmarks.
+            :type age: int
+            :param count: The count of sit-ups performed, which will be evaluated against
+                the scoring metrics.
+            :type count: int
+            :return: The sit-up performance score calculated based on the inputs.
+            :rtype: float
+            """
             return cls._calculate_score(gender, age, count, cls.SIT_UP_MEN, cls.SIT_UP_WOMEN)
 
         @classmethod
         def get_score_pushup(cls, gender: Gender, age: int, count: int) -> float:
+            """
+            Calculate and return the score for push-ups based on the individual's gender, age,
+            and the number of push-ups performed. This method utilizes predefined scoring
+            metrics for men and women to determine the result.
+
+            :param gender: The gender of the individual for whom the score is being calculated.
+            :type gender: Gender
+            :param age: The age of the individual.
+            :type age: int
+            :param count: The number of push-ups completed by the individual.
+            :type count: int
+            :return: A float value representing the calculated score for push-ups.
+            :rtype: float
+            """
             return cls._calculate_score(gender, age, count, cls.PUSH_UPS_MEN, cls.PUSH_UPS_WOMEN)
 
         @classmethod
         def get_scores(cls, gender: Gender, age: int, count: int)-> Tuple[float, float, float]:
+            """
+            Computes the performance scores for pullups, situps, and pushups based on the input
+            parameters such as gender, age, and count. This method uses the corresponding class
+            methods to calculate and return the scores for these physical exercises.
+
+            :param gender: The gender of the individual, used to determine the scoring criteria.
+            :type gender: Gender
+            :param age: The age of the individual, used to adjust scoring metrics.
+            :type age: int
+            :param count: The number of repetitions completed for the exercise.
+            :type count: int
+            :return: A tuple containing the scores for pullups, situps, and pushups in the
+                respective order.
+            :rtype: Tuple[float, float, float]
+            """
             return cls.get_score_pullup(gender, age, count), cls.get_score_situp(gender, age, count), cls.get_score_pushup(gender, age, count)
