@@ -16,7 +16,7 @@
 
 **Project development methodology:** Agile
 
-**Project Development server:** https://bensoft.be/  
+**Project Development server:** https://bensoft.be/  (access with username tester and password tester007!)
 username: tester
 password: tester007!
 
