@@ -8,13 +8,13 @@ cd /home/benoit/projects/WarriorFit || exit 1
 
 BEFORE=$(git rev-parse HEAD)
 
-gh repo sync 2>&1 || { echo "[$(date)] gh repo sync failed." >> /var/log/deploy.log; exit 1; }
+gh repo sync 2>&1 || { echo "[$(date)] gh repo sync failed." >> /home/benoit/log/deploy.log; exit 1; }
 
 AFTER=$(git rev-parse HEAD)
 
 if [ "$BEFORE" != "$AFTER" ]; then
   echo "[$(date)] Update detected! Running deploy..." >> /var/log/deploy.log
-  sudo sh deploy.sh >> /var/log/deploy.log 2>&1
+  sudo sh deploy.sh >> /home/benoit/log/deploy.log 2>&1
 else
-  echo "[$(date)] No update." >> /var/log/deploy.log
+  echo "[$(date)] No update." >> /home/benoit/log/deploy.log
 fi
