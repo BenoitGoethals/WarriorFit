@@ -88,10 +88,14 @@ class FitnessWarriorApp:
         config_path = project_root / "warriorfit" / "config" / "logging_configuration.yml"
 
         if config_path.exists():
-            with open(config_path, "r") as f:
-                config = yaml.safe_load(f)
-            logging.config.dictConfig(config)
-            logging.getLogger(__name__)
+            try:
+                with open(config_path, "r") as f:
+                    config = yaml.safe_load(f)
+                logging.config.dictConfig(config)
+                logging.getLogger(__name__)
+            except (yaml.YAMLError, KeyError, ValueError) as e:
+                logging.basicConfig(level=logging.INFO)
+                logging.getLogger().error(f"Failed to load logging config: {e}")
         else:
             logging.basicConfig(level=logging.INFO)
             logging.getLogger()
@@ -353,7 +357,7 @@ class FitnessWarriorApp:
             """
             try:
                 active = input.main_nav()
-            except Exception:
+            except (AttributeError, KeyError):
                 active = None
 
             already = mounted.get()
@@ -559,16 +563,14 @@ class FitnessWarriorApp:
         def _mount_on_nav_activation():
             try:
                 _ = input.main_nav()
-            except Exception as e:
-
+            except (AttributeError, KeyError):
                 return
 
         @reactive.Effect
         def _on_logout_button_click():
             try:
                 clicks = input.logout_btn()
-            except Exception as e:
-                logging.error(f"Error handling logout button: {e}")
+            except (AttributeError, KeyError):
                 return
             if clicks and clicks > 0:
                 _clear_session_user()
@@ -600,8 +602,7 @@ class FitnessWarriorApp:
         def _record_activity():
             try:
                 _ = input.activity_ping()
-            except Exception as e:
-                logging.error(f"Error recording activity: {e}")
+            except (AttributeError, KeyError):
                 return
             last_activity.set(time.time())
 
@@ -609,7 +610,7 @@ class FitnessWarriorApp:
         def _reset_on_nav_or_login():
             try:
                 _ = input.main_nav()
-            except Exception:
+            except (AttributeError, KeyError):
                 pass
             _ = nav_version.get()
             last_activity.set(time.time())
