@@ -71,9 +71,6 @@ class ABCRepository:
                 result = await session.execute(query)
                 res = result.scalars().all()
                 if not res:
-                    self._logger.info(
-                        f"No entities found. Please check your database and try again.{log_entity_name} {query}"
-                    )
                     return None
                 return res
         except SQLAlchemyError as e:
