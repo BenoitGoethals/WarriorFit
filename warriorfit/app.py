@@ -66,6 +66,15 @@ class FitnessWarriorApp:
 
     @classmethod
     def setup_logger(cls) -> None:
+        """
+        Sets up logging configuration for the application using a YAML-based configuration file
+        and handles the creation of necessary log directories and files. If the configuration
+        file does not exist, defaults to basic logging with the INFO level.
+
+        :param cls: The class on which the logger will be configured.
+
+        :return: None
+        """
         import yaml
         import logging.config
 
@@ -81,15 +90,11 @@ class FitnessWarriorApp:
         if config_path.exists():
             with open(config_path, "r") as f:
                 config = yaml.safe_load(f)
-
-            if "handlers" in config and "file" in config["handlers"]:
-                config["handlers"]["file"]["filename"] = str(log_dir / "application.log")
-
             logging.config.dictConfig(config)
-            cls.logger = logging.getLogger()
+            logging.getLogger(__name__)
         else:
             logging.basicConfig(level=logging.INFO)
-            cls.logger = logging.getLogger()
+            logging.getLogger()
 
     # -----------------------------
     # Pages (what exists) + Roles (who can see)
@@ -97,6 +102,20 @@ class FitnessWarriorApp:
 
     @staticmethod
     def _pages() -> list[PageSpec]:
+        """
+        Returns a list of page specifications, defining tabs, menu groups, UI and server factories,
+        and allowed roles necessary for visibility and access control. The configuration determines
+        the structure of the application's navigation and accessibility for all user roles.
+
+        :param tab: Specifies the name of the tab for the page.
+        :param group: Defines the group to which the page belongs, forming menu categories.
+        :param ui_factory: A callable that returns the user interface structure for the page.
+        :param server_factory: A callable that initializes and manages the server logic for the page.
+        :param allowed_roles: A set of roles permitted to view and interact with the defined page.
+
+        :return: A list of `PageSpec` objects representing the configuration of pages in the application.
+        :rtype: list[PageSpec]
+        """
         # If you want to change visibility, do it HERE (roles), not in navbar code.
         return [
             # Root-level pages
@@ -254,6 +273,20 @@ class FitnessWarriorApp:
 
     @staticmethod
     def _pages_for_role(role: Optional[Role]) -> list[PageSpec]:
+        """
+        Filters and retrieves a list of pages allowed for the given role.
+
+        This method returns a filtered list of PageSpec objects that are accessible to
+        the provided role. If the role is None, it will return an empty list. The method
+        analyzes the permissions defined in each page's `allowed_roles` attribute to
+        determine accessibility.
+
+        :param role: The role whose allowed pages are to be retrieved. Must be of type
+            Role or None.
+        :return: A list of PageSpec objects representing the pages that the given role
+            is permitted to access.
+        :rtype: list[PageSpec]
+        """
         if role is None:
             return []
         return [p for p in FitnessWarriorApp._pages() if role in p.allowed_roles]
@@ -267,7 +300,26 @@ class FitnessWarriorApp:
     @staticmethod
     def register_pages_server(input: Any, output: Any, session: Any) -> None:
         """
-        Mount server logic lazily when a tab is activated.
+        Defines a static method for registering server logic for different navigation tabs
+        within the application. The method dynamically mounts the server logic associated
+        with a tab only when the tab is activated through the main navigation component.
+        Additionally, a calendar-related server is independently mounted and remains outside
+        the main navigation bar.
+
+        The method uses reactive constructs to ensure optimal performance and avoids mounting
+        any unnecessary servers until their corresponding navigation tab is activated.
+
+        :param input: Input object containing reactive elements, such as navigation
+            component states and triggered events.
+        :type input: Any
+        :param output: Output object used to handle updates to UI components in
+            response to server logic.
+        :type output: Any
+        :param session: Current user session object containing session-specific
+            state and data.
+        :type session: Any
+
+        :return: None
         """
         from shiny import reactive
 
@@ -284,6 +336,21 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _mount_on_nav_activation_register_only():
+            """
+            Sets up reactive effects that mount server functions on navigation tab activation register
+            and ensures that the "CalendarEvents" server is always mounted. This function observes the
+            currently active navigation tab and executes the corresponding server function if it is not
+            yet mounted. The mounted state is updated appropriately to track which servers are active.
+
+            :param input: Input data or context passed for reactive operations.
+            :type input: Any
+            :param output: Output data or context associated with reactive operations.
+            :type output: Any
+            :param session: Session details or context for current user activity.
+            :type session: Any
+
+            :return: None
+            """
             try:
                 active = input.main_nav()
             except Exception:
@@ -493,7 +560,7 @@ class FitnessWarriorApp:
             try:
                 _ = input.main_nav()
             except Exception as e:
-                logging.error(f"Error mounting nav: {e}")
+
                 return
 
         @reactive.Effect
@@ -542,8 +609,7 @@ class FitnessWarriorApp:
         def _reset_on_nav_or_login():
             try:
                 _ = input.main_nav()
-            except Exception as e:
-                logging.error(f"Error resetting nav: {e}")
+            except Exception:
                 pass
             _ = nav_version.get()
             last_activity.set(time.time())
