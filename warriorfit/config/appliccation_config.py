@@ -10,9 +10,33 @@ from warriorfit.logic.singleton import Singleton
 
 class ApplicationConfig(metaclass=Singleton):
     """
-    Singleton class to manage application configuration.
-    """
+    Manages the application's configuration, including loading, saving, and settings management.
 
+    This class is responsible for the initialization and management of the application's configuration,
+    including database settings, paths, and other application-specific parameters. It supports environment-specific
+    configuration files and ensures directory structures are created if they do not exist.
+
+    :ivar config_path: The path to the primary configuration file.
+    :type config_path: Path
+    :ivar config_path_version: The path to the version-specific configuration file.
+    :type config_path_version: Path
+    :ivar config: The loaded configuration database connection object. Accessing it requires `load_config()` to be called first.
+    :type config: Any
+    :ivar settings_data: The loaded application-specific settings data object.
+    :type settings_data: SettingsData
+    :ivar version: A tuple containing the version status, version number, and release date of the application.
+    :type version: tuple[str, str, str]
+    :ivar pdf_output_path: The directory path for PDF file outputs, as defined in the configuration.
+    :type pdf_output_path: str
+    :ivar hr_url: The URL for the human resources API, as defined in the configuration.
+    :type hr_url: str
+    :ivar hr_api_key: The API key for accessing the human resources API.
+    :type hr_api_key: str
+    :ivar own_unit: The name of the organization's unit, as defined in the configuration.
+    :type own_unit: str
+    :ivar mail_server: The SMTP configuration for email communication.
+    :type mail_server: SmtpConfig
+    """
     def __init__(self, config_path: str = "warriorfit/config/config.yml"):
         """
         Initialize the application configuration.
@@ -121,7 +145,7 @@ class ApplicationConfig(metaclass=Singleton):
         Load YAML data from the configuration file.
         """
         try:
-            with open(self.config_path, "r") as file:
+            with open(self.config_path, "r", encoding="utf-8") as file:
                 return yaml.safe_load(file)
         except FileNotFoundError:
             raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
@@ -133,7 +157,7 @@ class ApplicationConfig(metaclass=Singleton):
         Load YAML data from the configuration file.
         """
         try:
-            with open(self.config_path_version, "r") as file:
+            with open(self.config_path_version, "r", encoding="utf-8") as file:
                 return yaml.safe_load(file)
         except FileNotFoundError:
             raise FileNotFoundError(f"version file not found: {self.config_path}")
@@ -204,5 +228,5 @@ class ApplicationConfig(metaclass=Singleton):
                 'status': self.version[1]
             }
         }
-        with open(self.config_path, "w") as file:
+        with open(self.config_path, "w", encoding="utf-8") as file:
             yaml.dump(config_dict, file, default_flow_style=False, sort_keys=False)
