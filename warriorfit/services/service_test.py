@@ -35,10 +35,10 @@ class ServiceTest(Service):
         test data.
     :type test_repo: FitnessTestRepository
     """
+
     def __init__(self):
         super().__init__()
         self._test_repo = FitnessTestRepository()
-
 
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)
@@ -65,9 +65,11 @@ class ServiceTest(Service):
             type_test, this_year
         )
 
-    async def get_all_test_sessions_type_fitness_test_for_service_men(self, serial:str,type_test, this_year=True):
-        return await self._test_repo.get_all_test_sessions_type_fitness_test_for_service_men(serial,
-            type_test, this_year=this_year
+    async def get_all_test_sessions_type_fitness_test_for_service_men(
+        self, serial: str, type_test, this_year=True
+    ):
+        return await self._test_repo.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, type_test, this_year=this_year
         )
 
     async def get_all_test_sessions(self):
@@ -99,7 +101,10 @@ class ServiceTest(Service):
             added to the test session.
         """
         from warriorfit.app import FitnessWarriorApp
-        add_test = await self._test_repo.add_fitness_test_to_TestSession(fitness_test, test)
+
+        add_test = await self._test_repo.add_fitness_test_to_TestSession(
+            fitness_test, test
+        )
         body = ""
         if add_test or military.unit is None:
             match test.type:
@@ -122,7 +127,6 @@ class ServiceTest(Service):
                 action="add",
             )
 
-
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
@@ -139,6 +143,7 @@ class ServiceTest(Service):
     async def update_fitness_test(self, param, cp):
         updated = await self._test_repo.update_fitness_test(param, cp)
         from warriorfit.app import FitnessWarriorApp
+
         await FitnessWarriorApp.get_broker().send_message(updated)
         if updated:
             await self.add_audit_log(

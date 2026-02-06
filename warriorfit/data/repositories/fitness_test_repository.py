@@ -7,16 +7,21 @@ from sqlalchemy.orm import joinedload, selectinload, selectin_polymorphic
 
 from warriorfit.core.role import Role
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.model.db_model import TestSession, FitnessTest, PhefTest, FunctionalTest, CombatTestParatrooper, \
-    CombatSwimmingTest, User
+from warriorfit.data.model.db_model import (
+    TestSession,
+    FitnessTest,
+    PhefTest,
+    FunctionalTest,
+    CombatTestParatrooper,
+    CombatSwimmingTest,
+    User,
+)
 from warriorfit.data.repositories.abc_repository import ABCRepository
-
 
 
 class FitnessTestRepository(ABCRepository):
     def __init__(self):
         super().__init__()
-
 
     async def add_test_session(self, test_session: TestSession) -> Optional[Any]:
         """
@@ -41,7 +46,7 @@ class FitnessTestRepository(ABCRepository):
             return None
 
     async def get_all_fitness_tests_from_test_session(
-            self, test_session_id: int
+        self, test_session_id: int
     ) -> Optional[List[FitnessTest]]:
         """
         Fetches all fitness tests associated with a specific test session.
@@ -66,7 +71,9 @@ class FitnessTestRepository(ABCRepository):
                     await session.refresh(test)
                 return list(tests) if tests else None
 
-    async def update_test_session(self, test_session: TestSession)->TestSession | None:
+    async def update_test_session(
+        self, test_session: TestSession
+    ) -> TestSession | None:
         """
         Updates an existing test session in the database.
 
@@ -91,7 +98,7 @@ class FitnessTestRepository(ABCRepository):
             return None
 
     async def add_fitness_test_to_TestSession(
-            self, test_session_id: int, fitness_test: FitnessTest
+        self, test_session_id: int, fitness_test: FitnessTest
     ) -> TestSession | None:
         """
         Adds a fitness test to an existing test session in the database.
@@ -146,14 +153,17 @@ class FitnessTestRepository(ABCRepository):
         """
         if this_year:
             end, start = await self.running_year()
-            query = select(TestSession).where(TestSession.datetime_start.between(start, end))
+            query = select(TestSession).where(
+                TestSession.datetime_start.between(start, end)
+            )
         else:
             query = select(TestSession)
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-
-    async def get_all_test_sessions_for_a_pti(self,serial_number_pti, this_year: bool = True) -> List[TestSession]:
+    async def get_all_test_sessions_for_a_pti(
+        self, serial_number_pti, this_year: bool = True
+    ) -> List[TestSession]:
         """
         Fetches all test sessions from the database for a particular PTI..
 
@@ -162,17 +172,20 @@ class FitnessTestRepository(ABCRepository):
         """
         if this_year:
             end, start = await self.running_year()
-            query = (select(TestSession)
-                     .where(TestSession.serial_number_pti == serial_number_pti)
-                     .where(TestSession.datetime_start.between(start, end))
-                     .where(TestSession.datetime_start.between(start, end)))
+            query = (
+                select(TestSession)
+                .where(TestSession.serial_number_pti == serial_number_pti)
+                .where(TestSession.datetime_start.between(start, end))
+                .where(TestSession.datetime_start.between(start, end))
+            )
         else:
             query = select(TestSession)
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def get_all_test_sessions_type_fitness_test(self, typetest: TypeFitnessTest, this_year: bool = True) -> List[
-        TestSession]:
+    async def get_all_test_sessions_type_fitness_test(
+        self, typetest: TypeFitnessTest, this_year: bool = True
+    ) -> List[TestSession]:
         """
         Fetches all test sessions from the database.
 
@@ -181,15 +194,19 @@ class FitnessTestRepository(ABCRepository):
         """
         if this_year:
             end, start = await self.running_year()
-            query = select(TestSession).where(TestSession.type_test == typetest).where(
-                TestSession.datetime_start.between(start, end))
+            query = (
+                select(TestSession)
+                .where(TestSession.type_test == typetest)
+                .where(TestSession.datetime_start.between(start, end))
+            )
         else:
             query = select(TestSession).where(TestSession.type_test == typetest)
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def get_all_test_sessions_type_fitness_test_for_service_men(self, serial: str, typetest: TypeFitnessTest,
-                                                                      this_year: bool = True) -> List[TestSession]:
+    async def get_all_test_sessions_type_fitness_test_for_service_men(
+        self, serial: str, typetest: TypeFitnessTest, this_year: bool = True
+    ) -> List[TestSession]:
         """
         Fetches all test sessions of a specific type for a given service member.
         #S
@@ -209,12 +226,14 @@ class FitnessTestRepository(ABCRepository):
                     .where(TestSession.datetime_start.between(start, end))
                     .where(FitnessTest.serial_number == serial)
                     .options(
-                        selectinload(TestSession.fitness_tests).selectin_polymorphic([
-                            PhefTest,
-                            FunctionalTest,
-                            CombatTestParatrooper,
-                            CombatSwimmingTest
-                        ])
+                        selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                            [
+                                PhefTest,
+                                FunctionalTest,
+                                CombatTestParatrooper,
+                                CombatSwimmingTest,
+                            ]
+                        )
                     )
                 )
             else:
@@ -224,27 +243,36 @@ class FitnessTestRepository(ABCRepository):
                     .where(TestSession.type_test == typetest)
                     .where(FitnessTest.serial_number == serial)
                     .options(
-                        selectinload(TestSession.fitness_tests).selectin_polymorphic([
-                            PhefTest,
-                            FunctionalTest,
-                            CombatTestParatrooper,
-                            CombatSwimmingTest
-                        ])
+                        selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                            [
+                                PhefTest,
+                                FunctionalTest,
+                                CombatTestParatrooper,
+                                CombatSwimmingTest,
+                            ]
+                        )
                     )
                 )
 
-            results = await self.fetch_and_log(query, f"test sessions for service member {serial}")
+            results = await self.fetch_and_log(
+                query, f"test sessions for service member {serial}"
+            )
             return results if results else []
 
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error fetching test sessions for service member {serial}: {str(e)}")
+            self._logger.error(
+                f"Database error fetching test sessions for service member {serial}: {str(e)}"
+            )
             return []
         except Exception as e:
-            self._logger.error(f"Unexpected error fetching test sessions for service member {serial}: {str(e)}")
+            self._logger.error(
+                f"Unexpected error fetching test sessions for service member {serial}: {str(e)}"
+            )
             return []
 
-    async def get_all_test_sessions_type_fitnessTest_full(self, typetest: TypeFitnessTest, this_year: bool = True) -> \
-    List[TestSession]:
+    async def get_all_test_sessions_type_fitnessTest_full(
+        self, typetest: TypeFitnessTest, this_year: bool = True
+    ) -> List[TestSession]:
         """
         Fetches all test sessions from the database.
 
@@ -253,28 +281,36 @@ class FitnessTestRepository(ABCRepository):
         """
         if this_year:
             end, start = await self.running_year()
-            query = select(TestSession).where(TestSession.type_test == typetest).where(
-                TestSession.datetime_start.between(start, end)).options(
-                # Load the collection via select-in and include subclass columns
-                selectinload(TestSession.fitness_tests).selectin_polymorphic(
-                    [
-                        PhefTest,
-                        FunctionalTest,
-                        CombatTestParatrooper,
-                        CombatSwimmingTest,
-                    ]
+            query = (
+                select(TestSession)
+                .where(TestSession.type_test == typetest)
+                .where(TestSession.datetime_start.between(start, end))
+                .options(
+                    # Load the collection via select-in and include subclass columns
+                    selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                        [
+                            PhefTest,
+                            FunctionalTest,
+                            CombatTestParatrooper,
+                            CombatSwimmingTest,
+                        ]
+                    )
                 )
             )
         else:
-            query = select(TestSession).where(TestSession.type_test == typetest).options(
-                # Load the collection via select-in and include subclass columns
-                selectinload(TestSession.fitness_tests).selectin_polymorphic(
-                    [
-                        PhefTest,
-                        FunctionalTest,
-                        CombatTestParatrooper,
-                        CombatSwimmingTest,
-                    ]
+            query = (
+                select(TestSession)
+                .where(TestSession.type_test == typetest)
+                .options(
+                    # Load the collection via select-in and include subclass columns
+                    selectinload(TestSession.fitness_tests).selectin_polymorphic(
+                        [
+                            PhefTest,
+                            FunctionalTest,
+                            CombatTestParatrooper,
+                            CombatSwimmingTest,
+                        ]
+                    )
                 )
             )
         results = await self.fetch_and_log(query, "test sessions")
@@ -305,7 +341,7 @@ class FitnessTestRepository(ABCRepository):
             self._logger.error(f"Unexpected error deleting all TestSession: {e}")
 
     async def get_all_fitness_tests_that_passed_from_year(
-            self, year: int
+        self, year: int
     ) -> Optional[List[FitnessTest]]:
         """
         Retrieves all passed fitness tests from test sessions for a specific year.
@@ -318,7 +354,7 @@ class FitnessTestRepository(ABCRepository):
         return await self.get_all_fitness_tests_that_passed_or_not_from_year(year, True)
 
     async def get_all_fitness_tests_that_not_passed_from_year(
-            self, year: int
+        self, year: int
     ) -> Optional[List[FitnessTest]]:
         """
         Retrieves all not passed fitness tests from test sessions for a specific year.
@@ -333,7 +369,7 @@ class FitnessTestRepository(ABCRepository):
         )
 
     async def get_all_fitness_tests_that_passed_or_not_from_year(
-            self, year: int, passed: bool
+        self, year: int, passed: bool
     ) -> Optional[List[FitnessTest]]:
         """
         Retrieves all passed fitness tests from test sessions for a specific year.
@@ -462,7 +498,7 @@ class FitnessTestRepository(ABCRepository):
             )
             return False
 
-    async def get_all_fitness_tests(self,current_year=True) -> list[FitnessTest]:
+    async def get_all_fitness_tests(self, current_year=True) -> list[FitnessTest]:
         """
         Fetches all fitness tests.
 
@@ -471,8 +507,11 @@ class FitnessTestRepository(ABCRepository):
 
         if current_year:
             end, start = await self.running_year()
-            query = select(FitnessTest).join(FitnessTest.test_sessions).where(
-                TestSession.datetime_start.between(start, end))
+            query = (
+                select(FitnessTest)
+                .join(FitnessTest.test_sessions)
+                .where(TestSession.datetime_start.between(start, end))
+            )
         else:
             query = select(FitnessTest)
 
@@ -490,11 +529,21 @@ class FitnessTestRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 end, start = await self.running_year()
-                query = select(FitnessTest).where(
-                TestSession.datetime_start.between(start, end)).options(
-                    selectin_polymorphic(FitnessTest,
-                                         [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]),
-                    selectinload(FitnessTest.test_sessions)
+                query = (
+                    select(FitnessTest)
+                    .where(TestSession.datetime_start.between(start, end))
+                    .options(
+                        selectin_polymorphic(
+                            FitnessTest,
+                            [
+                                PhefTest,
+                                FunctionalTest,
+                                CombatTestParatrooper,
+                                CombatSwimmingTest,
+                            ],
+                        ),
+                        selectinload(FitnessTest.test_sessions),
+                    )
                 )
                 result = await session.execute(query)
 
@@ -522,11 +571,21 @@ class FitnessTestRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 end, start = await self.running_year()
-                query = select(FitnessTest).where(
-                TestSession.datetime_start.between(start, end)).options(
-                    selectin_polymorphic(FitnessTest,
-                                         [PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest]),
-                    selectinload(FitnessTest.test_sessions)
+                query = (
+                    select(FitnessTest)
+                    .where(TestSession.datetime_start.between(start, end))
+                    .options(
+                        selectin_polymorphic(
+                            FitnessTest,
+                            [
+                                PhefTest,
+                                FunctionalTest,
+                                CombatTestParatrooper,
+                                CombatSwimmingTest,
+                            ],
+                        ),
+                        selectinload(FitnessTest.test_sessions),
+                    )
                 )
                 result = await session.execute(query)
 
@@ -543,7 +602,7 @@ class FitnessTestRepository(ABCRepository):
             )
             return []
 
-    async def get_all_phef(self, session_id: int,current_year=True) -> List[PhefTest]:
+    async def get_all_phef(self, session_id: int, current_year=True) -> List[PhefTest]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
         """
@@ -554,8 +613,8 @@ class FitnessTestRepository(ABCRepository):
                         end, start = await self.running_year()
                         query = (
                             select(TestSession)
-                            .where(TestSession.id == session_id).where(
-                            TestSession.datetime_start.between(start, end))
+                            .where(TestSession.id == session_id)
+                            .where(TestSession.datetime_start.between(start, end))
                             .options(selectinload(TestSession.fitness_tests))
                         )
                     else:
@@ -570,7 +629,8 @@ class FitnessTestRepository(ABCRepository):
                     if test_session:
                         # Create a list of PhefTests while the session is still active
                         phef_tests = [
-                            test for test in test_session.fitness_tests
+                            test
+                            for test in test_session.fitness_tests
                             if isinstance(test, PhefTest)
                         ]
                         # Ensure all necessary data is loaded
@@ -582,7 +642,9 @@ class FitnessTestRepository(ABCRepository):
             self._logger.error(f"Database error fetching PHEF tests: {str(e)}")
             return []
 
-    async def get_all_combat_test(self, session_id: int,current_year=True) -> List[CombatTestParatrooper]:
+    async def get_all_combat_test(
+        self, session_id: int, current_year=True
+    ) -> List[CombatTestParatrooper]:
         """
         Fetch all PhefTest entities with their related TestSession objects.
         """
@@ -593,8 +655,8 @@ class FitnessTestRepository(ABCRepository):
                         end, start = await self.running_year()
                         query = (
                             select(TestSession)
-                            .where(TestSession.id == session_id).where(
-                            TestSession.datetime_start.between(start, end))
+                            .where(TestSession.id == session_id)
+                            .where(TestSession.datetime_start.between(start, end))
                             .options(selectinload(TestSession.fitness_tests))
                         )
                     else:
@@ -609,7 +671,8 @@ class FitnessTestRepository(ABCRepository):
                     if test_session:
                         # Create a list of PhefTests while the session is still active
                         tests = [
-                            test for test in test_session.fitness_tests
+                            test
+                            for test in test_session.fitness_tests
                             if isinstance(test, CombatTestParatrooper)
                         ]
                         # Ensure all necessary data is loaded
@@ -622,7 +685,7 @@ class FitnessTestRepository(ABCRepository):
             return []
 
     async def delete_fitness_test_from_test_session(
-            self, test_session_id: int, fitness_test_id: int
+        self, test_session_id: int, fitness_test_id: int
     ) -> bool:
         """
         Deletes a specific FitnessTest from a TestSession by removing the association and deleting the FitnessTest.
@@ -679,7 +742,7 @@ class FitnessTestRepository(ABCRepository):
             return False
 
     async def update_fitness_test(
-            self, fitness_test_id: int, updated_fitness_test: FitnessTest
+        self, fitness_test_id: int, updated_fitness_test: FitnessTest
     ) -> type[FitnessTest] | None:
         """
         Updates an existing FitnessTest, handling polymorphic subclasses.
@@ -739,23 +802,28 @@ class FitnessTestRepository(ABCRepository):
             )
             return None
 
-
-
     async def get_all_pti(self) -> list[User]:
         query = select(User).where(User.role == Role.PTI)
         results = await self.fetch_and_log(query, "users")
         return results if results else []
 
-    async def get_all_test_sessions_type_fitness_test_from_a_test_session(self, type_test, session_id: int) -> list[
-        FitnessTest]:
-        query = select(TestSession).where(TestSession.type_test == type_test).where(TestSession.id == session_id)
+    async def get_all_test_sessions_type_fitness_test_from_a_test_session(
+        self, type_test, session_id: int
+    ) -> list[FitnessTest]:
+        query = (
+            select(TestSession)
+            .where(TestSession.type_test == type_test)
+            .where(TestSession.id == session_id)
+        )
         results = await self.fetch_and_log(query, "test sessions")
         return results if results else []
 
-    async def get_all_functional_test(self, session_id,current_year=True) -> list[FunctionalTest]:
+    async def get_all_functional_test(
+        self, session_id, current_year=True
+    ) -> list[FunctionalTest]:
         """
-              Fetch all PhefTest entities with their related TestSession objects.
-              """
+        Fetch all PhefTest entities with their related TestSession objects.
+        """
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():  # Add transaction context
@@ -763,14 +831,13 @@ class FitnessTestRepository(ABCRepository):
                         end, start = await self.running_year()
                         query = (
                             select(TestSession)
-                            .where(TestSession.id == session_id).where(
-                                TestSession.datetime_start.between(start, end))
+                            .where(TestSession.id == session_id)
+                            .where(TestSession.datetime_start.between(start, end))
                             .options(selectinload(TestSession.fitness_tests))
                         )
                     else:
-                        query = (
-                            select(TestSession)
-                            .options(selectinload(TestSession.fitness_tests))
+                        query = select(TestSession).options(
+                            selectinload(TestSession.fitness_tests)
                         )
                     result = await session.execute(query)
                     test_session = result.unique().scalar_one_or_none()
@@ -778,7 +845,8 @@ class FitnessTestRepository(ABCRepository):
                     if test_session:
                         # Create a list of Functionals while the session is still active
                         func_test = [
-                            test for test in test_session.fitness_tests
+                            test
+                            for test in test_session.fitness_tests
                             if isinstance(test, FunctionalTest)
                         ]
                         # Ensure all necessary data is loaded
@@ -790,7 +858,9 @@ class FitnessTestRepository(ABCRepository):
             self._logger.error(f"Database error fetching Functional tests: {str(e)}")
             return []
 
-    async def get_all_combat_swimming_test(self, session_id,current_year=True) -> list[CombatSwimmingTest]:
+    async def get_all_combat_swimming_test(
+        self, session_id, current_year=True
+    ) -> list[CombatSwimmingTest]:
         """
         Retrieves all combat swimming test records associated with a given session ID. The records can
         be filtered based on whether they belong to the current running year or not. The function
@@ -813,8 +883,8 @@ class FitnessTestRepository(ABCRepository):
                         end, start = await self.running_year()
                         query = (
                             select(TestSession)
-                            .where(TestSession.id == session_id).where(
-                                TestSession.datetime_start.between(start, end))
+                            .where(TestSession.id == session_id)
+                            .where(TestSession.datetime_start.between(start, end))
                             .options(selectinload(TestSession.fitness_tests))
                         )
                     else:
@@ -829,7 +899,8 @@ class FitnessTestRepository(ABCRepository):
                     if test_session:
                         # Create a list of Functionals while the session is still active
                         func_test = [
-                            test for test in test_session.fitness_tests
+                            test
+                            for test in test_session.fitness_tests
                             if isinstance(test, CombatSwimmingTest)
                         ]
                         # Ensure all necessary data is loaded
@@ -840,7 +911,6 @@ class FitnessTestRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.error(f"Database error fetching Functional tests: {str(e)}")
             return []
-
 
     async def get_all_phef_from_mil(self, serial, current_year) -> List[PhefTest]:
         """
@@ -872,19 +942,20 @@ class FitnessTestRepository(ABCRepository):
                             .where(PhefTest.serial_number == serial)
                             .where(TestSession.datetime_start.between(start, end))
                         )
-                    else :
-                        query = (
-                            select(PhefTest)
-                            .where(PhefTest.serial_number == serial)
-                        )
+                    else:
+                        query = select(PhefTest).where(PhefTest.serial_number == serial)
                     result = await session.execute(query)
                     phef_tests = result.scalars().all()
                     return list(phef_tests) if phef_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self._logger.error(f"Error fetching PHEF tests for military unit {serial}: {str(e)}")
+            self._logger.error(
+                f"Error fetching PHEF tests for military unit {serial}: {str(e)}"
+            )
             return []
 
-    async def get_all_combat_from_mil(self, service_number, current_year)-> List[CombatTestParatrooper]:
+    async def get_all_combat_from_mil(
+        self, service_number, current_year
+    ) -> List[CombatTestParatrooper]:
         """
         Fetch all combat test records tied to a specific service number from the database for
         a given military unit. When the current year is provided, the query is restricted
@@ -909,22 +980,27 @@ class FitnessTestRepository(ABCRepository):
                         query = (
                             select(CombatTestParatrooper)
                             .join(CombatTestParatrooper.test_sessions)
-                            .where(CombatTestParatrooper.serial_number == service_number)
+                            .where(
+                                CombatTestParatrooper.serial_number == service_number
+                            )
                             .where(TestSession.datetime_start.between(start, end))
                         )
                     else:
-                        query = (
-                            select(CombatTestParatrooper)
-                            .where(CombatTestParatrooper.serial_number == service_number)
+                        query = select(CombatTestParatrooper).where(
+                            CombatTestParatrooper.serial_number == service_number
                         )
                     result = await session.execute(query)
                     combat_tests = result.scalars().all()
                     return list(combat_tests) if combat_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self._logger.error(f"Error fetching Combat tests for military unit {service_number}: {str(e)}")
+            self._logger.error(
+                f"Error fetching Combat tests for military unit {service_number}: {str(e)}"
+            )
             return []
 
-    async def get_all_swim_from_mil(self, service_number, current_year)->List[CombatSwimmingTest]:
+    async def get_all_swim_from_mil(
+        self, service_number, current_year
+    ) -> List[CombatSwimmingTest]:
         """
         Fetches all combat swimming tests for a given military service number.
 
@@ -954,15 +1030,16 @@ class FitnessTestRepository(ABCRepository):
                             .where(TestSession.datetime_start.between(start, end))
                         )
                     else:
-                        query = (
-                            select(CombatSwimmingTest)
-                            .where(CombatSwimmingTest.serial_number == service_number)
+                        query = select(CombatSwimmingTest).where(
+                            CombatSwimmingTest.serial_number == service_number
                         )
                     result = await session.execute(query)
                     swim_tests = result.scalars().all()
                     return list(swim_tests) if swim_tests else []
         except (SQLAlchemyError, Exception) as e:
-            self._logger.error(f"Error fetching Swimming tests for military unit {service_number}: {str(e)}")
+            self._logger.error(
+                f"Error fetching Swimming tests for military unit {service_number}: {str(e)}"
+            )
             return []
 
     async def get_upcoming_session_for_pti(self, serial_number_pti: str) -> Any | None:
@@ -992,6 +1069,7 @@ class FitnessTestRepository(ABCRepository):
                 return result.scalars().all()
 
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error fetching upcoming session for PTI {serial_number_pti}: {str(e)}")
+            self._logger.error(
+                f"Database error fetching upcoming session for PTI {serial_number_pti}: {str(e)}"
+            )
             return None
-

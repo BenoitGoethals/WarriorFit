@@ -20,6 +20,7 @@ class SettingsData:
         hr_url: HR system API endpoint URL
         hr_api_key: HR system API authentication key
     """
+
     # Database configuration
     db_host: str = ""
     db_port: int = 5432
@@ -39,13 +40,9 @@ class SettingsData:
     def has_database_config(self) -> bool:
         """Check if all required database configuration is present."""
         return bool(
-            self.db_host
-            and self.db_database
-            and self.db_username
-            and self.db_password
+            self.db_host and self.db_database and self.db_username and self.db_password
         )
 
     def has_hr_config(self) -> bool:
         """Check if HR system configuration is present."""
         return bool(self.hr_url and self.hr_api_key)
-

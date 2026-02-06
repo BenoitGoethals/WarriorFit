@@ -14,11 +14,13 @@ class StatusLogUserController:
     consumption.
 
     """
+
     def __init__(self) -> None:
         self._service = ServiceTest()
 
-
-    async def get_upcoming_session(self, serial_number_pti: Mapped[str])->pd.DataFrame:
+    async def get_upcoming_session(
+        self, serial_number_pti: Mapped[str]
+    ) -> pd.DataFrame:
         """
         Retrieve upcoming session details for a given PTI serial number.
 
@@ -40,13 +42,19 @@ class StatusLogUserController:
             return pd.DataFrame(columns=["Date", "Type", "Description"])
         data = []
         for s in sessions:
-            type_str = s.type_test.name if hasattr(s.type_test, "name") else str(s.type_test)
-            data.append({
-                "Date": s.datetime_start.strftime("%Y-%m-%d %H:%M") if s.datetime_start else "",
-                "Type": type_str,
-                "Description": s.description or ""
-            })
+            type_str = (
+                s.type_test.name if hasattr(s.type_test, "name") else str(s.type_test)
+            )
+            data.append(
+                {
+                    "Date": (
+                        s.datetime_start.strftime("%Y-%m-%d %H:%M")
+                        if s.datetime_start
+                        else ""
+                    ),
+                    "Type": type_str,
+                    "Description": s.description or "",
+                }
+            )
 
         return pd.DataFrame(data)
-
-

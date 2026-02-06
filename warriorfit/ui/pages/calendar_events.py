@@ -1,10 +1,15 @@
-
 import datetime
 from typing import Any, Optional
 from shiny import ui, reactive
-from shiny_calendar import render_shiny_calendar, shiny_calendar, shiny_calendar_call_js_func
+from shiny_calendar import (
+    render_shiny_calendar,
+    shiny_calendar,
+    shiny_calendar_call_js_func,
+)
 
-from warriorfit.ui.controllers.calendar_events_controller import CalendarEventsController
+from warriorfit.ui.controllers.calendar_events_controller import (
+    CalendarEventsController,
+)
 from warriorfit.ui.pages.page import Page
 from warriorfit.ui.user_store import UserStore
 
@@ -26,12 +31,9 @@ class CalendarPage(Page):
                 ui.layout_columns(
                     ui.card(
                         ui.card_header(CalendarPage.TITLE),
-
                         shiny_calendar("my_calendar"),
                     ),
-
                 ),
-
             ),
         )
 
@@ -44,12 +46,10 @@ class CalendarPage(Page):
             ui.page_fillable(
                 ui.layout_columns(
                     ui.card(
-                      ui.card_header(CalendarPage.TITLE_PERSONAL),
+                        ui.card_header(CalendarPage.TITLE_PERSONAL),
                         shiny_calendar("my_calendar"),
                     ),
-
                 ),
-
             ),
         )
 
@@ -78,11 +78,13 @@ class CalendarPage(Page):
                     },
                     "editable": False,
                     "selectable": True,
-                    "events": await self._controller.events(
-                        str(UserStore.get_user().serial_number)
-                    )
-                    if not self._all
-                    else await self._controller.events(),
+                    "events": (
+                        await self._controller.events(
+                            str(UserStore.get_user().serial_number)
+                        )
+                        if not self._all
+                        else await self._controller.events()
+                    ),
                 }
             ]
 
@@ -131,7 +133,7 @@ def _get_page() -> CalendarPage:
     return _page_instance
 
 
-def get_ui(all_test:bool=True):
+def get_ui(all_test: bool = True):
     if all_test:
 
         return _get_page().get_ui_all_test()
@@ -149,4 +151,3 @@ def refresh():
     """
     page = _get_page()
     page._refresh_counter.set(page._refresh_counter() + 1)
-

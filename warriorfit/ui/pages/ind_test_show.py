@@ -29,11 +29,19 @@ class IndTestShowPage(Page):
                 ui.card(
                     ui.card_header("Lookup"),
                     ui.input_text("ind_serial", "Serial number"),
-                    ui.input_action_button("ind_search_serial_search_btn", "🔍 Search own Unit", class_="btn btn-lm",
-                                           style="margin-top: 5px;",width="200px"),
-                    ui.input_action_button("ind_search", "Confirm Servicemen", width="200px"),
-
-                    ui.input_action_button("full_report_cy", "Generate Full Report", width="200px"),
+                    ui.input_action_button(
+                        "ind_search_serial_search_btn",
+                        "🔍 Search own Unit",
+                        class_="btn btn-lm",
+                        style="margin-top: 5px;",
+                        width="200px",
+                    ),
+                    ui.input_action_button(
+                        "ind_search", "Confirm Servicemen", width="200px"
+                    ),
+                    ui.input_action_button(
+                        "full_report_cy", "Generate Full Report", width="200px"
+                    ),
                     ui.output_ui("download_btn_ui"),
                     ui.br(),
                     ui.output_text("ind_status"),
@@ -62,7 +70,9 @@ class IndTestShowPage(Page):
             if s:
                 status.set("Generating report...")
                 report_generator = ReportGeneratorPdf()
-                output_path = await report_generator.generate_ind_report(serial_number=s)
+                output_path = await report_generator.generate_ind_report(
+                    serial_number=s
+                )
                 if output_path:
                     self.report_path.set(output_path)
                     status.set(f"Full report for {s} generated.")
@@ -77,7 +87,12 @@ class IndTestShowPage(Page):
         @render.ui
         def download_btn_ui():
             if self.report_path.get():
-                return ui.download_button("download_generated_report", "Download PDF", width="150px", class_="btn-success")
+                return ui.download_button(
+                    "download_generated_report",
+                    "Download PDF",
+                    width="150px",
+                    class_="btn-success",
+                )
             return None
 
         @render.download(filename=lambda: f"Report_{input.ind_serial()}.pdf")
@@ -101,10 +116,18 @@ class IndTestShowPage(Page):
                 if not mil:
                     raise ValueError("not found")
                 self.serial.set(s)
-                self.mil_info.set(f"{mil.rank} {mil.first_name} {mil.last_name} — {mil.service_number} — {mil.unit}")
+                self.mil_info.set(
+                    f"{mil.rank} {mil.first_name} {mil.last_name} — {mil.service_number} — {mil.unit}"
+                )
                 df = await self.controller.collect_tests_df(s)
-                self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
-                status.set(f"Loaded {len(self.tests_df.get())} records." if not self.tests_df.get().empty else "No tests found.")
+                self.tests_df.set(
+                    df if isinstance(df, pd.DataFrame) else pd.DataFrame()
+                )
+                status.set(
+                    f"Loaded {len(self.tests_df.get())} records."
+                    if not self.tests_df.get().empty
+                    else "No tests found."
+                )
             except Exception as e:
                 self.serial.set("")
                 self.mil_info.set("Not found.")
@@ -132,10 +155,9 @@ class IndTestShowPage(Page):
                 filters=False,
                 selection_mode="none",
                 width="100%",
-
-                
             )
-   # Serial number search modal
+
+        # Serial number search modal
         @reactive.Effect
         @reactive.event(input.ind_search_serial_search_btn)
         async def _open_ind_search_serial_search_btn_modal() -> None:
@@ -149,8 +171,6 @@ class IndTestShowPage(Page):
                 easy_close=True,
             )
             ui.modal_show(modal_content)
-
-
 
         @render.data_frame
         async def ind_serial_search_grid():
@@ -173,7 +193,9 @@ class IndTestShowPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
+                return pd.DataFrame(
+                    columns=["service_number", "first_name", "last_name", "gender"]
+                )
 
             df = pd.DataFrame(
                 [

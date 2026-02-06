@@ -13,6 +13,7 @@ class Role(Enum):
         USER (str): Represents a standard user role.
         GUEST (str): Represents a guest user role.
     """
+
     ADMIN = "ADMIN"
     USER = "USER"
     GUEST = "GUEST"

@@ -8,7 +8,9 @@ import pandas as pd
 from warriorfit.data.model.db_model import Runner, Cross  # Runner model given in prompt
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
-from warriorfit.services.service_cross import ServiceCross  # assumed service layer for Cross domain
+from warriorfit.services.service_cross import (
+    ServiceCross,
+)  # assumed service layer for Cross domain
 
 
 class CrossController:
@@ -73,8 +75,9 @@ class CrossController:
         sec = remaining_seconds % 60
         return f"{hr:02d}:{mini:02d}:{sec:02d}"
 
-
-    async def validate_form(self, data: Dict[str, Any], update=False) -> Tuple[bool, Dict[str, Any] | str]:
+    async def validate_form(
+        self, data: Dict[str, Any], update=False
+    ) -> Tuple[bool, Dict[str, Any] | str]:
         """
         Validates the form data for a cross with a specific serial number and other parameters.
         Checks include validation of the serial number, its existence, uniqueness in the cross
@@ -95,13 +98,19 @@ class CrossController:
             )
         if update:
             if data.get("serialnr") != data.get("old_serialnr"):
-                if await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):
+                if await self._service.exist_in_cross(
+                    data.get("serialnr"), data.get("cross_id")
+                ):
                     return False, "Serial number already exists."
 
-        elif await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):
+        elif await self._service.exist_in_cross(
+            data.get("serialnr"), data.get("cross_id")
+        ):
             return False, "Serial number already exists."
 
-        ok_run, run = CrossController.parse_time_to_seconds(data.get("running_time") or "")
+        ok_run, run = CrossController.parse_time_to_seconds(
+            data.get("running_time") or ""
+        )
         if not ok_run:
             return False, f"Running time: {run}"
         cross_id = (data.get("cross_id") or "").strip()
@@ -147,25 +156,29 @@ class CrossController:
             data = []
             cross.sort(key=lambda r: r.running_time, reverse=False)
             for r in cross:
-                runner = await self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)
-                data.append({
-                    "Order": 0,
-                    "ID": r.id,
-                    "Serial": r.serial_number or "",
-                    "Running Time": self.format_seconds(r.running_time),
-                    "Runner Name": runner.first_name + " " + runner.last_name if runner else "",
-                    "Gender": runner.gender if runner else "",
-                    "Age": runner.age_from_birthdate() if runner else "",
-
-                    "Unit": runner.unit if runner else "",
-
-                })
+                runner = await self.be_mil_service.get_servicemen_by_serial(
+                    r.serial_number, lazy=False
+                )
+                data.append(
+                    {
+                        "Order": 0,
+                        "ID": r.id,
+                        "Serial": r.serial_number or "",
+                        "Running Time": self.format_seconds(r.running_time),
+                        "Runner Name": (
+                            runner.first_name + " " + runner.last_name if runner else ""
+                        ),
+                        "Gender": runner.gender if runner else "",
+                        "Age": runner.age_from_birthdate() if runner else "",
+                        "Unit": runner.unit if runner else "",
+                    }
+                )
             df = pd.DataFrame(data)
 
             if df.empty:
                 return df
             # Sort by running time ascending (fastest first)
-           # df = df.sort_values(by="Running seconds", ascending=True).reset_index(drop=True)
+            # df = df.sort_values(by="Running seconds", ascending=True).reset_index(drop=True)
             df["Order"] = df.index + 1  # Add 1 to make it 1-based instead of 0-based
 
             return df
@@ -173,7 +186,9 @@ class CrossController:
             return pd.DataFrame()
 
     # ----- Commands -----
-    async def add_runner(self, cross_id: int, payload: Dict[str, Any]) -> Optional[Runner]:
+    async def add_runner(
+        self, cross_id: int, payload: Dict[str, Any]
+    ) -> Optional[Runner]:
         """
         Asynchronously adds a runner to a cross with the given cross identifier and payload containing runner details.
 
@@ -190,7 +205,9 @@ class CrossController:
         # attach to cross
         return await self._service.add_runner_to_cross(int(cross_id), r)
 
-    async def update_runner(self, runner_id: int, payload: Dict[str, Any]) -> Optional[Runner]:
+    async def update_runner(
+        self, runner_id: int, payload: Dict[str, Any]
+    ) -> Optional[Runner]:
         """
         Updates the details of a specific runner using the provided runner ID
         and payload. The runner object is created and populated with the payload

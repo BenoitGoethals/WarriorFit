@@ -3,12 +3,21 @@ import json
 import logging
 from sqlalchemy import TIMESTAMP, func
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.model.db_model import PhefTest, HrMessage, TestSession, FitnessTest, CombatTestParatrooper, \
-    CombatSwimmingTest, March, FunctionalTest
+from warriorfit.data.model.db_model import (
+    PhefTest,
+    HrMessage,
+    TestSession,
+    FitnessTest,
+    CombatTestParatrooper,
+    CombatSwimmingTest,
+    March,
+    FunctionalTest,
+)
 from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
 from warriorfit.services.be_mil_service import BEMILService
+
 
 class Broker(metaclass=Singleton):
     """
@@ -27,6 +36,7 @@ class Broker(metaclass=Singleton):
     :ivar _msg_queue: Internal asynchronous queue for storing messages to process.
     :type _msg_queue: asyncio.Queue
     """
+
     def __init__(self):
 
         self._mom_repo = MomRepository()
@@ -116,10 +126,7 @@ class Broker(metaclass=Singleton):
         if dto is None:
             return
 
-        hr_m = HrMessage(
-            message=json.dumps(dto.to_dict()),
-            datetime_created=func.now()
-        )
+        hr_m = HrMessage(message=json.dumps(dto.to_dict()), datetime_created=func.now())
         await self._msg_queue.put(hr_m)
 
     async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
@@ -175,8 +182,12 @@ class Broker(metaclass=Singleton):
                 loop = asyncio.get_running_loop()
                 self._worker_task = loop.create_task(self.worker())
             except RuntimeError:
-                print("⚠️ Warning: Could not start Broker worker. No running event loop found.")
-                self._logger.warning("Could not start Broker worker. No running event loop found.")
+                print(
+                    "⚠️ Warning: Could not start Broker worker. No running event loop found."
+                )
+                self._logger.warning(
+                    "Could not start Broker worker. No running event loop found."
+                )
 
     def stop(self):
         """Stop Service"""
@@ -238,7 +249,9 @@ class MarchTestDto:
         self.service_number = test.service_number
         self.distance = test.distance
         self.succeeded = test.succeeded
-        self.datetime_executed = test.datetime_executed.isoformat() if test.datetime_executed else None
+        self.datetime_executed = (
+            test.datetime_executed.isoformat() if test.datetime_executed else None
+        )
 
     def to_dict(self) -> dict:
         return {
@@ -266,14 +279,31 @@ class FunctionalTestDto:
 
 
 if __name__ == "__main__":
+
     async def main():
         b = Broker()
         b.start()
-        
+
         # Example test messages
-        await b.send_message(PhefTest(running_time=120, sideBridge_l=50, sideBridge_r=50, id=1, serial_number="TEST001"))
-        await b.send_message(PhefTest(running_time=120, sideBridge_l=50, sideBridge_r=50, id=2, serial_number="TEST002"))
-        
+        await b.send_message(
+            PhefTest(
+                running_time=120,
+                sideBridge_l=50,
+                sideBridge_r=50,
+                id=1,
+                serial_number="TEST001",
+            )
+        )
+        await b.send_message(
+            PhefTest(
+                running_time=120,
+                sideBridge_l=50,
+                sideBridge_r=50,
+                id=2,
+                serial_number="TEST002",
+            )
+        )
+
         print("Running broker for 15 seconds...")
         await asyncio.sleep(15)
         b.stop()

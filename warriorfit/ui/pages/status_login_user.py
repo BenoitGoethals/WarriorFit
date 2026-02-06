@@ -26,17 +26,26 @@ class StatusLoginUser(Page):
                     ui.column(
                         12,
                         ui.div(
-                            ui.h1(ui.output_text("welcome_header"), class_="display-4 fw-bold text-primary mb-2"),
-                            ui.p(ui.output_text("welcome_subheader"), class_="lead text-muted"),
-                            ui.p(ui.output_text("version_header"), class_="lead text-muted"),
+                            ui.h1(
+                                ui.output_text("welcome_header"),
+                                class_="display-4 fw-bold text-primary mb-2",
+                            ),
+                            ui.p(
+                                ui.output_text("welcome_subheader"),
+                                class_="lead text-muted",
+                            ),
+                            ui.p(
+                                ui.output_text("version_header"),
+                                class_="lead text-muted",
+                            ),
                             ui.output_ui("welcome_image"),
-                            class_="text-center py-5 bg-light rounded-3 mb-4 shadow-sm"
-                        )
+                            class_="text-center py-5 bg-light rounded-3 mb-4 shadow-sm",
+                        ),
                     )
                 ),
                 ui.output_ui("pti_dashboard_section"),
-                class_="container-fluid p-4"
-            )
+                class_="container-fluid p-4",
+            ),
         )
 
     def server(self, input, output, session):
@@ -53,7 +62,7 @@ class StatusLoginUser(Page):
             with open(img_path, "rb") as f:
                 img_data = base64.b64encode(f.read()).decode()
             return ui.img(src=f"data:image/png;base64,{img_data}", class_="img-fluid")
-        
+
         @render.text
         def welcome_header():
             user = UserStore.get_user()
@@ -84,16 +93,19 @@ class StatusLoginUser(Page):
                         ui.card(
                             ui.card_header(
                                 ui.div(
-                                    ui.span("📅 Upcoming Test Sessions", class_="fs-5 fw-bold"),
-                                    class_="d-flex align-items-center"
+                                    ui.span(
+                                        "📅 Upcoming Test Sessions",
+                                        class_="fs-5 fw-bold",
+                                    ),
+                                    class_="d-flex align-items-center",
                                 ),
-                                class_="bg-white border-bottom-0"
+                                class_="bg-white border-bottom-0",
                             ),
                             ui.output_data_frame("sessions_grid"),
                             full_screen=True,
-                            class_="shadow-sm h-100"
+                            class_="shadow-sm h-100",
                         ),
-                         offset=2
+                        offset=2,
                     )
                 )
             return ui.div()
@@ -102,19 +114,20 @@ class StatusLoginUser(Page):
         @render.data_frame
         async def sessions_grid():
             self.refresh_tick.get()
-            df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)
+            df = await self.controller.get_upcoming_session(
+                UserStore.get_user().serial_number
+            )
             return render.DataGrid(
-                df, 
-                width="100%", 
-                filters=True, 
-                selection_mode="none"
+                df, width="100%", filters=True, selection_mode="none"
             )
 
 
 _page = StatusLoginUser()
 
+
 def get_ui():
     return _page.get_ui()
+
 
 def server(input, output, session):
     _page.server(input, output, session)

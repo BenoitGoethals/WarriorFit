@@ -7,9 +7,6 @@ from warriorfit.ui.controllers.march_controller import MarchController
 from warriorfit.ui.pages.page import Page
 
 
-
-
-
 class MarchPage(Page):
 
     def __init__(self):
@@ -27,22 +24,44 @@ class MarchPage(Page):
                 ui.div(
                     ui.card(
                         ui.div(
-                            ui.input_text("service_number_march", "Service Number", placeholder="Service Number"),
-                            ui.input_action_button("march_serial_search_btn", "🔍 Search own Unit", class_="btn-info btn-sm",
-                                                  style="margin-top: 5px;"),
+                            ui.input_text(
+                                "service_number_march",
+                                "Service Number",
+                                placeholder="Service Number",
+                            ),
+                            ui.input_action_button(
+                                "march_serial_search_btn",
+                                "🔍 Search own Unit",
+                                class_="btn-info btn-sm",
+                                style="margin-top: 5px;",
+                            ),
                         ),
-                        ui.input_action_button("march_search", "Conform Serial", width="200px"),
+                        ui.input_action_button(
+                            "march_search", "Conform Serial", width="200px"
+                        ),
                         ui.output_text("march_military"),
                         ui.br(),
                         ui.input_numeric("distance", "Distance (km)", value=30, min=0),
-                        ui.input_date("datetime_executed", "Date Executed", value=str(datetime.now().date())),
+                        ui.input_date(
+                            "datetime_executed",
+                            "Date Executed",
+                            value=str(datetime.now().date()),
+                        ),
                         ui.input_checkbox("succeeded", "Succeeded", value=False),
                         ui.br(),
                         ui.layout_columns(
-                            ui.input_action_button("add_march_bn", "Add", class_="btn-primary w-100"),
-                            ui.input_action_button("update_march_bn", "Update", class_="btn-warning w-100"),
-                            ui.input_action_button("delete_march_bn", "Delete", class_="btn-danger w-100"),
-                            ui.input_action_button("clear_march_bn", "Clear", class_="btn-secondary w-100"),
+                            ui.input_action_button(
+                                "add_march_bn", "Add", class_="btn-primary w-100"
+                            ),
+                            ui.input_action_button(
+                                "update_march_bn", "Update", class_="btn-warning w-100"
+                            ),
+                            ui.input_action_button(
+                                "delete_march_bn", "Delete", class_="btn-danger w-100"
+                            ),
+                            ui.input_action_button(
+                                "clear_march_bn", "Clear", class_="btn-secondary w-100"
+                            ),
                             col_widths=(4,),
                         ),
                         ui.output_text("march_status"),
@@ -84,7 +103,9 @@ class MarchPage(Page):
             march_data = await self.controller.get_all_march()
 
             if not march_data:
-                return pd.DataFrame(columns=["service_number", "distance", "succeeded", "Date"])
+                return pd.DataFrame(
+                    columns=["service_number", "distance", "succeeded", "Date"]
+                )
 
             # Convert list of march objects to DataFrame
             df = pd.DataFrame(
@@ -95,7 +116,9 @@ class MarchPage(Page):
                         "distance": m.distance,
                         "succeeded": m.succeeded,
                         "Succeeded": "✓ Passed" if m.succeeded else "✗ Failed",
-                        "Date": m.datetime_executed.date() if m.datetime_executed else None,
+                        "Date": (
+                            m.datetime_executed.date() if m.datetime_executed else None
+                        ),
                     }
                     for m in march_data
                 ]
@@ -108,14 +131,22 @@ class MarchPage(Page):
             try:
                 df = await get_march_df()
                 # Drop id and succeeded (keep Succeeded display column instead)
-                columns_to_drop = ["id", "succeeded"] if "id" in df.columns else ["succeeded"]
+                columns_to_drop = (
+                    ["id", "succeeded"] if "id" in df.columns else ["succeeded"]
+                )
                 display_df = df.drop(columns=columns_to_drop)
                 display_df = display_df.sort_values(by=["service_number"])
-                return render.DataGrid(display_df, selection_mode="row", filters=False, width="100%")
+                return render.DataGrid(
+                    display_df, selection_mode="row", filters=False, width="100%"
+                )
             except Exception as e:
                 # Return empty grid on error
-                empty_df = pd.DataFrame(columns=["service_number", "distance", "Succeeded", "Date"])
-                return render.DataGrid(empty_df, selection_mode="row", filters=False, width="100%")
+                empty_df = pd.DataFrame(
+                    columns=["service_number", "distance", "Succeeded", "Date"]
+                )
+                return render.DataGrid(
+                    empty_df, selection_mode="row", filters=False, width="100%"
+                )
 
         @reactive.Effect
         @reactive.event(input.march_grid_selected_rows)
@@ -132,7 +163,9 @@ class MarchPage(Page):
                     ui.update_action_button("add_march_bn", disabled=False)
                     ui.update_action_button("update_march_bn", disabled=False)
                     selected_id.set(row["id"] or "")
-                    ui.update_text("service_number_march", value=str(row["service_number"]))
+                    ui.update_text(
+                        "service_number_march", value=str(row["service_number"])
+                    )
                     ui.update_numeric("distance", value=float(row["distance"]))
                     ui.update_checkbox("succeeded", value=bool(row["succeeded"]))
                     if row["Date"]:
@@ -140,8 +173,6 @@ class MarchPage(Page):
             else:
                 ui.update_action_button("add_march_bn", disabled=True)
                 ui.update_action_button("update_march_bn", disabled=True)
-
-
 
         @reactive.Effect
         @reactive.event(input.add_march_bn)
@@ -153,19 +184,23 @@ class MarchPage(Page):
                 service_number=input.service_number_march(),
                 distance=float(input.distance()),
                 succeeded=input.succeeded(),
-                datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time()),
+                datetime_executed=datetime.combine(
+                    input.datetime_executed(), datetime.min.time()
+                ),
             )
 
             await self.controller.add_march(new_march)
             _clear_form()
             refresh_trigger.set(refresh_trigger.get() + 1)
 
-        async def valid_data()-> bool:
+        async def valid_data() -> bool:
             # Check if combination of serial number, distance, and date is unique
             existing_march = await self.controller.get_march_is_unique(
                 service_number=input.service_number_march(),
                 distance=float(input.distance()),
-                datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time()),
+                datetime_executed=datetime.combine(
+                    input.datetime_executed(), datetime.min.time()
+                ),
             )
             return existing_march
 
@@ -183,7 +218,9 @@ class MarchPage(Page):
                     service_number=input.service_number_march(),
                     distance=float(input.distance()),
                     succeeded=input.succeeded(),
-                    datetime_executed=datetime.combine(input.datetime_executed(), datetime.min.time()),
+                    datetime_executed=datetime.combine(
+                        input.datetime_executed(), datetime.min.time()
+                    ),
                 )
                 await self.controller.update_march(updated_march)
                 _clear_form()
@@ -218,7 +255,9 @@ class MarchPage(Page):
                 ui.update_action_button("update_march_bn", disabled=True)
                 return
             try:
-                val = await self.controller.search_military(input.service_number_march() or "")
+                val = await self.controller.search_military(
+                    input.service_number_march() or ""
+                )
                 self.selected_military = val
                 if val is None:
                     ui.update_text("march_combat_military", value="Not found")
@@ -256,7 +295,9 @@ class MarchPage(Page):
         async def get_all_servicemen_df():
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
+                return pd.DataFrame(
+                    columns=["service_number", "first_name", "last_name", "gender"]
+                )
 
             df = pd.DataFrame(
                 [
@@ -285,7 +326,9 @@ class MarchPage(Page):
                 if df is not None and not df.empty:
                     row_idx = indices[0]
                     row = df.iloc[row_idx]
-                    ui.update_text("service_number_march", value=str(row["service_number"]))
+                    ui.update_text(
+                        "service_number_march", value=str(row["service_number"])
+                    )
                     ui.modal_remove()
                     #
 

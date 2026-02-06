@@ -6,6 +6,7 @@ from warriorfit.data.repositories.abc_repository import ABCRepository
 from warriorfit.utils.Os import Os
 import aiofiles
 
+
 class StatusApplicationController:
     async def status_db(self):
         repo = ABCRepository()
@@ -18,7 +19,7 @@ class StatusApplicationController:
 
     async def status_mail_server(self):
         ip = ApplicationConfig().mail_server.host
-        server_ok=Os.is_alive(ip)
+        server_ok = Os.is_alive(ip)
         return self._format_status(server_ok)
 
     async def _check_http_status(self, url: str) -> str:
@@ -43,24 +44,25 @@ class StatusApplicationController:
             async with aiofiles.open(log, "r") as f:
                 lines = await f.readlines()
             error = sum(1 for line in lines if "error" in line.lower())
-    
+
         return f"Log: {error} Errors"
 
-    async def load_log_application(self)->str:
+    async def load_log_application(self) -> str:
         project_root = Os.get_project_root()
         log_path = project_root / "logs" / "application.log"
         async with aiofiles.open(log_path, "r") as f:
             lines = await f.readlines()
             last_100_lines = lines[-300:] if len(lines) > 300 else lines
-            last_100_lines_error=[line for line in last_100_lines if not "info" in line.lower()]
-            return ''.join(last_100_lines_error)
+            last_100_lines_error = [
+                line for line in last_100_lines if not "info" in line.lower()
+            ]
+            return "".join(last_100_lines_error)
 
     def check_log_modified(self):
         from warriorfit.utils.Os import Os
+
         project_root = Os.get_project_root()
         log_path = project_root / "logs" / "application.log"
         if log_path.exists():
             return os.path.getmtime(log_path)
         return None
-        
-        

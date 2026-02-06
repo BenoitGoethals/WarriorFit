@@ -42,8 +42,6 @@ class SettingsController:
         ApplicationConfig().load_config()
         return ApplicationConfig().settings_data
 
-
-
     def save(self, data: SettingsData) -> Tuple[bool, str]:
         """
         Saves the given configuration data to the application configuration.

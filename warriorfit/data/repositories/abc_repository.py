@@ -7,10 +7,18 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import AuditLog
 
-from warriorfit.utils.Os import Os
-
 
 class ABCRepository:
+    """
+    Handles database operations for the application, providing functionality for
+    checking database connectivity, fetching and logging entities, managing audit
+    logs, and performing other utility operations. The class ensures interaction
+    with an asynchronous SQLAlchemy session maker and handles errors gracefully.
+
+    :ivar SessionLocal: SQLAlchemy asynchronous session maker bound to the database
+                        engine for managing transactions and queries.
+    :type SessionLocal: sqlalchemy.ext.asyncio.async_sessionmaker
+    """
 
     def __init__(self):
 
@@ -27,8 +35,6 @@ class ABCRepository:
             bind=async_engine, expire_on_commit=False, class_=AsyncSession
         )
 
-
-
     async def check_if_db_is_operational(self) -> bool:
         """
         Checks if the database is operational by performing a lightweight query.
@@ -43,12 +49,8 @@ class ABCRepository:
                 self._logger.info("Database is operational.")
                 return True
         except SQLAlchemyError as e:
-            self._logger.error(f"Database connection error: {e}")
+            self._logger.error("Database connection error: %s", e)
             return False
-        except Exception as e:
-            self._logger.error(f"Unexpected error while checking database: {e}")
-            return False
-
 
     async def fetch_and_log(self, query, log_entity_name: str):
         """
@@ -74,34 +76,30 @@ class ABCRepository:
                     return None
                 return res
         except SQLAlchemyError as e:
-            self._logger.error(f"SQLAlchemy error fetching {log_entity_name}: {e}")
-            return None
-        except Exception as e:
-            self._logger.error(f"Unexpected error fetching {log_entity_name}: {e}")
+            self._logger.error("SQLAlchemy error fetching %s: %s", log_entity_name, e)
             return None
 
         # Security
 
     async def create_audit_log(
-            self,
-            user_id: int,
-            action: str,
-            details: dict = None,
-            ip_address: str = None,
+        self,
+        user_id: int,
+        action: str,
+        details: dict | str = None,
+        ip_address: str = None,
     ):
         """
         Creates an audit log entry in the database. The function records the provided data
         such as user identifier, action performed, optional details, and the IP address.
         This operation is performed asynchronously, ensuring the audit log is both added
         and refreshed in the database session.
-    
+
         :param user_id: Identifier of the user associated with the action
         :param action: Description of the action performed by the user
         :param details: Optional dictionary containing additional details about the action
         :param ip_address: Optional string containing the IP address associated with the action
         :return: The created audit log entry
         """
-
 
         audit_log = AuditLog(
             user_id=user_id,
@@ -118,12 +116,14 @@ class ABCRepository:
                 await session.refresh(audit_log)
                 return audit_log
 
-            except Exception as e:
+            except SQLAlchemyError as e:
                 await session.rollback()
-                self.__logger.error(f"Failed to create audit log: {e}")
+                self._logger.error("Failed to create audit log: %s", e)
                 return None
 
-    async def get_all_audit_logs(self, limit: Optional[int] = None, offset: int = 0) -> List[AuditLog]:
+    async def get_all_audit_logs(
+        self, limit: Optional[int] = None, offset: int = 0
+    ) -> List[AuditLog]:
         """
         Returns all AuditLog entries ordered by created_at desc.
         Optional pagination via limit/offset.
@@ -136,9 +136,9 @@ class ABCRepository:
                 result = await session.execute(stmt)
                 logs = result.scalars().all()
                 return list(logs)
-        except Exception as e:
-                self._logger.error(f"get_all_audit_logs failed: {e}")
-                return []
+        except SQLAlchemyError as e:
+            self._logger.error("get_all_audit_logs failed: %s", e)
+            return []
 
     async def get_audit_logs(self) -> list[AuditLog]:
         """
@@ -159,8 +159,8 @@ class ABCRepository:
                     query = select(AuditLog)
                     results = await self.fetch_and_log(query, "audit_logs")
                     return results if results else []
-        except Exception as e:
-            self._logger.error(f"Error fetching audit logs: {str(e)}")
+        except SQLAlchemyError as e:
+            self._logger.error("Error fetching audit logs: %s", e)
             return []
 
     async def running_year(self) -> tuple[datetime, datetime]:

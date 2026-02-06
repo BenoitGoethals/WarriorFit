@@ -16,9 +16,12 @@ class SwimmingController:
     - DB queries and commands
     - Grid decoration and email HTML body
     """
-    def __init__(self,) -> None:
+
+    def __init__(
+        self,
+    ) -> None:
         self._service = ServiceTest()
-        self.be_mil_service =  MilitaryService()
+        self.be_mil_service = MilitaryService()
 
     # ----- Validation -----
     @staticmethod
@@ -56,7 +59,9 @@ class SwimmingController:
         :return: A list of all test sessions of type `SWIMMING`.
         :rtype: list
         """
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.SWIMMING)
+        return await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.SWIMMING
+        )
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -82,18 +87,24 @@ class SwimmingController:
             - "Result": Indicates whether the test result was "PASSED" or "FAILED".
         """
         try:
-            swim_tests = await self._service.get_all_combat_swimming_test(int(session_id))
+            swim_tests = await self._service.get_all_combat_swimming_test(
+                int(session_id)
+            )
             rows = []
             for r in swim_tests or []:
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if not sm:
                     continue
-                rows.append({
-                    "ID": r.id,
-                    "Serial": r.serial_number,
-                    "Name": f"{sm.first_name} {sm.last_name}",
-                    "Result": "PASSED" if getattr(r, "swim_paased", False) else "FAILED",
-                })
+                rows.append(
+                    {
+                        "ID": r.id,
+                        "Serial": r.serial_number,
+                        "Name": f"{sm.first_name} {sm.last_name}",
+                        "Result": (
+                            "PASSED" if getattr(r, "swim_paased", False) else "FAILED"
+                        ),
+                    }
+                )
             return pd.DataFrame(rows)
         except Exception:
             return pd.DataFrame()
@@ -117,13 +128,21 @@ class SwimmingController:
             return df
         out = df.copy()
         if "Result" in out.columns:
+
             def _fmt(v: str):
                 return f"🟩 {v}" if str(v).upper() == "PASSED" else f"🟥 {v}"
+
             out["Result"] = out["Result"].apply(_fmt)
         return out
 
     # ----- Commands -----
-    async def add_swim(self, session_id: int, payload: Dict[str, Any],session:TestSession,military:ServiceMen) -> Optional[CombatSwimmingTest]:
+    async def add_swim(
+        self,
+        session_id: int,
+        payload: Dict[str, Any],
+        session: TestSession,
+        military: ServiceMen,
+    ) -> Optional[CombatSwimmingTest]:
         """
         Add a combat swimming test to a test session.
 
@@ -142,9 +161,13 @@ class SwimmingController:
         st.test_session_id = int(session_id)
         st.serial_number = payload["serialnr"]
         st.swim_paased = bool(payload["swim_passed"])
-        return await self._service.add_fitness_test_to_testSession(int(session_id), st,session=session,military=military)
+        return await self._service.add_fitness_test_to_testSession(
+            int(session_id), st, session=session, military=military
+        )
 
-    async def update_swim(self, swim_id: int, payload: Dict[str, Any]) -> Optional[CombatSwimmingTest]:
+    async def update_swim(
+        self, swim_id: int, payload: Dict[str, Any]
+    ) -> Optional[CombatSwimmingTest]:
         """
         Updates a swimming test record with the given information. This method asynchronously updates
         a swim test record, utilizing the provided swim test ID and payload data. The operation integrates
@@ -178,5 +201,6 @@ class SwimmingController:
         :return: A boolean indicating whether the swim entry was successfully deleted.
         :rtype: bool
         """
-        return await self._service.delete_fitness_test_from_test_session(int(session_id), int(swim_id))
-
+        return await self._service.delete_fitness_test_from_test_session(
+            int(session_id), int(swim_id)
+        )

@@ -22,20 +22,27 @@ class ReservationRepository(ABCRepository):
 
                 # Re-fetch the reservation with the room relationship loaded
                 # This ensures the room data is available when the object is detached
-                stmt = select(Reservation).options(selectinload(Reservation.room)).where(
-                    Reservation.id == reservation.id)
+                stmt = (
+                    select(Reservation)
+                    .options(selectinload(Reservation.room))
+                    .where(Reservation.id == reservation.id)
+                )
                 result = await session.execute(stmt)
                 reservation = result.scalar_one()
 
                 return reservation
             except IntegrityError as e:
                 await session.rollback()
-                self._logger.error(f"Integrity error while creating reservation: {str(e)}")
+                self._logger.error(
+                    f"Integrity error while creating reservation: {str(e)}"
+                )
 
     async def get_reservation(self, id_r: int) -> Reservation | None:
         try:
             async with self.SessionLocal() as session:
-                reservation = await session.get(Reservation, id_r, options=[selectinload(Reservation.room)])
+                reservation = await session.get(
+                    Reservation, id_r, options=[selectinload(Reservation.room)]
+                )
                 return reservation
         except SQLAlchemyError as e:
             self._logger.error(f"Database error while fetching reservation: {str(e)}")
@@ -45,11 +52,15 @@ class ReservationRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 # Fix: Await the scalars() coroutine first, then call .all() on the result
-                result = await session.scalars(select(Reservation).options(selectinload(Reservation.room)))
+                result = await session.scalars(
+                    select(Reservation).options(selectinload(Reservation.room))
+                )
                 reservations = result.all()
                 return reservations
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error while fetching all reservations: {str(e)}")
+            self._logger.error(
+                f"Database error while fetching all reservations: {str(e)}"
+            )
             return None
 
     async def delete_reservation(self, id_r: int):
@@ -63,7 +74,9 @@ class ReservationRepository(ABCRepository):
                 return False
             except SQLAlchemyError as e:
                 await session.rollback()
-                self._logger.error(f"Database error while deleting reservation: {str(e)}")
+                self._logger.error(
+                    f"Database error while deleting reservation: {str(e)}"
+                )
                 return False
 
     async def update_reservation(self, reservation):
@@ -74,11 +87,15 @@ class ReservationRepository(ABCRepository):
                 return True
             except IntegrityError as e:
                 await session.rollback()
-                self._logger.error(f"Integrity error while updating reservation: {str(e)}")
+                self._logger.error(
+                    f"Integrity error while updating reservation: {str(e)}"
+                )
                 return False
             except SQLAlchemyError as e:
                 await session.rollback()
-                self._logger.error(f"Database error while updating reservation: {str(e)}")
+                self._logger.error(
+                    f"Database error while updating reservation: {str(e)}"
+                )
                 return False
 
     async def delete_all_reservation(self):
@@ -89,12 +106,12 @@ class ReservationRepository(ABCRepository):
                 return True
             except SQLAlchemyError as e:
                 await session.rollback()
-                self._logger.error(f"Database error while deleting all reservations: {str(e)}")
+                self._logger.error(
+                    f"Database error while deleting all reservations: {str(e)}"
+                )
                 return False
 
-
-    async def get_rooms(self)->list[Room]:
+    async def get_rooms(self) -> list[Room]:
         query = select(Room)
         results = await self.fetch_and_log(query, "March")
         return results if results else []
-

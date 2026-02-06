@@ -5,7 +5,9 @@ from typing import List
 import calendar
 
 from warriorfit.data.model.db_model import Room, Reservation, User
-from warriorfit.ui.controllers.reserve_fitness_room_controller import ReserveFitnessRoomController
+from warriorfit.ui.controllers.reserve_fitness_room_controller import (
+    ReserveFitnessRoomController,
+)
 from warriorfit.ui.pages.page import Page
 
 
@@ -28,7 +30,8 @@ class ReserveFitnessRoomPage(Page):
     def get_ui(self):
         return ui.nav_panel(
             "Reserve Room",
-            ui.tags.style("""
+            ui.tags.style(
+                """
                 .card { margin-bottom: 20px; }
                 .room-card { 
                     border: 2px solid #e5e7eb; 
@@ -244,54 +247,61 @@ class ReserveFitnessRoomPage(Page):
                     display: block;
                     color: #d1d5db;
                 }
-            """),
-
+            """
+            ),
             ui.h2("🗓️ PTI Room Booking System"),
-            ui.input_action_button("open_modal", "➕ New Reservation", class_="btn-success"),
+            ui.input_action_button(
+                "open_modal", "➕ New Reservation", class_="btn-success"
+            ),
             ui.navset_tab(
                 ui.nav_panel(
                     "📅 Weekly Calendar",
                     ui.div(
                         ui.layout_columns(
-                            ui.input_action_button("prev_week", "◀ Previous Week", class_="btn-primary"),
+                            ui.input_action_button(
+                                "prev_week", "◀ Previous Week", class_="btn-primary"
+                            ),
                             ui.output_text("current_week"),
-
-                            ui.input_action_button("next_week", "Next Week ▶", class_="btn-primary"),
-                            col_widths=[2, 8, 2]
+                            ui.input_action_button(
+                                "next_week", "Next Week ▶", class_="btn-primary"
+                            ),
+                            col_widths=[2, 8, 2],
                         ),
-
-
                         ui.hr(),
                         ui.output_ui("weekly_calendar_view"),
                         ui.output_ui("reservation_modal"),
-                        class_="calendar-container"
-                    )
+                        class_="calendar-container",
+                    ),
                 ),
-
                 ui.nav_panel(
                     "📅 Monthly Calendar",
                     ui.div(
                         ui.layout_columns(
-                            ui.input_action_button("prev_month", "◀ Previous", class_="btn-primary"),
+                            ui.input_action_button(
+                                "prev_month", "◀ Previous", class_="btn-primary"
+                            ),
                             ui.output_text("current_month"),
-                            ui.input_action_button("next_month", "Next ▶", class_="btn-primary"),
-                            col_widths=[2, 8, 2]
+                            ui.input_action_button(
+                                "next_month", "Next ▶", class_="btn-primary"
+                            ),
+                            col_widths=[2, 8, 2],
                         ),
                         ui.hr(),
                         ui.output_ui("calendar_view"),
-                        class_="calendar-container"
-                    )
+                        class_="calendar-container",
+                    ),
                 ),
-
                 ui.nav_panel(
                     "📋 List View",
                     ui.card(
                         ui.card_header("Reservations by Date"),
-                        ui.input_date("filter_date", "Filter date:", value=datetime.now().date()),
-                        ui.output_ui("reservations_list")
-                    )
-                )
-            )
+                        ui.input_date(
+                            "filter_date", "Filter date:", value=datetime.now().date()
+                        ),
+                        ui.output_ui("reservations_list"),
+                    ),
+                ),
+            ),
         )
 
     def server(self, input, output, session):
@@ -301,7 +311,9 @@ class ReserveFitnessRoomPage(Page):
         selected_room = reactive.Value(None)
         current_month_val = reactive.Value(datetime.now().month)
         current_year_val = reactive.Value(datetime.now().year)
-        current_week_start = reactive.Value(datetime.now().date() - timedelta(days=datetime.now().weekday()))
+        current_week_start = reactive.Value(
+            datetime.now().date() - timedelta(days=datetime.now().weekday())
+        )
         selected_calendar_date = reactive.Value(None)
         show_modal = reactive.Value(False)
 
@@ -323,8 +335,20 @@ class ReserveFitnessRoomPage(Page):
         @output
         @render.text
         def current_month():
-            month_names = ["January", "February", "March", "April", "May", "June",
-                           "July", "August", "September", "October", "November", "December"]
+            month_names = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ]
             return f"{month_names[current_month_val() - 1]} {current_year_val()}"
 
         @reactive.Effect
@@ -348,7 +372,15 @@ class ReserveFitnessRoomPage(Page):
             week_days = [week_start + timedelta(days=i) for i in range(7)]
 
             # Create header with days
-            day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            day_names = [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+            ]
             header_cells = [ui.tags.th("Time")]
             for i, day in enumerate(week_days):
                 is_today = day == today
@@ -357,9 +389,9 @@ class ReserveFitnessRoomPage(Page):
                     ui.tags.th(
                         ui.div(
                             day_names[i],
-                            ui.span(day.strftime("%d/%m"), class_="week-header-date")
+                            ui.span(day.strftime("%d/%m"), class_="week-header-date"),
                         ),
-                        class_=day_class
+                        class_=day_class,
                     )
                 )
 
@@ -370,7 +402,12 @@ class ReserveFitnessRoomPage(Page):
                 row_z_index = 100 - slot_idx
 
                 cells = [
-                    ui.tags.td(time_slot, class_="time-label", style=f"position: relative; z-index: {row_z_index};")]
+                    ui.tags.td(
+                        time_slot,
+                        class_="time-label",
+                        style=f"position: relative; z-index: {row_z_index};",
+                    )
+                ]
 
                 for day in week_days:
                     date_str = str(day)
@@ -379,15 +416,28 @@ class ReserveFitnessRoomPage(Page):
                     # Find reservations for this day and time slot
                     day_reservations = []
                     for r in all_res:
-                        r_date = r.date.date() if isinstance(r.date, datetime) else r.date
-                        r_start = r.start_time.strftime("%H:%M") if isinstance(r.start_time, datetime) else str(
-                            r.start_time)
-                        r_end = r.end_time.strftime("%H:%M") if isinstance(r.end_time, datetime) else str(r.end_time)
+                        r_date = (
+                            r.date.date() if isinstance(r.date, datetime) else r.date
+                        )
+                        r_start = (
+                            r.start_time.strftime("%H:%M")
+                            if isinstance(r.start_time, datetime)
+                            else str(r.start_time)
+                        )
+                        r_end = (
+                            r.end_time.strftime("%H:%M")
+                            if isinstance(r.end_time, datetime)
+                            else str(r.end_time)
+                        )
 
-                        if (r_date == day and
-                                r_start in self.time_slots and
-                                r_end in self.time_slots and
-                                self.time_slots.index(r_start) <= slot_idx < self.time_slots.index(r_end)):
+                        if (
+                            r_date == day
+                            and r_start in self.time_slots
+                            and r_end in self.time_slots
+                            and self.time_slots.index(r_start)
+                            <= slot_idx
+                            < self.time_slots.index(r_end)
+                        ):
                             day_reservations.append(r)
 
                     # Create cell with reservations
@@ -397,10 +447,16 @@ class ReserveFitnessRoomPage(Page):
 
                     reservation_blocks = []
                     for res in day_reservations:
-                        r_start = res.start_time.strftime("%H:%M") if isinstance(res.start_time, datetime) else str(
-                            res.start_time)
-                        r_end = res.end_time.strftime("%H:%M") if isinstance(res.end_time, datetime) else str(
-                            res.end_time)
+                        r_start = (
+                            res.start_time.strftime("%H:%M")
+                            if isinstance(res.start_time, datetime)
+                            else str(res.start_time)
+                        )
+                        r_end = (
+                            res.end_time.strftime("%H:%M")
+                            if isinstance(res.end_time, datetime)
+                            else str(res.end_time)
+                        )
 
                         # Calculate position and height based on time
                         start_idx = self.time_slots.index(r_start)
@@ -414,12 +470,20 @@ class ReserveFitnessRoomPage(Page):
 
                             reservation_blocks.append(
                                 ui.div(
-                                    ui.div(f"{res.serial_number}", style="font-weight: bold;"),
-                                    ui.div(f"{res.room.name}", style="font-size: 0.7rem;"),
-                                    ui.div(f"{r_start}-{r_end}", style="font-size: 0.65rem; font-weight: bold;"),
+                                    ui.div(
+                                        f"{res.serial_number}",
+                                        style="font-weight: bold;",
+                                    ),
+                                    ui.div(
+                                        f"{res.room.name}", style="font-size: 0.7rem;"
+                                    ),
+                                    ui.div(
+                                        f"{r_start}-{r_end}",
+                                        style="font-size: 0.65rem; font-weight: bold;",
+                                    ),
                                     class_=f"reservation-block room-{res.room_id}",
                                     style=f"height: {height}px; top: 2px; z-index: {row_z_index + 1};",
-                                    onclick=f"Shiny.setInputValue('reservation_click', {res.id}, {{priority: 'event'}})"
+                                    onclick=f"Shiny.setInputValue('reservation_click', {res.id}, {{priority: 'event'}})",
                                 )
                             )
 
@@ -428,7 +492,7 @@ class ReserveFitnessRoomPage(Page):
                             *reservation_blocks,
                             class_=cell_class,
                             style=f"position: relative; z-index: {row_z_index};",
-                            onclick=f"Shiny.setInputValue('week_cell_click', '{date_str}_{time_slot}', {{priority: 'event'}})"
+                            onclick=f"Shiny.setInputValue('week_cell_click', '{date_str}_{time_slot}', {{priority: 'event'}})",
                         )
                     )
 
@@ -438,9 +502,9 @@ class ReserveFitnessRoomPage(Page):
                 ui.tags.table(
                     ui.tags.thead(ui.tags.tr(*header_cells)),
                     ui.tags.tbody(*rows),
-                    class_="week-calendar"
+                    class_="week-calendar",
                 ),
-                style="overflow-x: auto;"
+                style="overflow-x: auto;",
             )
 
         @reactive.Effect
@@ -497,7 +561,11 @@ class ReserveFitnessRoomPage(Page):
                         # Count reservations for this day
                         day_reservations = []
                         for r in all_res:
-                            r_date = r.date.date() if isinstance(r.date, datetime) else r.date
+                            r_date = (
+                                r.date.date()
+                                if isinstance(r.date, datetime)
+                                else r.date
+                            )
                             if r_date == date_val:
                                 day_reservations.append(r)
 
@@ -510,12 +578,14 @@ class ReserveFitnessRoomPage(Page):
                         # Create badges
                         badges = []
                         for room_id, count in room_counts.items():
-                            room = next((r for r in self.rooms if r.id == room_id), None)
+                            room = next(
+                                (r for r in self.rooms if r.id == room_id), None
+                            )
                             if room:
                                 badges.append(
                                     ui.span(
                                         f"{room.name[:8]}: {count}",
-                                        class_=f"reservation-badge room-color-{room_id}"
+                                        class_=f"reservation-badge room-color-{room_id}",
                                     )
                                 )
 
@@ -527,15 +597,14 @@ class ReserveFitnessRoomPage(Page):
                             css_classes.append("selected")
 
                         cell_content = ui.div(
-                            ui.div(str(day), class_="day-number"),
-                            *badges
+                            ui.div(str(day), class_="day-number"), *badges
                         )
 
                         cells.append(
                             ui.tags.td(
                                 cell_content,
                                 class_=" ".join(css_classes),
-                                onclick=f"Shiny.setInputValue('calendar_click', '{date_str}', {{priority: 'event'}})"
+                                onclick=f"Shiny.setInputValue('calendar_click', '{date_str}', {{priority: 'event'}})",
                             )
                         )
 
@@ -545,10 +614,10 @@ class ReserveFitnessRoomPage(Page):
                 ui.tags.table(
                     ui.tags.thead(ui.tags.tr(*header)),
                     ui.tags.tbody(*rows),
-                    class_="calendar-table"
+                    class_="calendar-table",
                 ),
                 ui.hr(),
-                ui.output_ui("selected_day_info")
+                ui.output_ui("selected_day_info"),
             )
 
         @output
@@ -556,8 +625,10 @@ class ReserveFitnessRoomPage(Page):
         def selected_day_info():
             date_str = selected_calendar_date()
             if not date_str:
-                return ui.p("Click on a date in the calendar to view reservations",
-                            style="text-align: center; color: #6b7280;")
+                return ui.p(
+                    "Click on a date in the calendar to view reservations",
+                    style="text-align: center; color: #6b7280;",
+                )
 
             date_obj = datetime.strptime(date_str, "%Y-%m-%d")
             date_formatted = date_obj.strftime("%B %d, %Y")
@@ -572,7 +643,10 @@ class ReserveFitnessRoomPage(Page):
             if not day_res:
                 return ui.div(
                     ui.h4(f"📅 {date_formatted}"),
-                    ui.p("No reservations for this day", style="color: #6b7280; font-style: italic;")
+                    ui.p(
+                        "No reservations for this day",
+                        style="color: #6b7280; font-style: italic;",
+                    ),
                 )
 
             # Group by room
@@ -582,19 +656,25 @@ class ReserveFitnessRoomPage(Page):
                 if room_res:
                     items = []
                     for res in sorted(room_res, key=lambda x: x.start_time):
-                        r_start = res.start_time.strftime("%H:%M") if isinstance(res.start_time, datetime) else str(
-                            res.start_time)
-                        r_end = res.end_time.strftime("%H:%M") if isinstance(res.end_time, datetime) else str(
-                            res.end_time)
+                        r_start = (
+                            res.start_time.strftime("%H:%M")
+                            if isinstance(res.start_time, datetime)
+                            else str(res.start_time)
+                        )
+                        r_end = (
+                            res.end_time.strftime("%H:%M")
+                            if isinstance(res.end_time, datetime)
+                            else str(res.end_time)
+                        )
                         items.append(
                             ui.div(
                                 f"🕐 {r_start} - {r_end} | 👤 {res.serial_number} | {res.activity}",
                                 ui.input_action_button(
                                     f"del_cal_{res.id}",
                                     "❌",
-                                    class_="btn-danger btn-sm float-end"
+                                    class_="btn-danger btn-sm float-end",
                                 ),
-                                class_="reservation-card"
+                                class_="reservation-card",
                             )
                         )
 
@@ -602,14 +682,11 @@ class ReserveFitnessRoomPage(Page):
                         ui.div(
                             ui.strong(f"📍 {room.name} - {room.location}"),
                             *items,
-                            class_="mb-3"
+                            class_="mb-3",
                         )
                     )
 
-            return ui.div(
-                ui.h4(f"📅 {date_formatted}"),
-                *res_cards
-            )
+            return ui.div(ui.h4(f"📅 {date_formatted}"), *res_cards)
 
         @reactive.Effect
         @reactive.event(input.calendar_click)
@@ -638,29 +715,45 @@ class ReserveFitnessRoomPage(Page):
                     ui.div(
                         ui.div(
                             ui.h3("New Reservation"),
-                            ui.input_action_button("close_modal", "✕", class_="modal-close"),
-                            class_="modal-header"
+                            ui.input_action_button(
+                                "close_modal", "✕", class_="modal-close"
+                            ),
+                            class_="modal-header",
                         ),
                         ui.input_select(
                             "pti_name",
                             "PTI Name *",
-                            choices=[f"{pti.serial_number} - {pti.username} " for pti in self.pti_s],
-
+                            choices=[
+                                f"{pti.serial_number} - {pti.username} "
+                                for pti in self.pti_s
+                            ],
                         ),
-                        ui.input_text("activity", "Activity", placeholder="E.g. Personal Training"),
+                        ui.input_text(
+                            "activity", "Activity", placeholder="E.g. Personal Training"
+                        ),
                         ui.input_date("date", "Date *", value=datetime.now().date()),
                         ui.layout_columns(
-                            ui.input_select("start_time", "Start Time *", choices=[""] + self.time_slots),
-                            ui.input_select("end_time", "End Time *", choices=[""] + self.time_slots),
-                            col_widths=[6, 6]
+                            ui.input_select(
+                                "start_time",
+                                "Start Time *",
+                                choices=[""] + self.time_slots,
+                            ),
+                            ui.input_select(
+                                "end_time", "End Time *", choices=[""] + self.time_slots
+                            ),
+                            col_widths=[6, 6],
                         ),
                         ui.h4("Select Room *", style="margin-top: 20px;"),
                         ui.output_ui("room_choice"),
-                        ui.input_action_button("reserve", "Confirm Reservation", class_="btn-success w-100 mt-3"),
-                        class_="modal-content"
+                        ui.input_action_button(
+                            "reserve",
+                            "Confirm Reservation",
+                            class_="btn-success w-100 mt-3",
+                        ),
+                        class_="modal-content",
                     ),
                     class_="modal-backdrop",
-                    onclick="if(event.target === this) Shiny.setInputValue('close_modal', Math.random())"
+                    onclick="if(event.target === this) Shiny.setInputValue('close_modal', Math.random())",
                 )
             )
 
@@ -682,12 +775,12 @@ class ReserveFitnessRoomPage(Page):
                                 ui.br(),
                                 ui.tags.small(room.location),
                                 ui.br(),
-                                ui.tags.small(f"Max. {room.capacity} people")
+                                ui.tags.small(f"Max. {room.capacity} people"),
                             ),
-                            class_="w-100"
+                            class_="w-100",
                         ),
                         class_=card_class,
-                        style="cursor: pointer;"
+                        style="cursor: pointer;",
                     )
                 )
             return ui.div(*room_buttons)
@@ -717,8 +810,16 @@ class ReserveFitnessRoomPage(Page):
                 return
 
             # Validate that end time is after start time
-            start_idx = self.time_slots.index(input.start_time()) if input.start_time() in self.time_slots else -1
-            end_idx = self.time_slots.index(input.end_time()) if input.end_time() in self.time_slots else -1
+            start_idx = (
+                self.time_slots.index(input.start_time())
+                if input.start_time() in self.time_slots
+                else -1
+            )
+            end_idx = (
+                self.time_slots.index(input.end_time())
+                if input.end_time() in self.time_slots
+                else -1
+            )
 
             if start_idx >= end_idx:
                 ui.notification_show("End time must be after start time", type="error")
@@ -736,9 +837,16 @@ class ReserveFitnessRoomPage(Page):
                 r_date = res.date.date() if isinstance(res.date, datetime) else res.date
                 if res.room_id == selected_room.get() and r_date == check_date:
                     # Check for time overlap
-                    r_start = res.start_time.strftime("%H:%M") if isinstance(res.start_time, datetime) else str(
-                        res.start_time)
-                    r_end = res.end_time.strftime("%H:%M") if isinstance(res.end_time, datetime) else str(res.end_time)
+                    r_start = (
+                        res.start_time.strftime("%H:%M")
+                        if isinstance(res.start_time, datetime)
+                        else str(res.start_time)
+                    )
+                    r_end = (
+                        res.end_time.strftime("%H:%M")
+                        if isinstance(res.end_time, datetime)
+                        else str(res.end_time)
+                    )
 
                     # Overlap occurs if: new start < existing end AND new end > existing start
                     if r_start in self.time_slots and r_end in self.time_slots:
@@ -746,26 +854,38 @@ class ReserveFitnessRoomPage(Page):
                         res_end_idx = self.time_slots.index(r_end)
 
                         if start_idx < res_end_idx and end_idx > res_start_idx:
-                            ui.notification_show(f"This room is already booked from {r_start} to {r_end}",
-                                                 type="error")
+                            ui.notification_show(
+                                f"This room is already booked from {r_start} to {r_end}",
+                                type="error",
+                            )
                             return
 
             # Find room object
-            room_obj: Room = next((r for r in self.rooms if r.id == selected_room.get()), None)
+            room_obj: Room = next(
+                (r for r in self.rooms if r.id == selected_room.get()), None
+            )
 
             # Convert date string to datetime object
             date_str = str(input.date())
             date_res = datetime.strptime(date_str, "%Y-%m-%d")
 
             # Combine date with start time string to create full datetime
-            start_time = datetime.strptime(f"{date_str} {input.start_time()}", "%Y-%m-%d %H:%M")
+            start_time = datetime.strptime(
+                f"{date_str} {input.start_time()}", "%Y-%m-%d %H:%M"
+            )
 
             # Combine date with end time string to create full datetime
-            end_time = datetime.strptime(f"{date_str} {input.end_time()}", "%Y-%m-%d %H:%M")
+            end_time = datetime.strptime(
+                f"{date_str} {input.end_time()}", "%Y-%m-%d %H:%M"
+            )
 
             # Extract service number from selected PTI (format: "service_number - First Last")
             pti_selection = input.pti_name()
-            service_number = pti_selection.split(" - ")[0] if " - " in pti_selection else pti_selection
+            service_number = (
+                pti_selection.split(" - ")[0]
+                if " - " in pti_selection
+                else pti_selection
+            )
 
             # Create new reservation
             new_reservation = Reservation(
@@ -776,13 +896,15 @@ class ReserveFitnessRoomPage(Page):
                 start_time=start_time,
                 end_time=end_time,
                 serial_number=service_number,
-                activity=input.activity() or "Training"
+                activity=input.activity() or "Training",
             )
 
             current_reservations.append(new_reservation)
             reservations.set(current_reservations)
 
-            ui.notification_show("✅ Reservation created successfully!", type="message", duration=3)
+            ui.notification_show(
+                "✅ Reservation created successfully!", type="message", duration=3
+            )
             await self._controller.add_reservation(new_reservation)
             # Reset fields and close modal
             ui.update_text("activity", value="")
@@ -808,19 +930,30 @@ class ReserveFitnessRoomPage(Page):
 
             if not filtered_reservations:
                 return ui.div(
-                    ui.p("No reservations found for this date",
-                         style="text-align: center; color: #6b7280; padding: 40px;")
+                    ui.p(
+                        "No reservations found for this date",
+                        style="text-align: center; color: #6b7280; padding: 40px;",
+                    )
                 )
 
             room_divs = []
             for room in self.rooms:
-                room_reservations = [r for r in filtered_reservations if r.room_id == room.id]
+                room_reservations = [
+                    r for r in filtered_reservations if r.room_id == room.id
+                ]
 
                 reservation_cards = []
                 for res in sorted(room_reservations, key=lambda x: x.start_time):
-                    r_start = res.start_time.strftime("%H:%M") if isinstance(res.start_time, datetime) else str(
-                        res.start_time)
-                    r_end = res.end_time.strftime("%H:%M") if isinstance(res.end_time, datetime) else str(res.end_time)
+                    r_start = (
+                        res.start_time.strftime("%H:%M")
+                        if isinstance(res.start_time, datetime)
+                        else str(res.start_time)
+                    )
+                    r_end = (
+                        res.end_time.strftime("%H:%M")
+                        if isinstance(res.end_time, datetime)
+                        else str(res.end_time)
+                    )
                     reservation_cards.append(
                         ui.div(
                             ui.layout_columns(
@@ -829,16 +962,16 @@ class ReserveFitnessRoomPage(Page):
                                     ui.br(),
                                     f"👤 {res.serial_number}",
                                     ui.br(),
-                                    ui.tags.small(res.activity, style="color: #6b7280;")
+                                    ui.tags.small(
+                                        res.activity, style="color: #6b7280;"
+                                    ),
                                 ),
                                 ui.input_action_button(
-                                    f"delete_{res.id}",
-                                    "❌",
-                                    class_="btn-danger btn-sm"
+                                    f"delete_{res.id}", "❌", class_="btn-danger btn-sm"
                                 ),
-                                col_widths=[10, 2]
+                                col_widths=[10, 2],
                             ),
-                            class_="reservation-card"
+                            class_="reservation-card",
                         )
                     )
 
@@ -848,7 +981,7 @@ class ReserveFitnessRoomPage(Page):
                         ui.hr(),
                         *reservation_cards,
                         class_="room-card",
-                        style="margin-bottom: 15px;"
+                        style="margin-bottom: 15px;",
                     )
                     room_divs.append(room_content)
 

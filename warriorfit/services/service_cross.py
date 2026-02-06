@@ -28,6 +28,7 @@ class ServiceCross(Service):
         servicemen-related lookups.
     :type be_mil_service: MilitaryService
     """
+
     def __init__(self) -> None:
         super().__init__()
         self._cross_repo = CrossRepository()
@@ -90,7 +91,9 @@ class ServiceCross(Service):
     async def remove_runner_from_cross(self, id_nr: int) -> bool:
         removed = await self._cross_repo.remove_runner(id_nr)
         if removed:
-            await self.add_audit_log(details=f"Runner {id_nr} removed from cross", action="delete")
+            await self.add_audit_log(
+                details=f"Runner {id_nr} removed from cross", action="delete"
+            )
         return removed
 
     async def update_cross(self, cross: Cross) -> Cross | None:
@@ -158,7 +161,6 @@ class ServiceCross(Service):
         if df.empty:
             return 0.0, 0.0, 0.0, {}, (0.0, 0.0), {}
 
-
         total_time = float(df["running_time"].sum())
         avg_time = total_time / float(len(all_cross)) if all_cross else 0.0
 
@@ -168,7 +170,11 @@ class ServiceCross(Service):
         # Fetch servicemen once per unique serial, concurrently
         serials = df["serial_number"].dropna().astype(str).unique().tolist()
         servicemen_list = await asyncio.gather(
-            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials if s is not None),
+            *(
+                self.be_mil_service.get_servicemen_by_serial(s)
+                for s in serials
+                if s is not None
+            ),
             return_exceptions=True,
         )
 
@@ -199,25 +205,37 @@ class ServiceCross(Service):
 
         # Age groups
         age_group_stats: dict[str, int] = (
-            df2["age_group"]
-            .dropna()
-            .value_counts()
-            .astype(int)
-            .to_dict()
+            df2["age_group"].dropna().value_counts().astype(int).to_dict()
         )
 
         # Gender avg times
-        female_avg = float(df2.loc[df2["gender"] == Gender.F, "running_time"].mean()) if (df2["gender"] == Gender.F).any() else 0.0
-        male_avg = float(df2.loc[df2["gender"] != Gender.F, "running_time"].mean()) if df2["gender"].notna().any() else 0.0
+        female_avg = (
+            float(df2.loc[df2["gender"] == Gender.F, "running_time"].mean())
+            if (df2["gender"] == Gender.F).any()
+            else 0.0
+        )
+        male_avg = (
+            float(df2.loc[df2["gender"] != Gender.F, "running_time"].mean())
+            if df2["gender"].notna().any()
+            else 0.0
+        )
 
         # Top 10 per distance, ascending running_time (best first), return Runner objects
         top_10_by_distance: dict[Any, list[Runner]] = {}
-        df_sorted = df2.sort_values(["distance", "running_time"], ascending=[True, True])
+        df_sorted = df2.sort_values(
+            ["distance", "running_time"], ascending=[True, True]
+        )
         for distance, group in df_sorted.groupby("distance", dropna=False, sort=False):
             top_10_by_distance[distance] = group["runner_obj"].head(10).tolist()
 
-        return avg_time, gap_time, best_time, age_group_stats, (female_avg, male_avg), top_10_by_distance
-
+        return (
+            avg_time,
+            gap_time,
+            best_time,
+            age_group_stats,
+            (female_avg, male_avg),
+            top_10_by_distance,
+        )
 
     async def get_average(self, all_cross: list[Cross]) -> float:
         # Preserves old semantics: sum(all runners) / len(all_cross)
@@ -271,7 +289,9 @@ class ServiceCross(Service):
 
         return age_groups
 
-    async def get_gender_time(self, all_cross: list[Cross]) -> tuple[floating[Any], floating[Any]]:
+    async def get_gender_time(
+        self, all_cross: list[Cross]
+    ) -> tuple[floating[Any], floating[Any]]:
         all_runners_f: list[float] = []
         all_runners_m: list[float] = []
 
@@ -279,8 +299,10 @@ class ServiceCross(Service):
             for runner in cross.runners:
                 if runner.serial_number is None:
                     continue
-                service_man: ServiceMen | None = await self.be_mil_service.get_servicemen_by_serial(
-                    runner.serial_number
+                service_man: ServiceMen | None = (
+                    await self.be_mil_service.get_servicemen_by_serial(
+                        runner.serial_number
+                    )
                 )
                 if service_man is None:
                     continue
@@ -294,7 +316,9 @@ class ServiceCross(Service):
         m_avg = float(pd.Series(all_runners_m).mean()) if all_runners_m else 0.0
         return f_avg, m_avg
 
-    async def get_top_10_runners_based_on_running_time(self, all_cross: list[Cross]) -> dict[Any, list[Runner]]:
+    async def get_top_10_runners_based_on_running_time(
+        self, all_cross: list[Cross]
+    ) -> dict[Any, list[Runner]]:
         top_runners_by_distance: dict[Any, list[Runner]] = {}
 
         for cross in all_cross:

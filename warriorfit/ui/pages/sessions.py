@@ -43,16 +43,30 @@ class SessionsPage(Page):
                     ui.card_header("Create / Edit Session"),
                     ui.input_select("se_serial", "Serial Number PTI", choices=[]),
                     ui.input_date("se_date", "Date"),
-                    ui.input_text("se_time", "Time (HH:MM)", placeholder="HH:MM", value="09:00"),
+                    ui.input_text(
+                        "se_time", "Time (HH:MM)", placeholder="HH:MM", value="09:00"
+                    ),
                     ui.input_select("se_type", "Type", choices=self.SESSION_TYPES),
                     ui.input_checkbox("se_canceled", "Canceled", value=False),
-                    ui.input_text_area("se_description", "Description", rows=3, width="400px"),
+                    ui.input_text_area(
+                        "se_description", "Description", rows=3, width="400px"
+                    ),
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_action_button("se_add_btn", "Add", class_="btn-primary w-100"),
-                        ui.input_action_button("se_update_btn", "Update", class_="btn-warning w-100"),
-                        ui.input_action_button("se_clear_btn", "Clear Form", class_="btn-secondary w-100"),
-                        ui.input_action_button("se_delete_btn", "Delete Selected", class_="btn-danger w-100"),
+                        ui.input_action_button(
+                            "se_add_btn", "Add", class_="btn-primary w-100"
+                        ),
+                        ui.input_action_button(
+                            "se_update_btn", "Update", class_="btn-warning w-100"
+                        ),
+                        ui.input_action_button(
+                            "se_clear_btn", "Clear Form", class_="btn-secondary w-100"
+                        ),
+                        ui.input_action_button(
+                            "se_delete_btn",
+                            "Delete Selected",
+                            class_="btn-danger w-100",
+                        ),
                         col_widths=(4,),
                     ),
                     ui.br(),
@@ -69,12 +83,12 @@ class SessionsPage(Page):
             ),
         )
 
-
     def server(self, input, output, session):
         sessions = reactive.Value([])
         next_id = reactive.Value(1)
         status = reactive.Value("Ready.")
         selected_session_id = reactive.Value("")
+
         async def all_pti_choices() -> Dict[str, str]:
             return await self.controller.get_all_pti_choices()
 
@@ -88,8 +102,6 @@ class SessionsPage(Page):
         @reactive.Effect
         async def _populate_pti_choices_effect():
             await _populate_pti_choices()
-
-
 
         def _read_form() -> Dict[str, Any]:
             dt_date = input.se_date()
@@ -118,13 +130,23 @@ class SessionsPage(Page):
         def _write_form(rec: Dict[str, Any]):
             dt = rec.get("datetime_start", None)
             dt_date = dt.date() if isinstance(dt, datetime.datetime) else None
-            dt_time = dt.time().strftime("%H:%M:%S") if isinstance(dt, datetime.datetime) else None
-            session.send_input_message("se_serial", {"value": rec.get("serial_number_pti", "") or ""})
+            dt_time = (
+                dt.time().strftime("%H:%M:%S")
+                if isinstance(dt, datetime.datetime)
+                else None
+            )
+            session.send_input_message(
+                "se_serial", {"value": rec.get("serial_number_pti", "") or ""}
+            )
             session.send_input_message("se_date", {"value": dt_date})
             session.send_input_message("se_time", {"value": dt_time})
             session.send_input_message("se_type", {"value": rec.get("type_test", "")})
-            session.send_input_message("se_canceled", {"value": bool(rec.get("canceled", False))})
-            session.send_input_message("se_description", {"value": rec.get("description", "") or ""})
+            session.send_input_message(
+                "se_canceled", {"value": bool(rec.get("canceled", False))}
+            )
+            session.send_input_message(
+                "se_description", {"value": rec.get("description", "") or ""}
+            )
 
         async def _clear_form():
             await _populate_pti_choices()
@@ -135,15 +157,18 @@ class SessionsPage(Page):
             ui.update_text_area("se_description", value="")
             self.selected_row = None
 
-
         async def _refresh_select():
             items = sessions.get() or []
             choices = {
-                str(r["id"]): f'{r["id"]}: {r.get("type_test","")} ({r.get("datetime_start","")})'
+                str(
+                    r["id"]
+                ): f'{r["id"]}: {r.get("type_test","")} ({r.get("datetime_start","")})'
                 for r in items
                 if r.get("id") is not None
             }
-            session.send_input_message("se_select_id", {"choices": choices, "selected": None})
+            session.send_input_message(
+                "se_select_id", {"choices": choices, "selected": None}
+            )
 
         @output
         @render.text
@@ -155,7 +180,6 @@ class SessionsPage(Page):
             _ = self.refresh_tick.get()
             val = await self.controller.list_sessions_df()
             return val.sort_values(by=["Start"])
-
 
         @output
         @render.data_frame
@@ -195,11 +219,19 @@ class SessionsPage(Page):
             except Exception:
                 date_value = None
             ui.update_date("se_date", label="Date", value=date_value)
-            ui.update_text("se_time",
-                           value=start_dt.strftime("%H:%M") if getattr(start_dt, "strftime", None) else "09:00")
+            ui.update_text(
+                "se_time",
+                value=(
+                    start_dt.strftime("%H:%M")
+                    if getattr(start_dt, "strftime", None)
+                    else "09:00"
+                ),
+            )
             type_raw = str(row["Type"]).strip()
             ui.update_select("se_type", choices=self.SESSION_TYPES, selected=type_raw)
-            ui.update_checkbox("se_canceled", value=(str(row["Canceled"]).strip().lower() == "yes"))
+            ui.update_checkbox(
+                "se_canceled", value=(str(row["Canceled"]).strip().lower() == "yes")
+            )
             ui.update_text_area("se_description", value=str(row["Description"]))
             return f"Selected session ID: {row['ID']}"
 
@@ -235,7 +267,9 @@ class SessionsPage(Page):
                 status.set("Select a session to load.")
                 return
             sel_id = int(sel)
-            rec = next((r for r in (sessions.get() or []) if r.get("id") == sel_id), None)
+            rec = next(
+                (r for r in (sessions.get() or []) if r.get("id") == sel_id), None
+            )
             if not rec:
                 status.set("Selected session not found.")
                 return
@@ -250,7 +284,9 @@ class SessionsPage(Page):
             if not ok:
                 status.set(msg)
                 return
-            updated_ok = await self.controller.update_session(int(selected_session_id.get()), payload)
+            updated_ok = await self.controller.update_session(
+                int(selected_session_id.get()), payload
+            )
             if not updated_ok:
                 status.set("Failed to update session.")
                 return
@@ -279,8 +315,6 @@ class SessionsPage(Page):
         async def _on_clear():
             await _clear_form()
             status.set("Form cleared.")
-
-
 
 
 _page_instance: Optional[SessionsPage] = None

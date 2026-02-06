@@ -12,6 +12,7 @@ class Rank(IntEnum):
     representation method for displaying the ranks in a human-readable format.
 
     """
+
     # Volunteers
     SOLDIER = 1
     FIRST_SOLDIER = 2
@@ -52,5 +53,5 @@ if __name__ == "__main__":
     print(Rank.CAPTAIN.value)
     print(Rank(15))
     print(IntEnumType(Rank))
-    r=Rank.CAPTAIN
+    r = Rank.CAPTAIN
     print(r)

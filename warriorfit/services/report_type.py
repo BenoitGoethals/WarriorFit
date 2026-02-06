@@ -20,6 +20,7 @@ class ReportType(enum.Enum):
     :ivar SWIMMING: Represents a swimming report type.
     :type SWIMMING: int
     """
+
     PHEF = 1
     FUNCTIONAL = 2
     COMBAT = 3

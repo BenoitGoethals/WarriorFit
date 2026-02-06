@@ -21,7 +21,10 @@ class SessionsController:
     :ivar be_mil_service: Service responsible for interacting with military personnel data.
     :type be_mil_service: MilitaryService
     """
-    def __init__(self, ):
+
+    def __init__(
+        self,
+    ):
         self._service = ServiceTest()
         self.be_mil_service = MilitaryService()
 
@@ -51,7 +54,9 @@ class SessionsController:
         """
         items = await self.list_sessions()
         if not items:
-            return pd.DataFrame(columns=["ID", "Type", "Start", "Description", "Serial PTI", "Canceled"])
+            return pd.DataFrame(
+                columns=["ID", "Type", "Start", "Description", "Serial PTI", "Canceled"]
+            )
         return pd.DataFrame(
             [
                 {
@@ -73,7 +78,11 @@ class SessionsController:
     async def get_all_pti_choices(self) -> Dict[str, str]:
         """Returns a dict mapping serial_number to 'serial - username' for display"""
         pts = await self._service.get_all_pti()
-        return {p.serial_number: f"{p.serial_number} - {p.username}" for p in pts if p.serial_number}
+        return {
+            p.serial_number: f"{p.serial_number} - {p.username}"
+            for p in pts
+            if p.serial_number
+        }
 
     async def add_session(self, payload: Dict[str, Any]) -> Optional[TestSession]:
         """
@@ -105,8 +114,15 @@ class SessionsController:
             ts.type_test = getattr(TypeFitnessTest, str(payload["type_test"]).upper())
         except Exception:
             ts.type_test = TypeFitnessTest.PHEF
-        sess= await self._service.add_test_session(ts)
-        await self._send_html(subject=f"Fitness {ts.type_test.name} session added",html_body=self._build_added_html(sess),start_dt=sess.datetime_start,end_dt=sess.datetime_start+datetime.timedelta(hours=2),organizer_name=sess.serial_number_pti,invite=True,)
+        sess = await self._service.add_test_session(ts)
+        await self._send_html(
+            subject=f"Fitness {ts.type_test.name} session added",
+            html_body=self._build_added_html(sess),
+            start_dt=sess.datetime_start,
+            end_dt=sess.datetime_start + datetime.timedelta(hours=2),
+            organizer_name=sess.serial_number_pti,
+            invite=True,
+        )
         return sess
 
     async def update_session(self, sel_id: int, payload: Dict[str, Any]) -> bool:
@@ -142,11 +158,16 @@ class SessionsController:
             canceled=bool(payload["canceled"]),
             description=payload["description"],
         )
-        sess= await self._service.update_test_session(data)
+        sess = await self._service.update_test_session(data)
 
-        await self._send_html(subject=f"Update Fitness {sess.type_test.name} session added", html_body=self._build_updated_html(sess),
-                              start_dt=sess.datetime_start, end_dt=sess.datetime_start + datetime.timedelta(hours=2),
-                              organizer_name=sess.serial_number_pti, invite=True, )
+        await self._send_html(
+            subject=f"Update Fitness {sess.type_test.name} session added",
+            html_body=self._build_updated_html(sess),
+            start_dt=sess.datetime_start,
+            end_dt=sess.datetime_start + datetime.timedelta(hours=2),
+            organizer_name=sess.serial_number_pti,
+            invite=True,
+        )
         return sess
 
     async def delete_session(self, sel_id: int) -> bool:
@@ -160,15 +181,19 @@ class SessionsController:
         :rtype: bool
         """
         sess = await self._service.get_test_session_by_id(sel_id)
-        success= await self._service.delete_test_session(sel_id)
+        success = await self._service.delete_test_session(sel_id)
 
-        await self._send_html(subject=f"Delete Fitness {sess.type_test.name} session added",
-                              html_body=self._build_deleted_html(sess),
-                              start_dt=sess.datetime_start, end_dt=sess.datetime_start + datetime.timedelta(hours=2),
-                              organizer_name=sess.serial_number_pti, invite=False, )
+        await self._send_html(
+            subject=f"Delete Fitness {sess.type_test.name} session added",
+            html_body=self._build_deleted_html(sess),
+            start_dt=sess.datetime_start,
+            end_dt=sess.datetime_start + datetime.timedelta(hours=2),
+            organizer_name=sess.serial_number_pti,
+            invite=False,
+        )
         return success
 
-    async def get_session_by_id(self, sel_id: int|None) -> Optional[TestSession]:
+    async def get_session_by_id(self, sel_id: int | None) -> Optional[TestSession]:
         """
         Retrieve a test session by its unique identifier.
 
@@ -183,9 +208,13 @@ class SessionsController:
         """
         return await self._service.get_test_session_by_id(sel_id)
 
-
     async def _recipients_for_unit(self) -> list[str]:
-        return [r.mail for r in await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)]
+        return [
+            r.mail
+            for r in await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
+        ]
 
     def _build_added_html(self, ts: TestSession) -> str:
         """
@@ -265,12 +294,16 @@ class SessionsController:
             <p style='color: #666; font-size: 12px;'>This is an automated message from the Fitness Test Management System.</p>
         """
 
-
-
-
-    async def _send_html(self, *, subject: str, html_body: str,  invite: bool = False,
-                  start_dt: datetime.datetime | None = None, end_dt: datetime.datetime | None = None,
-                  organizer_name: str | None = None):
+    async def _send_html(
+        self,
+        *,
+        subject: str,
+        html_body: str,
+        invite: bool = False,
+        start_dt: datetime.datetime | None = None,
+        end_dt: datetime.datetime | None = None,
+        organizer_name: str | None = None,
+    ):
         """
         Sends an HTML email and optionally includes a calendar invite.
 

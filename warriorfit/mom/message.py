@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Any
 
+
 class Message:
     """A class representing a message in MOM."""
+
     def __init__(self, content: Any):
         self.id = 0
         self.content = content
@@ -19,7 +21,10 @@ class Message:
     @staticmethod
     def _content_to_dict(content: Any) -> Any:
         # Already JSON primitives
-        if isinstance(content, (dict, list, tuple, str, int, float, bool)) or content is None:
+        if (
+            isinstance(content, (dict, list, tuple, str, int, float, bool))
+            or content is None
+        ):
             return content
         # Pydantic v2
         if hasattr(content, "model_dump"):
@@ -30,17 +35,22 @@ class Message:
         # Dataclass
         try:
             from dataclasses import is_dataclass, asdict
+
             if is_dataclass(content):
                 return asdict(content)
         except Exception:
             pass
         # Shallow public attributes
         if hasattr(content, "__dict__"):
-            return {k: Message._content_to_dict(v)
-                    for k, v in content.__dict__.items() if not k.startswith("_")}
+            return {
+                k: Message._content_to_dict(v)
+                for k, v in content.__dict__.items()
+                if not k.startswith("_")
+            }
         # Fallback
         return str(content)
 
     def to_json(self) -> str:
         import json
+
         return json.dumps(self.to_dict())

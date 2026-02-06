@@ -1,4 +1,6 @@
-from warriorfit.ui.controllers.auditlog_events_controller import AuditLogEventsController
+from warriorfit.ui.controllers.auditlog_events_controller import (
+    AuditLogEventsController,
+)
 import pandas as pd
 from shiny import ui, render, reactive
 
@@ -19,7 +21,7 @@ class AuditLogEventsPage(Page):
             ui.h2("Audit Logs"),
             ui.card(
                 ui.card_header("Audit Logs"),
-             #   ui.input_action_button("au_refresh", "Refresh"),
+                #   ui.input_action_button("au_refresh", "Refresh"),
                 ui.output_data_frame("au_grid"),
                 full_screen=False,
             ),
@@ -41,20 +43,25 @@ class AuditLogEventsPage(Page):
         @output
         @render.data_frame
         async def au_grid():
-           # _ = _tick()
+            # _ = _tick()
             df = await au_df()
-            return render.DataGrid(df, filters=True, selection_mode="rows",width="100%")
+            return render.DataGrid(
+                df, filters=True, selection_mode="rows", width="100%"
+            )
 
         @reactive.Effect
         @reactive.event(input.au_refresh)
         def _on_refresh():
             self.refresh_tick.set(self.refresh_tick.get() + 1)
 
+
 # Expose singleton-style API compatible with app.py import pattern
 _page = AuditLogEventsPage()
 
+
 def get_ui():
     return _page.get_ui()
+
 
 def server(input, output, session):
     _page.server(input, output, session)

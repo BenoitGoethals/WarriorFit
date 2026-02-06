@@ -27,10 +27,14 @@ class OwnUnitPage(Page):
         return ui.nav_panel(
             "Status Unit",
             ui.card(
-                ui.card_header(f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"),
-              #  ui.input_action_button("refresh_servicemen", "Refresh"),
+                ui.card_header(
+                    f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"
+                ),
+                #  ui.input_action_button("refresh_servicemen", "Refresh"),
                 ui.output_data_frame("servicemen_grid"),
-                ui.input_action_button("full_report_unit", "Pdf Satus Unit", width="150px"),
+                ui.input_action_button(
+                    "full_report_unit", "Pdf Satus Unit", width="150px"
+                ),
                 ui.output_ui("download_btn_unit"),
                 ui.br(),
                 full_screen=True,
@@ -41,14 +45,17 @@ class OwnUnitPage(Page):
         self.refresh_tick = reactive.Value(0)
         self.refresh_on_nav(input, "Status Unit", self.refresh_tick)
 
-        status_report_unit= reactive.Value("")
+        status_report_unit = reactive.Value("")
+
         @reactive.effect
         @reactive.event(input.full_report_unit)
         async def full_report_unit():
             self.report_path.set(None)
             status_report_unit.set("Generating report...")
             report_generator = ReportGeneratorPdf()
-            output_path = await report_generator.generate_total_report_current_year_own_unit()
+            output_path = (
+                await report_generator.generate_total_report_current_year_own_unit()
+            )
             if output_path:
                 self.report_path.set(output_path)
                 status_report_unit.set(f"Full report generated.")
@@ -57,14 +64,17 @@ class OwnUnitPage(Page):
             else:
                 status_report_unit.set("Failed to generate report.")
 
-
         @output
         @render.ui
         def download_btn_unit():
             if self.report_path.get():
                 ui.update_action_button("full_report_unit", disabled=True)
-                return ui.download_button("download_generated_report_unit", "Download PDF", width="150px",
-                                          class_="btn-success")
+                return ui.download_button(
+                    "download_generated_report_unit",
+                    "Download PDF",
+                    width="150px",
+                    class_="btn-success",
+                )
             return None
 
         @render.download(filename=lambda: f"Report_{ApplicationConfig().own_unit}.pdf")
@@ -77,9 +87,6 @@ class OwnUnitPage(Page):
                 return path
             return None
 
-
-
-
         @output
         @render.data_frame
         async def servicemen_grid():
@@ -90,6 +97,7 @@ class OwnUnitPage(Page):
                 selection_mode="row",
                 width="100%",
             )
+
         #
         # @reactive.Effect
         # @reactive.event(input.refresh_servicemen)
@@ -119,11 +127,15 @@ class OwnUnitPage(Page):
                         ui.h4(f"Executed Fitness Tests — {serial}"),
                         ui.output_data_frame("serviceman_tests_grid"),
                         easy_close=True,
-                        footer=ui.input_action_button("close_serviceman_tests", "Close"),
+                        footer=ui.input_action_button(
+                            "close_serviceman_tests", "Close"
+                        ),
                     )
                 )
             except Exception:
-                ui.notification_show("Error loading serviceman tests", type="error", duration=2)
+                ui.notification_show(
+                    "Error loading serviceman tests", type="error", duration=2
+                )
 
         @output
         @render.data_frame
@@ -134,10 +146,12 @@ class OwnUnitPage(Page):
             df = await self.controller.fetch_tests_for_serial_df(serial)
 
             if not df.empty and "Status" in df.columns:
+
                 def _fmt_status(s):
                     txt = str(s or "Unknown")
 
                     return f"{txt}"
+
                 df = df.copy()
                 df["Status"] = df["Status"].apply(_fmt_status)
 

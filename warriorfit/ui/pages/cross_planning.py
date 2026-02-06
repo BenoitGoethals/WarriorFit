@@ -29,19 +29,42 @@ class CrossPlanningPage(Page):
                 ui.card(
                     ui.card_header("Cross Form"),
                     ui.input_date("cr_date", "Date"),
-
-                    ui.input_text("cr_time", "Pick a time:",placeholder="Select a time", value="09:30"),
+                    ui.input_text(
+                        "cr_time",
+                        "Pick a time:",
+                        placeholder="Select a time",
+                        value="09:30",
+                    ),
                     ui.output_text_verbatim("show_time"),
                     ui.input_numeric("cr_distance", "Distance", value=5, min=0),
                     ui.input_checkbox("cr_executed", "Executed", value=False),
                     ui.input_text("cr_desc", "Description", placeholder="Optional"),
-
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_action_button("cr_add_btn", "Add", width="120px", class_="btn-primary w-100"),
-                        ui.input_action_button("cr_update_btn", "Update", width="120px", class_="btn-warning w-100"),
-                        ui.input_action_button("cr_clear_btn", "Clear", width="120px", class_="btn-secondary w-100"),
-                        ui.input_action_button("cr_delete_btn", "Delete Selected", width="170px",class_="btn-danger w-100"),
+                        ui.input_action_button(
+                            "cr_add_btn",
+                            "Add",
+                            width="120px",
+                            class_="btn-primary w-100",
+                        ),
+                        ui.input_action_button(
+                            "cr_update_btn",
+                            "Update",
+                            width="120px",
+                            class_="btn-warning w-100",
+                        ),
+                        ui.input_action_button(
+                            "cr_clear_btn",
+                            "Clear",
+                            width="120px",
+                            class_="btn-secondary w-100",
+                        ),
+                        ui.input_action_button(
+                            "cr_delete_btn",
+                            "Delete Selected",
+                            width="170px",
+                            class_="btn-danger w-100",
+                        ),
                         col_widths=(4,),
                     ),
                     ui.output_text("cr_status"),
@@ -51,9 +74,7 @@ class CrossPlanningPage(Page):
                     ui.card_header("Crosses"),
                     ui.layout_columns(
                         ui.output_data_frame("cr_grid"),
-
                     ),
-
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
@@ -100,7 +121,9 @@ class CrossPlanningPage(Page):
         session.send_input_message("cr_date", {"value": date_val})
         session.send_input_message("cr_time", {"value": time_val})
         session.send_input_message("cr_distance", {"value": rec.get("distance", 0)})
-        session.send_input_message("cr_executed", {"value": bool(rec.get("executed", False))})
+        session.send_input_message(
+            "cr_executed", {"value": bool(rec.get("executed", False))}
+        )
         session.send_input_message("cr_desc", {"value": rec.get("description", "")})
 
     def _clear_form(self, session) -> None:
@@ -146,7 +169,9 @@ class CrossPlanningPage(Page):
             df = (
                 pd.DataFrame(data)
                 if data
-                else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", "Distance"])
+                else pd.DataFrame(
+                    columns=["ID", "Start", "Executed", "Description", "Distance"]
+                )
             )
             df = df.sort_values(by=["Start"], kind="stable").reset_index(drop=True)
             return df
@@ -278,8 +303,10 @@ class CrossPlanningPage(Page):
 # Expose singleton-style API compatible with app.py import pattern
 _page = CrossPlanningPage()
 
+
 def get_ui():
     return _page.get_ui()
+
 
 def server(input, output, session):
     return _page.server(input, output, session)

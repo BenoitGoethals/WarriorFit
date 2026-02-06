@@ -30,13 +30,19 @@ class ReportsController:
     :ivar _pdf_gen: An instance of ReportGeneratorPdf responsible for generating PDF reports.
     :type _pdf_gen: ReportGeneratorPdf
     """
+
     def __init__(self):
         self._csv_gen = ReportGeneratorCsv()
         self._pdf_gen = ReportGeneratorPdf()
 
     def _resolve_targets(self, test_type: str) -> List[ReportType]:
         if test_type == "all":
-            return [ReportType.PHEF, ReportType.FUNCTIONAL, ReportType.COMBAT, ReportType.SWIMMING]
+            return [
+                ReportType.PHEF,
+                ReportType.FUNCTIONAL,
+                ReportType.COMBAT,
+                ReportType.SWIMMING,
+            ]
         return [ReportType.from_str(test_type)]
 
     async def generate(self, req: ReportRequest) -> Tuple[List[str], Tuple[str, str]]:

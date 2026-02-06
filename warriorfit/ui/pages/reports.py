@@ -5,7 +5,10 @@ import logging
 from pathlib import Path
 from shiny import ui, render, reactive
 
-from warriorfit.ui.controllers.reports_controller import ReportsController, ReportRequest
+from warriorfit.ui.controllers.reports_controller import (
+    ReportsController,
+    ReportRequest,
+)
 from warriorfit.ui.pages.page import Page
 
 
@@ -13,7 +16,9 @@ class ReportsPage(Page):
     def __init__(self) -> None:
         super().__init__()
         self.controller = ReportsController()
-        self._status_msg = reactive.Value(("info", "Click 'Generate Report' to create your report."))
+        self._status_msg = reactive.Value(
+            ("info", "Click 'Generate Report' to create your report.")
+        )
         self._last_paths = reactive.Value([])
         self.__logger = logging.getLogger(__name__)
 
@@ -26,7 +31,9 @@ class ReportsPage(Page):
             ui.h2("Reports"),
             ui.layout_sidebar(
                 ui.sidebar(
-                    ui.input_text("report_title", "Report Title:", "Fitness Test Report"),
+                    ui.input_text(
+                        "report_title", "Report Title:", "Fitness Test Report"
+                    ),
                     ui.input_checkbox("own_Unit", "Own Unit", value=True),
                     ui.input_checkbox("this_year", "This Year", value=True),
                     ui.input_select(
@@ -49,8 +56,12 @@ class ReportsPage(Page):
                             "both": "Both (PDF & CSV)",
                         },
                     ),
-                    ui.input_action_button("generate_report", "Generate Report", class_="btn-primary"),
-                    ui.download_button("download_report", "Download", class_="btn-primary"),
+                    ui.input_action_button(
+                        "generate_report", "Generate Report", class_="btn-primary"
+                    ),
+                    ui.download_button(
+                        "download_report", "Download", class_="btn-primary"
+                    ),
                     width=300,
                 ),
                 ui.card(
@@ -103,6 +114,7 @@ class ReportsPage(Page):
         def download_report():
             import io
             import zipfile
+
             paths = [p for p in self._last_paths.get() or [] if p]
             buf = io.BytesIO()
             with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:

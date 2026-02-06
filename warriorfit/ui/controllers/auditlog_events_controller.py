@@ -15,6 +15,7 @@ class AuditLogEventsController:
     events in a tabular format for analysis and reporting.
 
     """
+
     def __init__(self) -> None:
         self._service = UserService()
 
@@ -32,13 +33,15 @@ class AuditLogEventsController:
         :rtype: pd.DataFrame
         """
         logs: List[Any] = await self._service.get_audit_logs()
-        users:List[User] = await self._service.get_all_users()
-        
+        users: List[User] = await self._service.get_all_users()
+
         if not logs:
             return pd.DataFrame(columns=["User", "Action", "Details", "IP", "Created"])
         rows: List[Dict[str, Any]] = []
         for l in logs:
-            user = next((user for user in users if user.id == getattr(l, "user_id", None)), None)
+            user = next(
+                (user for user in users if user.id == getattr(l, "user_id", None)), None
+            )
             rows.append(
                 {
                     "User": user.username,
@@ -48,7 +51,5 @@ class AuditLogEventsController:
                     "Created": getattr(l, "created_at", ""),
                 }
             )
-       
+
         return pd.DataFrame(rows).sort_values(by="Created", ascending=False)
-
-

@@ -20,9 +20,10 @@ class PhefController:
     - DB queries and commands
     - Grid decoration and email HTML body
     """
+
     def __init__(self) -> None:
         self._service = ServiceTest()
-        self.be_mil_service =MilitaryService()
+        self.be_mil_service = MilitaryService()
 
     # ----- Helpers -----
     @staticmethod
@@ -100,11 +101,15 @@ class PhefController:
         if not (data.get("serialnr") or "").strip():
             return False, "Serial number is required."
 
-        ok_sbr, sbr = PhefController.parse_time_to_seconds(data.get("side_bridge_r") or "")
+        ok_sbr, sbr = PhefController.parse_time_to_seconds(
+            data.get("side_bridge_r") or ""
+        )
         if not ok_sbr:
             return False, f"Side-bridge Right: {sbr}"
 
-        ok_sbl, sbl = PhefController.parse_time_to_seconds(data.get("side_bridge_l") or "")
+        ok_sbl, sbl = PhefController.parse_time_to_seconds(
+            data.get("side_bridge_l") or ""
+        )
         if not ok_sbl:
             return False, f"Side-bridge Left: {sbl}"
 
@@ -129,7 +134,9 @@ class PhefController:
         :return: A coroutine that resolves to the list of all retrieved test sessions.
         :rtype: list
         """
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.PHEF)
+        return await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.PHEF
+        )
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -172,22 +179,28 @@ class PhefController:
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if sm is None:
                     continue
-                age = sm.age_from_birthdate() if session_date is None else sm.age_from_birthdate_and_session_date(session_date)
+                age = (
+                    sm.age_from_birthdate()
+                    if session_date is None
+                    else sm.age_from_birthdate_and_session_date(session_date)
+                )
                 run = PhefCalculator.running_result(r.running_time, age, sm.gender)
                 sbr = PhefCalculator.side_bridge_result(r.sideBridge_r, age, sm.gender)
                 sbl = PhefCalculator.side_bridge_result(r.sideBridge_l, age, sm.gender)
                 total = (run * (50 / 20.0)) + ((sbr + sbl) * (25 / 20.0))
-                data.append({
-                    "ID": r.id,
-                    "Serial": r.serial_number,
-                    "runningTime": self.format_seconds(r.running_time),
-                    "Running Score": f"{run}/20",
-                    "Sidebridge R": self.format_seconds(r.sideBridge_r),
-                    "Sidebridge R Score": f"{sbr}/20",
-                    "Sidebridge L": self.format_seconds(r.sideBridge_l),
-                    "Sidebridge L Score": f"{sbl}/20",
-                    "Totale Score": f"{total:.1f}/100",
-                })
+                data.append(
+                    {
+                        "ID": r.id,
+                        "Serial": r.serial_number,
+                        "runningTime": self.format_seconds(r.running_time),
+                        "Running Score": f"{run}/20",
+                        "Sidebridge R": self.format_seconds(r.sideBridge_r),
+                        "Sidebridge R Score": f"{sbr}/20",
+                        "Sidebridge L": self.format_seconds(r.sideBridge_l),
+                        "Sidebridge L Score": f"{sbl}/20",
+                        "Totale Score": f"{total:.1f}/100",
+                    }
+                )
             return pd.DataFrame(data)
         except Exception:
             return pd.DataFrame()
@@ -228,6 +241,7 @@ class PhefController:
 
         out = df.copy()
         if "Totale Score" in out.columns:
+
             def _fmt_total_row(row: pd.Series) -> str:
                 s = row.get("Totale Score")
                 sr = row.get("Sidebridge R Score")
@@ -240,20 +254,29 @@ class PhefController:
                 if n is None or r is None or t is None or rs is None:
                     return s
                 return f"🟥 {s}" if rs < 10 or (r + t) < 20 else f"🟩 {s}"
+
             out["Totale Score"] = out.apply(_fmt_total_row, axis=1)
 
         for col in ["Running Score", "Sidebridge R Score", "Sidebridge L Score"]:
             if col in out.columns:
+
                 def _fmt_sc(s: str):
                     n = _num(s, 20.0)
                     if n is None:
                         return s
                     return f"🟥 {s}" if n < 10 else f"🟩 {s}"
+
                 out[col] = out[col].apply(_fmt_sc)
         return out
 
     # ----- Commands -----
-    async def add_phef(self, session_id: int, payload: Dict[str, Any], military: ServiceMen | None, session: TestSession | None) -> Optional[PhefTest]:
+    async def add_phef(
+        self,
+        session_id: int,
+        payload: Dict[str, Any],
+        military: ServiceMen | None,
+        session: TestSession | None,
+    ) -> Optional[PhefTest]:
         """
         Add a PHEF (Physical Health Evaluation Framework) test to a test session.
 
@@ -277,9 +300,13 @@ class PhefController:
         p.running_time = payload["run2400_s"]
         p.sideBridge_r = payload["side_bridge_r_s"]
         p.sideBridge_l = payload["side_bridge_l_s"]
-        return await self._service.add_fitness_test_to_testSession(int(session_id), p,military,session)
+        return await self._service.add_fitness_test_to_testSession(
+            int(session_id), p, military, session
+        )
 
-    async def update_phef(self, phef_id: int, payload: Dict[str, Any]) -> Optional[PhefTest]:
+    async def update_phef(
+        self, phef_id: int, payload: Dict[str, Any]
+    ) -> Optional[PhefTest]:
         """
         Updates an existing PhefTest instance with new data and persists the updates
         using the service layer. The method processes the provided payload, assigns
@@ -303,4 +330,6 @@ class PhefController:
         return await self._service.update_fitness_test(int(phef_id), p)
 
     async def delete_phef(self, session_id: int, phef_id: int) -> bool:
-        return await self._service.delete_fitness_test_from_test_session(int(session_id), int(phef_id))
+        return await self._service.delete_fitness_test_from_test_session(
+            int(session_id), int(phef_id)
+        )

@@ -12,7 +12,9 @@ from warriorfit.ui.pages.page import Page
 class StatusTests(Page):
     def __init__(self, mil_service: Optional[MilitaryService] = None):
         super().__init__()
-        self._controller:StatusTestsController = StatusTestsController(mil_service or MilitaryService())
+        self._controller: StatusTestsController = StatusTestsController(
+            mil_service or MilitaryService()
+        )
         self.refresh_tick = reactive.Value(0)
         self._selected_serial = reactive.Value(None)
 
@@ -23,7 +25,9 @@ class StatusTests(Page):
         return ui.nav_panel(
             "PHEF Not done",
             ui.card(
-                ui.card_header(f"List of Military who did NOT executed PHEF test from current year {datetime.datetime.now().year} - {self._controller.unit_name}"),
+                ui.card_header(
+                    f"List of Military who did NOT executed PHEF test from current year {datetime.datetime.now().year} - {self._controller.unit_name}"
+                ),
                 ui.input_action_button("refresh_own_unit_status_grid", "Refresh"),
                 ui.output_data_frame("own_unit_status_grid"),
                 full_screen=False,
@@ -33,8 +37,8 @@ class StatusTests(Page):
     def server(self, input, output, session):
         @reactive.calc
         def _tick():
-             input.refresh_own_unit_status_grid()
-             return self.refresh_tick.get()
+            input.refresh_own_unit_status_grid()
+            return self.refresh_tick.get()
 
         @output
         @render.data_frame
@@ -43,6 +47,7 @@ class StatusTests(Page):
                 df = await self._controller.get_data()
             except Exception as e:
                 import pandas as pd
+
                 df = pd.DataFrame(columns=["Message"])
                 df.loc[len(df)] = [f"Error loading data: {e}"]
             return render.DataGrid(

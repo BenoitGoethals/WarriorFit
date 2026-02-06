@@ -13,13 +13,13 @@ class MilitaryService:
     that interacts with an underlying repository to manage military personnel and
     unit data.
     """
+
     def __init__(self):
         """
         Initializes the MilitaryService with a ServicemenRepository.
         """
         self._repo = ServicemenRepository()
-        self._be_mil_service=BEMILService()
-
+        self._be_mil_service = BEMILService()
 
     async def add_service_men(self, service_men):
         """
@@ -66,13 +66,14 @@ class MilitaryService:
         """
         return await self._repo.get_servicemen_by_id(ind_id)
 
-    async def get_servicemen_by_serial(self, serial: str, lazy=True)->ServiceMen|None:
+    async def get_servicemen_by_serial(
+        self, serial: str, lazy=True
+    ) -> ServiceMen | None:
 
-        sm= await self._repo.get_by_service_number(serial, lazy=lazy)
+        sm = await self._repo.get_by_service_number(serial, lazy=lazy)
         if not sm:
-           sm = await self._be_mil_service.get_be_mil_by_id(serial)
+            sm = await self._be_mil_service.get_be_mil_by_id(serial)
         return sm
-
 
     async def get_all_units(self):
         """

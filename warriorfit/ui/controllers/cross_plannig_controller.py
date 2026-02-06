@@ -22,7 +22,14 @@ class CrossPlanningController:
         self._service = ServiceCross()
 
     # --- CRUD Cross ---
-    async def create_cross(self, *, datetime_start: datetime, executed: bool = False, description: str | None = None, distance: float | None = None) :
+    async def create_cross(
+        self,
+        *,
+        datetime_start: datetime,
+        executed: bool = False,
+        description: str | None = None,
+        distance: float | None = None,
+    ):
         """
         Creates a new cross instance and schedules it for storage. Returns a view of the created cross.
 
@@ -40,7 +47,12 @@ class CrossPlanningController:
         :return: A dictionary representing the view of the created cross object.
         :rtype: dict
         """
-        cross = Cross(datetime_start=datetime_start, executed=executed, description=description, distance=distance)
+        cross = Cross(
+            datetime_start=datetime_start,
+            executed=executed,
+            description=description,
+            distance=distance,
+        )
         await self._service.add(cross)
         # Ensure we return the actual dict, not a coroutine or None
         return await self.get_cross_view(cross.id)
@@ -68,12 +80,19 @@ class CrossPlanningController:
                 "executed": c.executed,
                 "description": c.description,
                 "distance": c.distance,
-
             }
             for c in crosses
         ]
 
-    async def update_cross(self, cross_id: int, *, datetime_start: datetime | None = None, executed: bool | None = None, description: str | None = None, distance: int | None = None) -> Dict:
+    async def update_cross(
+        self,
+        cross_id: int,
+        *,
+        datetime_start: datetime | None = None,
+        executed: bool | None = None,
+        description: str | None = None,
+        distance: int | None = None,
+    ) -> Dict:
         """
         Updates the details of a specified cross. This method allows modifying attributes
         such as the start time, execution status, description, or distance of the cross,
@@ -88,7 +107,13 @@ class CrossPlanningController:
         :return: A dictionary containing the updated cross details.
         :rtype: Dict
         """
-        return await self.set_cross_details(cross_id, datetime_start=datetime_start, executed=executed, description=description, distance=distance)
+        return await self.set_cross_details(
+            cross_id,
+            datetime_start=datetime_start,
+            executed=executed,
+            description=description,
+            distance=distance,
+        )
 
     def delete_cross(self, cross_id: int) -> None:
         """
@@ -137,7 +162,7 @@ class CrossPlanningController:
             and distance.
         :rtype: Dict
         """
-        cross =  await self.get_cross(cross_id)
+        cross = await self.get_cross(cross_id)
 
         return {
             "id": cross.id,
@@ -145,11 +170,7 @@ class CrossPlanningController:
             "executed": cross.executed,
             "description": cross.description,
             "distance": cross.distance,
-
-
-
         }
-
 
     async def set_cross_details(
         self,
@@ -190,4 +211,3 @@ class CrossPlanningController:
         await self._service.update_cross(cross)
 
         return await self.get_cross_view(cross_id)
-

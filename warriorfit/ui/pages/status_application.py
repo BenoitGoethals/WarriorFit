@@ -1,6 +1,8 @@
 from shiny import ui, render, reactive
 from warriorfit.data.repositories.abc_repository import ABCRepository
-from warriorfit.ui.controllers.StatusApplicationController import StatusApplicationController
+from warriorfit.ui.controllers.StatusApplicationController import (
+    StatusApplicationController,
+)
 from warriorfit.ui.pages.page import Page
 
 
@@ -8,7 +10,7 @@ class StatusApplicationPage(Page):
 
     def __init__(self):
         super().__init__()
-        self._controller=StatusApplicationController()
+        self._controller = StatusApplicationController()
 
     def refresh(self):
         pass
@@ -20,19 +22,19 @@ class StatusApplicationPage(Page):
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Database Connectivity"),
-                    ui.output_text("db_status_display")
+                    ui.output_text("db_status_display"),
                 ),
                 ui.card(
                     ui.card_header("HR Service Ops"),
-                    ui.output_text("hr_status_display")
+                    ui.output_text("hr_status_display"),
                 ),
                 ui.card(
                     ui.card_header("Mail Server Status"),
-                    ui.output_text("mail_server_status_display")
+                    ui.output_text("mail_server_status_display"),
                 ),
                 ui.card(
                     ui.card_header("Server Status"),
-                    ui.output_text("server_status_display")
+                    ui.output_text("server_status_display"),
                 ),
             ),
             ui.layout_columns(
@@ -40,10 +42,10 @@ class StatusApplicationPage(Page):
                     ui.card_header("Log File"),
                     ui.div(
                         ui.output_text_verbatim("lof_file"),
-                        style="max-height: 600px; overflow-y: auto;"
-                    )
+                        style="max-height: 600px; overflow-y: auto;",
+                    ),
                 ),
-            )
+            ),
         )
 
     def server(self, input, output, session):
@@ -55,7 +57,6 @@ class StatusApplicationPage(Page):
         @render.text
         async def db_status_display():
             return await self._controller.status_db()
-
 
         @output
         @render.text
@@ -72,14 +73,12 @@ class StatusApplicationPage(Page):
         async def server_status_display():
             return await self._controller.status_server()
 
-
         def check_log_modified():
             return self._controller.check_log_modified()
 
         @reactive.poll(check_log_modified, 2.0)
         async def read_log():
             return await self._controller.load_log_application()
-
 
         @output
         @render.text

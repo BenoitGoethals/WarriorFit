@@ -18,7 +18,10 @@ class FunctionalController:
     - DB queries and commands
     - Presentation helpers (grid decoration, mail body)
     """
-    def __init__(self, ) -> None:
+
+    def __init__(
+        self,
+    ) -> None:
         self._service = ServiceTest()
         self.be_mil_service = MilitaryService()
 
@@ -58,7 +61,9 @@ class FunctionalController:
 
     # ----- Queries (only here) -----
     async def load_sessions(self):
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.FUNCTIONAL)
+        return await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.FUNCTIONAL
+        )
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -94,21 +99,29 @@ class FunctionalController:
                     continue
                 gender = self.normalize_gender(sm.gender)
                 age = sm.age_from_birthdate()
-                pull = FunctionalCalculator.get_score_pullup(gender, age, int(r.pull_ups))
-                situp = FunctionalCalculator.get_score_situp(gender, age, int(r.sit_ups))
-                push = FunctionalCalculator.get_score_pushup(gender, age, int(r.push_ups))
+                pull = FunctionalCalculator.get_score_pullup(
+                    gender, age, int(r.pull_ups)
+                )
+                situp = FunctionalCalculator.get_score_situp(
+                    gender, age, int(r.sit_ups)
+                )
+                push = FunctionalCalculator.get_score_pushup(
+                    gender, age, int(r.push_ups)
+                )
                 total = ((pull + situp + push) / 60) * 100
-                data.append({
-                    "ID": r.id,
-                    "Serial": r.serial_number,
-                    "Push-ups": r.push_ups,
-                    "Push-ups-score": push,
-                    "Sit-ups": r.sit_ups,
-                    "Sit-ups-score": situp,
-                    "Pull-ups": r.pull_ups,
-                    "Pull-ups-score": pull,
-                    "Total Score": total,
-                })
+                data.append(
+                    {
+                        "ID": r.id,
+                        "Serial": r.serial_number,
+                        "Push-ups": r.push_ups,
+                        "Push-ups-score": push,
+                        "Sit-ups": r.sit_ups,
+                        "Sit-ups-score": situp,
+                        "Pull-ups": r.pull_ups,
+                        "Pull-ups-score": pull,
+                        "Total Score": total,
+                    }
+                )
             return pd.DataFrame(data)
         except Exception:
             return pd.DataFrame()
@@ -133,6 +146,7 @@ class FunctionalController:
             return df
         out = df.copy()
         if "Total Score" in out.columns:
+
             def _fmt(v, row_idx):
                 try:
                     n = float(v)
@@ -142,7 +156,9 @@ class FunctionalController:
                     sit_score = float(row.get("Sit-ups-score", 0))
                     pull_score = float(row.get("Pull-ups-score", 0))
 
-                    all_scores_valid = (push_score > 10 and sit_score > 10 and pull_score > 10)
+                    all_scores_valid = (
+                        push_score > 10 and sit_score > 10 and pull_score > 10
+                    )
                     passes = n >= 50 and all_scores_valid
 
                     return f"🟩 {n:.0f}" if passes else f"❌ {n:.0f}"
@@ -150,11 +166,22 @@ class FunctionalController:
                     return v
 
             out["Total Score"] = out["Total Score"].apply(
-                lambda v: _fmt(v, out[out["Total Score"] == v].index[0]) if v in out["Total Score"].values else v)
+                lambda v: (
+                    _fmt(v, out[out["Total Score"] == v].index[0])
+                    if v in out["Total Score"].values
+                    else v
+                )
+            )
         return out
 
     # ----- Commands (only here) -----
-    async def add_functional(self, session_id: int, payload: Dict[str, Any],session:TestSession,military:ServiceMen) -> Optional[FunctionalTest]:
+    async def add_functional(
+        self,
+        session_id: int,
+        payload: Dict[str, Any],
+        session: TestSession,
+        military: ServiceMen,
+    ) -> Optional[FunctionalTest]:
         """
         Add a functional test to the specified test session.
 
@@ -183,9 +210,13 @@ class FunctionalController:
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]
         ft.pull_ups = payload["pull_ups"]
-        return await self._service.add_fitness_test_to_testSession(int(session_id), ft,session=session,military=military)
+        return await self._service.add_fitness_test_to_testSession(
+            int(session_id), ft, session=session, military=military
+        )
 
-    async def update_functional(self, functional_id: int, payload: Dict[str, Any]) -> Optional[FunctionalTest]:
+    async def update_functional(
+        self, functional_id: int, payload: Dict[str, Any]
+    ) -> Optional[FunctionalTest]:
         """
         Updates the functional fitness test with the provided parameters.
 
@@ -218,5 +249,6 @@ class FunctionalController:
         :param functional_id: Identifier of the functional test to be deleted
         :return: Boolean indicating the success of the deletion operation
         """
-        return await self._service.delete_fitness_test_from_test_session(int(session_id), int(functional_id))
-
+        return await self._service.delete_fitness_test_from_test_session(
+            int(session_id), int(functional_id)
+        )

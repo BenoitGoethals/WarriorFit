@@ -42,6 +42,7 @@ class PageSpec:
     A page definition: what it is (UI + server) and who may see it.
     This keeps "roles" separate from "pages".
     """
+
     tab: str
     group: str  # "root" | "Psychical Tests" | "Cross/Runs" | "Admin"
     ui_factory: Callable[[], Optional[Any]]
@@ -53,6 +54,7 @@ class FitnessWarriorApp:
     """
     Main application class for the Fitness Warrior app.
     """
+
     APP_TITLE = "Fitness Warrior"
     DEFAULT_PORT = 8000
     _broker = Broker()
@@ -85,7 +87,9 @@ class FitnessWarriorApp:
         log_dir = project_root / "logs"
         log_dir.mkdir(exist_ok=True)
 
-        config_path = project_root / "warriorfit" / "config" / "logging_configuration.yml"
+        config_path = (
+            project_root / "warriorfit" / "config" / "logging_configuration.yml"
+        )
 
         if config_path.exists():
             try:
@@ -417,28 +421,36 @@ class FitnessWarriorApp:
             if show_calendar.get():
                 return ui.div(
                     ui.div(
-                        ui.h3("Calendar", style="display: inline-block; margin-right: 20px;"),
-                        ui.input_action_button("close_calendar", "Close", class_="btn btn-secondary"),
-                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;"
+                        ui.h3(
+                            "Calendar",
+                            style="display: inline-block; margin-right: 20px;",
+                        ),
+                        ui.input_action_button(
+                            "close_calendar", "Close", class_="btn btn-secondary"
+                        ),
+                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;",
                     ),
-                    ui.div(
-                        calendar_events.get_ui(),
-                        style="padding: 15px;"
-                    ),
-                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;"
+                    ui.div(calendar_events.get_ui(), style="padding: 15px;"),
+                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;",
                 )
             elif show_personal_calendar.get():
                 return ui.div(
                     ui.div(
-                        ui.h3("Personal Calendar", style="display: inline-block; margin-right: 20px;"),
-                        ui.input_action_button("close_personal_calendar", "Close", class_="btn btn-secondary"),
-                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;"
+                        ui.h3(
+                            "Personal Calendar",
+                            style="display: inline-block; margin-right: 20px;",
+                        ),
+                        ui.input_action_button(
+                            "close_personal_calendar",
+                            "Close",
+                            class_="btn btn-secondary",
+                        ),
+                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;",
                     ),
                     ui.div(
-                        calendar_events.get_ui(all_test=False),
-                        style="padding: 15px;"
+                        calendar_events.get_ui(all_test=False), style="padding: 15px;"
                     ),
-                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;"
+                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;",
                 )
             else:
                 _ = nav_version.get()
@@ -459,9 +471,7 @@ class FitnessWarriorApp:
 
         def _build_menu(group: str, pages_for_role: list[PageSpec]) -> Optional[ui.Tag]:
             children = [
-                _safe_panel(p.ui_factory())
-                for p in pages_for_role
-                if p.group == group
+                _safe_panel(p.ui_factory()) for p in pages_for_role if p.group == group
             ]
             children = [c for c in children if c is not None]
             return ui.nav_menu(group, *children) if children else None
@@ -487,7 +497,10 @@ class FitnessWarriorApp:
             nav_items.append(ui.nav_spacer())
             nav_items.append(
                 ui.nav_control(
-                    ui.div(ui.output_text("login_user"), style="display: flex; align-items: center; height: 100%;")
+                    ui.div(
+                        ui.output_text("login_user"),
+                        style="display: flex; align-items: center; height: 100%;",
+                    )
                 )
             )
             nav_items.append(
@@ -501,10 +514,16 @@ class FitnessWarriorApp:
             )
             nav_items.append(
                 ui.nav_control(
-                    ui.input_action_button("open_calendar_modal_global", "Open Calendar", class_="btn btn-primary")
+                    ui.input_action_button(
+                        "open_calendar_modal_global",
+                        "Open Calendar",
+                        class_="btn btn-primary",
+                    )
                 )
             )
-            nav_items.append(ui.nav_control(ui.input_action_button("logout_btn", "Logout")))
+            nav_items.append(
+                ui.nav_control(ui.input_action_button("logout_btn", "Logout"))
+            )
 
             nav_items = [i for i in nav_items if i is not None]
             return ui.page_navbar(*nav_items, id="main_nav")
@@ -527,7 +546,10 @@ class FitnessWarriorApp:
                 ui.input_text("username_login", "Username"),
                 ui.input_password("password_login", "Password"),
                 ui.input_action_button("handle_login", "Login"),
-                ui.div(ui.output_text("login_status", inline=True), style="color: red; font-weight: bold;"),
+                ui.div(
+                    ui.output_text("login_status", inline=True),
+                    style="color: red; font-weight: bold;",
+                ),
             )
             ui.modal_show(ui.modal(login, easy_close=False, size="m", footer=None))
 
@@ -541,10 +563,14 @@ class FitnessWarriorApp:
                 if await user_service.check_user(username_login, password_login):
                     user = await user_service.get_user_by_username(username_login)
                     if user.is_active is False:
-                        status_text.set("Your account is disabled. Please contact your administrator.")
+                        status_text.set(
+                            "Your account is disabled. Please contact your administrator."
+                        )
                         return
                     UserStore.set_user(user)
-                    await user_service.add_audit_log(f"User {username_login} logged in", "login")
+                    await user_service.add_audit_log(
+                        f"User {username_login} logged in", "login"
+                    )
                     _set_session_user(user)
                     login_user_text.set(
                         f"User: {username_login}  Role: {user.role}  Unit: {ApplicationConfig().own_unit}"
@@ -578,7 +604,9 @@ class FitnessWarriorApp:
                 ui.notification_show("You have been logged out.", type="message")
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
+                    ui=ui.tags.script(
+                        "setTimeout(function(){ location.reload(); }, 100);"
+                    ),
                 )
 
         last_activity = reactive.Value(time.time())
@@ -625,10 +653,15 @@ class FitnessWarriorApp:
             if time.time() - ts >= 600:
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
-                ui.notification_show("You were logged out due to 10 minutes of inactivity.", type="warning")
+                ui.notification_show(
+                    "You were logged out due to 10 minutes of inactivity.",
+                    type="warning",
+                )
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
+                    ui=ui.tags.script(
+                        "setTimeout(function(){ location.reload(); }, 100);"
+                    ),
                 )
 
 

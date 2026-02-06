@@ -6,6 +6,7 @@ class Formatter:
     in seconds, into a human-readable string in the format ``HH:MM:SS``.
     It is useful for displaying time in an easily interpretable format.
     """
+
     @staticmethod
     def format_time(seconds):
         if seconds is None:

@@ -21,12 +21,12 @@ class StatusTestsController:
     :ivar unit_name: Name of the unit as defined in the application configuration.
     :type unit_name: str
     """
+
     def __init__(self, mil_service: Optional[MilitaryService] = None):
         self._mil_service = mil_service or MilitaryService()
         self.data_collector = DataCollector()
         self.unit_name: str = ApplicationConfig().own_unit
 
     async def get_data(self) -> pd.DataFrame:
-       data = await DataCollector().collect_all_mil_from_own_unit_not_executed_phefs()
-       return data
-
+        data = await DataCollector().collect_all_mil_from_own_unit_not_executed_phefs()
+        return data

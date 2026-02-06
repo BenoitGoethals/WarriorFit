@@ -47,7 +47,7 @@ class ReportGeneratorPdf(GeneratorReport):
         }
 
     async def generate_report(
-            self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool
+        self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool
     ):
         """Generate a report based on the specified type using dictionary dispatch."""
         generator = self._report_generators.get(report_type)
@@ -96,14 +96,16 @@ class ReportGeneratorPdf(GeneratorReport):
                 runner.serial_number, lazy=False
             )
             if runner_det:
-                rows.append({
-                    "order": None,
-                    "serial_number": runner.serial_number or "",
-                    "Name": f"{runner_det.first_name} {runner_det.last_name}",
-                    "running_time": runner.running_time,
-                    "Age": runner_det.age_from_birthdate() or "",
-                    "Unit": runner_det.unit or "",
-                })
+                rows.append(
+                    {
+                        "order": None,
+                        "serial_number": runner.serial_number or "",
+                        "Name": f"{runner_det.first_name} {runner_det.last_name}",
+                        "running_time": runner.running_time,
+                        "Age": runner_det.age_from_birthdate() or "",
+                        "Unit": runner_det.unit or "",
+                    }
+                )
         return rows
 
     @staticmethod
@@ -111,7 +113,10 @@ class ReportGeneratorPdf(GeneratorReport):
         """Sorts runners by time and assigns ranking order."""
         sorted_rows = sorted(
             rows,
-            key=lambda r: (r.get("running_time") is None, r.get("running_time") or float("inf")),
+            key=lambda r: (
+                r.get("running_time") is None,
+                r.get("running_time") or float("inf"),
+            ),
         )
         for idx, row in enumerate(sorted_rows, start=1):
             row["order"] = idx
@@ -221,24 +226,26 @@ class ReportGeneratorPdf(GeneratorReport):
 
     def _create_table_style(self, deps: Dict):
         """Creates a standardized table style for PDF reports."""
-        return deps["TableStyle"]([
-            ("BACKGROUND", (0, 0), (-1, 0), deps["colors"].lightgrey),
-            ("TEXTCOLOR", (0, 0), (-1, 0), deps["colors"].black),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("INNERGRID", (0, 0), (-1, -1), 0.25, deps["colors"].grey),
-            ("BOX", (0, 0), (-1, -1), 0.5, deps["colors"].black),
-        ])
+        return deps["TableStyle"](
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), deps["colors"].lightgrey),
+                ("TEXTCOLOR", (0, 0), (-1, 0), deps["colors"].black),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("INNERGRID", (0, 0), (-1, -1), 0.25, deps["colors"].grey),
+                ("BOX", (0, 0), (-1, -1), 0.5, deps["colors"].black),
+            ]
+        )
 
     def _build_pdf(
-            self,
-            rows: List[dict],
-            report_name: str,
-            title: str,
-            file_suffix: str,
-            headers: List[str],
-            row_builder: Callable[[dict], List[Any]],
+        self,
+        rows: List[dict],
+        report_name: str,
+        title: str,
+        file_suffix: str,
+        headers: List[str],
+        row_builder: Callable[[dict], List[Any]],
     ) -> Optional[str]:
         """Builds a PDF file from structured data with standardized formatting."""
         if not rows:
@@ -263,7 +270,7 @@ class ReportGeneratorPdf(GeneratorReport):
             # Convert any string with markup to Paragraph for colored text
             processed_row = []
             for cell in row_data:
-                if isinstance(cell, str) and '<font' in cell:
+                if isinstance(cell, str) and "<font" in cell:
                     processed_row.append(deps["Paragraph"](cell, styles["Normal"]))
                 else:
                     processed_row.append(cell)
@@ -281,7 +288,7 @@ class ReportGeneratorPdf(GeneratorReport):
         return [self._fmt_date(r["session_date"])] + list(fields)
 
     async def generate_phef_report(
-            self, report_name: str, own_unit: bool, this_year: bool
+        self, report_name: str, own_unit: bool, this_year: bool
     ):
         """
         Generates a PHEF (Performance Health Evaluation Framework) report containing the
@@ -312,7 +319,7 @@ class ReportGeneratorPdf(GeneratorReport):
         )
 
     async def generate_functional_report(
-            self, report_name: str, own_unit: bool, this_year: bool
+        self, report_name: str, own_unit: bool, this_year: bool
     ):
         """
         Generates a functional report based on passed and failed test data.
@@ -322,7 +329,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :param this_year: Flag indicating whether to filter data for the current year.
         :return: A dictionary containing file paths to the generated failed and passed reports.
         """
-        failed, headers, passed = await self.calculate_functional_score(own_unit, this_year)
+        failed, headers, passed = await self.calculate_functional_score(
+            own_unit, this_year
+        )
 
         def row_builder(r: dict) -> List[Any]:
             return [
@@ -339,7 +348,7 @@ class ReportGeneratorPdf(GeneratorReport):
         )
 
     async def generate_combat_report(
-            self, report_name: str, own_unit: bool, this_year: bool
+        self, report_name: str, own_unit: bool, this_year: bool
     ):
         """
         Generates a combat report by calculating combat scores, segregating data into
@@ -376,7 +385,7 @@ class ReportGeneratorPdf(GeneratorReport):
         )
 
     async def generate_swimming_report(
-            self, report_name: str, own_unit: bool, this_year: bool
+        self, report_name: str, own_unit: bool, this_year: bool
     ):
         """
         Generates a swimming test report in PDF format for failed and passed tests.
@@ -400,13 +409,13 @@ class ReportGeneratorPdf(GeneratorReport):
         )
 
     def _generate_pass_fail_reports(
-            self,
-            report_name: str,
-            test_type: str,
-            passed: List[dict],
-            failed: List[dict],
-            headers: List[str],
-            row_builder: Callable[[dict], List[Any]],
+        self,
+        report_name: str,
+        test_type: str,
+        passed: List[dict],
+        failed: List[dict],
+        headers: List[str],
+        row_builder: Callable[[dict], List[Any]],
     ) -> Dict[str, Optional[str]]:
         """
         Generates both passed and failed PDF reports for a given test type.
@@ -445,7 +454,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :param serial_number: A string representing the serviceman's serial number.
         :return: The file path to the generated PDF report as a string.
         """
-        return await self._generate_individual_report(serial_number, current_year_only=False)
+        return await self._generate_individual_report(
+            serial_number, current_year_only=False
+        )
 
     async def generate_ind_report_current_year(self, serial_number: str):
         """
@@ -455,9 +466,13 @@ class ReportGeneratorPdf(GeneratorReport):
         :param serial_number: A string representing the serviceman's serial number.
         :return: The file path to the generated PDF report as a string.
         """
-        return await self._generate_individual_report(serial_number, current_year_only=True)
+        return await self._generate_individual_report(
+            serial_number, current_year_only=True
+        )
 
-    async def _generate_individual_report(self, serial_number: str, current_year_only: bool):
+    async def _generate_individual_report(
+        self, serial_number: str, current_year_only: bool
+    ):
         """
         Core method to generate individual reports with or without year filtering.
 
@@ -466,7 +481,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :return: Path to generated PDF file.
         """
         current_year = datetime.now().year
-        serviceman = await self.be_mil_service.get_servicemen_by_serial(serial_number, lazy=False)
+        serviceman = await self.be_mil_service.get_servicemen_by_serial(
+            serial_number, lazy=False
+        )
 
         deps = self._ensure_pdf_deps()
         year_suffix = f"_{current_year}" if current_year_only else ""
@@ -502,28 +519,64 @@ class ReportGeneratorPdf(GeneratorReport):
 
     def _build_serviceman_info(self, serviceman, styles, deps) -> List:
         """Builds serviceman information paragraph for PDF."""
-        return [deps["Paragraph"](
-            f"Name: {serviceman.first_name} {serviceman.last_name}\n"
-            f"Serial: {serviceman.service_number}\n"
-            f"Unit: {serviceman.unit}\n"
-            f"Age: {serviceman.age_from_birthdate()}",
-            styles["Normal"]
-        )]
+        return [
+            deps["Paragraph"](
+                f"Name: {serviceman.first_name} {serviceman.last_name}\n"
+                f"Serial: {serviceman.service_number}\n"
+                f"Unit: {serviceman.unit}\n"
+                f"Age: {serviceman.age_from_birthdate()}",
+                styles["Normal"],
+            )
+        ]
 
-    def _add_test_tables_to_story(self, story: List, data_df: pd.DataFrame, deps: Dict, styles):
+    def _add_test_tables_to_story(
+        self, story: List, data_df: pd.DataFrame, deps: Dict, styles
+    ):
         """Adds all test type tables to the PDF story."""
         test_configs = [
-            ("PHEF Tests", "PHEF", ["Date", "Run", "Side R", "Side L", "Total"], self._phef_mapper),
-            ("Functional Tests", "Functional", ["Date", "Push-Ups", "Sit-Ups", "Pull-Ups", "Total"], self._func_mapper),
-            ("Combat Tests", "Combat", ["Date", "Run Time", "Rope", "Obstacle"], self._combat_mapper),
+            (
+                "PHEF Tests",
+                "PHEF",
+                ["Date", "Run", "Side R", "Side L", "Total"],
+                self._phef_mapper,
+            ),
+            (
+                "Functional Tests",
+                "Functional",
+                ["Date", "Push-Ups", "Sit-Ups", "Pull-Ups", "Total"],
+                self._func_mapper,
+            ),
+            (
+                "Combat Tests",
+                "Combat",
+                ["Date", "Run Time", "Rope", "Obstacle"],
+                self._combat_mapper,
+            ),
             ("Swimming Tests", "Swimming", ["Date", "Result"], self._swim_mapper),
             ("Mars Tests", "Mars", ["Date", "Distance", "Result"], self._mars_mapper),
         ]
 
         for title, test_type, headers, mapper in test_configs:
-            self._process_table(story, title, self._get_type_data(data_df, test_type), headers, mapper, deps, styles)
+            self._process_table(
+                story,
+                title,
+                self._get_type_data(data_df, test_type),
+                headers,
+                mapper,
+                deps,
+                styles,
+            )
 
-    def _process_table(self, story: List, title: str, data, headers: List[str], row_mapper: Callable, deps: Dict, styles):
+    def _process_table(
+        self,
+        story: List,
+        title: str,
+        data,
+        headers: List[str],
+        row_mapper: Callable,
+        deps: Dict,
+        styles,
+    ):
         """Processes and adds a single test type table to the story."""
         if data is None:
             return
@@ -551,7 +604,7 @@ class ReportGeneratorPdf(GeneratorReport):
             # Convert any string with markup to Paragraph for colored text
             processed_row = []
             for cell in row_data:
-                if isinstance(cell, str) and '<font' in cell:
+                if isinstance(cell, str) and "<font" in cell:
                     processed_row.append(deps["Paragraph"](cell, styles["Normal"]))
                 else:
                     processed_row.append(cell)
@@ -577,7 +630,7 @@ class ReportGeneratorPdf(GeneratorReport):
             self._fmt_time(float(r.get("Run") or 0)),
             self._fmt_time(float(r.get("SBR") or 0)),
             self._fmt_time(float(r.get("SBL") or 0)),
-            r.get("Total", "-")
+            r.get("Total", "-"),
         ]
 
     @staticmethod
@@ -588,7 +641,7 @@ class ReportGeneratorPdf(GeneratorReport):
             str(r.get("PU", "-")),
             str(r.get("SU", "-")),
             str(r.get("PLU", "-")),
-            str(r.get("Total", "-"))
+            str(r.get("Total", "-")),
         ]
 
     def _combat_mapper(self, r: dict) -> List[Any]:
@@ -597,27 +650,33 @@ class ReportGeneratorPdf(GeneratorReport):
             r.get("Date", "-"),
             self._fmt_time(float(r.get("Speed") or 0)),
             r.get("Rop_scores", "-"),
-            r.get("Obs_scores", "-")
+            r.get("Obs_scores", "-"),
         ]
 
     def _swim_mapper(self, r: dict) -> List[Any]:
         """Maps Swimming test record to table row."""
-        return [
-            r.get("Date", "-"),
-            self._fmt_pass_fail(r.get("Result", "-"))
-        ]
+        return [r.get("Date", "-"), self._fmt_pass_fail(r.get("Result", "-"))]
 
     def _mars_mapper(self, r: dict) -> List[Any]:
         """Maps Mars test record to table row."""
         return [
             r.get("Date", "-"),
             r.get("Details", "-"),
-            self._fmt_pass_fail(r.get("Result", "-"))
+            self._fmt_pass_fail(r.get("Result", "-")),
         ]
 
     def _create_test_results_table(self, df: pd.DataFrame, deps: Dict):
         """Creates a table with test results for unit members."""
-        headers = ["Rank", "Serial", "Name", "Phef", "Combat", "Swimming", "Functional", "Mars"]
+        headers = [
+            "Rank",
+            "Serial",
+            "Name",
+            "Phef",
+            "Combat",
+            "Swimming",
+            "Functional",
+            "Mars",
+        ]
         df_mapped = df.rename(columns={"Service Number": "Serial", "PHEF": "Phef"})
         for h in headers:
             if h not in df_mapped.columns:
@@ -660,13 +719,11 @@ class ReportGeneratorPdf(GeneratorReport):
 if __name__ == "__main__":
     import asyncio
 
-
     async def main():
         gem = ReportGeneratorPdf()
         # await gem.generate_run_report("run", 1)
         # await gem.generate_ind_report_current_year("BE-20250001")
         await gem.generate_total_report_current_year_own_unit()
-
 
     #  await gem.generate_report("tstasd", ReportType.COMBAT,True,True)
     # await gem.generate_report( "tstwe", ReportType.SWIMMING,True,True)
