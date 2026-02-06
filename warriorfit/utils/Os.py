@@ -27,6 +27,21 @@ class Os:
 
     @staticmethod
     def is_alive(host)-> bool:
+        """
+        Checks the reachability of a given host by sending ICMP ping requests.
+
+        This method attempts to ping the specified host using a timeout and a
+        fixed number of ping attempts. If the host responds successfully to
+        the ping requests, the method returns True. Otherwise, it will return
+        False. This is a static utility method, making it suitable for quick
+        checks without initializing a class instance.
+
+        :param host: The hostname or IP address of the target to check for reachability.
+        :type host: str
+        :return: True if the host responds successfully to the ping request,
+            False otherwise.
+        :rtype: bool
+        """
         try:
             response = ping(host, count=2, timeout=1)
         except (socket.gaierror, RuntimeError):
