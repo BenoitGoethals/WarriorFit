@@ -18,12 +18,11 @@ from warriorfit.services.service_test import ServiceTest
 
 def _output_dir() -> str:
 
-    path= ApplicationConfig().pdf_output_path
+    path = ApplicationConfig().pdf_output_path
     if path:
         return path
     else:
         return os.getcwd()
-
 
 
 class GeneratorReport(ABC):
@@ -40,6 +39,7 @@ class GeneratorReport(ABC):
         as retrieving military unit data or servicemen details.
     :type be_mil_service: MilitaryService
     """
+
     def __init__(self):
         self.be_mil_service = MilitaryService()
         self._service = ServiceTest()
@@ -103,9 +103,8 @@ class GeneratorReport(ABC):
                     test.running_time, sm.age_from_birthdate(), sm.gender
                 )
                 total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
-                phef_passed=(score_r + score_l) >= 20 and score_run >= 10
+                phef_passed = (score_r + score_l) >= 20 and score_run >= 10
                 row = {
-
                     "session_date": getattr(sess, "datetime_start", None),
                     "serial": getattr(test, "serial_number", ""),
                     "run_score": score_run,
@@ -119,7 +118,6 @@ class GeneratorReport(ABC):
                 (passed if phef_passed else failed).append(row)
 
         headers = [
-
             "Date",
             "Serial",
             "Run (pts)",
@@ -293,12 +291,11 @@ class GeneratorReport(ABC):
                         continue
                 ok = bool(getattr(t, "swim_paased", False))
                 row = {
-
                     "session_date": getattr(sess, "datetime_start", None),
                     "serial": getattr(t, "serial_number", ""),
                     "result": "Passed" if ok else "Failed",
                 }
                 (passed if ok else failed).append(row)
 
-        headers = [ "Date", "Serial", "Result"]
+        headers = ["Date", "Serial", "Result"]
         return failed, headers, passed

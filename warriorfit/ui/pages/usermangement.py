@@ -2,7 +2,10 @@
 from __future__ import annotations
 import pandas as pd
 from shiny import ui, render, reactive
-from warriorfit.ui.controllers.usermanagement_controller import UserManagementController, UserForm
+from warriorfit.ui.controllers.usermanagement_controller import (
+    UserManagementController,
+    UserForm,
+)
 from warriorfit.ui.pages.page import Page
 
 
@@ -16,8 +19,6 @@ class UserManagementPage(Page):
         self.status = reactive.Value("Ready.")
         self.selected_serial = reactive.Value(None)
         self.selected_id = reactive.Value(0)
-
-
 
     def refresh(self):
         pass
@@ -34,8 +35,13 @@ class UserManagementPage(Page):
                 ui.card(
                     ui.card_header("Create / Edit User"),
                     ui.input_text("um_serial", "Serial Number"),
-                    ui.input_action_button("um_serial_search_btn", "🔍 Search own Unit", class_="btn btn-lm",
-                                           style="margin-top: 5px;", width="250px"),
+                    ui.input_action_button(
+                        "um_serial_search_btn",
+                        "🔍 Search own Unit",
+                        class_="btn btn-lm",
+                        style="margin-top: 5px;",
+                        width="250px",
+                    ),
                     ui.input_text("um_username", "Username"),
                     ui.input_password("um_password", "Password"),
                     ui.input_text("um_email", "Email"),
@@ -47,10 +53,20 @@ class UserManagementPage(Page):
                     ui.input_checkbox("um_is_active", "Active"),
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_action_button("um_create_btn", "Create", class_="btn-primary w-100"),
-                        ui.input_action_button("um_update_btn", "Update", class_="btn-warning w-100"),
-                        ui.input_action_button("um_clear_btn", "Clear Form",  class_="btn-secondary w-100"),
-                        ui.input_action_button("um_delete_btn", "Delete Selected", class_="btn-secondary w-100"),
+                        ui.input_action_button(
+                            "um_create_btn", "Create", class_="btn-primary w-100"
+                        ),
+                        ui.input_action_button(
+                            "um_update_btn", "Update", class_="btn-warning w-100"
+                        ),
+                        ui.input_action_button(
+                            "um_clear_btn", "Clear Form", class_="btn-secondary w-100"
+                        ),
+                        ui.input_action_button(
+                            "um_delete_btn",
+                            "Delete Selected",
+                            class_="btn-secondary w-100",
+                        ),
                         col_widths=(4,),
                     ),
                     ui.br(),
@@ -70,8 +86,7 @@ class UserManagementPage(Page):
             password=(input_form.um_password() or "").strip(),
             email=(input_form.um_email() or "").strip(),
             role=(input_form.um_role() or "").strip(),
-            is_active=(input_form.um_is_active())
-
+            is_active=(input_form.um_is_active()),
         )
 
     def _write_form(self, session, u: dict):
@@ -84,8 +99,18 @@ class UserManagementPage(Page):
 
     def _clear_form(self, session):
         self.selected_serial.set(None)
-        #self.selected_id.set(0)
-        self._write_form(session, {"serial": "", "username": "", "password": "", "email": "", "role": "", "is_active": ""})
+        # self.selected_id.set(0)
+        self._write_form(
+            session,
+            {
+                "serial": "",
+                "username": "",
+                "password": "",
+                "email": "",
+                "role": "",
+                "is_active": "",
+            },
+        )
 
     def server(self, input, output, session):
 
@@ -118,7 +143,9 @@ class UserManagementPage(Page):
                     row_idx = indices[0]
                     row = df.iloc[row_idx]
                     ui.update_text("um_serial", value=str(row["service_number"]))
-                    ui.update_text("um_username", value=row["first_name"]+row["last_name"])
+                    ui.update_text(
+                        "um_username", value=row["first_name"] + row["last_name"]
+                    )
                     ui.update_text("um_email", value=row["mail"])
 
                     ui.modal_remove()
@@ -127,7 +154,15 @@ class UserManagementPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender", "mail"])
+                return pd.DataFrame(
+                    columns=[
+                        "service_number",
+                        "first_name",
+                        "last_name",
+                        "gender",
+                        "mail",
+                    ]
+                )
 
             df = pd.DataFrame(
                 [
@@ -136,7 +171,7 @@ class UserManagementPage(Page):
                         "first_name": s.first_name,
                         "last_name": s.last_name,
                         "gender": s.gender,
-                        "mail": s.mail
+                        "mail": s.mail,
                     }
                     for s in servicemen
                 ]
@@ -162,7 +197,9 @@ class UserManagementPage(Page):
             if to_drop:
                 df = df.drop(columns=to_drop)
 
-            return render.DataGrid(df, filters=True, selection_mode="rows", width="100%")
+            return render.DataGrid(
+                df, filters=True, selection_mode="rows", width="100%"
+            )
 
         @output
         @render.text
@@ -177,7 +214,16 @@ class UserManagementPage(Page):
             row = df.iloc[row_idx]
             serial = row[self.COLUMN_SERIAL]
             self.selected_serial.set(serial)
-            self.controller.set_selected_user(UserForm(serial=row[self.COLUMN_SERIAL], username=row.get("Username", ""), email=row.get("Email", ""), role=row.get("Role", ""),password=row.get("Password", ""), is_active=row.get("Active", "")))
+            self.controller.set_selected_user(
+                UserForm(
+                    serial=row[self.COLUMN_SERIAL],
+                    username=row.get("Username", ""),
+                    email=row.get("Email", ""),
+                    role=row.get("Role", ""),
+                    password=row.get("Password", ""),
+                    is_active=row.get("Active", ""),
+                )
+            )
             self.selected_id.set(row.get("ID"))
             self.status.set(f"Selected user '{serial}'.")
             self._write_form(
@@ -188,7 +234,11 @@ class UserManagementPage(Page):
                     "password": row.get("Password", ""),
                     "email": row.get("Email", ""),
                     "role": row.get("Role", ""),
-                    "is_active": (bool(row.get("Active")) if pd.notna(row.get("Active")) else False),
+                    "is_active": (
+                        bool(row.get("Active"))
+                        if pd.notna(row.get("Active"))
+                        else False
+                    ),
                 },
             )
             return serial
@@ -220,7 +270,9 @@ class UserManagementPage(Page):
             if not ok:
                 self.status.set(msg)
                 return
-            updated = await self.controller.update_user(int(self.selected_id.get()), form)
+            updated = await self.controller.update_user(
+                int(self.selected_id.get()), form
+            )
             if not updated:
                 self.status.set("Failed to update user.")
                 return

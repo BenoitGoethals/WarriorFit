@@ -11,7 +11,6 @@ class CrossRepository(ABCRepository):
     def __init__(self):
         super().__init__()
 
-
     async def get_cross(self, id: int) -> Cross | None:
         """
         Fetches a Cross object from the database by its unique identifier.
@@ -50,7 +49,7 @@ class CrossRepository(ABCRepository):
         results = await self.fetch_and_log(query, "cross")
         return results[0] if results else None
 
-    async def get_all_cross(self,lazy=True) -> List[Cross]:
+    async def get_all_cross(self, lazy=True) -> List[Cross]:
         """
         Asynchronously retrieves all `Cross` objects from the database.
 
@@ -97,10 +96,14 @@ class CrossRepository(ABCRepository):
                 await session.refresh(cross)  # refresh after commit, same session
             return cross
         except IntegrityError as e:
-            self._logger.error(f"Integrity error adding cross {getattr(cross, 'id', 'unknown')}: {str(e)}")
+            self._logger.error(
+                f"Integrity error adding cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+            )
             return None
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error adding cross {getattr(cross, 'id', 'unknown')}: {str(e)}")
+            self._logger.error(
+                f"Database error adding cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+            )
             return None
 
     async def remove_cross(self, id: int) -> bool:
@@ -121,7 +124,9 @@ class CrossRepository(ABCRepository):
                     cross = await session.get(Cross, id)
                     if not cross:
                         return False
-                    await session.delete(cross)  # delete supports await with AsyncSession in SA 2.x
+                    await session.delete(
+                        cross
+                    )  # delete supports await with AsyncSession in SA 2.x
                     return True
         except IntegrityError as e:
             self._logger.error(f"Integrity error removing cross {id}: {str(e)}")
@@ -154,14 +159,14 @@ class CrossRepository(ABCRepository):
                         self._logger.error(f"Cross {cross_id} not found")
                         return None
 
-                    already_encoded =await session.execute(
-                    select(1).where(
-                        CrossRunners.cross_id == cross_id,
-                        CrossRunners.runner_id == runner.id,
-                    ))
+                    already_encoded = await session.execute(
+                        select(1).where(
+                            CrossRunners.cross_id == cross_id,
+                            CrossRunners.runner_id == runner.id,
+                        )
+                    )
                     if already_encoded.scalar() is not None:
                         return None
-
 
                     # Persist runner (new or detached)
                     if runner.id is None:
@@ -174,14 +179,18 @@ class CrossRepository(ABCRepository):
 
                     # Avoid touching cross.runners (prevents lazy-load)
                     exists = await session.execute(
-                        select(1).select_from(CrossRunners).where(
+                        select(1)
+                        .select_from(CrossRunners)
+                        .where(
                             CrossRunners.cross_id == cross_id,
                             CrossRunners.runner_id == runner.id,
                         )
                     )
                     if exists.scalar() is None:
                         await session.execute(
-                            insert(CrossRunners).values(cross_id=cross_id, runner_id=runner.id)
+                            insert(CrossRunners).values(
+                                cross_id=cross_id, runner_id=runner.id
+                            )
                         )
 
                     # If you need current state, refresh here while session is active
@@ -314,7 +323,9 @@ class CrossRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    existing_cross = await session.get(Cross, cross.id)  # use class, not instance
+                    existing_cross = await session.get(
+                        Cross, cross.id
+                    )  # use class, not instance
                     if not existing_cross:
                         self._logger.error(f"Cross with ID {cross.id} not found.")
                         return None
@@ -330,10 +341,14 @@ class CrossRepository(ABCRepository):
                 return existing_cross
 
         except IntegrityError as e:
-            self._logger.error(f"Integrity error updating cross {getattr(cross, 'id', 'unknown')}: {str(e)}")
+            self._logger.error(
+                f"Integrity error updating cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+            )
             return None
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error updating cross {getattr(cross, 'id', 'unknown')}: {str(e)}")
+            self._logger.error(
+                f"Database error updating cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+            )
             return None
 
     async def exist_in_cross(self, serial: str, cross_id: int) -> bool:
@@ -347,7 +362,9 @@ class CrossRepository(ABCRepository):
         try:
             cross_id_int = int(cross_id)
         except (TypeError, ValueError):
-            self._logger.warning(f"exist_in_cross called with non-integer cross_id={cross_id!r}")
+            self._logger.warning(
+                f"exist_in_cross called with non-integer cross_id={cross_id!r}"
+            )
             return False
 
         stmt = select(
@@ -366,6 +383,8 @@ class CrossRepository(ABCRepository):
                 return bool(result.scalar())
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error checking runner existence in cross: %s", e, exc_info=True
+                "Database error checking runner existence in cross: %s",
+                e,
+                exc_info=True,
             )
             return False

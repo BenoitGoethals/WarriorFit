@@ -7,7 +7,9 @@ from htmltools import HTML, Tag
 from shiny import ui, render, reactive
 from shiny.ui._navs import NavPanel
 
-from warriorfit.ui.controllers.dashboard_own_unit_controller import DashboardOwnUnitController
+from warriorfit.ui.controllers.dashboard_own_unit_controller import (
+    DashboardOwnUnitController,
+)
 from warriorfit.ui.pages.page import Page
 
 
@@ -58,7 +60,9 @@ class DashboardOwnUnitPage(Page):
             ui.br(),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("👥 Unit Personnel", class_="bg-secondary text-white"),
+                    ui.card_header(
+                        "👥 Unit Personnel", class_="bg-secondary text-white"
+                    ),
                     ui.output_ui("own_unit_personnel_stats"),
                     class_="text-center",
                 ),
@@ -112,7 +116,9 @@ class DashboardOwnUnitPage(Page):
             except Exception:
                 return default
 
-        async def _safe_stats(fetcher: Callable[[], Awaitable[Mapping[str, Any]]]) -> dict[str, Any]:
+        async def _safe_stats(
+            fetcher: Callable[[], Awaitable[Mapping[str, Any]]],
+        ) -> dict[str, Any]:
             try:
                 return dict(await fetcher())
             except Exception as e:

@@ -11,7 +11,6 @@ class CrossStaticsPage(Page):
         super().__init__()
         self._controller = CrossStaticsController()
 
-
     async def refresh(self):
         await self._controller.load()
 
@@ -21,31 +20,30 @@ class CrossStaticsPage(Page):
             ui.h2("Cross Statistics"),
             ui.br(),
             ui.layout_columns(
-
                 ui.card(
-                    ui.card_header("1. Breakdowns based on demographics", class_="bg-success text-white"),
+                    ui.card_header(
+                        "1. Breakdowns based on demographics",
+                        class_="bg-success text-white",
+                    ),
                     ui.div(
                         ui.strong("Age groups : "),
                         ui.output_ui("cross_age_group"),
                     ),
-
                 ),
-
-                col_widths=[3, 3]),
+                col_widths=[3, 3],
+            ),
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header("2. Best 10 all 5M", class_="bg-success text-white"),
+                    ui.div(ui.output_data_frame("best_10_all_grid_5")),
+                ),
                 ui.layout_columns(
                     ui.card(
-                        ui.card_header("2. Best 10 all 5M", class_="bg-success text-white"),
-                        ui.div(
-                            ui.output_data_frame("best_10_all_grid_5")
+                        ui.card_header(
+                            "3. Best 10 all 10 km", class_="bg-success text-white"
                         ),
+                        ui.div(ui.output_data_frame("best_10_all_grid_10")),
                     ),
-                    ui.layout_columns(
-                        ui.card(
-                            ui.card_header("3. Best 10 all 10 km", class_="bg-success text-white"),
-                            ui.div(
-                                ui.output_data_frame("best_10_all_grid_10")
-                            ),
-                        ),
                 ),
             ),
         )
@@ -53,10 +51,10 @@ class CrossStaticsPage(Page):
     def server(self, input, output, session):
         self.refresh_tick = reactive.Value(0)
         self.refresh_on_nav(input, "Cross Statistics", self.refresh_tick)
+
         @reactive.Effect
         async def _init():
             await self._controller.load()
-
 
         @output
         @render.data_frame
@@ -110,25 +108,22 @@ class CrossStaticsPage(Page):
                 width="100%",
             )
 
-
-
-
         @output
         @render.ui
         async def cross_age_group():
-            ages:dict[int,int] = await self._controller.get_age_group()
-            uv_p=ui.p(f"Age Group")
-            for key,value in ages.items():
-               uv_p.append(ui.p(f"Age {key} - Count {value}"))
+            ages: dict[int, int] = await self._controller.get_age_group()
+            uv_p = ui.p(f"Age Group")
+            for key, value in ages.items():
+                uv_p.append(ui.p(f"Age {key} - Count {value}"))
             return uv_p
-
-
 
 
 _page = CrossStaticsPage()
 
+
 def get_ui():
     return _page.get_ui()
+
 
 def server(input, output, session):
     return _page.server(input, output, session)

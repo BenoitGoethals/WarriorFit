@@ -5,7 +5,7 @@ from shiny import reactive, ui
 
 
 class Page(ABC):
-    toggle_disabled_registered_func=   """
+    toggle_disabled_registered_func = """
                 (function () {
                   if (window.__wf_toggle_disabled_registered) return;
                   window.__wf_toggle_disabled_registered = true;
@@ -29,7 +29,7 @@ class Page(ABC):
         self.refresh_tick = reactive.Value(0)
 
     @abstractmethod
-    def get_ui(self)-> ui.Tag:
+    def get_ui(self) -> ui.Tag:
         raise NotImplementedError
 
     @abstractmethod
@@ -39,7 +39,6 @@ class Page(ABC):
     @abstractmethod
     def refresh(self):
         pass
-
 
     def refresh_on_nav(self, input, tab_name: str, refresh_tick=None):
         """
@@ -58,7 +57,11 @@ class Page(ABC):
                         await self.refresh()
                     else:
                         self.refresh()
-                    target_tick = refresh_tick if refresh_tick is not None else getattr(self, "refresh_tick", None)
+                    target_tick = (
+                        refresh_tick
+                        if refresh_tick is not None
+                        else getattr(self, "refresh_tick", None)
+                    )
 
                     if target_tick is not None:
                         # Increment to trigger reactive dependencies

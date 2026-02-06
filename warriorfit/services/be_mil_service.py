@@ -14,10 +14,8 @@ class BEMILService(metaclass=Singleton):
     BASE_URL = ApplicationConfig().hr_url
     API_KEY = ApplicationConfig().hr_api_key
 
-
     def __init__(self):
         self.__logger = logging.getLogger(__name__)
-
 
     def _build_serviceman(self, data: dict) -> ServiceMen:
         if "gender" in data and isinstance(data["gender"], str):
@@ -28,7 +26,9 @@ class BEMILService(metaclass=Singleton):
 
         if "birthdate" in data and isinstance(data["birthdate"], str):
             try:
-                data["birthdate"] = datetime.strptime(data["birthdate"], "%Y-%m-%d").date()
+                data["birthdate"] = datetime.strptime(
+                    data["birthdate"], "%Y-%m-%d"
+                ).date()
             except ValueError:
                 pass
 
@@ -37,8 +37,17 @@ class BEMILService(metaclass=Singleton):
                 data["unit_id"] = data["unit"].get("id")
 
         valid_fields = {
-            "id", "first_name", "last_name", "mail", "rank", "service_number",
-            "birthdate", "gender", "unit_id", "para", "ops_test"
+            "id",
+            "first_name",
+            "last_name",
+            "mail",
+            "rank",
+            "service_number",
+            "birthdate",
+            "gender",
+            "unit_id",
+            "para",
+            "ops_test",
         }
         filtered_data = {k: v for k, v in data.items() if k in valid_fields}
 
@@ -50,7 +59,7 @@ class BEMILService(metaclass=Singleton):
             try:
                 response = await client.get(
                     f"{self.BASE_URL}/servicemen?serial={be_mil_serial_number}",
-                    headers={'X-API-Key': self.API_KEY}
+                    headers={"X-API-Key": self.API_KEY},
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -64,14 +73,12 @@ class BEMILService(metaclass=Singleton):
                 )
                 return None
 
-    async def get_all_be_mil_from_unit(
-            self, unit_name: str
-    ) -> list[ServiceMen] | None:
+    async def get_all_be_mil_from_unit(self, unit_name: str) -> list[ServiceMen] | None:
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
                     f"{self.BASE_URL}/servicemen/unit/{unit_name}",
-                    headers={'X-API-Key': self.API_KEY}
+                    headers={"X-API-Key": self.API_KEY},
                 )
                 response.raise_for_status()  # raises error if status != 200
                 resp = response.json()
@@ -80,7 +87,7 @@ class BEMILService(metaclass=Singleton):
                 self.__logger.error(f"Error fetching BEMILs from unit {unit_name}: {e}")
                 return None
 
-    async def sent_hr_message_to_hr(self, message:Message):
+    async def sent_hr_message_to_hr(self, message: Message):
         """
         Sends a message to the HR system using an asynchronous HTTP POST request.
 
@@ -101,10 +108,10 @@ class BEMILService(metaclass=Singleton):
                 self.BASE_URL + "/hrmessages",
                 json=message.to_dict(),
                 headers={
-                    'accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-API-Key': self.API_KEY
-                }
+                    "accept": "application/json",
+                    "Content-Type": "application/json",
+                    "X-API-Key": self.API_KEY,
+                },
             )
             self.__logger.info(json.dumps(message.to_dict(), indent=2))
             response.raise_for_status()
@@ -124,6 +131,5 @@ if __name__ == "__main__":
 
         two = await be_mil_service.get_be_mil_by_id("SN-90211")
         print("Single:", two)
-
 
     asyncio.run(_main())

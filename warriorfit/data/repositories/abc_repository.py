@@ -8,7 +8,6 @@ from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import AuditLog
 
 
-
 class ABCRepository:
     """
     Handles database operations for the application, providing functionality for
@@ -20,6 +19,7 @@ class ABCRepository:
                         engine for managing transactions and queries.
     :type SessionLocal: sqlalchemy.ext.asyncio.async_sessionmaker
     """
+
     def __init__(self):
 
         self._logger = logging.getLogger(__name__)
@@ -34,8 +34,6 @@ class ABCRepository:
         self.SessionLocal = async_sessionmaker(
             bind=async_engine, expire_on_commit=False, class_=AsyncSession
         )
-
-
 
     async def check_if_db_is_operational(self) -> bool:
         """
@@ -53,7 +51,6 @@ class ABCRepository:
         except SQLAlchemyError as e:
             self._logger.error("Database connection error: %s", e)
             return False
-
 
     async def fetch_and_log(self, query, log_entity_name: str):
         """
@@ -85,25 +82,24 @@ class ABCRepository:
         # Security
 
     async def create_audit_log(
-            self,
-            user_id: int,
-            action: str,
-            details: dict|str = None,
-            ip_address: str = None,
+        self,
+        user_id: int,
+        action: str,
+        details: dict | str = None,
+        ip_address: str = None,
     ):
         """
         Creates an audit log entry in the database. The function records the provided data
         such as user identifier, action performed, optional details, and the IP address.
         This operation is performed asynchronously, ensuring the audit log is both added
         and refreshed in the database session.
-    
+
         :param user_id: Identifier of the user associated with the action
         :param action: Description of the action performed by the user
         :param details: Optional dictionary containing additional details about the action
         :param ip_address: Optional string containing the IP address associated with the action
         :return: The created audit log entry
         """
-
 
         audit_log = AuditLog(
             user_id=user_id,
@@ -125,7 +121,9 @@ class ABCRepository:
                 self._logger.error("Failed to create audit log: %s", e)
                 return None
 
-    async def get_all_audit_logs(self, limit: Optional[int] = None, offset: int = 0) -> List[AuditLog]:
+    async def get_all_audit_logs(
+        self, limit: Optional[int] = None, offset: int = 0
+    ) -> List[AuditLog]:
         """
         Returns all AuditLog entries ordered by created_at desc.
         Optional pagination via limit/offset.
@@ -139,8 +137,8 @@ class ABCRepository:
                 logs = result.scalars().all()
                 return list(logs)
         except SQLAlchemyError as e:
-                self._logger.error("get_all_audit_logs failed: %s", e)
-                return []
+            self._logger.error("get_all_audit_logs failed: %s", e)
+            return []
 
     async def get_audit_logs(self) -> list[AuditLog]:
         """

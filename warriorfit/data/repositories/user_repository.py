@@ -13,7 +13,7 @@ from sqlalchemy import or_
 class UserRepository(ABCRepository):
     def __init__(self):
         super().__init__()
-     
+
     async def add_user(self, user: User) -> Optional[User]:
         """
         Adds a new user to the database asynchronously.
@@ -36,15 +36,13 @@ class UserRepository(ABCRepository):
                 await session.refresh(user)
                 return user
         except IntegrityError as e:
-            self._logger.error(
-                f"Integrity error adding user {user.username}: {str(e)}"
-            )
+            self._logger.error(f"Integrity error adding user {user.username}: {str(e)}")
             return None
         except SQLAlchemyError as e:
             self._logger.error(f"Database error adding user {user.username}: {str(e)}")
             return None
 
-    async def user_mail_exist(self,mail:str)->bool:
+    async def user_mail_exist(self, mail: str) -> bool:
         """
         Checks if a user with the specified email exists in the database.
 
@@ -53,12 +51,11 @@ class UserRepository(ABCRepository):
         :return: A boolean indicating whether the email exists (`True`) or not (`False`).
         :rtype: bool
         """
-        query = select(User).where(User.email==mail)
+        query = select(User).where(User.email == mail)
         results = await self.fetch_and_log(query, "user")
         return results is not None
 
-
-    async def get_user_by_id(self,id_unique:int)->Optional[User]:
+    async def get_user_by_id(self, id_unique: int) -> Optional[User]:
         """
         Retrieve a user by their unique identifier.
 
@@ -71,10 +68,9 @@ class UserRepository(ABCRepository):
         :return: A User instance if found, otherwise None.
         :rtype: Optional[User]
         """
-        query = select(User).where(User.id==id_unique)
+        query = select(User).where(User.id == id_unique)
         results = await self.fetch_and_log(query, "user")
         return results[0] if results else None
-
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
         """
@@ -133,7 +129,6 @@ class UserRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.error(f"Database error updating user {id}: {str(e)}")
             return None
-
 
     async def delete_all_users(self):
         """
@@ -209,9 +204,7 @@ class UserRepository(ABCRepository):
             self._logger.error(f"Database error deleting user with ID {id}: {str(e)}")
             return False
         except Exception as e:
-            self._logger.error(
-                f"Unexpected error deleting user with ID {id}: {str(e)}"
-            )
+            self._logger.error(f"Unexpected error deleting user with ID {id}: {str(e)}")
             return False
 
     async def serial_exists(self, serial: str) -> bool:
@@ -264,14 +257,20 @@ class UserRepository(ABCRepository):
                     query = delete(User).where(User.serial_number == selected_serial)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self._logger.error(f"No user found with serial {selected_serial}.")
+                        self._logger.error(
+                            f"No user found with serial {selected_serial}."
+                        )
                         return False
                     return True
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error deleting user with serial {selected_serial}: {str(e)}")
+            self._logger.error(
+                f"Database error deleting user with serial {selected_serial}: {str(e)}"
+            )
             return False
         except Exception as e:
-            self._logger.error(f"Unexpected error deleting user with serial {selected_serial}: {str(e)}")
+            self._logger.error(
+                f"Unexpected error deleting user with serial {selected_serial}: {str(e)}"
+            )
             return False
 
     async def update_user_by_serial(self, user):
@@ -293,11 +292,15 @@ class UserRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    existing_user = (await session.execute(
-                        select(User).where(User.serial_number == user.serial_number)
-                    )).scalar_one_or_none()
+                    existing_user = (
+                        await session.execute(
+                            select(User).where(User.serial_number == user.serial_number)
+                        )
+                    ).scalar_one_or_none()
                     if not existing_user:
-                        self._logger.error(f"User with serial number {user.serial_number} not found.")
+                        self._logger.error(
+                            f"User with serial number {user.serial_number} not found."
+                        )
                         return None
                     existing_user.username = user.username
                     existing_user.password_hash = user.password_hash
@@ -315,8 +318,6 @@ class UserRepository(ABCRepository):
             self._logger.error(f"Database error updating user {id}: {str(e)}")
             return None
 
-
-
     async def get_all_pti(self) -> list[Any] | None:
         try:
             query = select(User).where(
@@ -324,7 +325,7 @@ class UserRepository(ABCRepository):
                     User.role == Role.PTI,
                     User.role == Role.ADMIN,
                     User.role == Role.APTI,
-                    User.role == Role.PLANNER
+                    User.role == Role.PLANNER,
                 )
             )
             results = await self.fetch_and_log(query, "user")
@@ -333,7 +334,7 @@ class UserRepository(ABCRepository):
             self._logger.error(f"Database error fetching all pti: {str(e)}")
             return None
 
-    async def get_user_by_serial(self, serial_number)->User | None:
-        query = select(User).where(User.serial_number==serial_number)
+    async def get_user_by_serial(self, serial_number) -> User | None:
+        query = select(User).where(User.serial_number == serial_number)
         results = await self.fetch_and_log(query, "user")
         return results[0] if results else None

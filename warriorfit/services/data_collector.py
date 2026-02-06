@@ -39,7 +39,9 @@ class DataCollector(metaclass=Singleton):
     # -------------------------
     # Public API
     # -------------------------
-    async def collect_tests_data_for_serial(self, serial: str, current_year: bool = True) -> pd.DataFrame:
+    async def collect_tests_data_for_serial(
+        self, serial: str, current_year: bool = True
+    ) -> pd.DataFrame:
         """
         Detailed grid: PHEF shows separate columns (Run/SBR/SBL + points), etc.
         """
@@ -51,11 +53,13 @@ class DataCollector(metaclass=Singleton):
 
         # PHEF (detailed)
         phef_rows: list[dict] = []
-        phef_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.PHEF, this_year=current_year
+        phef_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.PHEF, this_year=current_year
+            )
         )
         for sess in phef_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
                 if mil is None:
@@ -90,11 +94,13 @@ class DataCollector(metaclass=Singleton):
 
         # Functional (detailed)
         func_rows: list[dict] = []
-        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
+        func_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
+            )
         )
         for sess in func_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
 
@@ -121,11 +127,13 @@ class DataCollector(metaclass=Singleton):
 
         # Combat (detailed)
         combat_rows: list[dict] = []
-        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.COMBAT, this_year=current_year
+        combat_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.COMBAT, this_year=current_year
+            )
         )
         for sess in combat_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
 
@@ -151,11 +159,13 @@ class DataCollector(metaclass=Singleton):
 
         # Swimming (detailed)
         swim_rows: list[dict] = []
-        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.SWIMMING, this_year=current_year
+        swim_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.SWIMMING, this_year=current_year
+            )
         )
         for sess in swim_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
                 ok = bool(t.swim_paased)
@@ -172,7 +182,9 @@ class DataCollector(metaclass=Singleton):
 
         # Mars (detailed)
         mars_rows: list[dict] = []
-        marses = await self._service_mars.get_march_from_service_men(serial_number=serial, this_year=False)
+        marses = await self._service_mars.get_march_from_service_men(
+            serial_number=serial, this_year=False
+        )
         for mars in marses or []:
             ok = bool(mars.succeeded)
             mars_rows.append(
@@ -205,7 +217,9 @@ class DataCollector(metaclass=Singleton):
         return df
 
     @benchmark
-    async def collect_tests_for_serial(self, serial: str, current_year: bool = True) -> pd.DataFrame:
+    async def collect_tests_for_serial(
+        self, serial: str, current_year: bool = True
+    ) -> pd.DataFrame:
         """
         Summary grid: each row has Details/Scores/Total/Result.
         """
@@ -215,11 +229,13 @@ class DataCollector(metaclass=Singleton):
 
         # PHEF (summary)
         phef_rows: list[dict] = []
-        phef_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.PHEF, this_year=current_year
+        phef_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.PHEF, this_year=current_year
+            )
         )
         for sess in phef_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
                 if mil is None:
@@ -251,11 +267,13 @@ class DataCollector(metaclass=Singleton):
 
         # Functional (summary)
         func_rows: list[dict] = []
-        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
+        func_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
+            )
         )
         for sess in func_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
                 pu = int(t.push_ups or 0)
@@ -277,11 +295,13 @@ class DataCollector(metaclass=Singleton):
 
         # Combat (summary)
         combat_rows: list[dict] = []
-        combat_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.COMBAT, this_year=current_year
+        combat_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.COMBAT, this_year=current_year
+            )
         )
         for sess in combat_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
                 rope = bool(t.rope_passed)
@@ -303,11 +323,13 @@ class DataCollector(metaclass=Singleton):
 
         # Swimming (summary)
         swim_rows: list[dict] = []
-        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-            serial, TypeFitnessTest.SWIMMING, this_year=current_year
+        swim_sessions = (
+            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                serial, TypeFitnessTest.SWIMMING, this_year=current_year
+            )
         )
         for sess in swim_sessions or []:
-            for t in (sess.fitness_tests or []):
+            for t in sess.fitness_tests or []:
                 if t.serial_number != serial:
                     continue
                 ok = bool(t.swim_paased)
@@ -326,7 +348,9 @@ class DataCollector(metaclass=Singleton):
 
         # Mars (summary) — keep existing service call name used here
         mars_rows: list[dict] = []
-        marses = await self._service_mars.get_march_from_service_men(serial_number=serial, this_year=False)
+        marses = await self._service_mars.get_march_from_service_men(
+            serial_number=serial, this_year=False
+        )
         for mars in marses or []:
             ok = bool(mars.succeeded)
             mars_rows.append(
@@ -343,17 +367,23 @@ class DataCollector(metaclass=Singleton):
             frames.append(pd.DataFrame.from_records(mars_rows))
 
         if not frames:
-            return self._empty_df(columns=["Date", "Type", "Details", "Scores", "Total", "Result"])
+            return self._empty_df(
+                columns=["Date", "Type", "Details", "Scores", "Total", "Result"]
+            )
 
         df = pd.concat(frames, ignore_index=True, sort=False)
         df = df.sort_values(by=["Date"], kind="stable").reset_index(drop=True)
         return df
 
     async def collect_all_mil_from_own_unit_not_executed_phefs(self) -> pd.DataFrame:
-        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(
+            ApplicationConfig().own_unit
+        )
         rows: list[dict] = []
         for m in mil_series:
-            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(
+                m.service_number
+            )
             if len(mils) == 0:
                 rows.append(
                     {
@@ -366,13 +396,21 @@ class DataCollector(metaclass=Singleton):
                 )
         if not rows:
             return pd.DataFrame(columns=["Serial", "Name", "Gender", "Age", "Para"])
-        return pd.DataFrame.from_records(rows).sort_values(by=["Name"], kind="stable").reset_index(drop=True)
+        return (
+            pd.DataFrame.from_records(rows)
+            .sort_values(by=["Name"], kind="stable")
+            .reset_index(drop=True)
+        )
 
     async def collect_all_mil_from_own_unit_failed_phefs(self) -> pd.DataFrame:
-        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(
+            ApplicationConfig().own_unit
+        )
         rows: list[dict] = []
         for m in mil_series:
-            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(
+                m.service_number
+            )
 
             passed = any(
                 [
@@ -401,10 +439,16 @@ class DataCollector(metaclass=Singleton):
             )
         if not rows:
             return pd.DataFrame(columns=["Serial", "Name", "Gender", "Age", "Para"])
-        return pd.DataFrame.from_records(rows).sort_values(by=["Name"], kind="stable").reset_index(drop=True)
+        return (
+            pd.DataFrame.from_records(rows)
+            .sort_values(by=["Name"], kind="stable")
+            .reset_index(drop=True)
+        )
 
     async def collect_tests_data_for_own_unit(self) -> pd.DataFrame:
-        own_unit = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        own_unit = await self.be_mil.get_all_be_mil_from_unit(
+            ApplicationConfig().own_unit
+        )
         rows: list[dict] = []
 
         for m in own_unit:
@@ -420,7 +464,9 @@ class DataCollector(metaclass=Singleton):
             data_swimming = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
                 m.service_number, TypeFitnessTest.SWIMMING
             )
-            data_mars = await self._service_mars.get_march_from_service_men(serial_number=m.service_number, this_year=False)
+            data_mars = await self._service_mars.get_march_from_service_men(
+                serial_number=m.service_number, this_year=False
+            )
 
             if data_phef and data_phef[0].fitness_tests:
                 dt: PhefTest = data_phef[0].fitness_tests[0]
@@ -437,7 +483,9 @@ class DataCollector(metaclass=Singleton):
 
             if data_combat and data_combat[0].fitness_tests:
                 cmt = data_combat[0].fitness_tests[0]
-                combat_status = "Passed" if cmt.rope_passed and cmt.obstacle_passed else "Failed"
+                combat_status = (
+                    "Passed" if cmt.rope_passed and cmt.obstacle_passed else "Failed"
+                )
             else:
                 combat_status = "Not Done"
 
@@ -475,6 +523,17 @@ class DataCollector(metaclass=Singleton):
             )
 
         if not rows:
-            return pd.DataFrame(columns=["Rank", "Serial", "Name", "Phef", "Combat", "Swimming", "Functional", "Mars"])
+            return pd.DataFrame(
+                columns=[
+                    "Rank",
+                    "Serial",
+                    "Name",
+                    "Phef",
+                    "Combat",
+                    "Swimming",
+                    "Functional",
+                    "Mars",
+                ]
+            )
 
         return pd.DataFrame.from_records(rows)

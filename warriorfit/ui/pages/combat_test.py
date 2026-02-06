@@ -50,9 +50,7 @@ class CombatPage(BaseTestPage):
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE JS custom message handler (same pattern as PHEF)
-            ui.tags.script(
-                self.toggle_disabled_registered_func
-            ),
+            ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Combat Tests"),
             ui.layout_columns(
                 ui.div(
@@ -63,17 +61,31 @@ class CombatPage(BaseTestPage):
                     ),
                     ui.card(
                         ui.div(
-                            ui.input_text("combat_serialnr", "Serial Number", placeholder="Service Number"),
-                            ui.input_action_button("combat_serial_search_btn", "🔍 Search own Unit", class_="btn-info btn-sm",
-                                                  style="margin-top: 5px;"),
+                            ui.input_text(
+                                "combat_serialnr",
+                                "Serial Number",
+                                placeholder="Service Number",
+                            ),
+                            ui.input_action_button(
+                                "combat_serial_search_btn",
+                                "🔍 Search own Unit",
+                                class_="btn-info btn-sm",
+                                style="margin-top: 5px;",
+                            ),
                         ),
-                        ui.input_action_button("combat_search", "Confirm Serial", width="200px"),
+                        ui.input_action_button(
+                            "combat_search", "Confirm Serial", width="200px"
+                        ),
                         ui.output_text("combat_military"),
                         ui.layout_columns(
-                            ui.input_checkbox("combat_obstacle", "Obstacle course", value=False),
+                            ui.input_checkbox(
+                                "combat_obstacle", "Obstacle course", value=False
+                            ),
                         ),
                         ui.layout_columns(
-                            ui.input_checkbox("combat_robe", "Robe Course", value=False),
+                            ui.input_checkbox(
+                                "combat_robe", "Robe Course", value=False
+                            ),
                         ),
                         ui.layout_columns(
                             ui.input_text(
@@ -220,7 +232,11 @@ class CombatPage(BaseTestPage):
                 )
                 return ui.span(
                     "Passed" if passed else "Failed",
-                    style=("color: green; font-weight: 700;" if passed else "color: red; font-weight: 700;"),
+                    style=(
+                        "color: green; font-weight: 700;"
+                        if passed
+                        else "color: red; font-weight: 700;"
+                    ),
                 )
             except Exception:
                 return ui.span("")
@@ -239,7 +255,9 @@ class CombatPage(BaseTestPage):
             status.set("Ready.")
 
         # Setup session management using base class
-        self.setup_session_management(input, session, selected_session_id, status, self.controller)
+        self.setup_session_management(
+            input, session, selected_session_id, status, self.controller
+        )
 
         # ----------------------------
         # Search military / unlock form
@@ -293,9 +311,10 @@ class CombatPage(BaseTestPage):
                 speedmars_pass_fail.set("")
                 return
 
-
             try:
-                speedmars_pass_fail.set("Passes" if float(seconds) < 120 * 60 else "Fails")
+                speedmars_pass_fail.set(
+                    "Passes" if float(seconds) < 120 * 60 else "Fails"
+                )
             except Exception:
                 speedmars_pass_fail.set("")
 
@@ -358,8 +377,12 @@ class CombatPage(BaseTestPage):
             serial = str(row.get("Serial", "") or "").strip()
             ui.update_text("combat_serialnr", value=serial)
 
-            obstacle_passed = str(row.get("ObstacleCourse", "") or "").strip().lower() == "passed"
-            robe_passed = str(row.get("RobeCourse", "") or "").strip().lower() == "passed"
+            obstacle_passed = (
+                str(row.get("ObstacleCourse", "") or "").strip().lower() == "passed"
+            )
+            robe_passed = (
+                str(row.get("RobeCourse", "") or "").strip().lower() == "passed"
+            )
 
             ui.update_checkbox("combat_obstacle", value=obstacle_passed)
             ui.update_checkbox("combat_robe", value=robe_passed)
@@ -372,12 +395,18 @@ class CombatPage(BaseTestPage):
 
             # Resolve military so live scoring/validation behaves
             try:
-                self.selected_military = await self.controller.search_military(serial) if serial else None
+                self.selected_military = (
+                    await self.controller.search_military(serial) if serial else None
+                )
             except Exception:
                 self.selected_military = None
 
             await _toggle_inputs(disabled=(self.selected_military is None))
-            status.set(f"Selected Combat record for: {serial}" if serial else "Selected Combat record.")
+            status.set(
+                f"Selected Combat record for: {serial}"
+                if serial
+                else "Selected Combat record."
+            )
 
         # ----------------------------
         # CRUD
@@ -424,11 +453,15 @@ class CombatPage(BaseTestPage):
                 military=self.selected_military,
             )
             if not added:
-                status.set(f"Failed to add Combat test for {form.serialnr} in session {form.session_id}.")
+                status.set(
+                    f"Failed to add Combat test for {form.serialnr} in session {form.session_id}."
+                )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(f"Added Combat test for {form.serialnr} in session {form.session_id}.")
+            status.set(
+                f"Added Combat test for {form.serialnr} in session {form.session_id}."
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -456,11 +489,15 @@ class CombatPage(BaseTestPage):
 
             updated = await self.controller.update_combat(int(combat_id_raw), payload)
             if not updated:
-                status.set(f"Failed to update Combat test for {form.serialnr} in session {form.session_id}.")
+                status.set(
+                    f"Failed to update Combat test for {form.serialnr} in session {form.session_id}."
+                )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(f"Updated Combat test for {form.serialnr} in session {form.session_id}.")
+            status.set(
+                f"Updated Combat test for {form.serialnr} in session {form.session_id}."
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -472,7 +509,9 @@ class CombatPage(BaseTestPage):
                 status.set("Select a row to delete.")
                 return
 
-            ok = await self.controller.delete_combat(int(sess_id_raw), int(combat_id_raw))
+            ok = await self.controller.delete_combat(
+                int(sess_id_raw), int(combat_id_raw)
+            )
             if not ok:
                 status.set("Failed to delete selected Combat record.")
                 return
@@ -506,7 +545,9 @@ class CombatPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
+                return pd.DataFrame(
+                    columns=["service_number", "first_name", "last_name", "gender"]
+                )
 
             df = pd.DataFrame(
                 [

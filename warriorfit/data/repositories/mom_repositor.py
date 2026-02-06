@@ -8,13 +8,12 @@ from warriorfit.data.model.db_model import HrMessage
 from warriorfit.data.repositories.abc_repository import ABCRepository
 
 
-
 class MomRepository(ABCRepository):
 
     def __init__(self):
         super().__init__()
 
-    async def add_hr_message(self,msg:HrMessage)->HrMessage | None:
+    async def add_hr_message(self, msg: HrMessage) -> HrMessage | None:
         """
         Adds an HR message to the database session and refreshes it to reflect
         the most recent state. If an integrity error or other database error
@@ -34,13 +33,17 @@ class MomRepository(ABCRepository):
                 await session.refresh(msg)
             return msg
         except IntegrityError as e:
-            self._logger.error(f"Integrity error adding cross {getattr(msg, 'id', 'unknown')}: {str(e)}")
+            self._logger.error(
+                f"Integrity error adding cross {getattr(msg, 'id', 'unknown')}: {str(e)}"
+            )
             return None
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error adding cross {getattr(msg, 'id', 'unknown')}: {str(e)}")
+            self._logger.error(
+                f"Database error adding cross {getattr(msg, 'id', 'unknown')}: {str(e)}"
+            )
             return None
 
-    async def get_all_hr_messages(self)-> list[Any] | None | Any:
+    async def get_all_hr_messages(self) -> list[Any] | None | Any:
         """
         Retrieve all HR messages from the database.
 
@@ -69,7 +72,7 @@ class MomRepository(ABCRepository):
         """
         Deletes a human resource (HR) message from the database based on the provided ID. If the
         message is found, it will be removed and the operation will be committed to the database.
-    
+
         :param id_msg: The ID of the HR message to be deleted.
         :type id_msg: int
         :return: Returns True if the message was successfully deleted, False if a database
@@ -91,8 +94,8 @@ class MomRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.error(f"Database error deleting cross {id_msg}: {str(e)}")
             return False
-    
-    async def get_last_added_hr_message_by_send_date(self)->HrMessage | None:
+
+    async def get_last_added_hr_message_by_send_date(self) -> HrMessage | None:
         """
         Fetches the last added HR message based on the send date.
 
@@ -118,29 +121,26 @@ class MomRepository(ABCRepository):
         except Exception as e:
             self._logger.error(f"Unexpected error fetching cross: {str(e)}")
 
-async def main():
-        repo = MomRepository()
 
-        # one = await repo.add_hr_message(HrMessage(message="test", datetime_created=datetime.now()))
-        # print(await repo.get_all_hr_messages())
-        # two = await repo.add_hr_message(HrMessage(message="test2", datetime_created=datetime.now()))
-        # print(await repo.get_all_hr_messages())
-        # three = await repo.add_hr_message(HrMessage(message="test3", datetime_created=datetime.now()))
-        # print(await repo.get_all_hr_messages())
-        # # if one:
-        # #     await repo.delete_hr_message(one.id)
-        # print(await repo.get_all_hr_messages())
-        last_one = await repo.get_last_added_hr_message_by_send_date()
-        
-        if last_one:
-            print(last_one.message, last_one.datetime_created, last_one.id)
-        else:
-            print("No messages found.")
+async def main():
+    repo = MomRepository()
+
+    # one = await repo.add_hr_message(HrMessage(message="test", datetime_created=datetime.now()))
+    # print(await repo.get_all_hr_messages())
+    # two = await repo.add_hr_message(HrMessage(message="test2", datetime_created=datetime.now()))
+    # print(await repo.get_all_hr_messages())
+    # three = await repo.add_hr_message(HrMessage(message="test3", datetime_created=datetime.now()))
+    # print(await repo.get_all_hr_messages())
+    # # if one:
+    # #     await repo.delete_hr_message(one.id)
+    # print(await repo.get_all_hr_messages())
+    last_one = await repo.get_last_added_hr_message_by_send_date()
+
+    if last_one:
+        print(last_one.message, last_one.datetime_created, last_one.id)
+    else:
+        print("No messages found.")
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-
-
-

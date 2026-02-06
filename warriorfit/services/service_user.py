@@ -27,8 +27,6 @@ class UserService(Service, metaclass=Singleton):
         """
         return await self._user_repo.check_user(username_login, password_login)
 
-
-
     async def get_user_by_username(self, username_login):
         return await self._user_repo.get_user_by_username(username_login)
 

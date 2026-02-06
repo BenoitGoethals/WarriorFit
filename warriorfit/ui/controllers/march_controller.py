@@ -19,7 +19,10 @@ class MarchController:
         related to servicemen.
     :type be_mil_service: MilitaryService
     """
-    def __init__(self,) -> None:
+
+    def __init__(
+        self,
+    ) -> None:
         self._service = ServiceMarch()
         self.be_mil_service = MilitaryService()
         self._logger = logging.getLogger(__name__)
@@ -59,7 +62,7 @@ class MarchController:
         """
         return await self._service.update_march(updated_march)
 
-    async def delete_march(self, current_id: int|None):
+    async def delete_march(self, current_id: int | None):
         """
         Deletes a march asynchronously based on the given identifier.
 
@@ -91,4 +94,6 @@ class MarchController:
         return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def get_march_is_unique(self, service_number, distance, datetime_executed):
-        return await self._service.get_march_is_unique(service_number, distance, datetime_executed)
+        return await self._service.get_march_is_unique(
+            service_number, distance, datetime_executed
+        )

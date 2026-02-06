@@ -1,4 +1,5 @@
 """Base class for test pages with common functionality."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -44,7 +45,7 @@ class BaseTestPage(Page):
         session: Any,
         selected_session_id: reactive.Value,
         status: reactive.Value,
-        controller: Any
+        controller: Any,
     ) -> None:
         """Setup reactive effects for session management."""
         prefix = self.get_prefix()
@@ -69,18 +70,16 @@ class BaseTestPage(Page):
                 return
             try:
                 # Try get_session_by_id first (most controllers), fall back to get_test_session_by_id
-                if hasattr(controller, 'get_session_by_id'):
+                if hasattr(controller, "get_session_by_id"):
                     self.selected_session = await controller.get_session_by_id(int(val))
                 else:
-                    self.selected_session = await controller.get_test_session_by_id(int(val))
+                    self.selected_session = await controller.get_test_session_by_id(
+                        int(val)
+                    )
             except Exception:
                 self.selected_session = None
 
-    async def refresh_session_choices(
-        self,
-        input: Any,
-        controller: Any
-    ) -> None:
+    async def refresh_session_choices(self, input: Any, controller: Any) -> None:
         """Refresh the session dropdown choices."""
         prefix = self.get_prefix()
         try:
@@ -89,14 +88,16 @@ class BaseTestPage(Page):
             test_sessions = []
 
         items = {
-            str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
+            str(
+                s.id
+            ): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
             for s in (test_sessions or [])
         }
         current = (getattr(input, f"{prefix}_session_id")() or "").strip()
         ui.update_select(
             f"{prefix}_session_id",
             choices=items,
-            selected=(current if current in items else None)
+            selected=(current if current in items else None),
         )
 
     # -------------------------
@@ -116,7 +117,7 @@ class BaseTestPage(Page):
         controller: Any,
         military_text: reactive.Value,
         status: reactive.Value,
-        selected_session_id: reactive.Value
+        selected_session_id: reactive.Value,
     ) -> bool:
         """Search and confirm military selection. Returns True if successful."""
         prefix = self.get_prefix()
@@ -153,10 +154,7 @@ class BaseTestPage(Page):
     # UI State Helpers
     # -------------------------
     async def toggle_inputs(
-        self,
-        session: Any,
-        disable_ids: tuple[str, ...],
-        disabled: bool
+        self, session: Any, disable_ids: tuple[str, ...], disabled: bool
     ) -> None:
         """Toggle input disabling via custom message."""
         try:
@@ -167,20 +165,13 @@ class BaseTestPage(Page):
         except Exception:
             pass
 
-    def set_buttons(
-        self,
-        prefix: str,
-        can_add: bool,
-        can_update: bool
-    ) -> None:
+    def set_buttons(self, prefix: str, can_add: bool, can_update: bool) -> None:
         """Set button states."""
         ui.update_action_button(f"{prefix}_add_btn", disabled=not can_add)
         ui.update_action_button(f"{prefix}_update_btn", disabled=not can_update)
 
     def require_session_selected(
-        self,
-        selected_session_id: reactive.Value,
-        status: reactive.Value
+        self, selected_session_id: reactive.Value, status: reactive.Value
     ) -> bool:
         """Check if session is selected. Returns True if valid."""
         if not (selected_session_id.get() or "").strip():
@@ -188,10 +179,7 @@ class BaseTestPage(Page):
             return False
         return True
 
-    def require_military_selected(
-        self,
-        status: reactive.Value
-    ) -> bool:
+    def require_military_selected(self, status: reactive.Value) -> bool:
         """Check if military is selected. Returns True if valid."""
         if self.selected_military is None:
             status.set("Confirm a valid serial first.")

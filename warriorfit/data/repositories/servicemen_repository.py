@@ -9,7 +9,6 @@ from sqlalchemy.exc import SQLAlchemyError
 class ServicemenRepository(ABCRepository):
     def __init__(self):
         super().__init__()
-      
 
     async def create_serviceman(self, service_men: ServiceMen) -> ServiceMen | None:
         """
@@ -38,20 +37,30 @@ class ServicemenRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    res = await session.execute(select(ServiceMen).where(ServiceMen.id == serviceman_id))
+                    res = await session.execute(
+                        select(ServiceMen).where(ServiceMen.id == serviceman_id)
+                    )
                     return res.scalar_one_or_none()
         except SQLAlchemyError as e:
             self._logger.exception(e)
             return None
 
-    async def get_by_service_number(self, service_number: str,lazy=True) -> ServiceMen | None:
+    async def get_by_service_number(
+        self, service_number: str, lazy=True
+    ) -> ServiceMen | None:
         """
         Get a single serviceman by unique service number.
         """
         if lazy:
-            query = select(ServiceMen).where(ServiceMen.service_number == service_number)
+            query = select(ServiceMen).where(
+                ServiceMen.service_number == service_number
+            )
         else:
-            query = select(ServiceMen).where(ServiceMen.service_number == service_number).options(selectinload(ServiceMen.unit))
+            query = (
+                select(ServiceMen)
+                .where(ServiceMen.service_number == service_number)
+                .options(selectinload(ServiceMen.unit))
+            )
         results = await self.fetch_and_log(query, "ServiceMen")
         return results[0] if results else None
 
@@ -59,15 +68,22 @@ class ServicemenRepository(ABCRepository):
         query = select(ServiceMen)
         return await self.fetch_and_log(query, "ServiceMen")
 
-    async def list_by_unit_name(self, unit_name: str, limit: int = 100, offset: int = 0) -> list[ServiceMen]:
+    async def list_by_unit_name(
+        self, unit_name: str, limit: int = 100, offset: int = 0
+    ) -> list[ServiceMen]:
         """
         List servicemen filtered by unit name.
         """
 
-        query = select(ServiceMen).join(Unit, ServiceMen.unit_id == Unit.id).where(Unit.name == unit_name).limit(limit).offset(offset)
+        query = (
+            select(ServiceMen)
+            .join(Unit, ServiceMen.unit_id == Unit.id)
+            .where(Unit.name == unit_name)
+            .limit(limit)
+            .offset(offset)
+        )
 
         return await self.fetch_and_log(query, "ServiceMen")
-
 
     async def update_serviceman(self, service_men: ServiceMen) -> ServiceMen | None:
         """
@@ -203,6 +219,10 @@ class ServicemenRepository(ABCRepository):
         :return: A list of `ServiceMen` associated with the specified unit.
         :rtype: list[ServiceMen]
         """
-        query = select(ServiceMen).join(Unit, ServiceMen.unit_id == Unit.id).where(Unit.name == own_unit)
+        query = (
+            select(ServiceMen)
+            .join(Unit, ServiceMen.unit_id == Unit.id)
+            .where(Unit.name == own_unit)
+        )
         query = query.options(selectinload(ServiceMen.unit))
         return await self.fetch_and_log(query, "unit")

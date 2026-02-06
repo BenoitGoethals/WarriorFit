@@ -36,12 +36,16 @@ class UserManagementController:
     :ivar selected_user: The currently selected user for update or validation operations.
     :type selected_user: Optional[UserForm]
     """
-    EMAIL_REGEX = re.compile(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
-    USER_REGEX = re.compile(r'^[a-zA-Z0-9_]+$')
-    def __init__(self,):
+
+    EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+    USER_REGEX = re.compile(r"^[a-zA-Z0-9_]+$")
+
+    def __init__(
+        self,
+    ):
         self.be_mil = MilitaryService()
-        self._service =  UserService()
-        self.selected_user=None
+        self._service = UserService()
+        self.selected_user = None
 
     @staticmethod
     def role_choices() -> List[str]:
@@ -81,19 +85,21 @@ class UserManagementController:
         :rtype: pd.DataFrame
         """
         users = await self._service.get_all_users()
-        return pd.DataFrame([
-            {
-                "Serial": u.serial_number,
-                "ID": u.id,
-                "Username": u.username,
-                "Email": u.email,
-                "Role": str(u.role),
-                "Active": bool(u.is_active),
-                "Password": u.password_hash,
-                "Created": getattr(u.created_at, "date", lambda: "")(),
-            }
-            for u in users
-        ])
+        return pd.DataFrame(
+            [
+                {
+                    "Serial": u.serial_number,
+                    "ID": u.id,
+                    "Username": u.username,
+                    "Email": u.email,
+                    "Role": str(u.role),
+                    "Active": bool(u.is_active),
+                    "Password": u.password_hash,
+                    "Created": getattr(u.created_at, "date", lambda: "")(),
+                }
+                for u in users
+            ]
+        )
 
     async def validate(self, form: UserForm, *, is_update: bool) -> Tuple[bool, str]:
         """
@@ -119,8 +125,13 @@ class UserManagementController:
                 return False, f"Field '{f}' is required."
         if "@" not in form.email or "." not in form.email.split("@")[-1]:
             return False, "Invalid email address."
-        if not self.USER_REGEX.match(form.username) or not (3 < len(form.username) < 30):
-            return False, "Username must be valid (a..z,A..Z,0..9,_). Length must be between 3 and 30. "
+        if not self.USER_REGEX.match(form.username) or not (
+            3 < len(form.username) < 30
+        ):
+            return (
+                False,
+                "Username must be valid (a..z,A..Z,0..9,_). Length must be between 3 and 30. ",
+            )
         exists = await self._service.serial_exists(form.serial.strip())
         mail_unique = await self._service.user_mail_exist(form.email)
         user_name_exist = await self._service.get_user_by_username(form.username)
@@ -131,41 +142,31 @@ class UserManagementController:
             if form.serial.strip() != (self.selected_user.serial or "") and exists:
                 return False, f"Serial '{form.serial}' already exists."
 
-            if form.email.strip() !=(self.selected_user.email or "") and mail_unique:
-                return (
-                    False,
-                    f"User with email '{form.email}' already exists."
-                )
-            if form.username.strip() !=(self.selected_user.username or "") and user_name_exist:
-                return (
-                    False,
-                    f"User with username '{form.username}' already exists."
-                )
+            if form.email.strip() != (self.selected_user.email or "") and mail_unique:
+                return (False, f"User with email '{form.email}' already exists.")
+            if (
+                form.username.strip() != (self.selected_user.username or "")
+                and user_name_exist
+            ):
+                return (False, f"User with username '{form.username}' already exists.")
         else:
             if exists:
                 return False, f"Serial '{form.serial}' already exists."
             if mail_unique:
-                return (
-                    False,
-                    f"User with email '{form.email}' already exists."
-                )
+                return (False, f"User with email '{form.email}' already exists.")
             if user_name_exist:
-                return (
-                    False,
-                    f"User with username '{form.username}' already exists."
-                )
+                return (False, f"User with username '{form.username}' already exists.")
 
         return True, "OK"
 
-    def set_selected_user(self, user:UserForm):
+    def set_selected_user(self, user: UserForm):
         """
         Sets the currently selected user.
 
         :param user: The user to be set as the selected user.
         :type user: UserForm
         """
-        self.selected_user=user
-
+        self.selected_user = user
 
     async def create_user(self, form: UserForm) -> Optional[User]:
         """
@@ -189,7 +190,7 @@ class UserManagementController:
         user.is_active = form.is_active
         return await self._service.add_user(user)
 
-    async def update_user(self, user_id: int|None, form: UserForm) -> bool:
+    async def update_user(self, user_id: int | None, form: UserForm) -> bool:
         """
         Updates a user's information asynchronously based on the provided user ID and form data.
 
@@ -216,7 +217,7 @@ class UserManagementController:
         updated = await self._service.update_user(user_id, user)
         return bool(updated)
 
-    async def delete_user_by_serial(self, serial: str|None) -> bool:
+    async def delete_user_by_serial(self, serial: str | None) -> bool:
         """
         Deletes a user by their serial identifier asynchronously. It interacts with
         the service layer to perform the deletion and returns a boolean indicating

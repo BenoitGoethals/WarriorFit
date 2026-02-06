@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class CrossStaticsController:
-    def __init__(self, ) -> None:
+    def __init__(
+        self,
+    ) -> None:
         self._service = ServiceCross()
         self._mil_service = MilitaryService()
         self._stats = None
@@ -50,11 +52,11 @@ class CrossStaticsController:
         Generates a dictionary of pandas DataFrames representing the best 10 runners
         for each distance. Each DataFrame contains detailed information about the
         runners and their performance.
-    
+
         The method collects data from the runner statistics and enriches it with
         information fetched asynchronously about the servicemen associated with each
         runner. The resulting structured data is then converted to pandas DataFrames.
-    
+
         :param self: Instance of the class containing this method.
         :return: A dictionary where the keys are distance values and each value is a
             pandas DataFrame that includes the columns `serial_number`, `rank`,
@@ -74,28 +76,38 @@ class CrossStaticsController:
             for runner in value:
                 if runner.serial_number is None:
                     continue
-                service_men: ServiceMen = await self._mil_service.get_servicemen_by_serial(runner.serial_number)
+                service_men: ServiceMen = (
+                    await self._mil_service.get_servicemen_by_serial(
+                        runner.serial_number
+                    )
+                )
                 if service_men:
-                    data_p.append({
-                        'serial_number': runner.serial_number,
-                        'rank': service_men.rank,
-                        'Name': service_men.first_name + ' ' + service_men.last_name,  # Added space
-                        'running_time': Formatter.format_time(runner.running_time),
-                        'distance': key,  # Added value for distance
-                        'age': service_men.age_from_birthdate(),
-                    })
+                    data_p.append(
+                        {
+                            "serial_number": runner.serial_number,
+                            "rank": service_men.rank,
+                            "Name": service_men.first_name
+                            + " "
+                            + service_men.last_name,  # Added space
+                            "running_time": Formatter.format_time(runner.running_time),
+                            "distance": key,  # Added value for distance
+                            "age": service_men.age_from_birthdate(),
+                        }
+                    )
                 else:
-                    logger.warning(f"ServiceMen not found for serial_number: {runner.serial_number} (distance: {key})")
-                    data_p.append({
-                        'serial_number': runner.serial_number,
-                        'rank': 'N/A',
-                        'Name': 'Unknown',
-                        'running_time': Formatter.format_time(runner.running_time),
-                        'distance': key,
-                        'age': None,
-                    })
-            data_panda = pd.DataFrame(
-                data_p
-            )
+                    logger.warning(
+                        f"ServiceMen not found for serial_number: {runner.serial_number} (distance: {key})"
+                    )
+                    data_p.append(
+                        {
+                            "serial_number": runner.serial_number,
+                            "rank": "N/A",
+                            "Name": "Unknown",
+                            "running_time": Formatter.format_time(runner.running_time),
+                            "distance": key,
+                            "age": None,
+                        }
+                    )
+            data_panda = pd.DataFrame(data_p)
             data_panda_dict[int(key)] = data_panda
         return data_panda_dict

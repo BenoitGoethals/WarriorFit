@@ -51,9 +51,7 @@ class PhefPage(BaseTestPage):
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE custom-message handler to toggle disabling inputs.
-            ui.tags.script(
-                self.toggle_disabled_registered_func
-            ),
+            ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 PHEF Tests"),
             ui.layout_columns(
                 ui.div(
@@ -64,11 +62,21 @@ class PhefPage(BaseTestPage):
                     ),
                     ui.card(
                         ui.div(
-                            ui.input_text("ph_serialnr", "Serial Number", placeholder="Service Number"),
-                            ui.input_action_button("ph_serial_search_btn", "🔍 Search own Unit", class_="btn-info btn-sm",
-                                                  style="margin-top: 5px;"),
+                            ui.input_text(
+                                "ph_serialnr",
+                                "Serial Number",
+                                placeholder="Service Number",
+                            ),
+                            ui.input_action_button(
+                                "ph_serial_search_btn",
+                                "🔍 Search own Unit",
+                                class_="btn-info btn-sm",
+                                style="margin-top: 5px;",
+                            ),
                         ),
-                        ui.input_action_button("ph_search", "Confirm Serial", width="200px"),
+                        ui.input_action_button(
+                            "ph_search", "Confirm Serial", width="200px"
+                        ),
                         ui.output_text("ph_military"),
                         ui.layout_columns(
                             ui.input_text(
@@ -184,7 +192,6 @@ class PhefPage(BaseTestPage):
                 run_2400=(input.ph_run_2400() or "").strip(),
             )
 
-
         # ----------------------------
         # Outputs
         # ----------------------------
@@ -233,7 +240,11 @@ class PhefPage(BaseTestPage):
                 label = f"{side_total:.0f} " + ("PASSED" if passed else "FAILED")
                 return ui.span(
                     label,
-                    style=("color: green; font-weight: 700;" if passed else "color: red; font-weight: 700;"),
+                    style=(
+                        "color: green; font-weight: 700;"
+                        if passed
+                        else "color: red; font-weight: 700;"
+                    ),
                 )
             except (TypeError, ValueError):
                 return ui.span("")
@@ -252,7 +263,9 @@ class PhefPage(BaseTestPage):
             status.set("Ready.")
 
         # Setup session management using base class
-        self.setup_session_management(input, session, selected_session_id, status, self.controller)
+        self.setup_session_management(
+            input, session, selected_session_id, status, self.controller
+        )
 
         # ----------------------------
         # Search military / unlock form
@@ -355,14 +368,18 @@ class PhefPage(BaseTestPage):
             if not sess_id:
                 return pd.DataFrame()
 
-            sess_date = self.selected_session.datetime_start if self.selected_session else None
+            sess_date = (
+                self.selected_session.datetime_start if self.selected_session else None
+            )
             try:
-                df = await self.controller.list_phef_df(int(sess_id), session_date=sess_date)
+                df = await self.controller.list_phef_df(
+                    int(sess_id), session_date=sess_date
+                )
             except Exception:
                 return pd.DataFrame()
 
             try:
-                df= self.controller.decorate_grid(df)
+                df = self.controller.decorate_grid(df)
                 return df.sort_values(by=["Serial"])
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
@@ -378,7 +395,9 @@ class PhefPage(BaseTestPage):
         @render.data_frame
         async def ph_grid():
             df_view = await sessions_phef__data_view()
-            return render.DataGrid(df_view, filters=False, selection_mode="rows", width="100%")
+            return render.DataGrid(
+                df_view, filters=False, selection_mode="rows", width="100%"
+            )
 
         # ----------------------------
         # Row selection -> populate form
@@ -407,8 +426,13 @@ class PhefPage(BaseTestPage):
 
             serial = str(row.get("Serial", "") or "").strip()
             ui.update_text("ph_serialnr", value=serial)
-            ui.update_text("ph_side_bridge_l", value=str(row.get("Sidebridge L", "") or ""))
-            ui.update_text("ph_side_bridge_r", value=str(row.get("Sidebridge R", row.get("Sidebridge R ", "")) or ""))
+            ui.update_text(
+                "ph_side_bridge_l", value=str(row.get("Sidebridge L", "") or "")
+            )
+            ui.update_text(
+                "ph_side_bridge_r",
+                value=str(row.get("Sidebridge R", row.get("Sidebridge R ", "")) or ""),
+            )
             ui.update_text("ph_run_2400", value=str(row.get("runningTime", "") or ""))
 
             # Selecting an existing record means we should allow Update, but not Add.
@@ -416,12 +440,20 @@ class PhefPage(BaseTestPage):
 
             # Try to resolve military (so scores can compute as user edits)
             try:
-                self.selected_military = await self.controller.search_military(serial) if serial else None
+                self.selected_military = (
+                    await self.controller.search_military(serial) if serial else None
+                )
             except Exception:
                 self.selected_military = None
 
-            await self.toggle_inputs(session, self._DISABLE_IDS, disabled=(self.selected_military is None))
-            status.set(f"Selected PHEF record for: {serial}" if serial else "Selected PHEF record.")
+            await self.toggle_inputs(
+                session, self._DISABLE_IDS, disabled=(self.selected_military is None)
+            )
+            status.set(
+                f"Selected PHEF record for: {serial}"
+                if serial
+                else "Selected PHEF record."
+            )
 
         # ----------------------------
         # CRUD
@@ -444,7 +476,9 @@ class PhefPage(BaseTestPage):
         @reactive.Effect
         @reactive.event(input.ph_add_btn)
         async def _on_add() -> None:
-            if not self.require_session_selected(selected_session_id, status) or not self.require_military_selected(status):
+            if not self.require_session_selected(
+                selected_session_id, status
+            ) or not self.require_military_selected(status):
                 return
 
             form = _read_form()
@@ -468,17 +502,23 @@ class PhefPage(BaseTestPage):
                 self.selected_session,
             )
             if not added:
-                status.set(f"Failed to add PHEF test for {form.serialnr} in session {form.session_id}.")
+                status.set(
+                    f"Failed to add PHEF test for {form.serialnr} in session {form.session_id}."
+                )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(f"Added PHEF test for {form.serialnr} in session {form.session_id}.")
+            status.set(
+                f"Added PHEF test for {form.serialnr} in session {form.session_id}."
+            )
             await _clear_form()
 
         @reactive.Effect
         @reactive.event(input.ph_update_btn)
         async def _on_update() -> None:
-            if not self.require_session_selected(selected_session_id, status) or not self.require_military_selected(status):
+            if not self.require_session_selected(
+                selected_session_id, status
+            ) or not self.require_military_selected(status):
                 return
 
             phef_id_raw = (selected_phef_id.get() or "").strip()
@@ -502,11 +542,15 @@ class PhefPage(BaseTestPage):
 
             updated = await self.controller.update_phef(int(phef_id_raw), payload)
             if not updated:
-                status.set(f"Failed to update PHEF test for {form.serialnr} in session {form.session_id}.")
+                status.set(
+                    f"Failed to update PHEF test for {form.serialnr} in session {form.session_id}."
+                )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(f"Updated PHEF test for {form.serialnr} in session {form.session_id}.")
+            status.set(
+                f"Updated PHEF test for {form.serialnr} in session {form.session_id}."
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -553,7 +597,9 @@ class PhefPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
+                return pd.DataFrame(
+                    columns=["service_number", "first_name", "last_name", "gender"]
+                )
 
             df = pd.DataFrame(
                 [

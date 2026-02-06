@@ -4,14 +4,20 @@ import logging
 from typing import Tuple, Dict, Any, Optional
 import pandas as pd
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.model.db_model import CombatTestParatrooper, TestSession, ServiceMen
+from warriorfit.data.model.db_model import (
+    CombatTestParatrooper,
+    TestSession,
+    ServiceMen,
+)
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_test import ServiceTest
+
 
 class CombatController:
     """
     Represents a controller for managing combat fitness tests.
     """
+
     def __init__(self) -> None:
         self._service = ServiceTest()
         self.be_mil_service = MilitaryService()
@@ -71,7 +77,9 @@ class CombatController:
         return f"{int(m)}:{int(s):02d}"
 
     @staticmethod
-    def overall_passed(obstacle_passed: bool, rope_passed: bool, running_time_s: int) -> bool:
+    def overall_passed(
+        obstacle_passed: bool, rope_passed: bool, running_time_s: int
+    ) -> bool:
         return obstacle_passed and rope_passed and running_time_s <= 7200
 
     async def load_sessions(self):
@@ -85,7 +93,9 @@ class CombatController:
         :return: A coroutine that resolves to the list of test sessions.
         :rtype: listfTime must be <=
         """
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT)
+        return await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.COMBAT
+        )
 
     async def search_military(self, serial_nr: str) -> Optional[ServiceMen]:
         """
@@ -127,16 +137,20 @@ class CombatController:
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if sm is None:
                     continue
-                total = self.overall_passed(r.obstacle_passed, r.rope_passed, r.running_time)
-                data.append({
-                    "ID": r.id,
-                    "Serial": r.serial_number,
-                    "speedmarsTime": self.format_seconds(r.running_time),
-                    "Speedmars Score": f"{r.running_time <= 7200}",
-                    "ObstacleCourse": "Passed" if r.obstacle_passed else "Failed",
-                    "RobeCourse": "Passed" if r.rope_passed else "Failed",
-                    "Totale Score": "Passed" if total else "Failed",
-                })
+                total = self.overall_passed(
+                    r.obstacle_passed, r.rope_passed, r.running_time
+                )
+                data.append(
+                    {
+                        "ID": r.id,
+                        "Serial": r.serial_number,
+                        "speedmarsTime": self.format_seconds(r.running_time),
+                        "Speedmars Score": f"{r.running_time <= 7200}",
+                        "ObstacleCourse": "Passed" if r.obstacle_passed else "Failed",
+                        "RobeCourse": "Passed" if r.rope_passed else "Failed",
+                        "Totale Score": "Passed" if total else "Failed",
+                    }
+                )
             return pd.DataFrame(data)
         except (ValueError, TypeError) as e:
             self._logger.error(f"Error in list_combat_tests_df: {e}")
@@ -145,8 +159,8 @@ class CombatController:
             self._logger.error(f"Error in list_combat_tests_df: {e}")
             return pd.DataFrame()
         except Exception as e:
-           self._logger.error(f"Error in list_combat_tests_df: {e}")
-           return pd.DataFrame()
+            self._logger.error(f"Error in list_combat_tests_df: {e}")
+            return pd.DataFrame()
 
     @staticmethod
     def decorate_grid(df: pd.DataFrame) -> pd.DataFrame:
@@ -173,7 +187,13 @@ class CombatController:
         return df2
 
     # ----- Commands -----
-    async def add_combat(self, session_id: int, payload: Dict[str, Any],session:TestSession,military:ServiceMen) -> Optional[CombatTestParatrooper]:
+    async def add_combat(
+        self,
+        session_id: int,
+        payload: Dict[str, Any],
+        session: TestSession,
+        military: ServiceMen,
+    ) -> Optional[CombatTestParatrooper]:
         """
         Adds a combat test to a specific test session and returns the created combat test
         paratrooper instance.
@@ -201,9 +221,13 @@ class CombatController:
         cp.running_time = payload["combat_speedmars"]
         cp.rope_passed = payload["combat_robe"]
         cp.obstacle_passed = payload["combat_obstacle"]
-        return await self._service.add_fitness_test_to_testSession(int(session_id), cp,session=session,military=military)
+        return await self._service.add_fitness_test_to_testSession(
+            int(session_id), cp, session=session, military=military
+        )
 
-    async def update_combat(self, combat_id: int, payload: Dict[str, Any]) -> Optional[CombatTestParatrooper]:
+    async def update_combat(
+        self, combat_id: int, payload: Dict[str, Any]
+    ) -> Optional[CombatTestParatrooper]:
         """
         Updates a combat test record with the provided data.
 
@@ -237,9 +261,10 @@ class CombatController:
         :param combat_id: Unique identifier for the combat to be deleted
         :return: A boolean indicating whether the deletion was successful
         """
-        return await self._service.delete_fitness_test_from_test_session(int(session_id), int(combat_id))
+        return await self._service.delete_fitness_test_from_test_session(
+            int(session_id), int(combat_id)
+        )
 
-  
     async def get_test_session_by_id(self, param):
         """
         Retrieves a test session by its ID using the associated service.

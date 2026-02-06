@@ -10,6 +10,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 class Auth:
     """
     Handles user authentication functionality including password hashing and verification.
@@ -24,6 +25,7 @@ class Auth:
         - hash_password: Hashes a plain text password using bcrypt.
         - verify_password: Verifies a plain password against a hashed password.
     """
+
     @staticmethod
     async def authenticate_user(username: str, password: str):
         """
@@ -64,7 +66,7 @@ class Auth:
         if isinstance(password, str):
             password = password.encode()
         hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-        return hashed.decode('utf-8')
+        return hashed.decode("utf-8")
 
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -85,14 +87,15 @@ class Auth:
         try:
             if isinstance(hashed_password, bytes):
                 hash_bytes = hashed_password
-            elif hashed_password.startswith('$2b$'):
+            elif hashed_password.startswith("$2b$"):
                 hash_bytes = hashed_password.encode()
-            elif all(c in '0123456789abcdefABCDEF' for c in hashed_password.replace('\\x', '')):
-                hash_bytes = bytes.fromhex(hashed_password.replace('\\x', ''))
+            elif all(
+                c in "0123456789abcdefABCDEF"
+                for c in hashed_password.replace("\\x", "")
+            ):
+                hash_bytes = bytes.fromhex(hashed_password.replace("\\x", ""))
             else:
                 hash_bytes = hashed_password.encode()
             return bcrypt.checkpw(plain_password.encode(), hash_bytes)
         except Exception:
             return False
-
-

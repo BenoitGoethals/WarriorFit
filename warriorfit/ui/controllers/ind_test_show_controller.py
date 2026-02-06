@@ -20,6 +20,7 @@ class IndTestShowController:
         military information.
     :type be_mil: MilitaryService
     """
+
     def __init__(self):
         self.be_mil = MilitaryService()
 
@@ -36,7 +37,7 @@ class IndTestShowController:
         :return: The servicemen information obtained from the service.
         :rtype: Any
         """
-        return await self.be_mil.get_servicemen_by_serial(serial,lazy=False)
+        return await self.be_mil.get_servicemen_by_serial(serial, lazy=False)
 
     async def collect_tests_df(self, serial: str) -> pd.DataFrame:
         """
@@ -50,7 +51,9 @@ class IndTestShowController:
             number, or an empty DataFrame if the data could not be collected.
         """
         try:
-            df = await DataCollector().collect_tests_for_serial(serial,current_year=False)
+            df = await DataCollector().collect_tests_for_serial(
+                serial, current_year=False
+            )
             return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
         except Exception:
             return pd.DataFrame()

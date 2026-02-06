@@ -23,7 +23,7 @@ class CrossPage(Page):
         self.selected_cross_id = reactive.Value("")
         self.selected_runner_id = reactive.Value("")
         self.selected_military = reactive.Value(None)
-        self._logger=logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
         self._last_paths = None
 
     NO_SELECTION_MESSAGE = "No row selected"
@@ -41,7 +41,6 @@ class CrossPage(Page):
                         ui.card_header("Cross"),
                         ui.input_select("cross_id", "Cross", choices=[]),
                         ui.input_action_button("cross_locker", "Select", width="150px"),
-
                         full_screen=False,
                     ),
                     ui.output_ui("runner_card"),
@@ -51,7 +50,9 @@ class CrossPage(Page):
                     ui.output_data_frame("runners_grid"),
                     ui.br(),
                     ui.input_action_button("report_lst_run", "Generate Report"),
-                    ui.download_button("download_report_cross_run", "Download", class_="btn-primary"),
+                    ui.download_button(
+                        "download_report_cross_run", "Download", class_="btn-primary"
+                    ),
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
@@ -62,7 +63,6 @@ class CrossPage(Page):
         status = reactive.Value("Ready.")
         cross_selected_id = reactive.Value("")  # or None
 
-
         @output
         @render.ui
         def runner_card():
@@ -71,14 +71,40 @@ class CrossPage(Page):
             return ui.card(
                 ui.card_header("Runner"),
                 ui.input_text("runner_serialnr", "Serial Number"),
-                ui.input_action_button("runner_search", "Confirm Serial", width="150px"),
+                ui.input_action_button(
+                    "runner_search", "Confirm Serial", width="150px"
+                ),
                 ui.output_text("runner_military"),
-                ui.input_text("runner_time", "Running time (hh::mm:ss)", placeholder="e.g., 01:10:45"),
+                ui.input_text(
+                    "runner_time",
+                    "Running time (hh::mm:ss)",
+                    placeholder="e.g., 01:10:45",
+                ),
                 ui.layout_columns(
-                    ui.input_action_button("runner_add_btn", "Add", width="120px", class_="btn-primary w-100"),
-                    ui.input_action_button("runner_update_btn", "Update", width="120px", class_="btn-warning w-100"),
-                    ui.input_action_button("runner_clear_btn", "Clear Form", width="120px", class_="btn-secondary w-100"),
-                    ui.input_action_button("runner_delete_btn", "Delete Selected", width="240px", class_="btn-danger w-100"),
+                    ui.input_action_button(
+                        "runner_add_btn",
+                        "Add",
+                        width="120px",
+                        class_="btn-primary w-100",
+                    ),
+                    ui.input_action_button(
+                        "runner_update_btn",
+                        "Update",
+                        width="120px",
+                        class_="btn-warning w-100",
+                    ),
+                    ui.input_action_button(
+                        "runner_clear_btn",
+                        "Clear Form",
+                        width="120px",
+                        class_="btn-secondary w-100",
+                    ),
+                    ui.input_action_button(
+                        "runner_delete_btn",
+                        "Delete Selected",
+                        width="240px",
+                        class_="btn-danger w-100",
+                    ),
                     col_widths=(4, 4, 4),
                 ),
                 ui.output_text("runner_status"),
@@ -91,8 +117,6 @@ class CrossPage(Page):
         def on_cross_select():
             val = (input.cross_select() or "").strip()
             self.selected_cross_id.set(val)
-
-
 
         @reactive.Effect
         @reactive.event(input.cross_locker)
@@ -113,11 +137,16 @@ class CrossPage(Page):
             session.send_input_message("runner_serialnr", {"value": ""})
             session.send_input_message("runner_time", {"value": ""})
             self.selected_runner_id.set("")
-            #status.set("Form cleared.")
+            # status.set("Form cleared.")
 
         async def _refresh_cross_choices():
             crosses = await self.controller.load_crosses()
-            items = {str(c.id): getattr(c, "name", f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')}") for c in (crosses or [])}
+            items = {
+                str(c.id): getattr(
+                    c, "name", f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')}"
+                )
+                for c in (crosses or [])
+            }
             cur = (input.cross_id() or "").strip()
             selected = cur if cur in items else None
             ui.update_select("cross_id", choices=items, selected=selected)
@@ -128,14 +157,19 @@ class CrossPage(Page):
             _ = self.refresh_tick.get()
             if not cid:
                 return pd.DataFrame()
-            df= await self.controller.list_runners_df(int(cid))
+            df = await self.controller.list_runners_df(int(cid))
             return df
 
         @output
         @render.data_frame
         async def runners_grid():
             df = await runners_df()
-            return render.DataGrid(df.drop(columns=["ID"], errors="ignore"), filters=False, selection_mode="rows", width="100%",)
+            return render.DataGrid(
+                df.drop(columns=["ID"], errors="ignore"),
+                filters=False,
+                selection_mode="rows",
+                width="100%",
+            )
 
         @output
         @render.text
@@ -149,7 +183,7 @@ class CrossPage(Page):
             if not sm:
                 return "No selection"
             try:
-                return "" #f"{sm.rank} {sm.service_number} {sm.first_name} {sm.last_name}"
+                return ""  # f"{sm.rank} {sm.service_number} {sm.first_name} {sm.last_name}"
             except Exception:
                 return "Selected"
 
@@ -157,11 +191,9 @@ class CrossPage(Page):
         async def cross_df():
             _ = self.refresh_tick.get()  # dependency for re-render
 
-
         @reactive.Effect
         async def _init():
             await _refresh_cross_choices()
-
 
         @reactive.Effect
         @reactive.event(input.runner_search)
@@ -176,7 +208,9 @@ class CrossPage(Page):
             if sm is None:
                 status.set("Not found.")
             else:
-                status.set(f"Service {sm.rank} {sm.last_name} {sm.service_number} member found.")
+                status.set(
+                    f"Service {sm.rank} {sm.last_name} {sm.service_number} member found."
+                )
 
         @reactive.Effect
         @reactive.event(input.runners_grid_selected_rows)
@@ -193,7 +227,9 @@ class CrossPage(Page):
                     return
                 row = df.iloc[row_idx]
                 self.selected_runner_id.set(str(row["ID"]))
-                self.selected_military.set(await self.controller.search_military(row["Serial"]))
+                self.selected_military.set(
+                    await self.controller.search_military(row["Serial"])
+                )
                 serial = str(row.get("Serial", "") or "")
                 run_t = str(row.get("Running Time", "") or "")
                 ui.update_text("runner_serialnr", value=serial)
@@ -231,8 +267,10 @@ class CrossPage(Page):
                 status.set("Select a row first.")
                 return
             data = _read_form()
-            data["old_serialnr"] = getattr(self.selected_military.get(), "service_number", None)
-            ok, res = await self.controller.validate_form(data,True)
+            data["old_serialnr"] = getattr(
+                self.selected_military.get(), "service_number", None
+            )
+            ok, res = await self.controller.validate_form(data, True)
             if not ok:
                 status.set(res)
                 return
@@ -244,7 +282,7 @@ class CrossPage(Page):
             self.selected_runner_id.set("")
             self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Updated runner {payload['serialnr']}.")
-          
+
             _clear_form()
 
         @reactive.Effect
@@ -267,11 +305,12 @@ class CrossPage(Page):
         @reactive.effect
         @reactive.event(input.report_lst_run)
         async def _on_generate():
-            self._last_paths = await self.controller.generate_report_cross(cross_selected_id.get())
+            self._last_paths = await self.controller.generate_report_cross(
+                cross_selected_id.get()
+            )
             if not self._last_paths:
                 status.set("No report generated.")
                 return
-
 
         @render.download(filename=lambda: "reports_run.zip")
         def download_report_cross_run():
@@ -296,11 +335,14 @@ class CrossPage(Page):
 
             return _iter()
 
+
 # Expose singleton-style API compatible with app.py import pattern
 _page = CrossPage()
 
+
 def get_ui():
     return _page.get_ui()
+
 
 def server(input, output, session):
     return _page.server(input, output, session)

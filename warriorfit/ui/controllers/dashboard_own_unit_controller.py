@@ -6,8 +6,14 @@ import plotly.graph_objects as go
 from warriorfit.config.appliccation_config import ApplicationConfig
 
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.model.db_model import PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, ServiceMen, \
-    March
+from warriorfit.data.model.db_model import (
+    PhefTest,
+    FunctionalTest,
+    CombatTestParatrooper,
+    CombatSwimmingTest,
+    ServiceMen,
+    March,
+)
 from warriorfit.logic.phef_calculator import PhefCalculator
 
 from warriorfit.services.military_service import MilitaryService
@@ -30,14 +36,15 @@ class DashboardOwnUnitController:
     :ivar unit_name: Name of the owning unit.
     :type unit_name: str
     """
+
     def __init__(self) -> None:
         self._service = ServiceTest()
         self.be_mil_service = MilitaryService()
-        self.unit_name=ApplicationConfig().own_unit
-        self._mils=None
-        self._all_military_own_unit=None
-        self._results_tests_for_unit:dict[str,list[Any]]={}
-        self._march_service=ServiceMarch()
+        self.unit_name = ApplicationConfig().own_unit
+        self._mils = None
+        self._all_military_own_unit = None
+        self._results_tests_for_unit: dict[str, list[Any]] = {}
+        self._march_service = ServiceMarch()
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:
@@ -54,12 +61,15 @@ class DashboardOwnUnitController:
         """
         try:
             if self._mils is None:
-                people = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
-                self._mils= {p.service_number for p in (people or [])}
+                people = await self.be_mil_service.get_all_be_mil_from_unit(
+                    self.unit_name
+                )
+                self._mils = {p.service_number for p in (people or [])}
             return self._mils
         except Exception as e:
             return set()
-    async def _get_all_military_own_unit(self) -> dict[str,ServiceMen]:
+
+    async def _get_all_military_own_unit(self) -> dict[str, ServiceMen]:
         """
         Fetches all servicemen belonging to the current unit asynchronously.
 
@@ -76,8 +86,10 @@ class DashboardOwnUnitController:
         """
         try:
             if self._all_military_own_unit is None:
-                data = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
-                self._all_military_own_unit= {s.service_number:s for s in data}
+                data = await self.be_mil_service.get_all_be_mil_from_unit(
+                    self.unit_name
+                )
+                self._all_military_own_unit = {s.service_number: s for s in data}
             return self._all_military_own_unit
         except Exception as e:
             return {}
@@ -96,8 +108,8 @@ class DashboardOwnUnitController:
         :return: The total calculated PHEF score as a float.
         :rtype: float
         """
-        mils:dict[str,ServiceMen] = await self._get_all_military_own_unit()
-        val:ServiceMen = mils.get(test.serial_number)
+        mils: dict[str, ServiceMen] = await self._get_all_military_own_unit()
+        val: ServiceMen = mils.get(test.serial_number)
         age = val.age_from_birthdate()
         gender = val.gender
         score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, age, gender)
@@ -107,9 +119,8 @@ class DashboardOwnUnitController:
         return (score_run * (50 / 20)) + ((score_r + score_l) * (25 / 20)), passed
 
     def reset_cache(self):
-        self._mils=None
+        self._mils = None
         self._results_tests_for_unit = {}
-
 
     async def _tests_for_unit(self, t: TypeFitnessTest) -> List[Any]:
         """
@@ -143,7 +154,13 @@ class DashboardOwnUnitController:
                     tests = await self._service.get_all_combat_swimming_test(sess.id)
                 else:
                     tests = []
-                results.extend([test for test in tests if getattr(test, "serial_number", None) in serials])
+                results.extend(
+                    [
+                        test
+                        for test in tests
+                        if getattr(test, "serial_number", None) in serials
+                    ]
+                )
             self._results_tests_for_unit[key] = results
         return self._results_tests_for_unit.get(key, [])
 
@@ -164,7 +181,7 @@ class DashboardOwnUnitController:
         passed_test = False
         for t in phef_tests:
             try:
-                _,passed_test = await self.phef_total_score(t)
+                _, passed_test = await self.phef_total_score(t)
             except Exception:
                 passed_test = False
             if passed_test:
@@ -172,7 +189,12 @@ class DashboardOwnUnitController:
             else:
                 failed += 1
         subtitle = f"✅ {passed} | ❌ {failed}"
-        return {"total": len(serials), "sub_value": subtitle, "sub_label": "PHEF Passed | Failed", "sub_class": "text-secondary"}
+        return {
+            "total": len(serials),
+            "sub_value": subtitle,
+            "sub_label": "PHEF Passed | Failed",
+            "sub_class": "text-secondary",
+        }
 
     async def phef_stats(self) -> Dict[str, Any]:
         """
@@ -189,42 +211,79 @@ class DashboardOwnUnitController:
         """
         tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
         total_tests = len(tests)
-        passed_tot= 0
+        passed_tot = 0
         for t in tests:
-            _,passed=await self.phef_total_score(t)
+            _, passed = await self.phef_total_score(t)
             if passed:
                 passed_tot += 1
         pass_rate = (passed_tot / total_tests * 100) if total_tests > 0 else 0
-        return {"total": total_tests, "sub_value": f"{pass_rate:.1f}%", "sub_label": "Pass Rate", "sub_class": "text-success"}
+        return {
+            "total": total_tests,
+            "sub_value": f"{pass_rate:.1f}%",
+            "sub_label": "Pass Rate",
+            "sub_class": "text-success",
+        }
 
     async def combat_stats(self) -> Dict[str, Any]:
-        tests: List[CombatTestParatrooper] = await self._tests_for_unit(TypeFitnessTest.COMBAT)
+        tests: List[CombatTestParatrooper] = await self._tests_for_unit(
+            TypeFitnessTest.COMBAT
+        )
         total = len(tests)
-        passed = sum(1 for t in tests if t.rope_passed and t.obstacle_passed and t.running_time <= 7200)
+        passed = sum(
+            1
+            for t in tests
+            if t.rope_passed and t.obstacle_passed and t.running_time <= 7200
+        )
         pass_rate = (passed / total * 100) if total > 0 else 0
-        return {"total": total, "sub_value": f"{pass_rate:.1f}%", "sub_label": "Pass Rate", "sub_class": "text-success"}
+        return {
+            "total": total,
+            "sub_value": f"{pass_rate:.1f}%",
+            "sub_label": "Pass Rate",
+            "sub_class": "text-success",
+        }
 
     async def functional_stats(self) -> Dict[str, Any]:
-        tests: List[FunctionalTest] = await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL)
+        tests: List[FunctionalTest] = await self._tests_for_unit(
+            TypeFitnessTest.FUNCTIONAL
+        )
         total = len(tests)
-        agg = sum(int(t.push_ups or 0) + int(t.sit_ups or 0) + int(t.pull_ups or 0) for t in tests)
+        agg = sum(
+            int(t.push_ups or 0) + int(t.sit_ups or 0) + int(t.pull_ups or 0)
+            for t in tests
+        )
         avg = (agg / total) if total > 0 else 0
-        return {"total": total, "sub_value": f"{avg:.1f}", "sub_label": "Avg Total Score", "sub_class": "text-warning"}
+        return {
+            "total": total,
+            "sub_value": f"{avg:.1f}",
+            "sub_label": "Avg Total Score",
+            "sub_class": "text-warning",
+        }
 
     async def swimming_stats(self) -> Dict[str, Any]:
-        tests: List[CombatSwimmingTest] = await self._tests_for_unit(TypeFitnessTest.SWIMMING)
+        tests: List[CombatSwimmingTest] = await self._tests_for_unit(
+            TypeFitnessTest.SWIMMING
+        )
         total = len(tests)
         passed = sum(1 for t in tests if t.swim_paased)
         pass_rate = (passed / total * 100) if total > 0 else 0
-        return {"total": total, "sub_value": f"{pass_rate:.1f}%", "sub_label": "Pass Rate", "sub_class": "text-info"}
+        return {
+            "total": total,
+            "sub_value": f"{pass_rate:.1f}%",
+            "sub_label": "Pass Rate",
+            "sub_class": "text-info",
+        }
 
     async def march_stats(self):
-        tests_march:List[March] =await self._march_service.get_all_march_from_unit()
+        tests_march: List[March] = await self._march_service.get_all_march_from_unit()
         total_march = len(tests_march)
         passed = sum(1 for t in tests_march if t.succeeded)
         pass_rate = (passed / total_march * 100) if total_march > 0 else 0
-        return {"total": total_march, "sub_value": f"{pass_rate:.1f}%", "sub_label": "Pass Rate", "sub_class": "text-info"}
-
+        return {
+            "total": total_march,
+            "sub_value": f"{pass_rate:.1f}%",
+            "sub_label": "Pass Rate",
+            "sub_class": "text-info",
+        }
 
     # ---------- charts ----------
     async def distribution_pie_html(self) -> str:
@@ -234,9 +293,15 @@ class DashboardOwnUnitController:
             "Functional": len(await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL)),
             "Swimming": len(await self._tests_for_unit(TypeFitnessTest.SWIMMING)),
         }
-        data = pd.DataFrame({"Test Type": list(counts.keys()), "Count": list(counts.values())})
-        fig = px.pie(data, values="Count", names="Test Type",
-                     color_discrete_sequence=["#0d6efd", "#198754", "#ffc107", "#0dcaf0"])
+        data = pd.DataFrame(
+            {"Test Type": list(counts.keys()), "Count": list(counts.values())}
+        )
+        fig = px.pie(
+            data,
+            values="Count",
+            names="Test Type",
+            color_discrete_sequence=["#0d6efd", "#198754", "#ffc107", "#0dcaf0"],
+        )
         fig.update_layout(margin=dict(t=0, b=0, l=0, r=0))
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_distribution")
 
@@ -244,36 +309,63 @@ class DashboardOwnUnitController:
         phef_tests: List[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
         phef_pass = 0
         for t in phef_tests:
-            _,passed = await self.phef_total_score(t)
+            _, passed = await self.phef_total_score(t)
             if passed:
                 phef_pass += 1
         phef_fail = len(phef_tests) - phef_pass
 
-        combat_tests: List[CombatTestParatrooper] = await self._tests_for_unit(TypeFitnessTest.COMBAT)
-        combat_pass = sum(1 for t in combat_tests if t.rope_passed and t.obstacle_passed and t.running_time <= 7200)
+        combat_tests: List[CombatTestParatrooper] = await self._tests_for_unit(
+            TypeFitnessTest.COMBAT
+        )
+        combat_pass = sum(
+            1
+            for t in combat_tests
+            if t.rope_passed and t.obstacle_passed and t.running_time <= 7200
+        )
         combat_fail = len(combat_tests) - combat_pass
 
-        functional_tests: List[FunctionalTest] = await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL)
-        func_pass = sum(1 for t in functional_tests if (int(t.push_ups or 0) + int(t.sit_ups or 0) + int(t.pull_ups or 0)) >= 50)
+        functional_tests: List[FunctionalTest] = await self._tests_for_unit(
+            TypeFitnessTest.FUNCTIONAL
+        )
+        func_pass = sum(
+            1
+            for t in functional_tests
+            if (int(t.push_ups or 0) + int(t.sit_ups or 0) + int(t.pull_ups or 0)) >= 50
+        )
         func_fail = len(functional_tests) - func_pass
 
-        swim_tests: List[CombatSwimmingTest] = await self._tests_for_unit(TypeFitnessTest.SWIMMING)
+        swim_tests: List[CombatSwimmingTest] = await self._tests_for_unit(
+            TypeFitnessTest.SWIMMING
+        )
         swim_pass = sum(1 for t in swim_tests if t.swim_paased)
         swim_fail = len(swim_tests) - swim_pass
 
-        march_tests:List[March] =await self._march_service.get_all_march_from_unit()
-        passed_march:int = len([m for m in march_tests if m.succeeded])
-        failed_march:int = len([m for m in march_tests if not m.succeeded])
+        march_tests: List[March] = await self._march_service.get_all_march_from_unit()
+        passed_march: int = len([m for m in march_tests if m.succeeded])
+        failed_march: int = len([m for m in march_tests if not m.succeeded])
 
-
-        fig = go.Figure(data=[
-            go.Bar(name="Passed", x=["PHEF", "Combat", "Functional", "Swimming","March"],
-                   y=[phef_pass, combat_pass, func_pass, swim_pass,passed_march], marker_color="#198754"),
-            go.Bar(name="Failed", x=["PHEF", "Combat", "Functional", "Swimming","March"],
-                   y=[phef_fail, combat_fail, func_fail, swim_fail,failed_march], marker_color="#dc3545"),
-        ])
-        fig.update_layout(barmode="group", margin=dict(t=20, b=40, l=40, r=20),
-                          xaxis_title="Test Type", yaxis_title="Count")
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    name="Passed",
+                    x=["PHEF", "Combat", "Functional", "Swimming", "March"],
+                    y=[phef_pass, combat_pass, func_pass, swim_pass, passed_march],
+                    marker_color="#198754",
+                ),
+                go.Bar(
+                    name="Failed",
+                    x=["PHEF", "Combat", "Functional", "Swimming", "March"],
+                    y=[phef_fail, combat_fail, func_fail, swim_fail, failed_march],
+                    marker_color="#dc3545",
+                ),
+            ]
+        )
+        fig.update_layout(
+            barmode="group",
+            margin=dict(t=20, b=40, l=40, r=20),
+            xaxis_title="Test Type",
+            yaxis_title="Count",
+        )
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_pass_fail")
 
     # ---------- tables ----------
@@ -294,13 +386,15 @@ class DashboardOwnUnitController:
             elif sess.type_test == TypeFitnessTest.SWIMMING:
                 tests = await self._service.get_all_combat_swimming_test(sess.id)
             if any(getattr(t, "serial_number", None) in serials for t in tests):
-                rows.append({
-                    "Date": sess.datetime_start.strftime("%Y-%m-%d %H:%M"),
-                    "Type": sess.type_test.name,
-                    "PTI": sess.serial_number_pti or "N/A",
-                    "Status": "❌ Canceled" if sess.canceled else "⏳ Planned",
-                    "Description": sess.description or "",
-                })
+                rows.append(
+                    {
+                        "Date": sess.datetime_start.strftime("%Y-%m-%d %H:%M"),
+                        "Type": sess.type_test.name,
+                        "PTI": sess.serial_number_pti or "N/A",
+                        "Status": "❌ Canceled" if sess.canceled else "⏳ Planned",
+                        "Description": sess.description or "",
+                    }
+                )
             if len(rows) >= 10:
                 break
         return pd.DataFrame(rows)
@@ -315,13 +409,21 @@ class DashboardOwnUnitController:
                 scores.append(score)
         if not scores:
             return None
-        fig = px.histogram(scores, nbins=20,
-                           labels={"value": "Score", "count": "Frequency"},
-                           color_discrete_sequence=["#0d6efd"])
-        fig.update_layout(margin=dict(t=20, b=40, l=40, r=20),
-                          xaxis_title="PHEF Score", yaxis_title="Number of Tests",
-                          showlegend=False)
-        fig.add_vline(x=50, line_dash="dash", line_color="red", annotation_text="Pass Threshold")
+        fig = px.histogram(
+            scores,
+            nbins=20,
+            labels={"value": "Score", "count": "Frequency"},
+            color_discrete_sequence=["#0d6efd"],
+        )
+        fig.update_layout(
+            margin=dict(t=20, b=40, l=40, r=20),
+            xaxis_title="PHEF Score",
+            yaxis_title="Number of Tests",
+            showlegend=False,
+        )
+        fig.add_vline(
+            x=50, line_dash="dash", line_color="red", annotation_text="Pass Threshold"
+        )
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_phef_hist")
 
     async def failed_phef_df(self) -> pd.DataFrame:
@@ -331,12 +433,18 @@ class DashboardOwnUnitController:
             total = 0
             passed = False
             try:
-                total,passed = await self.phef_total_score(t)
+                total, passed = await self.phef_total_score(t)
 
             except Exception:
                 pass
             if passed:
-                rows.append({"Type": "PHEF", "Serial": t.serial_number, "Reason": f"Total {total:.1f} < 50"})
+                rows.append(
+                    {
+                        "Type": "PHEF",
+                        "Serial": t.serial_number,
+                        "Reason": f"Total {total:.1f} < 50",
+                    }
+                )
         return pd.DataFrame(rows)
 
     async def failed_all_df(self) -> pd.DataFrame:
@@ -348,7 +456,13 @@ class DashboardOwnUnitController:
             except Exception:
                 passed = False
             if passed:
-                rows.append({"Type": "PHEF", "Serial": t.serial_number, "Reason": f"Passed {passed:.1f}"})
+                rows.append(
+                    {
+                        "Type": "PHEF",
+                        "Serial": t.serial_number,
+                        "Reason": f"Passed {passed:.1f}",
+                    }
+                )
 
         for t in await self._tests_for_unit(TypeFitnessTest.COMBAT):
             rope = bool(getattr(t, "rope_passed", False))
@@ -357,19 +471,43 @@ class DashboardOwnUnitController:
             passed = rope and obst and run_s <= 7200
             if not passed:
                 reason_parts = []
-                if not rope: reason_parts.append("Rope")
-                if not obst: reason_parts.append("Obstacle")
-                if run_s > 7200: reason_parts.append(f"Run {run_s}s > 7200s")
-                rows.append({"Type": "Combat", "Serial": t.serial_number, "Reason": ", ".join(reason_parts) or "Failed"})
+                if not rope:
+                    reason_parts.append("Rope")
+                if not obst:
+                    reason_parts.append("Obstacle")
+                if run_s > 7200:
+                    reason_parts.append(f"Run {run_s}s > 7200s")
+                rows.append(
+                    {
+                        "Type": "Combat",
+                        "Serial": t.serial_number,
+                        "Reason": ", ".join(reason_parts) or "Failed",
+                    }
+                )
 
         for t in await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL):
-            total = int(getattr(t, "push_ups", 0) or 0) + int(getattr(t, "sit_ups", 0) or 0) + int(getattr(t, "pull_ups", 0) or 0)
+            total = (
+                int(getattr(t, "push_ups", 0) or 0)
+                + int(getattr(t, "sit_ups", 0) or 0)
+                + int(getattr(t, "pull_ups", 0) or 0)
+            )
             if total < 50:
-                rows.append({"Type": "Functional", "Serial": t.serial_number, "Reason": f"Total {total} < 50"})
+                rows.append(
+                    {
+                        "Type": "Functional",
+                        "Serial": t.serial_number,
+                        "Reason": f"Total {total} < 50",
+                    }
+                )
 
         for t in await self._tests_for_unit(TypeFitnessTest.SWIMMING):
             if not bool(getattr(t, "swim_paased", False)):
-                rows.append({"Type": "Swimming", "Serial": t.serial_number, "Reason": "Not passed"})
+                rows.append(
+                    {
+                        "Type": "Swimming",
+                        "Serial": t.serial_number,
+                        "Reason": "Not passed",
+                    }
+                )
 
         return pd.DataFrame(rows)
-

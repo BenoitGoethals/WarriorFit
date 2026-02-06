@@ -16,9 +16,9 @@ class MarchRepository(ABCRepository):
     :ivar SessionLocal: The database session factory used to manage database sessions.
     :type SessionLocal: Callable[[], AsyncSession]
     """
+
     def __init__(self):
         super().__init__()
-
 
     async def get_march_by_id(self, id_march: int) -> March | None:
         """
@@ -38,7 +38,7 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results
 
-    async def get_all_march(self,this_year=True) -> list[March]:
+    async def get_all_march(self, this_year=True) -> list[March]:
         """
         Asynchronously retrieves all `March` objects from the database.
 
@@ -59,16 +59,31 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def get_all_march_by_unit_name(self, unit_name: str,this_year=True) -> list[March]:
+    async def get_all_march_by_unit_name(
+        self, unit_name: str, this_year=True
+    ) -> list[March]:
         if this_year:
             end, start = await self.running_year()
-            query = select(March).join(March.service_men).join(ServiceMen.unit).where(Unit.name == unit_name).where(March.datetime_executed.between(start, end))
+            query = (
+                select(March)
+                .join(March.service_men)
+                .join(ServiceMen.unit)
+                .where(Unit.name == unit_name)
+                .where(March.datetime_executed.between(start, end))
+            )
         else:
-            query = select(March).join(March.service_men).join(ServiceMen.unit).where(Unit.name == unit_name)
+            query = (
+                select(March)
+                .join(March.service_men)
+                .join(ServiceMen.unit)
+                .where(Unit.name == unit_name)
+            )
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def get_all_march_form_service_men(self, service_men: str,this_year=True) -> list[March]:
+    async def get_all_march_form_service_men(
+        self, service_men: str, this_year=True
+    ) -> list[March]:
         """
         Fetches all marches associated with a given service member, optionally filtering
         for the current year.
@@ -82,13 +97,17 @@ class MarchRepository(ABCRepository):
         """
         if this_year:
             end, start = await self.running_year()
-            query = select(March).where(March.service_number == service_men).where(March.datetime_executed.between(start, end))
+            query = (
+                select(March)
+                .where(March.service_number == service_men)
+                .where(March.datetime_executed.between(start, end))
+            )
         else:
             query = select(March).where(March.service_number == service_men)
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def add_march(self, mars: March)->March | None:
+    async def add_march(self, mars: March) -> March | None:
         """
         Adds a new `March` object to the database asynchronously. This method handles
         the creation of a database session, adding the provided `March` instance,
@@ -110,13 +129,15 @@ class MarchRepository(ABCRepository):
                     query = select(March).where(
                         March.service_number == mars.service_number,
                         March.datetime_executed == mars.datetime_executed,
-                    March.distance == mars.distance
+                        March.distance == mars.distance,
                     )
                     result = await session.execute(query)
                     existing_march = result.scalar_one_or_none()
 
                     if existing_march:
-                        self._logger.info(f"March already exists for service_number {mars.service_number} at {mars.datetime_executed}")
+                        self._logger.info(
+                            f"March already exists for service_number {mars.service_number} at {mars.datetime_executed}"
+                        )
                         return existing_march
 
                     session.add(mars)
@@ -202,7 +223,9 @@ class MarchRepository(ABCRepository):
                     await session.refresh(existing_mars)
                     return existing_mars
         except SQLAlchemyError as e:
-            self._logger.exception(f"Failed to update March with ID {march.id}: {str(e)}")
+            self._logger.exception(
+                f"Failed to update March with ID {march.id}: {str(e)}"
+            )
             if session is not None:
                 try:
                     await session.rollback()
@@ -218,7 +241,7 @@ class MarchRepository(ABCRepository):
                     query = select(March).where(
                         March.service_number == service_number,
                         March.datetime_executed == datetime_executed,
-                        March.distance == distance
+                        March.distance == distance,
                     )
                     result = await session.execute(query)
                     existing_march = result.scalar_one_or_none()
@@ -229,4 +252,3 @@ class MarchRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.exception(e)
             return False
-

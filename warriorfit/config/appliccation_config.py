@@ -37,26 +37,26 @@ class ApplicationConfig(metaclass=Singleton):
     :ivar mail_server: The SMTP configuration for email communication.
     :type mail_server: SmtpConfig
     """
+
     def __init__(self, config_path: str = "warriorfit/config/config.yml"):
         """
         Initialize the application configuration.
 
         :param config_path: Path to the configuration file.
         """
-        ENV = os.getenv('APP_ENV', 'development')
+        ENV = os.getenv("APP_ENV", "development")
 
-        if ENV == 'production':
-           config_path = "warriorfit/config/config_prod.yml"
-        elif ENV == 'development':
+        if ENV == "production":
+            config_path = "warriorfit/config/config_prod.yml"
+        elif ENV == "development":
             config_path = "warriorfit/config/config_dev.yml"
-        elif ENV == 'test':
+        elif ENV == "test":
             config_path = "warriorfit/config/config_test.yml"
 
         self.config_path = self._get_project_root() / config_path
         self.config_path_version = self._get_project_root() / "version.yaml"
         self._settings_data = None
         self.__config_db = None
-
 
         self.__version = None
         self.load_config()
@@ -112,7 +112,10 @@ class ApplicationConfig(metaclass=Singleton):
         """
         current_path = Path(__file__).resolve().parent
         while current_path != current_path.root:
-            if any((current_path / marker).exists() for marker in ["pyproject.toml", "requirements.txt", ".env"]):
+            if any(
+                (current_path / marker).exists()
+                for marker in ["pyproject.toml", "requirements.txt", ".env"]
+            ):
                 return current_path
             current_path = current_path.parent
         return Path(__file__).resolve().parent
@@ -124,19 +127,28 @@ class ApplicationConfig(metaclass=Singleton):
         config = self._load_yaml_file()
         version_config = self._load_version_yaml_file()
         if not config:
-            raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
-        
-        self._settings_data = SettingsData(db_host=config['db']['host'], db_port=config['db']['port'],
-                            db_database=config['db']['database'], db_username=config['db']['username'],
-                            db_password=config['db']['password'],pdf_path=self._ensure_directory(config["path"]["pdf_path"])
-                            ,own_unit=config["unit"]["name"],mail_server=SmtpConfig(**config["mail"]),
-                                           hr_url=config["hr"]["url"],
-                                           hr_api_key=config["hr"].get("api_key", "")
-                                           )
-   
+            raise ValueError(
+                f"Configuration file is empty or not found: {self.config_path}"
+            )
 
-        self.__version = (config["version"]["status"],version_config["version"], version_config["date"])
+        self._settings_data = SettingsData(
+            db_host=config["db"]["host"],
+            db_port=config["db"]["port"],
+            db_database=config["db"]["database"],
+            db_username=config["db"]["username"],
+            db_password=config["db"]["password"],
+            pdf_path=self._ensure_directory(config["path"]["pdf_path"]),
+            own_unit=config["unit"]["name"],
+            mail_server=SmtpConfig(**config["mail"]),
+            hr_url=config["hr"]["url"],
+            hr_api_key=config["hr"].get("api_key", ""),
+        )
 
+        self.__version = (
+            config["version"]["status"],
+            version_config["version"],
+            version_config["date"],
+        )
 
         self.__config_db = self._setup_database_connection()
 
@@ -174,14 +186,13 @@ class ApplicationConfig(metaclass=Singleton):
             directory.mkdir(parents=True, exist_ok=True)
         return str(directory)
 
-
     def _setup_database_connection(self):
         """
         Set up the database connection using SQLAlchemy.
         """
         return create_async_engine(
             url=f"postgresql+asyncpg://{self._settings_data.db_username}:{self._settings_data.db_password}@"
-                f"{self._settings_data.db_host}:{self._settings_data.db_port}/{self._settings_data.db_database}",
+            f"{self._settings_data.db_host}:{self._settings_data.db_port}/{self._settings_data.db_database}",
             echo=False,
             future=True,
             pool_size=20,
@@ -196,37 +207,27 @@ class ApplicationConfig(metaclass=Singleton):
         Save the updated configuration back to the YAML file.
         """
         config_dict = {
-            'db': {
-                'database': config.db_database,
-                'host': config.db_host,
-                'password': config.db_password,
-                'port': config.db_port,
-                'username': config.db_username
+            "db": {
+                "database": config.db_database,
+                "host": config.db_host,
+                "password": config.db_password,
+                "port": config.db_port,
+                "username": config.db_username,
             },
-            'hr': {
-                'url': config.hr_url,
-                'api_key': config.hr_api_key
+            "hr": {"url": config.hr_url, "api_key": config.hr_api_key},
+            "mail": {
+                "host": config.mail_server.host,
+                "password": config.mail_server.password,
+                "port": config.mail_server.port,
+                "sender": config.mail_server.sender,
+                "sender_email": config.mail_server.sender_email,
+                "use_ssl": config.mail_server.use_ssl,
+                "use_tls": config.mail_server.use_tls,
+                "username": config.mail_server.username,
             },
-            'mail': {
-                'host': config.mail_server.host,
-                'password': config.mail_server.password,
-                'port': config.mail_server.port,
-                'sender': config.mail_server.sender,
-                'sender_email': config.mail_server.sender_email,
-                'use_ssl': config.mail_server.use_ssl,
-                'use_tls': config.mail_server.use_tls,
-                'username': config.mail_server.username
-            },
-            'path': {
-                'pdf_path': config.pdf_path
-            },
-            'unit': {
-                'name': config.own_unit
-            },
-            'version': {
-                'number': self.version[0],
-                'status': self.version[1]
-            }
+            "path": {"pdf_path": config.pdf_path},
+            "unit": {"name": config.own_unit},
+            "version": {"number": self.version[0], "status": self.version[1]},
         }
         with open(self.config_path, "w", encoding="utf-8") as file:
             yaml.dump(config_dict, file, default_flow_style=False, sort_keys=False)

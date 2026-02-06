@@ -26,7 +26,7 @@ class Os:
         return None
 
     @staticmethod
-    def is_alive(host)-> bool:
+    def is_alive(host) -> bool:
         """
         Checks the reachability of a given host by sending ICMP ping requests.
 
@@ -48,8 +48,7 @@ class Os:
             return False
 
         return response.success()
-    
-    
+
     @staticmethod
     def what_is_my_ip() -> str:
         """
@@ -63,6 +62,3 @@ class Os:
             return ip
         except Exception as e:
             raise Exception(f"Failed to get IP address: {str(e)}")
-
-
-

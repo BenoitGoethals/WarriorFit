@@ -19,6 +19,7 @@ class Service(ABC):
     :ivar NO_ENTITY_FOUND_MSG: Default message when no relevant entity is found.
     :type NO_ENTITY_FOUND_MSG: str
     """
+
     NO_ENTITY_FOUND_MSG = "No {entity} found."
 
     def __init__(self, file_name: str = None):

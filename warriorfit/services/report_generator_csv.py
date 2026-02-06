@@ -21,6 +21,7 @@ class ReportGeneratorCsv(GeneratorReport):
     :ivar calculate_combat_score: Method reference to calculate scores for combat performance.
     :ivar calculate_swim_score: Method reference to calculate scores for swimming performance.
     """
+
     def __init__(self):
         super().__init__()
 

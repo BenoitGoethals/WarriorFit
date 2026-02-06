@@ -9,6 +9,7 @@ class MessageContent(BaseModel):
     """
     PHEF test result message content (transport schema)
     """
+
     serial_number: Optional[str] = None
     running_time: Optional[float] = None
     sideBridge_r: Optional[float] = None
@@ -43,7 +44,6 @@ app = FastAPI(
     openapi_url="/api/v1/openapi.json",
     docs_url="/api/v1/docs",
     redoc_url="/api/v1/redoc",
-
 )
 
 # CORS configuration (adjust origins to your frontend)
@@ -52,7 +52,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:8005",
         "http://127.0.0.1:8005",
-
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -85,4 +84,5 @@ def receive_message(payload: MessageIn):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8005)

@@ -18,6 +18,7 @@ class IntEnumType(TypeDecorator):
     :ivar cache_ok: Indicates whether the type is cache-safe in SQLAlchemy.
     :type cache_ok: bool
     """
+
     impl = Integer
     cache_ok = True
 

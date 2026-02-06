@@ -12,19 +12,19 @@ class ReserveFitnessRoomController:
     async def add_reservation(self, reservation) -> Reservation | None:
         return await self._service.add_reservation(reservation)
 
-    async def rooms(self)->List[Room]:
+    async def rooms(self) -> List[Room]:
         return await self._service.get_rooms()
 
     async def reservations(self):
         return await self._service.get_all_reservations()
 
-    async def delete_reservation(self, id_r)->bool:
+    async def delete_reservation(self, id_r) -> bool:
         return await self._service.delete_reservation(id_r)
 
-    async def update_reservation(self,reservation)->Reservation|None:
+    async def update_reservation(self, reservation) -> Reservation | None:
         return await self._service.update_reservation(reservation)
 
-    async def get_reservation_by_id(self, id_r)->Reservation|None:
+    async def get_reservation_by_id(self, id_r) -> Reservation | None:
         return await self._service.get_reservation_by_id(id_r)
 
     async def get_all_pti(self):
