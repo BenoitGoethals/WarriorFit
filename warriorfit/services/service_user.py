@@ -105,4 +105,16 @@ class UserService(Service, metaclass=Singleton):
         return is_deleted
 
     async def get_user_by_id(self, id):
+        """
+        Retrieve a user by their unique identifier.
+
+        This asynchronous method retrieves user data by querying the underlying user
+        repository using the provided unique identifier. It is commonly used to fetch
+        specific user details from the database or storage system.
+
+        :param id: The unique identifier of the user.
+        :type id: Any
+        :return: The user object corresponding to the given ID.
+        :rtype: Any
+        """
         return await self._user_repo.get_user_by_id(id)

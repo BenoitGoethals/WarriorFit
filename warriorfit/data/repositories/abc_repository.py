@@ -88,7 +88,7 @@ class ABCRepository:
             self,
             user_id: int,
             action: str,
-            details: dict = None,
+            details: dict|str = None,
             ip_address: str = None,
     ):
         """
