@@ -4,8 +4,28 @@ from warriorfit.core.Gender import Gender
 
 
 class FunctionalCalculator:
+    """
+    Represents a functional calculator for assessing physical performance scores.
 
+    This class is used to calculate performance scores for exercises such as pull-ups, push-ups,
+    and sit-ups based on gender, age, and repetition count. It provides predefined scoring tables
+    for men and women across various age categories, enabling standardized calculations. The scores
+    are scaled consistently, with a maximum value of 20 points.
 
+    :ivar PULLUPS_MEN: Scoring table for pull-ups for men, categorized by age groups.
+    :type PULLUPS_MEN: dict
+    :ivar PULLUPS_WOMEN: Scoring table for pull-ups for women, categorized by age groups.
+    :type PULLUPS_WOMEN: dict
+    :ivar PUSH_UPS_MEN: Scoring table for push-ups for men, categorized by age groups.
+    :type PUSH_UPS_MEN: dict
+    :ivar PUSH_UPS_WOMEN: Scoring table for push-ups for women, categorized by age groups.
+    :type PUSH_UPS_WOMEN: dict
+    :ivar SIT_UP_MEN: Scoring table for sit-ups for men, categorized by age groups.
+    :type SIT_UP_MEN: dict
+    :ivar SIT_UP_WOMEN: Scoring table for sit-ups for women, categorized by age groups.
+    :type SIT_UP_WOMEN: dict
+    """
+    def __init__(self):
         # Pull-ups () data
         PULLUPS_MEN = {
             '18-27': {10: 20, 9: 18, 8: 16, 7: 14, 6: 12, 5: 10, 4: 8, 3: 6, 2: 4, 1: 1},
