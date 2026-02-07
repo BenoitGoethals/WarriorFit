@@ -556,6 +556,13 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login():
+            """
+            Handles the user login process by validating credentials, managing the user session, and updating
+            the application state upon successful login. If the login fails, appropriate status messages
+            are set to inform the user of the cause.
+
+            :raises Exception: If an error occurs during the login process.
+            """
             logger = getattr(FitnessWarriorApp, "logger", logging.getLogger(__name__))
             username_login = (input.username_login() or "").lower()
             password_login = input.password_login()
@@ -587,6 +594,14 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _mount_on_nav_activation():
+            """
+            Defines a reactive effect that triggers when the main navigation is activated. This function
+            handles potential navigation activation by observing the `input.main_nav` property. If any
+            issues such as `AttributeError` or `KeyError` occur during this process, they are gracefully
+            handled to prevent application-level errors.
+
+            :return: None
+            """
             try:
                 _ = input.main_nav()
             except (AttributeError, KeyError):
@@ -594,6 +609,16 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _on_logout_button_click():
+            """
+            Handles the effects triggered by the logout button click event. This effect is
+            responsible for clearing the session user, updating the navigation state,
+            showing a notification to the user, and initiating a page reload after a
+            slight delay.
+
+            :param clicks: The number of times the logout button was clicked.
+            :type clicks: Optional[int]
+            :return: None
+            """
             try:
                 clicks = input.logout_btn()
             except (AttributeError, KeyError):
@@ -628,6 +653,18 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _record_activity():
+            """
+            Tracks user activity by recording the last activity timestamp whenever input
+            activity is detected. This function ensures that the 'last_activity' value
+            is updated in response to user interactions.
+
+            This effect listens to changes in input activity and updates the
+            'last_activity' attribute to the current time whenever such activity is
+            triggered. Failed attempts to access or process the input activity (due to
+            exceptions like AttributeError or KeyError) will be ignored gracefully.
+
+            :return: None
+            """
             try:
                 _ = input.activity_ping()
             except (AttributeError, KeyError):
@@ -636,6 +673,22 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _reset_on_nav_or_login():
+            """
+            An internal reactive effect function designed to reset certain state variables when a navigation
+            or login event occurs.
+
+            This function reacts to specific conditions such as changes in navigation state or version.
+            It ensures that the `last_activity` variable is updated to the current timestamp whenever
+            these events take place. Errors during navigation state access are silently handled.
+
+            Note: This function is marked as internal for framework or system-level usage and is
+            intended for reactive state-handling flows.
+
+            :raises AttributeError: Silently handled when accessing `input.main_nav` fails due to missing
+                attributes.
+            :raises KeyError: Silently handled when accessing `input.main_nav` fails due to a key error.
+            :return: None
+            """
             try:
                 _ = input.main_nav()
             except (AttributeError, KeyError):
@@ -645,6 +698,18 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         def _auto_logout_timer():
+            """
+            This reactive effect function monitors user activity and automatically logs out
+            users after 10 minutes of inactivity. It is triggered every 5 seconds and
+            ensures that the user session is cleared if the inactivity timeout occurs.
+
+            During the logout process, it also updates the navigation menu, shows a
+            notification to the user, and reloads the page for security purposes.
+
+            :raises KeyError: If session details or user data are not properly managed.
+
+            :return: None
+            """
             reactive.invalidate_later(5)
             user = _get_session_user()
             if not user:
