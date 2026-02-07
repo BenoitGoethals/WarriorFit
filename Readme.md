@@ -42,7 +42,7 @@ password: tester007!
 * 2026-02-01: setup nginx reverse proxy
 * 2026-02-02: Cross app and api SSL/HTTPS Support**: Encrypted communication with SSL certificates
 * 2026-02-03: versioning by git hook pre-commit
-* 2026-02-04: deploy with cron and gh
+* 2026-02-07 : update cross app and rest api with 2oauth and certificates
 
 
 ## Project Description
