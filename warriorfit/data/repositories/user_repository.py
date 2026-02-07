@@ -164,15 +164,37 @@ class UserRepository(ABCRepository):
                 if user is None:
                     self._logger.info(f"User '{user_name}' not found.")
                     return False
-                password_matches = bcrypt.checkpw(
-                    plain_password.encode("utf-8"),
-                    user.password_hash.encode("utf-8"),
-                )
+
+                stored_hash = user.password_hash
+                if not stored_hash:
+                    self._logger.error(f"User '{user_name}' has no password hash set.")
+                    return False
+
+                if isinstance(stored_hash, str):
+                    stored_hash_bytes = stored_hash.strip().encode("utf-8")
+                else:
+                    # If the ORM/model stores bytes, normalize it too
+                    stored_hash_bytes = bytes(stored_hash).strip()
+
+                try:
+                    password_matches = bcrypt.checkpw(
+                        plain_password.encode("utf-8"),
+                        stored_hash_bytes,
+                    )
+                except ValueError as e:
+                    # This is the typical "Invalid salt" path
+                    self._logger.error(
+                        f"Invalid password hash format for user '{user_name}': {e}"
+                    )
+                    return False
+
                 if not password_matches:
                     self._logger.info("Password mismatch.")
                     return False
+
                 self._logger.info(f"User '{user_name}' authenticated successfully.")
                 return True
+
         except SQLAlchemyError as e:
             self._logger.error(f"Database error in check_user: {e}")
             return False

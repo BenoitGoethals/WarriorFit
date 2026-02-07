@@ -55,7 +55,7 @@ class User(Base):
     )
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(128), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[TIMESTAMP] = mapped_column(
         TIMESTAMP, server_default=func.now(), nullable=False
     )

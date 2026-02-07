@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
-('super', 'adminsuper@example.com', crypt('admin', gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'super');
+('ben', 'adminsuperben@example.com', crypt('ben', gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'superben');
 
 
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
