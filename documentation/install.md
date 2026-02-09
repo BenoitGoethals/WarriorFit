@@ -3,62 +3,97 @@
 
 ## 1. Configuration
 
-Location of config file : warriorfit/config.yaml
+### Environment-specific Configuration Files
 
-``` config
+The application uses different configuration files based on the `APP_ENV` environment variable:
+- **Development**: `warriorfit/config/config_dev.yml` (default)
+- **Test**: `warriorfit/config/config_test.yml`
+- **Production**: `/etc/WarriorFit/config.yml` (when running in Docker container)
+
+### Configuration File Structure
+
+Example `config.yml`:
+
+```yaml
 db:
   host: "localhost"
   port: 5432
-  database : "warriorfit"
-  username : "produser"
-  password : "ranger14"
+  database: "warriorfit"
+  username: "produser"
+  password: "your_secure_password"
 path:
-  pdf_path : "/home/benoit/temp"
+  pdf_path: "/app/pdf_output"
 unit:
-  name : "1-3 Bn Lanciers"
+  name: "1-3 Bn Lanciers"
 mail:
-  host : "192.168.0.174"
-  port : 25
-  username : "benoit"
-  password : "R@nger&1401!"
-  sender : "benoit@albatros.be"
-  use_tls: False
-  use_ssl: False
-  sender_email : "benoit@albatros.be"
+  host: "smtp.example.com"
+  port: 587
+  username: "your_email@example.com"
+  password: "your_email_password"
+  sender: "your_email@example.com"
+  sender_email: "your_email@example.com"
+  use_tls: true
+  use_ssl: false
 hr:
-  url : "http://127.0.0.1:8005/api/v1/phef/test"
+  url: "http://hr-api.example.com/api/v1/phef/test"
+  api_key: "your_hr_api_key"
 version:
-  number: 0.1.0
-  status: development
-
-
-
+  status: "production"
 ```
 
+### Version File
 
-## 2. docker
-local deployment
-```docker
+The application also requires a `version.yaml` file at the project root:
 
+```yaml
+version: "0.1.0"
+date: "2024-01-01"
+```
+
+### Production Deployment Configuration
+
+For production deployment with Docker, ensure:
+1. Set `APP_ENV=production` environment variable
+2. Mount the configuration file at `/etc/WarriorFit/config.yml`
+3. Update database credentials and external service URLs
+4. Use secure passwords and API keys
+
+
+## 2. Docker Deployment
+
+### Local Development Deployment
+
+```bash
 sudo docker build -t warriorfit-app .
-docker run -p 8000:8000 warriorfit-app
+docker run -p 8000:8000 -e APP_ENV=development warriorfit-app
 ```
-server deploy
-```
+
+### Production Server Deployment
+
+```bash
 # 1. List containers to find the one you want
 docker ps -a
 
 # 2. Stop it if running
-docker stop  api-warriorfit-app
+docker stop warriorfit-app
 
 # 3. Remove it
-sudo docker rm  api-warriorfit-app
+sudo docker rm warriorfit-app
 
+# 4. Build the image
 sudo docker build -t api-warriorfit-app .
 
-
-sudo docker run -d --restart unless-stopped --name warriorfit-app -p 8500:8000 warriorfit-app
+# 5. Run with production configuration
+sudo docker run -d --restart unless-stopped \
+  --name warriorfit-app \
+  -p 8500:8000 \
+  -e APP_ENV=production \
+  -v /path/to/your/config.yml:/etc/WarriorFit/config.yml:ro \
+  -v /path/to/your/version.yaml:/app/version.yaml:ro \
+  api-warriorfit-app
 ```
+
+**Note**: Replace `/path/to/your/config.yml` and `/path/to/your/version.yaml` with the actual paths to your configuration files on the host system.
 
 
 ## 3. SQL
