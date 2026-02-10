@@ -1,7 +1,9 @@
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, date
 import httpx
+from pydantic import BaseModel, ConfigDict
+from pydantic.v1 import Field
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.Gender import Gender
@@ -9,6 +11,21 @@ from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
 
+class ServiceMenSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    """Pydantic model for ServiceMen validation and serialization."""
+    id: int | None = None
+    first_name: str = Field(..., max_length=80)
+    last_name: str = Field(..., max_length=80)
+    mail: str = Field(..., max_length=120)
+    rank: str = Field(..., max_length=20)
+    service_number: str = Field(..., max_length=50)
+    birthdate: date
+    gender: str = Field(..., max_length=1)
+    unit: str = Field(..., max_length=100)
+    para: bool = False
+    ops_test: bool = False
 
 class BEMILService(metaclass=Singleton):
     BASE_URL = ApplicationConfig().hr_url
@@ -18,23 +35,21 @@ class BEMILService(metaclass=Singleton):
         self.__logger = logging.getLogger(__name__)
 
     def _build_serviceman(self, data: dict) -> ServiceMen:
-        if "gender" in data and isinstance(data["gender"], str):
-            try:
-                data["gender"] = Gender(data["gender"])
-            except ValueError:
-                pass
+        # Validate with Pydantic schema first
+        schema = ServiceMenSchema(**data)
 
-        if "birthdate" in data and isinstance(data["birthdate"], str):
+        # Convert to ServiceMen model
+        serviceman_data = schema.model_dump(exclude_none=True)
+
+        if "gender" in serviceman_data and isinstance(serviceman_data["gender"], str):
             try:
-                data["birthdate"] = datetime.strptime(
-                    data["birthdate"], "%Y-%m-%d"
-                ).date()
+                serviceman_data["gender"] = Gender(serviceman_data["gender"])
             except ValueError:
                 pass
 
         if "unit" in data and isinstance(data["unit"], dict):
-            if "unit_id" not in data:
-                data["unit_id"] = data["unit"].get("id")
+            if "unit_id" not in serviceman_data:
+                serviceman_data["unit_id"] = data["unit"].get("id")
 
         valid_fields = {
             "id",
@@ -49,7 +64,7 @@ class BEMILService(metaclass=Singleton):
             "para",
             "ops_test",
         }
-        filtered_data = {k: v for k, v in data.items() if k in valid_fields}
+        filtered_data = {k: v for k, v in serviceman_data.items() if k in valid_fields}
 
         return ServiceMen(**filtered_data)
 
@@ -69,11 +84,23 @@ class BEMILService(metaclass=Singleton):
 
             except httpx.HTTPStatusError as e:
                 self.__logger.error(
-                    f"Error fetching BEMIL by serial number {be_mil_serial_number}: {e}"
+                    "Error fetching BEMIL by serial number %s: %s",
+                    be_mil_serial_number,
+                    e,
                 )
                 return None
 
     async def get_all_be_mil_from_unit(self, unit_name: str) -> list[ServiceMen] | None:
+        """
+        Retrieves a list of servicemen from a specified military unit by making an asynchronous
+        HTTP GET request to an external API.
+
+        :param unit_name: The name of the military unit for which to retrieve servicemen.
+        :type unit_name: str
+        :return: A list of ServiceMen objects corresponding to the servicemen in the specified unit,
+            or None if an error occurs during the API request.
+        :rtype: list[ServiceMen] | None
+        """
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
@@ -84,7 +111,7 @@ class BEMILService(metaclass=Singleton):
                 resp = response.json()
                 return [self._build_serviceman(item) for item in resp]
             except httpx.HTTPStatusError as e:
-                self.__logger.error(f"Error fetching BEMILs from unit {unit_name}: {e}")
+                self.__logger.error("Error fetching BEMILs from unit %s: %s", unit_name, e)
                 return None
 
     async def sent_hr_message_to_hr(self, message: Message):
