@@ -588,7 +588,7 @@ class FitnessWarriorApp:
                     logger.info(f"User {username_login} logged in successfully")
                 else:
                     status_text.set("Invalid username or password.")
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 logger.error(f"Login error: {e}")
                 status_text.set("An error occurred while logging in. Please try again.")
 

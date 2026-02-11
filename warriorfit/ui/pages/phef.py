@@ -470,7 +470,7 @@ class PhefPage(BaseTestPage):
                         "run_2400": form.run_2400,
                     }
                 )
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 return False, f"Validation failed: {e}"
 
         @reactive.Effect

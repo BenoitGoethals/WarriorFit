@@ -60,7 +60,7 @@ class ReportGeneratorCsv(GeneratorReport):
         try:
             s = int(sec or 0)
             return f"{s // 60}:{s % 60:02d}"
-        except Exception:
+        except (ValueError, TypeError):
             return "-"
 
     def _build_csv(
@@ -146,8 +146,8 @@ class ReportGeneratorCsv(GeneratorReport):
                 passed, report_name, "phef_passed", headers, row_builder
             )
             return {"failed": failed_path, "passed": passed_path}
-        except Exception as e:
-            self._logger.error(f"Error generating PHEF report: {e}")
+        except (OSError, IOError, ValueError) as e:
+            self._logger.error("Error generating PHEF report: %s", e)
             return None
 
     async def generate_functional_report(

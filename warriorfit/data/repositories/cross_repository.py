@@ -97,12 +97,12 @@ class CrossRepository(ABCRepository):
             return cross
         except IntegrityError as e:
             self._logger.error(
-                f"Integrity error adding cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+                "Integrity error adding cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
             )
             return None
         except SQLAlchemyError as e:
             self._logger.error(
-                f"Database error adding cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+                "Database error adding cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
             )
             return None
 
@@ -129,10 +129,10 @@ class CrossRepository(ABCRepository):
                     )  # delete supports await with AsyncSession in SA 2.x
                     return True
         except IntegrityError as e:
-            self._logger.error(f"Integrity error removing cross {id}: {str(e)}")
+            self._logger.error("Integrity error removing cross %d: %s", id, str(e))
             return False
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error removing cross {id}: {str(e)}")
+            self._logger.error("Database error removing cross %d: %s", id, str(e))
             return False
 
     async def add_runner_to_cross(self, cross_id: int, runner: Runner) -> Runner | None:
@@ -156,7 +156,7 @@ class CrossRepository(ABCRepository):
                 async with session.begin():
                     cross = await session.get(Cross, cross_id)
                     if not cross:
-                        self._logger.error(f"Cross {cross_id} not found")
+                        self._logger.error("Cross %d not found", cross_id)
                         return None
 
                     already_encoded = await session.execute(
@@ -197,8 +197,8 @@ class CrossRepository(ABCRepository):
                     await session.refresh(runner)
 
             return runner
-        except Exception as e:
-            self._logger.error(f"Linking runner to cross failed: {e}")
+        except SQLAlchemyError as e:
+            self._logger.error("Linking runner to cross failed: %s", e)
             return None
 
     async def remove_runner(self, id: int) -> bool:
@@ -223,10 +223,10 @@ class CrossRepository(ABCRepository):
                     await session.delete(runner)
                     return True
         except IntegrityError as e:
-            self._logger.error(f"Integrity error removing runner {id}: {str(e)}")
+            self._logger.error("Integrity error removing runner %d: %s", id, str(e))
             return False
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error removing runner {id}: {str(e)}")
+            self._logger.error("Database error removing runner %d: %s", id, str(e))
             return False
 
     async def get_all_runners(self) -> List[Runner]:
@@ -282,7 +282,7 @@ class CrossRepository(ABCRepository):
                 async with session.begin():
                     existing_runner = await session.get(Runner, id)
                     if not existing_runner:
-                        self._logger.error(f"Runner {id} not found for update")
+                        self._logger.error("Runner %d not found for update", id)
                         return None
                     # whitelist updatable attributes
                     fields = ("serial_number", "running_time")
@@ -294,10 +294,10 @@ class CrossRepository(ABCRepository):
                     await session.refresh(existing_runner)
             return existing_runner
         except IntegrityError as e:
-            self._logger.error(f"Integrity error updating runner {id}: {str(e)}")
+            self._logger.error("Integrity error updating runner %d: %s", id, str(e))
             return None
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error updating runner {id}: {str(e)}")
+            self._logger.error("Database error updating runner %d: %s", id, str(e))
             return None
 
     async def get_runner(self, runner_id: int) -> Runner | None:
@@ -327,7 +327,7 @@ class CrossRepository(ABCRepository):
                         Cross, cross.id
                     )  # use class, not instance
                     if not existing_cross:
-                        self._logger.error(f"Cross with ID {cross.id} not found.")
+                        self._logger.error("Cross with ID %d not found.", cross.id)
                         return None
 
                     # Update fields (whitelist as needed)
@@ -342,12 +342,12 @@ class CrossRepository(ABCRepository):
 
         except IntegrityError as e:
             self._logger.error(
-                f"Integrity error updating cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+                "Integrity error updating cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
             )
             return None
         except SQLAlchemyError as e:
             self._logger.error(
-                f"Database error updating cross {getattr(cross, 'id', 'unknown')}: {str(e)}"
+                "Database error updating cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
             )
             return None
 

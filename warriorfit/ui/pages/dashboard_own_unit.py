@@ -121,7 +121,7 @@ class DashboardOwnUnitPage(Page):
         ) -> dict[str, Any]:
             try:
                 return dict(await fetcher())
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 # Don't crash dashboard cards; show muted error
                 return {
                     "total": 0,
@@ -167,7 +167,7 @@ class DashboardOwnUnitPage(Page):
                     if "<div" not in html:
                         return self._no_data(non_div_msg)
                     return ui.HTML(html)
-                except Exception as e:
+                except (KeyError, TypeError, ValueError, AttributeError) as e:
                     return self._no_data(f"No data available: {e}")
 
         # Register stat cards (no duplicated output bodies)

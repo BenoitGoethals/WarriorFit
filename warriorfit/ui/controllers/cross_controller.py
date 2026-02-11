@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import logging
 from typing import Optional, Dict, Any, Tuple, List
 
 import pandas as pd
@@ -18,6 +19,7 @@ class CrossController:
         self._service = ServiceCross()
         self.be_mil_service = MilitaryService()
         self._pdf_gen = ReportGeneratorPdf()
+        self._logger = logging.getLogger(__name__)
 
     # ----- Helpers -----
     @staticmethod
@@ -63,7 +65,7 @@ class CrossController:
             if total <= 0:
                 return False, "Time must be positive."
             return True, total
-        except Exception:
+        except (ValueError, TypeError):
             return False, "Time must be numeric (hh:mm:ss, mm:ss or seconds)."
 
     @staticmethod
@@ -182,7 +184,8 @@ class CrossController:
             df["Order"] = df.index + 1  # Add 1 to make it 1-based instead of 0-based
 
             return df
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, AttributeError) as e:
+            self._logger.error("Error in list_runners_df: %s", e)
             return pd.DataFrame()
 
     # ----- Commands -----

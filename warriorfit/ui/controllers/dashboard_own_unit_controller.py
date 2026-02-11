@@ -66,7 +66,7 @@ class DashboardOwnUnitController:
                 )
                 self._mils = {p.service_number for p in (people or [])}
             return self._mils
-        except Exception as e:
+        except (AttributeError, TypeError) as e:
             return set()
 
     async def _get_all_military_own_unit(self) -> dict[str, ServiceMen]:
@@ -91,7 +91,7 @@ class DashboardOwnUnitController:
                 )
                 self._all_military_own_unit = {s.service_number: s for s in data}
             return self._all_military_own_unit
-        except Exception as e:
+        except (AttributeError, TypeError) as e:
             return {}
 
     async def phef_total_score(self, test: PhefTest) -> tuple[float, bool]:
@@ -182,7 +182,7 @@ class DashboardOwnUnitController:
         for t in phef_tests:
             try:
                 _, passed_test = await self.phef_total_score(t)
-            except Exception:
+            except (AttributeError, TypeError, KeyError):
                 passed_test = False
             if passed_test:
                 passed += 1
@@ -434,8 +434,7 @@ class DashboardOwnUnitController:
             passed = False
             try:
                 total, passed = await self.phef_total_score(t)
-
-            except Exception:
+            except (AttributeError, TypeError, KeyError):
                 pass
             if passed:
                 rows.append(
@@ -453,7 +452,7 @@ class DashboardOwnUnitController:
         for t in await self._tests_for_unit(TypeFitnessTest.PHEF):
             try:
                 score, passed = await self.phef_total_score(t)
-            except Exception:
+            except (AttributeError, TypeError, KeyError):
                 passed = False
             if passed:
                 rows.append(

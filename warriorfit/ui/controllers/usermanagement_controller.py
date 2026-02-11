@@ -69,7 +69,7 @@ class UserManagementController:
             return [r.value for r in Role]
         except AttributeError:
             return [str(r) for r in Role]
-        except Exception as exc:
+        except (TypeError, ValueError) as exc:
             raise RuntimeError("Failed to build role choices") from exc
 
     async def list_users_df(self) -> pd.DataFrame:

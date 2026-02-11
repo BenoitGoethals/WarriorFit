@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+from datetime import datetime
 from sqlalchemy import TIMESTAMP, func
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import (
@@ -65,22 +66,19 @@ class Broker(metaclass=Singleton):
                 break
             except (OSError, IOError, ConnectionError) as e:
                 self._logger.error(
-                    "Network or I/O error in worker loop: %s",
-                    type(e).__name__,
+                    f"Network or I/O error in worker loop: {type(e).__name__}",
                     exc_info=True,
                     extra={"error_type": type(e).__name__, "error_message": str(e)}
                 )
             except (AttributeError, TypeError, ValueError) as e:
                 self._logger.error(
-                    "Data processing error in worker loop: %s",
-                    type(e).__name__,
+                    f"Data processing error in worker loop: {type(e).__name__}",
                     exc_info=True,
                     extra={"error_type": type(e).__name__, "error_message": str(e)}
                 )
             except asyncio.TimeoutError as e:
                 self._logger.error(
-                    "Timeout in worker loop: %s",
-                    type(e).__name__,
+                    f"Timeout in worker loop: {type(e).__name__}",
                     exc_info=True,
                     extra={"error_type": "TimeoutError", "error_message": str(e)}
                 )
@@ -123,8 +121,7 @@ class Broker(metaclass=Singleton):
                     break
                 except AttributeError as e:
                     self._logger.error(
-                        "Invalid message object structure: %s",
-                        type(e).__name__,
+                        f"Invalid message object structure: {type(e).__name__}",
                         exc_info=True,
                         extra={
                             "error_type": "AttributeError",
@@ -134,8 +131,7 @@ class Broker(metaclass=Singleton):
                     )
                 except (OSError, IOError) as e:
                     self._logger.error(
-                        "Database I/O error while saving message: %s",
-                        type(e).__name__,
+                        f"Database I/O error while saving message: {type(e).__name__}",
                         exc_info=True,
                         extra={
                             "error_type": type(e).__name__,
@@ -145,8 +141,7 @@ class Broker(metaclass=Singleton):
                     )
                 except (ValueError, TypeError) as e:
                     self._logger.error(
-                        "Invalid data type or value in message: %s",
-                        type(e).__name__,
+                        f"Invalid data type or value in message: {type(e).__name__}",
                         exc_info=True,
                         extra={
                             "error_type": type(e).__name__,
@@ -157,8 +152,7 @@ class Broker(metaclass=Singleton):
 
             if messages_processed > 0:
                 self._logger.info(
-                    "Drained %d message(s) from queue to database",
-                    messages_processed,
+                    f"Drained {messages_processed} message(s) from queue to database",
                     extra={"messages_processed": messages_processed}
                 )
 
@@ -174,6 +168,7 @@ class Broker(metaclass=Singleton):
         that includes the creation timestamp. The constructed message object is
         then added to the internal message queue for further processing.
 
+        :param test:
         :param pf: A test object that can be an instance of either `PhefTest`
                    or `FitnessTest`. The test data is processed and added to
                    the message queue.
@@ -198,17 +193,15 @@ class Broker(metaclass=Singleton):
 
             if dto is None:
                 self._logger.warning(
-                    "Unsupported test type received: %s",
-                    test_type,
+                    f"Unsupported test type received: {test_type}",
                     extra={"test_type": test_type, "test_id": getattr(test, 'id', None)}
                 )
                 return
 
-            hr_m = HrMessage(message=json.dumps(dto.to_dict()), datetime_created=func.now())
+            hr_m = HrMessage(message=json.dumps(dto.to_dict()), datetime_created=datetime.now())
             await self._msg_queue.put(hr_m)
             self._logger.debug(
-                "Message queued for %s",
-                test_type,
+                f"Message queued for {test_type}",
                 extra={
                     "test_type": test_type,
                     "serial_number": getattr(test, 'serial_number', None) or getattr(test, 'service_number', None),
@@ -217,8 +210,7 @@ class Broker(metaclass=Singleton):
             )
         except AttributeError as e:
             self._logger.error(
-                "Missing required attribute in test object: %s",
-                type(e).__name__,
+                f"Missing required attribute in test object: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": "AttributeError",
@@ -228,8 +220,7 @@ class Broker(metaclass=Singleton):
             )
         except (TypeError, ValueError, json.JSONDecodeError) as e:
             self._logger.error(
-                "Error serializing test data: %s",
-                type(e).__name__,
+                f"Error serializing test data: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": type(e).__name__,
@@ -239,8 +230,7 @@ class Broker(metaclass=Singleton):
             )
         except (OSError, IOError) as e:
             self._logger.error(
-                "Queue operation error: %s",
-                type(e).__name__,
+                f"Queue operation error: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": type(e).__name__,
@@ -307,8 +297,7 @@ class Broker(metaclass=Singleton):
             return None
         except (ValueError, json.JSONDecodeError) as e:
             self._logger.error(
-                "Invalid message format: %s",
-                type(e).__name__,
+                f"Invalid message format: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": type(e).__name__,
@@ -320,8 +309,7 @@ class Broker(metaclass=Singleton):
             return None
         except (OSError, IOError) as e:
             self._logger.error(
-                "Network I/O error sending message to HR: %s",
-                type(e).__name__,
+                f"Network I/O error sending message to HR: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": type(e).__name__,
@@ -332,8 +320,7 @@ class Broker(metaclass=Singleton):
             return None
         except AttributeError as e:
             self._logger.error(
-                "Invalid message structure or API error: %s",
-                type(e).__name__,
+                f"Invalid message structure or API error: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": "AttributeError",
@@ -381,8 +368,7 @@ class Broker(metaclass=Singleton):
                 self._logger.debug("No pending messages to send")
         except AttributeError as e:
             self._logger.error(
-                "Repository attribute error: %s",
-                type(e).__name__,
+                f"Repository attribute error: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": "AttributeError",
@@ -391,8 +377,7 @@ class Broker(metaclass=Singleton):
             )
         except (OSError, IOError) as e:
             self._logger.error(
-                "Database I/O error in check_and_send_messages: %s",
-                type(e).__name__,
+                f"Database I/O error in check_and_send_messages: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": type(e).__name__,
@@ -401,8 +386,7 @@ class Broker(metaclass=Singleton):
             )
         except (ValueError, TypeError) as e:
             self._logger.error(
-                "Data validation error in check_and_send_messages: %s",
-                type(e).__name__,
+                f"Data validation error in check_and_send_messages: {type(e).__name__}",
                 exc_info=True,
                 extra={
                     "error_type": type(e).__name__,
@@ -424,7 +408,7 @@ class Broker(metaclass=Singleton):
                 )
             except RuntimeError as e:
                 error_msg = "Could not start Broker worker. No running event loop found."
-                print("⚠️ Warning: %s", error_msg)
+                print(f"⚠️ Warning: {error_msg}")
                 self._logger.error(
                     error_msg,
                     exc_info=True,

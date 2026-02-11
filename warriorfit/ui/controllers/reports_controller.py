@@ -85,5 +85,5 @@ class ReportsController:
             if paths:
                 return paths, ("success", "Report generated successfully.")
             return [], ("warning", "No files were generated.")
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, OSError, IOError) as e:
             return [], ("danger", f"Error generating report: {e}")

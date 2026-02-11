@@ -43,7 +43,7 @@ class AuditLog(Base):
     details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
     created_at: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP, server_default=func.now(), nullable=False
+        TIMESTAMP, server_default=func.current_timestamp(), nullable=False
     )
 
 
@@ -57,7 +57,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[TIMESTAMP] = mapped_column(
-        TIMESTAMP, server_default=func.now(), nullable=False
+        TIMESTAMP, server_default=func.current_timestamp(), nullable=False
     )
     role: Mapped[Role] = mapped_column(SAEnum(Role), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -483,12 +483,12 @@ class Reservation(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), nullable=False)
-    date: Mapped[datetime] = mapped_column(server_default=func.now())
-    start_time: Mapped[datetime] = mapped_column(server_default=func.now())
-    end_time: Mapped[datetime] = mapped_column(server_default=func.now())
+    date: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
+    start_time: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
+    end_time: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
     serial_number: Mapped[str] = mapped_column(String(50), nullable=False)
     activity: Mapped[str] = mapped_column(String(100), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
 
     room: Mapped["Room"] = relationship(
         "Room",

@@ -139,7 +139,7 @@ class MarchPage(Page):
                 return render.DataGrid(
                     display_df, selection_mode="row", filters=False, width="100%"
                 )
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 # Return empty grid on error
                 empty_df = pd.DataFrame(
                     columns=["service_number", "distance", "Succeeded", "Date"]

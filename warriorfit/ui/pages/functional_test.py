@@ -424,7 +424,7 @@ class FunctionalPage(BaseTestPage):
                 df = self.controller.decorate_grid(df)
                 df = df.sort_values(by=["Serial"])
                 df_view = df.drop(columns=["ID"], errors="ignore")
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 # Log the error for debugging (consider using proper logging)
                 # For now, fall back to showing undecorated data
                 df_view = df.drop(columns=["ID"], errors="ignore")

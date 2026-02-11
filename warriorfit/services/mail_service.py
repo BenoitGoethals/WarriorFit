@@ -152,7 +152,7 @@ class MailService(metaclass=Singleton):
                         server.starttls(context=ssl.create_default_context())
                     self._maybe_login(server)
                     server.sendmail(from_email, recipients, msg.as_string())
-        except Exception as e:
+        except (smtplib.SMTPException, OSError) as e:
             logging.error(f"Failed to send email: {e}")
 
     def _maybe_login(self, server: smtplib.SMTP) -> None:

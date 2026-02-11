@@ -9,7 +9,24 @@ from warriorfit.data.repositories.abc_repository import ABCRepository
 
 
 class MomRepository(ABCRepository):
+    """
+    Manages storage and retrieval of HR messages in the database.
 
+    This repository class is responsible for adding, retrieving, deleting,
+    and fetching the latest HR messages from the database. As part of a data
+    access layer, it ensures that database interactions are abstracted and
+    properly handled, including logging potential database errors and other
+    runtime exceptions.
+
+    The repository operates asynchronously, leveraging SQLAlchemy for database
+    interactions. It provides methods for managing HR messages in a consistent
+    and reliable manner.
+
+    :ivar SessionLocal: Database session creator for managing database interactions.
+    :type SessionLocal: Callable[..., AsyncSession]
+    :ivar _logger: Logger instance used for logging errors or important runtime details.
+    :type _logger: logging.Logger
+    """
     def __init__(self):
         super().__init__()
 
@@ -34,12 +51,12 @@ class MomRepository(ABCRepository):
             return msg
         except IntegrityError as e:
             self._logger.error(
-                f"Integrity error adding cross {getattr(msg, 'id', 'unknown')}: {str(e)}"
+                "Integrity error adding cross %s: %s", getattr(msg, 'id', 'unknown'), str(e)
             )
             return None
         except SQLAlchemyError as e:
             self._logger.error(
-                f"Database error adding cross {getattr(msg, 'id', 'unknown')}: {str(e)}"
+                "Database error adding cross %s: %s", getattr(msg, 'id', 'unknown'), str(e)
             )
             return None
 
@@ -63,10 +80,8 @@ class MomRepository(ABCRepository):
             results = await self.fetch_and_log(query, "HrMessage")
             return results
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error fetching cross: {str(e)}")
+            self._logger.error("Database error fetching cross: %s", str(e))
             return []
-        except Exception as e:
-            self._logger.error(f"Unexpected error fetching cross: {str(e)}")
 
     async def delete_hr_message(self, id_msg: int) -> bool | None:
         """
@@ -87,12 +102,12 @@ class MomRepository(ABCRepository):
 
                     if result.rowcount == 0:
                         self._logger.error(
-                            f"No HR message found with ID {id_msg} to delete."
+                            "No HR message found with ID %s to delete.", id_msg
                         )
                         return False
                     return True
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error deleting cross {id_msg}: {str(e)}")
+            self._logger.error("Database error deleting cross %s: %s", id_msg, str(e))
             return False
 
     async def get_last_added_hr_message_by_send_date(self) -> HrMessage | None:
@@ -116,10 +131,8 @@ class MomRepository(ABCRepository):
                 result = await session.execute(query)
                 return result.scalars().first()
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error fetching cross: {str(e)}")
+            self._logger.error("Database error fetching cross: %s", str(e))
             return None
-        except Exception as e:
-            self._logger.error(f"Unexpected error fetching cross: {str(e)}")
 
 
 async def main():

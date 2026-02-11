@@ -67,7 +67,7 @@ class CombatController:
                 return False, total_seconds
 
             return True, int(total_seconds)
-        except Exception:
+        except (ValueError, TypeError):
             return False, "Time must be numeric (mm:ss or seconds)."
 
     @staticmethod
@@ -152,14 +152,8 @@ class CombatController:
                     }
                 )
             return pd.DataFrame(data)
-        except (ValueError, TypeError) as e:
-            self._logger.error(f"Error in list_combat_tests_df: {e}")
-            return pd.DataFrame()
-        except AttributeError as e:
-            self._logger.error(f"Error in list_combat_tests_df: {e}")
-            return pd.DataFrame()
-        except Exception as e:
-            self._logger.error(f"Error in list_combat_tests_df: {e}")
+        except (ValueError, TypeError, AttributeError) as e:
+            self._logger.error("Error in list_combat_tests_df: %s", e)
             return pd.DataFrame()
 
     @staticmethod

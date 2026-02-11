@@ -37,7 +37,7 @@ class AuditLogEventsPage(Page):
             try:
                 df: pd.DataFrame = await self.ctrl.list_audit_logs_df()
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 return pd.DataFrame({"Error": [str(e)]})
 
         @output

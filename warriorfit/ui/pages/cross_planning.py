@@ -217,7 +217,7 @@ class CrossPlanningPage(Page):
                 detail = await self._controller.get_cross_view(cross_id)
                 self._write_form(session, detail)
                 status.set(f"Selected Cross #{cross_id}")
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Selection error: {e}")
 
         # Buttons
@@ -247,7 +247,7 @@ class CrossPlanningPage(Page):
 
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{detail['id']} created.")
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Add failed: {e}")
 
         @reactive.Effect
@@ -272,7 +272,7 @@ class CrossPlanningPage(Page):
                 self._write_form(session, detail)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{sel} updated.")
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Update failed: {e}")
 
         @reactive.Effect
@@ -296,7 +296,7 @@ class CrossPlanningPage(Page):
                 self._clear_form(session)
                 self.selected_cross_id.set("")
                 status.set(f"Cross #{cross_id} deleted.")
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Delete failed: {e}")
 
 

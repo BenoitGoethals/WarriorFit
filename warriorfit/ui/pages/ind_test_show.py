@@ -128,7 +128,7 @@ class IndTestShowPage(Page):
                     if not self.tests_df.get().empty
                     else "No tests found."
                 )
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 self.serial.set("")
                 self.mil_info.set("Not found.")
                 self.tests_df.set(pd.DataFrame())

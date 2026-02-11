@@ -57,5 +57,5 @@ class SettingsController:
             ApplicationConfig().save_config(data)
             ApplicationConfig().load_config()
             return True, "Configuration saved successfully."
-        except Exception as e:
+        except (OSError, IOError, ValueError, KeyError) as e:
             return False, f"Failed to save configuration: {e}"

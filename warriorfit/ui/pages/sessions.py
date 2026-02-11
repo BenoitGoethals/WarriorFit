@@ -252,7 +252,7 @@ class SessionsPage(Page):
                 if not added:
                     status.set("Failed to add session.")
                     return
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Error adding session: {str(e)}")
                 return
             self.refresh_tick.set(self.refresh_tick.get() + 1)

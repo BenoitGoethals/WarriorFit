@@ -34,7 +34,7 @@ class ReservationRepository(ABCRepository):
             except IntegrityError as e:
                 await session.rollback()
                 self._logger.error(
-                    f"Integrity error while creating reservation: {str(e)}"
+                    "Integrity error while creating reservation: %s", str(e)
                 )
 
     async def get_reservation(self, id_r: int) -> Reservation | None:
@@ -45,7 +45,7 @@ class ReservationRepository(ABCRepository):
                 )
                 return reservation
         except SQLAlchemyError as e:
-            self._logger.error(f"Database error while fetching reservation: {str(e)}")
+            self._logger.error("Database error while fetching reservation: %s", str(e))
             return None
 
     async def get_all_reservation(self):
@@ -59,7 +59,7 @@ class ReservationRepository(ABCRepository):
                 return reservations
         except SQLAlchemyError as e:
             self._logger.error(
-                f"Database error while fetching all reservations: {str(e)}"
+                "Database error while fetching all reservations: %s", str(e)
             )
             return None
 
@@ -75,7 +75,7 @@ class ReservationRepository(ABCRepository):
             except SQLAlchemyError as e:
                 await session.rollback()
                 self._logger.error(
-                    f"Database error while deleting reservation: {str(e)}"
+                    "Database error while deleting reservation: %s", str(e)
                 )
                 return False
 
@@ -88,13 +88,13 @@ class ReservationRepository(ABCRepository):
             except IntegrityError as e:
                 await session.rollback()
                 self._logger.error(
-                    f"Integrity error while updating reservation: {str(e)}"
+                    "Integrity error while updating reservation: %s", str(e)
                 )
                 return False
             except SQLAlchemyError as e:
                 await session.rollback()
                 self._logger.error(
-                    f"Database error while updating reservation: {str(e)}"
+                    "Database error while updating reservation: %s", str(e)
                 )
                 return False
 
@@ -107,7 +107,7 @@ class ReservationRepository(ABCRepository):
             except SQLAlchemyError as e:
                 await session.rollback()
                 self._logger.error(
-                    f"Database error while deleting all reservations: {str(e)}"
+                    "Database error while deleting all reservations: %s", str(e)
                 )
                 return False
 

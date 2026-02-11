@@ -45,7 +45,7 @@ class StatusTests(Page):
         async def own_unit_status_grid():
             try:
                 df = await self._controller.get_data()
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 import pandas as pd
 
                 df = pd.DataFrame(columns=["Message"])

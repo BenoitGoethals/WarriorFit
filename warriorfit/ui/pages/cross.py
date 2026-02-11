@@ -235,7 +235,7 @@ class CrossPage(Page):
                 ui.update_text("runner_serialnr", value=serial)
                 ui.update_text("runner_time", value=run_t)
                 status.set(f"Selected Runner: {serial}")
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Selection error: {e}")
 
         @reactive.Effect

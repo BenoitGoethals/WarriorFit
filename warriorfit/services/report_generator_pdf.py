@@ -280,7 +280,7 @@ class ReportGeneratorPdf(GeneratorReport):
         tbl.setStyle(self._create_table_style(deps))
         story.append(tbl)
         doc.build(story)
-        self._logger.info(f"Generating PDF: {output_path}")
+        self._logger.info("Generating PDF: %s", output_path)
         return output_path
 
     def _build_report_row_with_date(self, r: dict, *fields) -> List[Any]:
@@ -514,7 +514,7 @@ class ReportGeneratorPdf(GeneratorReport):
             story.append(deps["Spacer"](1, 20))
 
         doc.build(story)
-        self._logger.info(f"Generating PDF: {output_path}")
+        self._logger.info("Generating PDF: %s", output_path)
         return output_path
 
     def _build_serviceman_info(self, serviceman, styles, deps) -> List:
@@ -712,7 +712,7 @@ class ReportGeneratorPdf(GeneratorReport):
             story.append(deps["Spacer"](1, 12))
 
         doc.build(story)
-        self._logger.info(f"Generating PDF: {output_path}")
+        self._logger.info("Generating PDF: %s", output_path)
         return output_path
 
 

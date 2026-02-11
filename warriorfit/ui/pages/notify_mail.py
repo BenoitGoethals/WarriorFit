@@ -38,6 +38,6 @@ class NotifyMail(metaclass=Singleton):
             }
             try:
                 MailService().send_html(**mail_sessions_add)
-            except Exception as e:
+            except (OSError, ValueError, TypeError) as e:
                 self.logger.error(f"Error sending email: {str(e)}")
                 return

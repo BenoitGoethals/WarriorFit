@@ -136,7 +136,7 @@ class MarchRepository(ABCRepository):
 
                     if existing_march:
                         self._logger.info(
-                            f"March already exists for service_number {mars.service_number} at {mars.datetime_executed}"
+                            "March already exists for service_number %s at %s", mars.service_number, mars.datetime_executed
                         )
                         return existing_march
 
@@ -147,12 +147,8 @@ class MarchRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.exception(e)
             if session is not None:
-                try:
-                    await session.rollback()
-                    return None
-                except Exception as e:
-                    self._logger.exception(e)
-                    return None
+                await session.rollback()
+            return None
 
     async def delete_march(self, ind_march):
         """
@@ -177,18 +173,14 @@ class MarchRepository(ABCRepository):
                     query = delete(March).where(March.id == ind_march)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self._logger.error(f"No March found with ID {ind_march}.")
+                        self._logger.error("No March found with ID %d.", ind_march)
                         return False
                     return True
         except SQLAlchemyError as e:
             self._logger.exception("Failed to delete March")
             if session is not None:
-                try:
-                    await session.rollback()
-                    return False
-                except Exception as e:
-                    self._logger.exception(e)
-                    return False
+                await session.rollback()
+            return False
 
     async def update_march(self, march: March) -> March | None:
         """
@@ -213,7 +205,7 @@ class MarchRepository(ABCRepository):
                 async with session.begin():
                     existing_mars = await session.get(March, march.id)
                     if not existing_mars:
-                        self._logger.error(f"No march found with ID {march.id}")
+                        self._logger.error("No march found with ID %d", march.id)
                         return None
                     existing_mars.service_number = march.service_number
                     existing_mars.distance = march.distance
@@ -224,13 +216,10 @@ class MarchRepository(ABCRepository):
                     return existing_mars
         except SQLAlchemyError as e:
             self._logger.exception(
-                f"Failed to update March with ID {march.id}: {str(e)}"
+                "Failed to update March with ID %d: %s", march.id, str(e)
             )
             if session is not None:
-                try:
-                    await session.rollback()
-                except Exception as rollback_error:
-                    self._logger.exception(f"Rollback failed: {str(rollback_error)}")
+                await session.rollback()
             return None
 
     async def get_march_is_unique(self, service_number, distance, datetime_executed):

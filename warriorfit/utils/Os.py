@@ -60,5 +60,5 @@ class Os:
             ip = s.getsockname()[0]
             s.close()
             return ip
-        except Exception as e:
-            raise Exception(f"Failed to get IP address: {str(e)}")
+        except (OSError, socket.error) as e:
+            raise OSError(f"Failed to get IP address: {str(e)}")

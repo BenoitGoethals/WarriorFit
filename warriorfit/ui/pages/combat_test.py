@@ -422,7 +422,7 @@ class CombatPage(BaseTestPage):
                         "combat_speedmars": form.combat_speedmars,
                     }
                 )
-            except Exception as e:
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
                 return False, f"Validation failed: {e}"
 
         @reactive.Effect

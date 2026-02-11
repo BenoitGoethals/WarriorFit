@@ -84,9 +84,7 @@ class BEMILService(metaclass=Singleton):
 
             except httpx.HTTPStatusError as e:
                 self.__logger.error(
-                    "Error fetching BEMIL by serial number %s: %s",
-                    be_mil_serial_number,
-                    e,
+                    f"Error fetching BEMIL by serial number {be_mil_serial_number}: {e}"
                 )
                 return None
 
@@ -111,7 +109,7 @@ class BEMILService(metaclass=Singleton):
                 resp = response.json()
                 return [self._build_serviceman(item) for item in resp]
             except httpx.HTTPStatusError as e:
-                self.__logger.error("Error fetching BEMILs from unit %s: %s", unit_name, e)
+                self.__logger.error(f"Error fetching BEMILs from unit {unit_name}: {e}")
                 return None
 
     async def sent_hr_message_to_hr(self, message: Message):

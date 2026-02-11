@@ -25,10 +25,8 @@ class ServicemenRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.exception("Failed to create serviceman")
             if session is not None:
-                try:
-                    await session.rollback()
-                except Exception as e:
-                    self._logger.exception(e)
+                await session.rollback()
+            return None
 
     async def get_servicemen_by_id(self, serviceman_id: int) -> ServiceMen | None:
         """
@@ -111,10 +109,7 @@ class ServicemenRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.exception(e)
             if session is not None:
-                try:
-                    await session.rollback()
-                except Exception as e:
-                    self._logger.exception(e)
+                await session.rollback()
             return None
 
     async def delete_serviceman(self, serviceman_id: int) -> bool:
@@ -132,10 +127,7 @@ class ServicemenRepository(ABCRepository):
         except SQLAlchemyError as e:
             self._logger.exception("Failed to delete serviceman id=%s", serviceman_id)
             if session is not None:
-                try:
-                    await session.rollback()
-                except Exception as e:
-                    self._logger.exception(e)
+                await session.rollback()
             return False
 
     async def get_by_unit_id(self, id):

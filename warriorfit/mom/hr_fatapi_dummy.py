@@ -78,7 +78,7 @@ def receive_message(payload: MessageIn):
         return AckResponse(success=True, ack="Message enqueued")
     except HTTPException:
         raise
-    except Exception as e:
+    except (ValueError, TypeError, KeyError) as e:
         raise HTTPException(status_code=400, detail=f"Invalid message: {e}")
 
 
