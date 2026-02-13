@@ -22,12 +22,16 @@ class Service(ABC):
 
     NO_ENTITY_FOUND_MSG = "No {entity} found."
 
-    def __init__(self, file_name: str = None):
-        self._user_repo = UserRepository()
-        self._be_mil_service = MilitaryService()
+    def __init__(self, user_repository: UserRepository = None,
+                 military_service: MilitaryService = None,
+                 config: ApplicationConfig = None):
+        if config is None:
+            config = ApplicationConfig()
+        self._user_repo = user_repository if user_repository is not None else UserRepository()
+        self._be_mil_service = military_service if military_service is not None else MilitaryService()
 
         self._logger = logging.getLogger(__name__)
-        async_engine = ApplicationConfig().config
+        async_engine = config.config
         if async_engine is None:
             self._logger.error(
                 "Database configuration not found. Please check your configuration file."

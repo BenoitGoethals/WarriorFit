@@ -31,9 +31,13 @@ class ReportsController:
     :type _pdf_gen: ReportGeneratorPdf
     """
 
-    def __init__(self):
-        self._csv_gen = ReportGeneratorCsv()
-        self._pdf_gen = ReportGeneratorPdf()
+    def __init__(
+        self,
+        csv_gen: ReportGeneratorCsv = None,
+        pdf_gen: ReportGeneratorPdf = None,
+    ) -> None:
+        self._csv_gen = csv_gen if csv_gen is not None else ReportGeneratorCsv()
+        self._pdf_gen = pdf_gen if pdf_gen is not None else ReportGeneratorPdf()
 
     def _resolve_targets(self, test_type: str) -> List[ReportType]:
         if test_type == "all":

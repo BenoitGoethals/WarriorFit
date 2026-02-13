@@ -22,10 +22,16 @@ class StatusTestsController:
     :type unit_name: str
     """
 
-    def __init__(self, mil_service: Optional[MilitaryService] = None):
-        self._mil_service = mil_service or MilitaryService()
-        self.data_collector = DataCollector()
-        self.unit_name: str = ApplicationConfig().own_unit
+    def __init__(
+        self,
+        mil_service: MilitaryService = None,
+        data_collector: DataCollector = None,
+        config: ApplicationConfig = None,
+    ):
+        _config = config if config is not None else ApplicationConfig()
+        self._mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.data_collector = data_collector if data_collector is not None else DataCollector()
+        self.unit_name: str = _config.own_unit
 
     async def get_data(self) -> pd.DataFrame:
         data = await DataCollector().collect_all_mil_from_own_unit_not_executed_phefs()

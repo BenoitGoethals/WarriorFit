@@ -15,8 +15,11 @@ class StatusLogUserController:
 
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
+    def __init__(
+        self,
+        service: ServiceTest = None,
+    ) -> None:
+        self._service = service if service is not None else ServiceTest()
 
     async def get_upcoming_session(
         self, serial_number_pti: Mapped[str]

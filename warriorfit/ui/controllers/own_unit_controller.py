@@ -15,6 +15,7 @@ from warriorfit.data.model.db_model import (
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
+from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.services.service_march import ServiceMarch
 from warriorfit.services.service_test import ServiceTest
 from warriorfit.utils.BenchmarkDecorator import benchmark
@@ -28,12 +29,22 @@ class OwnUnitController:
     - Fetch tests for a selected serviceman
     """
 
-    def __init__(self, mil_service: Optional[MilitaryService] = None):
-        self._mil_service = mil_service or MilitaryService()
-        self.unit_name: str = ApplicationConfig().own_unit
-        self._data_collector = DataCollector()
-        self._service = ServiceTest()
-        self._service_mars = ServiceMarch()
+    def __init__(
+        self,
+        mil_service: MilitaryService = None,
+        data_collector: DataCollector = None,
+        test_service: ServiceTest = None,
+        march_service: ServiceMarch = None,
+        config: ApplicationConfig = None,
+        report_generator_pdf: ReportGeneratorPdf = None,
+    ):
+        _config = config if config is not None else ApplicationConfig()
+        self._mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.unit_name: str = _config.own_unit
+        self._data_collector = data_collector if data_collector is not None else DataCollector()
+        self._service = test_service if test_service is not None else ServiceTest()
+        self._service_mars = march_service if march_service is not None else ServiceMarch()
+        self._report_generator_pdf = report_generator_pdf if report_generator_pdf is not None else ReportGeneratorPdf()
 
     @benchmark
     async def fetch_servicemen_df(self) -> pd.DataFrame:

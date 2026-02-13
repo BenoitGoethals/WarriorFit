@@ -48,11 +48,15 @@ def build_email_update_reservation(reservation: Reservation) -> str:
 
 class ReserveFitnessRoomService(Service):
 
-    def __init__(self):
-        super().__init__()
-        self._repo = ReservationRepository()
-        self._repo_service_men = ServicemenRepository()
-        self.user_repo = UserRepository()
+    def __init__(self, reservation_repository: ReservationRepository = None,
+                 servicemen_repository: ServicemenRepository = None,
+                 user_repository: UserRepository = None, config=None,
+                 notify_mail=None):
+        super().__init__(user_repository=user_repository, config=config)
+        self._repo = reservation_repository if reservation_repository is not None else ReservationRepository()
+        self._repo_service_men = servicemen_repository if servicemen_repository is not None else ServicemenRepository()
+        self.user_repo = user_repository if user_repository is not None else UserRepository()
+        self._notify_mail = notify_mail
 
     async def add_reservation(self, reservation) -> Reservation | None:
 
@@ -63,7 +67,8 @@ class ReserveFitnessRoomService(Service):
             )
             user = await self.user_repo.get_user_by_serial(reservation.serial_number)
             if user:
-                await NotifyMail().send_mail(
+                notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
+                await notify.send_mail(
                     body=build_email_add_reservation(reservation),
                     subject="Room reservation",
                     to=str(user.email),

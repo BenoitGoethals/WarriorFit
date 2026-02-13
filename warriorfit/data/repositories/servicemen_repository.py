@@ -7,8 +7,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 class ServicemenRepository(ABCRepository):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
     async def create_serviceman(self, service_men: ServiceMen) -> ServiceMen | None:
         """

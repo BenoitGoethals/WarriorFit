@@ -37,14 +37,21 @@ class DashboardOwnUnitController:
     :type unit_name: str
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
-        self.be_mil_service = MilitaryService()
-        self.unit_name = ApplicationConfig().own_unit
+    def __init__(
+        self,
+        test_service: ServiceTest = None,
+        mil_service: MilitaryService = None,
+        march_service: ServiceMarch = None,
+        config: ApplicationConfig = None,
+    ) -> None:
+        _config = config if config is not None else ApplicationConfig()
+        self._service = test_service if test_service is not None else ServiceTest()
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.unit_name = _config.own_unit
         self._mils = None
         self._all_military_own_unit = None
         self._results_tests_for_unit: dict[str, list[Any]] = {}
-        self._march_service = ServiceMarch()
+        self._march_service = march_service if march_service is not None else ServiceMarch()
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:

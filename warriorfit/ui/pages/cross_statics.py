@@ -3,13 +3,16 @@ from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 from warriorfit.utils.formaters import Formatter
 
 
 class CrossStaticsPage(Page):
-    def __init__(self):
+    @inject
+    def __init__(self, controller: CrossStaticsController = Provide[Container.cross_statics_controller]):
         super().__init__()
-        self._controller = CrossStaticsController()
+        self._controller = controller
 
     async def refresh(self):
         await self._controller.load()
@@ -118,12 +121,19 @@ class CrossStaticsPage(Page):
             return uv_p
 
 
-_page = CrossStaticsPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = CrossStaticsPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    return _page.server(input, output, session)
+    return _get_page().server(input, output, session)

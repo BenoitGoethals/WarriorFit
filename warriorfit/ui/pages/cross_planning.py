@@ -8,12 +8,15 @@ from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class CrossPlanningPage(Page):
-    def __init__(self):
+    @inject
+    def __init__(self, controller: CrossPlanningController = Provide[Container.cross_planning_controller]):
         super().__init__()
-        self._controller = CrossPlanningController()
+        self._controller = controller
         self.selected_cross_id = reactive.Value("")
 
     NO_SELECTION_MESSAGE = "No row selected"
@@ -301,12 +304,19 @@ class CrossPlanningPage(Page):
 
 
 # Expose singleton-style API compatible with app.py import pattern
-_page = CrossPlanningPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = CrossPlanningPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    return _page.server(input, output, session)
+    return _get_page().server(input, output, session)

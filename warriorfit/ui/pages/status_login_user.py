@@ -7,13 +7,16 @@ from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.role import Role
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 from warriorfit.ui.user_store import UserStore
 
 
 class StatusLoginUser(Page):
-    def __init__(self):
+    @inject
+    def __init__(self, controller: StatusLogUserController = Provide[Container.status_log_user_controller]):
         super().__init__()
-        self.controller = StatusLogUserController()
+        self.controller = controller
 
     def refresh(self):
         self.refresh_tick.set(self.refresh_tick.get() + 1)
@@ -122,12 +125,19 @@ class StatusLoginUser(Page):
             )
 
 
-_page = StatusLoginUser()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = StatusLoginUser()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

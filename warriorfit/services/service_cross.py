@@ -29,10 +29,12 @@ class ServiceCross(Service):
     :type be_mil_service: MilitaryService
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self._cross_repo = CrossRepository()
-        self.be_mil_service = MilitaryService()
+    def __init__(self, cross_repository: CrossRepository = None,
+                 user_repository=None, military_service: MilitaryService = None,
+                 config=None) -> None:
+        super().__init__(user_repository=user_repository, military_service=military_service, config=config)
+        self._cross_repo = cross_repository if cross_repository is not None else CrossRepository()
+        self.be_mil_service = military_service if military_service is not None else MilitaryService()
 
     async def get_runner(self, runner_id: int) -> Runner | None:
         return await self._cross_repo.get_runner(runner_id)

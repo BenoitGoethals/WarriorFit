@@ -11,6 +11,8 @@ from shiny.ui._navs import NavPanel
 from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.ui.controllers.combat_controller import CombatController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,9 +38,10 @@ class CombatPage(BaseTestPage):
         "combat_robe_input",
     )
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: CombatController = Provide[Container.combat_controller]) -> None:
         super().__init__()
-        self.controller = CombatController()
+        self.controller = controller
 
     def get_prefix(self) -> str:
         return "combat"
@@ -588,12 +591,19 @@ class CombatPage(BaseTestPage):
         self.selected_military = None
 
 
-_page = CombatPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = CombatPage()
+    return _page
 
 
 def get_ui() -> NavPanel:
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input: Any, output: Any, session: Any) -> None:
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

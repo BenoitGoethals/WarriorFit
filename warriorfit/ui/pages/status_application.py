@@ -1,16 +1,18 @@
 from shiny import ui, render, reactive
-from warriorfit.data.repositories.abc_repository import ABCRepository
 from warriorfit.ui.controllers.StatusApplicationController import (
     StatusApplicationController,
 )
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class StatusApplicationPage(Page):
 
-    def __init__(self):
+    @inject
+    def __init__(self, controller: StatusApplicationController = Provide[Container.status_application_controller]):
         super().__init__()
-        self._controller = StatusApplicationController()
+        self._controller = controller
 
     def refresh(self):
         pass
@@ -86,12 +88,19 @@ class StatusApplicationPage(Page):
             return await read_log()
 
 
-_page = StatusApplicationPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = StatusApplicationPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

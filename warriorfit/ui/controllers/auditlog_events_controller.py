@@ -16,8 +16,11 @@ class AuditLogEventsController:
 
     """
 
-    def __init__(self) -> None:
-        self._service = UserService()
+    def __init__(
+        self,
+        user_service: UserService = None,
+    ) -> None:
+        self._service = user_service if user_service is not None else UserService()
 
     async def list_audit_logs_df(self) -> pd.DataFrame:
         """

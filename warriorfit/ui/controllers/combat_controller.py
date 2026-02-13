@@ -18,9 +18,13 @@ class CombatController:
     Represents a controller for managing combat fitness tests.
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
-        self.be_mil_service = MilitaryService()
+    def __init__(
+        self,
+        service: ServiceTest = None,
+        mil_service: MilitaryService = None,
+    ) -> None:
+        self._service = service if service is not None else ServiceTest()
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
         self._logger = logging.getLogger(__name__)
 
     # ----- Helpers -----

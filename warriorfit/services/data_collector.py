@@ -4,22 +4,23 @@ from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import PhefTest
 
 from warriorfit.logic.phef_calculator import PhefCalculator
-from warriorfit.logic.singleton import Singleton
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
 from warriorfit.services.service_test import ServiceTest
 from warriorfit.utils.BenchmarkDecorator import benchmark
 
 
-class DataCollector(metaclass=Singleton):
+class DataCollector:
     """
     Responsible for collecting and processing fitness test data for servicemen.
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
-        self._service_mars = ServiceMarch()
-        self.be_mil = MilitaryService()
+    def __init__(self, service_test: ServiceTest = None,
+                 service_march: ServiceMarch = None,
+                 military_service: MilitaryService = None) -> None:
+        self._service = service_test if service_test is not None else ServiceTest()
+        self._service_mars = service_march if service_march is not None else ServiceMarch()
+        self.be_mil = military_service if military_service is not None else MilitaryService()
 
     # -------------------------
     # Small helpers

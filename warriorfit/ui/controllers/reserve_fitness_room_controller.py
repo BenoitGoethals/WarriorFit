@@ -6,8 +6,11 @@ from warriorfit.services.reserve_fitness_room_service import ReserveFitnessRoomS
 
 class ReserveFitnessRoomController:
 
-    def __init__(self):
-        self._service = ReserveFitnessRoomService()
+    def __init__(
+        self,
+        service: ReserveFitnessRoomService = None,
+    ):
+        self._service = service if service is not None else ReserveFitnessRoomService()
 
     async def add_reservation(self, reservation) -> Reservation | None:
         return await self._service.add_reservation(reservation)

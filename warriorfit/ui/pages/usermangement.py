@@ -7,15 +7,18 @@ from warriorfit.ui.controllers.usermanagement_controller import (
     UserForm,
 )
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class UserManagementPage(Page):
     COLUMN_SERIAL = "Serial"
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: UserManagementController = Provide[Container.usermanagement_controller]) -> None:
         super().__init__()
-        self.controller = UserManagementController()
+        self.controller = controller
         self.status = reactive.Value("Ready.")
         self.selected_serial = reactive.Value(None)
         self.selected_id = reactive.Value(0)
@@ -304,12 +307,19 @@ class UserManagementPage(Page):
 
 
 # Public API
-_page = UserManagementPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = UserManagementPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

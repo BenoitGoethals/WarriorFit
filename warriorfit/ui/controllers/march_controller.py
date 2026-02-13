@@ -22,9 +22,11 @@ class MarchController:
 
     def __init__(
         self,
+        service: ServiceMarch = None,
+        mil_service: MilitaryService = None,
     ) -> None:
-        self._service = ServiceMarch()
-        self.be_mil_service = MilitaryService()
+        self._service = service if service is not None else ServiceMarch()
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
         self._logger = logging.getLogger(__name__)
 
     async def get_all_march(self):

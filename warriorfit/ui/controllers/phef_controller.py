@@ -3,7 +3,6 @@ from typing import Optional, Dict, Any, Tuple
 
 import pandas as pd
 
-
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import PhefTest, TestSession, ServiceMen
 from warriorfit.logic.phef_calculator import PhefCalculator
@@ -21,9 +20,13 @@ class PhefController:
     - Grid decoration and email HTML body
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
-        self.be_mil_service = MilitaryService()
+    def __init__(
+        self,
+        service: ServiceTest = None,
+        mil_service: MilitaryService = None,
+    ) -> None:
+        self._service = service if service is not None else ServiceTest()
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
 
     # ----- Helpers -----
     @staticmethod

@@ -5,6 +5,7 @@ import pandas as pd
 
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
+from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 
 
 class IndTestShowController:
@@ -21,8 +22,15 @@ class IndTestShowController:
     :type be_mil: MilitaryService
     """
 
-    def __init__(self):
-        self.be_mil = MilitaryService()
+    def __init__(
+        self,
+        mil_service: MilitaryService = None,
+        data_collector: DataCollector = None,
+        report_generator_pdf: ReportGeneratorPdf = None,
+    ):
+        self.be_mil = mil_service if mil_service is not None else MilitaryService()
+        self._data_collector = data_collector if data_collector is not None else DataCollector()
+        self._report_generator_pdf = report_generator_pdf if report_generator_pdf is not None else ReportGeneratorPdf()
 
     async def find_military(self, serial: str):
         """
@@ -51,7 +59,7 @@ class IndTestShowController:
             number, or an empty DataFrame if the data could not be collected.
         """
         try:
-            df = await DataCollector().collect_tests_for_serial(
+            df = await self._data_collector.collect_tests_for_serial(
                 serial, current_year=False
             )
             return df if isinstance(df, pd.DataFrame) else pd.DataFrame()

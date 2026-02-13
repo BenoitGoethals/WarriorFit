@@ -20,15 +20,15 @@ class SettingsController:
 
     """
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, config: ApplicationConfig = None) -> None:
+        self._config = config if config is not None else ApplicationConfig()
 
     def load(self) -> SettingsData:
         """
         Loads configuration settings and maps them to a `SettingsData` object.
 
         This method reads configuration settings from the application configuration file
-        via `self.app_cfg` and processes the data to populate a `SettingsData` object.
+        via `self._config` and processes the data to populate a `SettingsData` object.
         It extracts specific fields related to database parameters, file paths,
         unit details, and display preferences.
 
@@ -39,8 +39,8 @@ class SettingsController:
         :return: An instance of `SettingsData` populated with settings data.
         :rtype: SettingsData
         """
-        ApplicationConfig().load_config()
-        return ApplicationConfig().settings_data
+        self._config.load_config()
+        return self._config.settings_data
 
     def save(self, data: SettingsData) -> Tuple[bool, str]:
         """
@@ -54,8 +54,8 @@ class SettingsController:
         :rtype: Tuple[bool, str]
         """
         try:
-            ApplicationConfig().save_config(data)
-            ApplicationConfig().load_config()
+            self._config.save_config(data)
+            self._config.load_config()
             return True, "Configuration saved successfully."
         except (OSError, IOError, ValueError, KeyError) as e:
             return False, f"Failed to save configuration: {e}"

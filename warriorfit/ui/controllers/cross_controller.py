@@ -15,10 +15,15 @@ from warriorfit.services.service_cross import (
 
 
 class CrossController:
-    def __init__(self) -> None:
-        self._service = ServiceCross()
-        self.be_mil_service = MilitaryService()
-        self._pdf_gen = ReportGeneratorPdf()
+    def __init__(
+        self,
+        service: ServiceCross = None,
+        mil_service: MilitaryService = None,
+        pdf_gen: ReportGeneratorPdf = None,
+    ) -> None:
+        self._service = service if service is not None else ServiceCross()
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self._pdf_gen = pdf_gen if pdf_gen is not None else ReportGeneratorPdf()
         self._logger = logging.getLogger(__name__)
 
     # ----- Helpers -----

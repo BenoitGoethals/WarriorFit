@@ -7,12 +7,15 @@ from warriorfit.config.settings_data import SettingsData
 from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.ui.controllers.setting_controller import SettingsController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class SettingsPage(Page):
-    def __init__(self):
+    @inject
+    def __init__(self, controller: SettingsController = Provide[Container.settings_controller]):
         super().__init__()
-        self.controller = SettingsController()
+        self.controller = controller
         self._status = reactive.Value("")
         self._unit_status = reactive.Value("")
 
@@ -239,12 +242,19 @@ class SettingsPage(Page):
 
 
 # Public API: keep same signatures
-_page = SettingsPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = SettingsPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

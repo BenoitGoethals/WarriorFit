@@ -18,8 +18,11 @@ class CrossPlanningController:
     :type _service: ServiceCross
     """
 
-    def __init__(self):
-        self._service = ServiceCross()
+    def __init__(
+        self,
+        service: ServiceCross = None,
+    ):
+        self._service = service if service is not None else ServiceCross()
 
     # --- CRUD Cross ---
     async def create_cross(

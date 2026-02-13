@@ -42,9 +42,11 @@ class UserManagementController:
 
     def __init__(
         self,
+        mil_service: MilitaryService = None,
+        user_service: UserService = None,
     ):
-        self.be_mil = MilitaryService()
-        self._service = UserService()
+        self.be_mil = mil_service if mil_service is not None else MilitaryService()
+        self._service = user_service if user_service is not None else UserService()
         self.selected_user = None
 
     @staticmethod

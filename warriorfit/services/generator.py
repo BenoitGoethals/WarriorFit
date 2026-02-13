@@ -40,10 +40,11 @@ class GeneratorReport(ABC):
     :type be_mil_service: MilitaryService
     """
 
-    def __init__(self):
-        self.be_mil_service = MilitaryService()
-        self._service = ServiceTest()
-        self._user_service = ServiceTest()
+    def __init__(self, military_service: MilitaryService = None,
+                 service_test: ServiceTest = None):
+        self.be_mil_service = military_service if military_service is not None else MilitaryService()
+        self._service = service_test if service_test is not None else ServiceTest()
+        self._user_service = self._service
         self._logger = logging.getLogger(__name__)
 
     async def calculate_score(self, own_unit, this_year):

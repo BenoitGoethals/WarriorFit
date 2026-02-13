@@ -12,6 +12,8 @@ from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.phef_controller import PhefController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,9 +39,10 @@ class PhefPage(BaseTestPage):
         "ph_side_bridge_l_input",
     )
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: PhefController = Provide[Container.phef_controller]) -> None:
         super().__init__()
-        self.controller = PhefController()
+        self.controller = controller
 
     def get_prefix(self) -> str:
         return "ph"
@@ -640,12 +643,19 @@ class PhefPage(BaseTestPage):
         self.selected_military = None
 
 
-_page = PhefPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = PhefPage()
+    return _page
 
 
 def get_ui() -> NavPanel:
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input: Any, output: Any, session: Any) -> None:
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

@@ -1,6 +1,7 @@
 import os
 
 import aiohttp
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.repositories.abc_repository import ABCRepository
 from warriorfit.utils.Os import Os
@@ -8,17 +9,26 @@ import aiofiles
 
 
 class StatusApplicationController:
+
+    def __init__(
+        self,
+        repo: ABCRepository = None,
+        config: ApplicationConfig = None,
+    ) -> None:
+        from warriorfit.data.repositories.user_repository import UserRepository
+        self._repo = repo if repo is not None else UserRepository()
+        self._config = config if config is not None else ApplicationConfig()
+
     async def status_db(self):
-        repo = ABCRepository()
-        status = await repo.check_if_db_is_operational()
+        status = await self._repo.check_if_db_is_operational()
         return self._format_status(status)
 
     async def status_hr(self):
-        url = ApplicationConfig().hr_url
+        url = self._config.hr_url
         return await self._check_http_status(url)
 
     async def status_mail_server(self):
-        ip = ApplicationConfig().mail_server.host
+        ip = self._config.mail_server.host
         server_ok = Os.is_alive(ip)
         return self._format_status(server_ok)
 

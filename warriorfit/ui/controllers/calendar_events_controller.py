@@ -17,9 +17,11 @@ class CalendarEventsController:
 
     def __init__(
         self,
+        test_service: ServiceTest = None,
+        cross_service: ServiceCross = None,
     ) -> None:
-        self._service_test = ServiceTest()
-        self._service_cross = ServiceCross()
+        self._service_test = test_service if test_service is not None else ServiceTest()
+        self._service_cross = cross_service if cross_service is not None else ServiceCross()
 
     async def events(self, serial_number_pti: str = None) -> list:
         """

@@ -1,22 +1,20 @@
 # Python
 from __future__ import annotations
 
-from typing import Optional
-
 import pandas as pd
 from shiny import ui, render, reactive
 
-from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.services.military_service import MilitaryService
-from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class OwnUnitPage(Page):
-    def __init__(self, mil_service: Optional[MilitaryService] = None):
+    @inject
+    def __init__(self, controller: OwnUnitController = Provide[Container.own_unit_controller]):
         super().__init__()
-        self.controller = OwnUnitController(mil_service or MilitaryService())
+        self.controller = controller
         self._selected_serial = reactive.Value(None)
         self.report_path = reactive.Value(None)
 
@@ -52,9 +50,8 @@ class OwnUnitPage(Page):
         async def full_report_unit():
             self.report_path.set(None)
             status_report_unit.set("Generating report...")
-            report_generator = ReportGeneratorPdf()
             output_path = (
-                await report_generator.generate_total_report_current_year_own_unit()
+                await self.controller._report_generator_pdf.generate_total_report_current_year_own_unit()
             )
             if output_path:
                 self.report_path.set(output_path)
@@ -77,7 +74,7 @@ class OwnUnitPage(Page):
                 )
             return None
 
-        @render.download(filename=lambda: f"Report_{ApplicationConfig().own_unit}.pdf")
+        @render.download(filename=lambda: f"Report_{self.controller.unit_name}.pdf")
         def download_generated_report_unit():
             path = self.report_path.get()
             ui.update_action_button("full_report_unit", disabled=False)
@@ -169,12 +166,19 @@ class OwnUnitPage(Page):
 
 
 # Public API: keep same signatures
-_page = OwnUnitPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = OwnUnitPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

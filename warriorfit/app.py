@@ -6,11 +6,40 @@ from typing import Any, Callable, Optional
 from shiny import App, ui, render
 
 from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Role
 from warriorfit.mom.broker import Broker
 from warriorfit.services.service_user import UserService
 from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
+
+# Initialize and wire the container BEFORE importing pages
+_container = Container()
+_container.wire(modules=[
+    "warriorfit.ui.pages.phef",
+    "warriorfit.ui.pages.cross",
+    "warriorfit.ui.pages.march",
+    "warriorfit.ui.pages.reserve_fitness_room",
+    "warriorfit.ui.pages.usermangement",
+    "warriorfit.ui.pages.calendar_events",
+    "warriorfit.ui.pages.cross_statics",
+    "warriorfit.ui.pages.functional_test",
+    "warriorfit.ui.pages.cross_planning",
+    "warriorfit.ui.pages.auditlog_events",
+    "warriorfit.ui.pages.status_login_user",
+    "warriorfit.ui.pages.status_tests",
+    "warriorfit.ui.pages.swim_test",
+    "warriorfit.ui.pages.sessions",
+    "warriorfit.ui.pages.combat_test",
+    "warriorfit.ui.pages.dashboard_own_unit",
+    "warriorfit.ui.pages.reports",
+    "warriorfit.ui.pages.status_application",
+    "warriorfit.ui.pages.ind_test_show",
+    "warriorfit.ui.pages.own_unit",
+    "warriorfit.ui.pages.settings",
+])
+
+# NOW import pages after wiring is complete
 from warriorfit.ui.pages import (
     reports,
     settings,
@@ -57,7 +86,8 @@ class FitnessWarriorApp:
 
     APP_TITLE = "Fitness Warrior"
     DEFAULT_PORT = 8000
-    _broker = Broker()
+    _container: Container = _container
+    _broker: Broker = _container.broker()
 
     def __init__(self):
         self.setup_logger()
@@ -377,7 +407,7 @@ class FitnessWarriorApp:
     def server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
 
-        user_service = UserService()
+        user_service = FitnessWarriorApp._container.user_service()
         FitnessWarriorApp.register_pages_server(input, output, session)
 
         status_text = reactive.Value("")

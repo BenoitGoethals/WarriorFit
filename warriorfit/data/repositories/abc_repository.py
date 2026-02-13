@@ -20,10 +20,12 @@ class ABCRepository:
     :type SessionLocal: sqlalchemy.ext.asyncio.async_sessionmaker
     """
 
-    def __init__(self):
+    def __init__(self, config: ApplicationConfig = None):
 
         self._logger = logging.getLogger(__name__)
-        async_engine = ApplicationConfig().config
+        if config is None:
+            config = ApplicationConfig()
+        async_engine = config.config
         if async_engine is None:
             self._logger.error(
                 "Database configuration not found. Please check your configuration file."
