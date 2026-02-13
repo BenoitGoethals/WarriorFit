@@ -18,6 +18,7 @@ from warriorfit.data.model.db_model import (
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
+from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.services.service_march import ServiceMarch
 from warriorfit.services.service_test import ServiceTest
 from warriorfit.utils.BenchmarkDecorator import benchmark
@@ -39,12 +40,14 @@ class OwnUnitController:
         test_service: ServiceTest = Provide[Container.test_service],
         march_service: ServiceMarch = Provide[Container.march_service],
         config: ApplicationConfig = Provide[Container.config],
+        report_generator_pdf: ReportGeneratorPdf = Provide[Container.report_generator_pdf],
     ):
         self._mil_service = mil_service
         self.unit_name: str = config.own_unit
         self._data_collector = data_collector
         self._service = test_service
         self._service_mars = march_service
+        self._report_generator_pdf = report_generator_pdf
 
     @benchmark
     async def fetch_servicemen_df(self) -> pd.DataFrame:

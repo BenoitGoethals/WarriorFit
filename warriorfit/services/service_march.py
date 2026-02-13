@@ -22,10 +22,11 @@ class ServiceMarch(Service):
 
     def __init__(self, march_repository: MarchRepository = None,
                  user_repository=None, military_service: MilitaryService = None,
-                 config=None):
+                 config=None, notify_mail=None):
         super().__init__(user_repository=user_repository, military_service=military_service, config=config)
         self.__repo = march_repository if march_repository is not None else MarchRepository()
         self.be_mil_service = military_service if military_service is not None else MilitaryService()
+        self._notify_mail = notify_mail
 
     async def get_all_march(self):
         """
@@ -116,7 +117,8 @@ class ServiceMarch(Service):
 
         await FitnessWarriorApp.get_broker().send_message(march)
         if body:
-            await NotifyMail().send_mail(
+            notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
+            await notify.send_mail(
                 body=body, subject="Result Test", to=str(sm.mail)
             )
         await self.add_audit_log(

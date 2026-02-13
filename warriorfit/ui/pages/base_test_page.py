@@ -9,7 +9,6 @@ import pandas as pd
 from shiny import reactive, render, ui
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
-from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.pages.page import Page
 
 
@@ -18,7 +17,6 @@ class BaseTestPage(Page):
 
     def __init__(self):
         super().__init__()
-        self.be_mil_service = MilitaryService()
         self.selected_military: Optional[ServiceMen] = None
         self.selected_session: Optional[TestSession] = None
 

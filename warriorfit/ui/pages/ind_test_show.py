@@ -4,7 +4,6 @@ from __future__ import annotations
 import pandas as pd
 from shiny import ui, render, reactive
 
-from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
 from warriorfit.ui.pages.page import Page
 
@@ -69,8 +68,7 @@ class IndTestShowPage(Page):
             self.report_path.set(None)
             if s:
                 status.set("Generating report...")
-                report_generator = ReportGeneratorPdf()
-                output_path = await report_generator.generate_ind_report(
+                output_path = await self.controller._report_generator_pdf.generate_ind_report(
                     serial_number=s
                 )
                 if output_path:

@@ -1,14 +1,9 @@
 # Python
 from __future__ import annotations
 
-from typing import Optional
-
 import pandas as pd
 from shiny import ui, render, reactive
 
-from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.services.military_service import MilitaryService
-from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.pages.page import Page
 
@@ -52,9 +47,8 @@ class OwnUnitPage(Page):
         async def full_report_unit():
             self.report_path.set(None)
             status_report_unit.set("Generating report...")
-            report_generator = ReportGeneratorPdf()
             output_path = (
-                await report_generator.generate_total_report_current_year_own_unit()
+                await self.controller._report_generator_pdf.generate_total_report_current_year_own_unit()
             )
             if output_path:
                 self.report_path.set(output_path)
@@ -77,7 +71,7 @@ class OwnUnitPage(Page):
                 )
             return None
 
-        @render.download(filename=lambda: f"Report_{ApplicationConfig().own_unit}.pdf")
+        @render.download(filename=lambda: f"Report_{self.controller.unit_name}.pdf")
         def download_generated_report_unit():
             path = self.report_path.get()
             ui.update_action_button("full_report_unit", disabled=False)

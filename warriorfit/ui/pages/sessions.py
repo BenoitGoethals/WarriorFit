@@ -5,7 +5,6 @@ from shiny import reactive, ui, render
 
 from warriorfit.core.role import Role
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.services.military_service import MilitaryService
 
 from warriorfit.ui.controllers.session_controller import SessionsController
 from warriorfit.ui.pages.page import Page
@@ -19,7 +18,6 @@ class SessionsPage(Page):
 
     def __init__(self) -> None:
         super().__init__()
-        self.be_mil_service = MilitaryService()
         self.controller = SessionsController()
 
     def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:

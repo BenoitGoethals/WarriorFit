@@ -37,9 +37,10 @@ class ServiceTest(Service):
     """
 
     def __init__(self, fitness_test_repository: FitnessTestRepository = None,
-                 user_repository=None, config=None):
+                 user_repository=None, config=None, notify_mail=None):
         super().__init__(user_repository=user_repository, config=config)
         self._test_repo = fitness_test_repository if fitness_test_repository is not None else FitnessTestRepository()
+        self._notify_mail = notify_mail
 
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)
@@ -120,7 +121,8 @@ class ServiceTest(Service):
                     body = self.build_email_body_combat(test)
             await FitnessWarriorApp.get_broker().send_message(test)
             if body:
-                await NotifyMail().send_mail(
+                notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
+                await notify.send_mail(
                     body=body, subject="Result Test", to=str(military.mail)
                 )
             await self.add_audit_log(

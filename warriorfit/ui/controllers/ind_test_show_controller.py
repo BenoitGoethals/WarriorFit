@@ -7,6 +7,7 @@ from dependency_injector.wiring import inject, Provide
 from warriorfit.core.container import Container
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
+from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 
 
 class IndTestShowController:
@@ -28,9 +29,11 @@ class IndTestShowController:
         self,
         mil_service: MilitaryService = Provide[Container.military_service],
         data_collector: DataCollector = Provide[Container.data_collector],
+        report_generator_pdf: ReportGeneratorPdf = Provide[Container.report_generator_pdf],
     ):
         self.be_mil = mil_service
         self._data_collector = data_collector
+        self._report_generator_pdf = report_generator_pdf
 
     async def find_military(self, serial: str):
         """
