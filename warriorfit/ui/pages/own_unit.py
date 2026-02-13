@@ -6,12 +6,15 @@ from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class OwnUnitPage(Page):
-    def __init__(self):
+    @inject
+    def __init__(self, controller: OwnUnitController = Provide[Container.own_unit_controller]):
         super().__init__()
-        self.controller = OwnUnitController()
+        self.controller = controller
         self._selected_serial = reactive.Value(None)
         self.report_path = reactive.Value(None)
 

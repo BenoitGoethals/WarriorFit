@@ -11,6 +11,8 @@ from warriorfit.ui.controllers.calendar_events_controller import (
     CalendarEventsController,
 )
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 from warriorfit.ui.user_store import UserStore
 
 
@@ -18,10 +20,11 @@ class CalendarPage(Page):
     TITLE = "Calendar"
     TITLE_PERSONAL = "Personal Calendar"
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: CalendarEventsController = Provide[Container.calendar_events_controller]) -> None:
         super().__init__()
         self._refresh_counter = reactive.Value(0)
-        self._controller = CalendarEventsController()
+        self._controller = controller
         self._all = True
 
     def get_ui_all_test(self):

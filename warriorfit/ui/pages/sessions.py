@@ -8,6 +8,8 @@ from warriorfit.core.type_fitness_test import TypeFitnessTest
 
 from warriorfit.ui.controllers.session_controller import SessionsController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class SessionsPage(Page):
@@ -16,9 +18,10 @@ class SessionsPage(Page):
 
     NO_SELECTION_MESSAGE = "No row selected"
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: SessionsController = Provide[Container.sessions_controller]) -> None:
         super().__init__()
-        self.controller = SessionsController()
+        self.controller = controller
 
     def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
         if not data["datetime_start"]:

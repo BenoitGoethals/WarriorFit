@@ -6,12 +6,15 @@ from shiny import ui, render, reactive
 
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class IndTestShowPage(Page):
-    def __init__(self):
+    @inject
+    def __init__(self, controller: IndTestShowController = Provide[Container.ind_test_show_controller]):
         super().__init__()
-        self.controller = IndTestShowController()
+        self.controller = controller
         self.serial = reactive.Value("")
         self.mil_info = reactive.Value("No serviceman selected.")
         self.tests_df = reactive.Value(pd.DataFrame())
@@ -209,12 +212,19 @@ class IndTestShowPage(Page):
             return df.sort_values(by=["service_number"])
 
 
-_page = IndTestShowPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = IndTestShowPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

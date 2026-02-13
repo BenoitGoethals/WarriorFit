@@ -10,12 +10,15 @@ from warriorfit.ui.controllers.reports_controller import (
     ReportRequest,
 )
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class ReportsPage(Page):
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: ReportsController = Provide[Container.reports_controller]) -> None:
         super().__init__()
-        self.controller = ReportsController()
+        self.controller = controller
         self._status_msg = reactive.Value(
             ("info", "Click 'Generate Report' to create your report.")
         )
@@ -136,12 +139,19 @@ class ReportsPage(Page):
 
 
 # Public API: keep same signatures
-_page = ReportsPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = ReportsPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

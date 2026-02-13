@@ -13,12 +13,15 @@ from warriorfit.ui.pages.page import Page
 ui.output_ui("runner_card")
 
 from warriorfit.ui.controllers.cross_controller import CrossController
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class CrossPage(Page):
-    def __init__(self):
+    @inject
+    def __init__(self, controller: CrossController = Provide[Container.cross_controller]):
         super().__init__()
-        self.controller = CrossController()
+        self.controller = controller
         self.refresh_tick = reactive.Value(0)
         self.selected_cross_id = reactive.Value("")
         self.selected_runner_id = reactive.Value("")
@@ -337,12 +340,19 @@ class CrossPage(Page):
 
 
 # Expose singleton-style API compatible with app.py import pattern
-_page = CrossPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = CrossPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    return _page.server(input, output, session)
+    return _get_page().server(input, output, session)

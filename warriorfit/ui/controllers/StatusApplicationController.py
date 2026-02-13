@@ -1,10 +1,8 @@
 import os
 
 import aiohttp
-from dependency_injector.wiring import inject, Provide
 
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.core.container import Container
 from warriorfit.data.repositories.abc_repository import ABCRepository
 from warriorfit.utils.Os import Os
 import aiofiles
@@ -12,14 +10,14 @@ import aiofiles
 
 class StatusApplicationController:
 
-    @inject
     def __init__(
         self,
-        repo: ABCRepository = Provide[Container.user_repository],
-        config: ApplicationConfig = Provide[Container.config],
+        repo: ABCRepository = None,
+        config: ApplicationConfig = None,
     ) -> None:
-        self._repo = repo
-        self._config = config
+        from warriorfit.data.repositories.user_repository import UserRepository
+        self._repo = repo if repo is not None else UserRepository()
+        self._config = config if config is not None else ApplicationConfig()
 
     async def status_db(self):
         status = await self._repo.check_if_db_is_operational()

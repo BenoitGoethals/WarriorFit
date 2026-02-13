@@ -1,9 +1,6 @@
 from typing import List, Dict, Any
 import pandas as pd
 
-from dependency_injector.wiring import inject, Provide
-
-from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import User
 from warriorfit.services.service_user import UserService
 
@@ -19,12 +16,11 @@ class AuditLogEventsController:
 
     """
 
-    @inject
     def __init__(
         self,
-        user_service: UserService = Provide[Container.user_service],
+        user_service: UserService = None,
     ) -> None:
-        self._service = user_service
+        self._service = user_service if user_service is not None else UserService()
 
     async def list_audit_logs_df(self) -> pd.DataFrame:
         """

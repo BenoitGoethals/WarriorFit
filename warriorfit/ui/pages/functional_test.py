@@ -11,6 +11,8 @@ from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.ui.controllers.functional_controller import FunctionalController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,9 +38,10 @@ class FunctionalPage(BaseTestPage):
         "functional_pull_ups_input",
     )
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: FunctionalController = Provide[Container.functional_controller]) -> None:
         super().__init__()
-        self.controller = FunctionalController()
+        self.controller = controller
 
     def get_prefix(self) -> str:
         return "functional"
@@ -692,12 +695,19 @@ class FunctionalPage(BaseTestPage):
 
 
 # Public API: keep same signatures
-_page = FunctionalPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = FunctionalPage()
+    return _page
 
 
 def get_ui() -> NavPanel:
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input: Any, output: Any, session: Any) -> None:
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

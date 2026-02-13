@@ -6,9 +6,7 @@ from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
 import pandas as pd
-from dependency_injector.wiring import inject, Provide
 
-from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import User, Role
 from warriorfit.security.auth_service import Auth
 from warriorfit.services.military_service import MilitaryService
@@ -42,14 +40,13 @@ class UserManagementController:
     EMAIL_REGEX = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
     USER_REGEX = re.compile(r"^[a-zA-Z0-9_]+$")
 
-    @inject
     def __init__(
         self,
-        mil_service: MilitaryService = Provide[Container.military_service],
-        user_service: UserService = Provide[Container.user_service],
+        mil_service: MilitaryService = None,
+        user_service: UserService = None,
     ):
-        self.be_mil = mil_service
-        self._service = user_service
+        self.be_mil = mil_service if mil_service is not None else MilitaryService()
+        self._service = user_service if user_service is not None else UserService()
         self.selected_user = None
 
     @staticmethod

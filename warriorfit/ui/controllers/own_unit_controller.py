@@ -4,10 +4,7 @@ import asyncio
 from typing import List, Dict, Any, Optional
 import pandas as pd
 
-from dependency_injector.wiring import inject, Provide
-
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import (
     PhefTest,
     CombatTestParatrooper,
@@ -32,22 +29,22 @@ class OwnUnitController:
     - Fetch tests for a selected serviceman
     """
 
-    @inject
     def __init__(
         self,
-        mil_service: MilitaryService = Provide[Container.military_service],
-        data_collector: DataCollector = Provide[Container.data_collector],
-        test_service: ServiceTest = Provide[Container.test_service],
-        march_service: ServiceMarch = Provide[Container.march_service],
-        config: ApplicationConfig = Provide[Container.config],
-        report_generator_pdf: ReportGeneratorPdf = Provide[Container.report_generator_pdf],
+        mil_service: MilitaryService = None,
+        data_collector: DataCollector = None,
+        test_service: ServiceTest = None,
+        march_service: ServiceMarch = None,
+        config: ApplicationConfig = None,
+        report_generator_pdf: ReportGeneratorPdf = None,
     ):
-        self._mil_service = mil_service
-        self.unit_name: str = config.own_unit
-        self._data_collector = data_collector
-        self._service = test_service
-        self._service_mars = march_service
-        self._report_generator_pdf = report_generator_pdf
+        _config = config if config is not None else ApplicationConfig()
+        self._mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.unit_name: str = _config.own_unit
+        self._data_collector = data_collector if data_collector is not None else DataCollector()
+        self._service = test_service if test_service is not None else ServiceTest()
+        self._service_mars = march_service if march_service is not None else ServiceMarch()
+        self._report_generator_pdf = report_generator_pdf if report_generator_pdf is not None else ReportGeneratorPdf()
 
     @benchmark
     async def fetch_servicemen_df(self) -> pd.DataFrame:

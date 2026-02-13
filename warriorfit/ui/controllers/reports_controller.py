@@ -4,9 +4,6 @@ from __future__ import annotations
 from typing import List, Dict, Tuple
 from dataclasses import dataclass
 
-from dependency_injector.wiring import inject, Provide
-
-from warriorfit.core.container import Container
 from warriorfit.services.report_generator_csv import ReportGeneratorCsv
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.services.report_type import ReportType
@@ -34,14 +31,13 @@ class ReportsController:
     :type _pdf_gen: ReportGeneratorPdf
     """
 
-    @inject
     def __init__(
         self,
-        csv_gen: ReportGeneratorCsv = Provide[Container.report_generator_csv],
-        pdf_gen: ReportGeneratorPdf = Provide[Container.report_generator_pdf],
+        csv_gen: ReportGeneratorCsv = None,
+        pdf_gen: ReportGeneratorPdf = None,
     ) -> None:
-        self._csv_gen = csv_gen
-        self._pdf_gen = pdf_gen
+        self._csv_gen = csv_gen if csv_gen is not None else ReportGeneratorCsv()
+        self._pdf_gen = pdf_gen if pdf_gen is not None else ReportGeneratorPdf()
 
     def _resolve_targets(self, test_type: str) -> List[ReportType]:
         if test_type == "all":

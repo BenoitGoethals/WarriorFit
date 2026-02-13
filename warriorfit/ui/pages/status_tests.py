@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import datetime
-from typing import Optional
 from shiny import ui, render, reactive
 
-from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class StatusTests(Page):
-    def __init__(self, mil_service: Optional[MilitaryService] = None):
+    @inject
+    def __init__(self, controller: StatusTestsController = Provide[Container.status_tests_controller]):
         super().__init__()
-        self._controller: StatusTestsController = StatusTestsController()
+        self._controller = controller
         self.refresh_tick = reactive.Value(0)
         self._selected_serial = reactive.Value(None)
 
@@ -61,12 +62,19 @@ class StatusTests(Page):
             self.refresh_tick.set(self.refresh_tick.get() + 1)
 
 
-_page = StatusTests()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = StatusTests()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

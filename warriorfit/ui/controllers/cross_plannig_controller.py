@@ -1,9 +1,6 @@
 from datetime import datetime
 from typing import Dict, Optional
 
-from dependency_injector.wiring import inject, Provide
-
-from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Cross
 from warriorfit.services.service_cross import ServiceCross
 
@@ -21,12 +18,11 @@ class CrossPlanningController:
     :type _service: ServiceCross
     """
 
-    @inject
     def __init__(
         self,
-        service: ServiceCross = Provide[Container.cross_service],
+        service: ServiceCross = None,
     ):
-        self._service = service
+        self._service = service if service is not None else ServiceCross()
 
     # --- CRUD Cross ---
     async def create_cross(

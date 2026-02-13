@@ -11,14 +11,17 @@ from warriorfit.ui.controllers.dashboard_own_unit_controller import (
     DashboardOwnUnitController,
 )
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class DashboardOwnUnitPage(Page):
     TAB_NAME: Final[str] = "Dashboard"
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller]) -> None:
         super().__init__()
-        self.controller = DashboardOwnUnitController()
+        self.controller = controller
 
     def refresh(self) -> None:
         # Dashboard is cache-heavy; refresh should clear controller caches.
@@ -213,12 +216,19 @@ class DashboardOwnUnitPage(Page):
 
 
 # Public API
-_page = DashboardOwnUnitPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = DashboardOwnUnitPage()
+    return _page
 
 
 def get_ui() -> NavPanel:
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input: Any, output: Any, session: Any) -> None:
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

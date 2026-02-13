@@ -3,8 +3,6 @@ from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import TestSession
 import datetime
 import pandas as pd
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 
 from warriorfit.services.mail_service import MailService
@@ -24,14 +22,13 @@ class SessionsController:
     :type be_mil_service: MilitaryService
     """
 
-    @inject
     def __init__(
         self,
-        service: ServiceTest = Provide[Container.test_service],
-        mil_service: MilitaryService = Provide[Container.military_service],
+        service: ServiceTest = None,
+        mil_service: MilitaryService = None,
     ):
-        self._service = service
-        self.be_mil_service = mil_service
+        self._service = service if service is not None else ServiceTest()
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
 
     # Data fetchers
     async def list_sessions(self) -> list[TestSession]:

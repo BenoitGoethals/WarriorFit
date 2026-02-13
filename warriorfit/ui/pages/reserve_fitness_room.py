@@ -9,17 +9,20 @@ from warriorfit.ui.controllers.reserve_fitness_room_controller import (
     ReserveFitnessRoomController,
 )
 from warriorfit.ui.pages.page import Page
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 class ReserveFitnessRoomPage(Page):
 
-    def __init__(self):
+    @inject
+    def __init__(self, controller: ReserveFitnessRoomController = Provide[Container.reserve_fitness_room_controller]):
 
         super().__init__()
         self.rooms: List[Room] = []
         self.reservations: List[Reservation] = []
         self.pti_s: List[User] = []
-        self._controller: ReserveFitnessRoomController = ReserveFitnessRoomController()
+        self._controller = controller
 
         # Time slots from 06:00 to 23:00
         self.time_slots = [f"{h:02d}:00" for h in range(6, 24)]
@@ -1018,12 +1021,19 @@ class ReserveFitnessRoomPage(Page):
 
 
 # Public API
-_page = ReserveFitnessRoomPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = ReserveFitnessRoomPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

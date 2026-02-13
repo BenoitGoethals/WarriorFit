@@ -1,9 +1,6 @@
 import logging
 import pandas as pd
 
-from dependency_injector.wiring import inject, Provide
-
-from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Runner, ServiceMen
 
 from warriorfit.services.military_service import MilitaryService
@@ -14,14 +11,13 @@ logger = logging.getLogger(__name__)
 
 
 class CrossStaticsController:
-    @inject
     def __init__(
         self,
-        service: ServiceCross = Provide[Container.cross_service],
-        mil_service: MilitaryService = Provide[Container.military_service],
+        service: ServiceCross = None,
+        mil_service: MilitaryService = None,
     ) -> None:
-        self._service = service
-        self._mil_service = mil_service
+        self._service = service if service is not None else ServiceCross()
+        self._mil_service = mil_service if mil_service is not None else MilitaryService()
         self._stats = None
 
     async def load(self):

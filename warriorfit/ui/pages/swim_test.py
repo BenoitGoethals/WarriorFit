@@ -10,6 +10,8 @@ from shiny.ui._navs import NavPanel
 from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,9 +31,10 @@ class SwimTestPage(BaseTestPage):
         "swim_passed_input",
     )
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(self, controller: SwimmingController = Provide[Container.swimming_controller]) -> None:
         super().__init__()
-        self.controller = SwimmingController()
+        self.controller = controller
 
     def get_prefix(self) -> str:
         return "swim"
@@ -497,12 +500,19 @@ class SwimTestPage(BaseTestPage):
 
 
 # Public API
-_page = SwimTestPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = SwimTestPage()
+    return _page
 
 
 def get_ui() -> ui.Tag:
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input: Any, output: Any, session: Any) -> None:
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

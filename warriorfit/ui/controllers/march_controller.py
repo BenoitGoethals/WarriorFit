@@ -1,9 +1,6 @@
 import logging
 from typing import Optional
 
-from dependency_injector.wiring import inject, Provide
-
-from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
@@ -23,14 +20,13 @@ class MarchController:
     :type be_mil_service: MilitaryService
     """
 
-    @inject
     def __init__(
         self,
-        service: ServiceMarch = Provide[Container.march_service],
-        mil_service: MilitaryService = Provide[Container.military_service],
+        service: ServiceMarch = None,
+        mil_service: MilitaryService = None,
     ) -> None:
-        self._service = service
-        self.be_mil_service = mil_service
+        self._service = service if service is not None else ServiceMarch()
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
         self._logger = logging.getLogger(__name__)
 
     async def get_all_march(self):

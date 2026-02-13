@@ -1,8 +1,5 @@
 import datetime
 
-from dependency_injector.wiring import inject, Provide
-
-from warriorfit.core.container import Container
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.services.service_cross import ServiceCross
 from warriorfit.services.service_test import ServiceTest
@@ -18,14 +15,13 @@ class CalendarEventsController:
     they are properly formatted for posting or rendering in a calendar interface.
     """
 
-    @inject
     def __init__(
         self,
-        test_service: ServiceTest = Provide[Container.test_service],
-        cross_service: ServiceCross = Provide[Container.cross_service],
+        test_service: ServiceTest = None,
+        cross_service: ServiceCross = None,
     ) -> None:
-        self._service_test = test_service
-        self._service_cross = cross_service
+        self._service_test = test_service if test_service is not None else ServiceTest()
+        self._service_cross = cross_service if cross_service is not None else ServiceCross()
 
     async def events(self, serial_number_pti: str = None) -> list:
         """
