@@ -1,13 +1,20 @@
 from typing import Any, Coroutine, List
 
+from dependency_injector.wiring import inject, Provide
+
+from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Reservation, Room
 from warriorfit.services.reserve_fitness_room_service import ReserveFitnessRoomService
 
 
 class ReserveFitnessRoomController:
 
-    def __init__(self):
-        self._service = ReserveFitnessRoomService()
+    @inject
+    def __init__(
+        self,
+        service: ReserveFitnessRoomService = Provide[Container.reserve_fitness_room_service],
+    ):
+        self._service = service
 
     async def add_reservation(self, reservation) -> Reservation | None:
         return await self._service.add_reservation(reservation)

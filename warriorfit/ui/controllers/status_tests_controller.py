@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import Optional
 import pandas as pd
 
+from dependency_injector.wiring import inject, Provide
+
 from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.core.container import Container
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
 
@@ -22,10 +25,16 @@ class StatusTestsController:
     :type unit_name: str
     """
 
-    def __init__(self, mil_service: Optional[MilitaryService] = None):
-        self._mil_service = mil_service or MilitaryService()
-        self.data_collector = DataCollector()
-        self.unit_name: str = ApplicationConfig().own_unit
+    @inject
+    def __init__(
+        self,
+        mil_service: MilitaryService = Provide[Container.military_service],
+        data_collector: DataCollector = Provide[Container.data_collector],
+        config: ApplicationConfig = Provide[Container.config],
+    ):
+        self._mil_service = mil_service
+        self.data_collector = data_collector
+        self.unit_name: str = config.own_unit
 
     async def get_data(self) -> pd.DataFrame:
         data = await DataCollector().collect_all_mil_from_own_unit_not_executed_phefs()

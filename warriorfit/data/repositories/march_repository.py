@@ -17,8 +17,8 @@ class MarchRepository(ABCRepository):
     :type SessionLocal: Callable[[], AsyncSession]
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
     async def get_march_by_id(self, id_march: int) -> March | None:
         """

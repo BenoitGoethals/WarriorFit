@@ -8,10 +8,10 @@ from warriorfit.data.repositories.abc_repository import ABCRepository
 
 
 class CrossRepository(ABCRepository):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
-    async def get_cross(self, id: int) -> Cross | None:
+    async def get_cross(self, cross_id: int) -> Cross | None:
         """
         Fetches a Cross object from the database by its unique identifier.
 
@@ -19,24 +19,24 @@ class CrossRepository(ABCRepository):
         from the database that matches the given identifier. If a matching record
         is found, the first result is returned, otherwise it returns None.
 
-        :param id: The unique identifier of the Cross object to retrieve.
-        :type id: int
+        :param cross_id: The unique identifier of the Cross object to retrieve.
+        :type cross_id: int
         :return: A Cross object if found, otherwise None.
         :rtype: Cross | None
         """
-        query = select(Cross).where(Cross.id == id)
+        query = select(Cross).where(Cross.id == cross_id)
         results = await self.fetch_and_log(query, "cross")
         return results[0] if results else None
 
-    async def get_cross_full(self, id: int) -> Cross | None:
+    async def get_cross_full(self, cross_id: int) -> Cross | None:
         """
         Asynchronously retrieves a Cross instance by its ID, including its related runners.
 
         This method performs a database query to fetch the specified Cross instance along with
         its associated runners (eagerly loaded).
 
-        :param id: The unique identifier of the Cross instance to retrieve.
-        :type id: int
+        :param cross_id: The unique identifier of the Cross instance to retrieve.
+        :type cross_id: int
         :return: The Cross instance with the specified ID and its related runners if found, or
             None if no matching instance is found.
         :rtype: Cross | None
@@ -44,7 +44,7 @@ class CrossRepository(ABCRepository):
         query = (
             select(Cross)
             .options(selectinload(Cross.runners))  # Eager load runners
-            .where(Cross.id == id)
+            .where(Cross.id == cross_id)
         )
         results = await self.fetch_and_log(query, "cross")
         return results[0] if results else None

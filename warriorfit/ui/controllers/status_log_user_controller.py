@@ -1,6 +1,8 @@
 import pandas as pd
+from dependency_injector.wiring import inject, Provide
 from sqlalchemy.orm import Mapped
 
+from warriorfit.core.container import Container
 from warriorfit.services.service_test import ServiceTest
 
 
@@ -15,8 +17,12 @@ class StatusLogUserController:
 
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
+    @inject
+    def __init__(
+        self,
+        service: ServiceTest = Provide[Container.test_service],
+    ) -> None:
+        self._service = service
 
     async def get_upcoming_session(
         self, serial_number_pti: Mapped[str]

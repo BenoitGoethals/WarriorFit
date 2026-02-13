@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import pandas as pd
+from dependency_injector.wiring import inject, Provide
 
+from warriorfit.core.container import Container
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
 
@@ -21,8 +23,14 @@ class IndTestShowController:
     :type be_mil: MilitaryService
     """
 
-    def __init__(self):
-        self.be_mil = MilitaryService()
+    @inject
+    def __init__(
+        self,
+        mil_service: MilitaryService = Provide[Container.military_service],
+        data_collector: DataCollector = Provide[Container.data_collector],
+    ):
+        self.be_mil = mil_service
+        self._data_collector = data_collector
 
     async def find_military(self, serial: str):
         """
@@ -51,7 +59,7 @@ class IndTestShowController:
             number, or an empty DataFrame if the data could not be collected.
         """
         try:
-            df = await DataCollector().collect_tests_for_serial(
+            df = await self._data_collector.collect_tests_for_serial(
                 serial, current_year=False
             )
             return df if isinstance(df, pd.DataFrame) else pd.DataFrame()

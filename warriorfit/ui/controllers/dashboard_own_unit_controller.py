@@ -3,8 +3,10 @@ from typing import List, Dict, Any
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from dependency_injector.wiring import inject, Provide
 from warriorfit.config.appliccation_config import ApplicationConfig
 
+from warriorfit.core.container import Container
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import (
     PhefTest,
@@ -37,14 +39,21 @@ class DashboardOwnUnitController:
     :type unit_name: str
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
-        self.be_mil_service = MilitaryService()
-        self.unit_name = ApplicationConfig().own_unit
+    @inject
+    def __init__(
+        self,
+        test_service: ServiceTest = Provide[Container.test_service],
+        mil_service: MilitaryService = Provide[Container.military_service],
+        march_service: ServiceMarch = Provide[Container.march_service],
+        config: ApplicationConfig = Provide[Container.config],
+    ) -> None:
+        self._service = test_service
+        self.be_mil_service = mil_service
+        self.unit_name = config.own_unit
         self._mils = None
         self._all_military_own_unit = None
         self._results_tests_for_unit: dict[str, list[Any]] = {}
-        self._march_service = ServiceMarch()
+        self._march_service = march_service
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:

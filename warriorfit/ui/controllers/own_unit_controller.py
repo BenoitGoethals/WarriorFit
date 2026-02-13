@@ -4,7 +4,10 @@ import asyncio
 from typing import List, Dict, Any, Optional
 import pandas as pd
 
+from dependency_injector.wiring import inject, Provide
+
 from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import (
     PhefTest,
     CombatTestParatrooper,
@@ -28,12 +31,20 @@ class OwnUnitController:
     - Fetch tests for a selected serviceman
     """
 
-    def __init__(self, mil_service: Optional[MilitaryService] = None):
-        self._mil_service = mil_service or MilitaryService()
-        self.unit_name: str = ApplicationConfig().own_unit
-        self._data_collector = DataCollector()
-        self._service = ServiceTest()
-        self._service_mars = ServiceMarch()
+    @inject
+    def __init__(
+        self,
+        mil_service: MilitaryService = Provide[Container.military_service],
+        data_collector: DataCollector = Provide[Container.data_collector],
+        test_service: ServiceTest = Provide[Container.test_service],
+        march_service: ServiceMarch = Provide[Container.march_service],
+        config: ApplicationConfig = Provide[Container.config],
+    ):
+        self._mil_service = mil_service
+        self.unit_name: str = config.own_unit
+        self._data_collector = data_collector
+        self._service = test_service
+        self._service_mars = march_service
 
     @benchmark
     async def fetch_servicemen_df(self) -> pd.DataFrame:

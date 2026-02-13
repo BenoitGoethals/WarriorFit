@@ -36,9 +36,10 @@ class ServiceTest(Service):
     :type test_repo: FitnessTestRepository
     """
 
-    def __init__(self):
-        super().__init__()
-        self._test_repo = FitnessTestRepository()
+    def __init__(self, fitness_test_repository: FitnessTestRepository = None,
+                 user_repository=None, config=None):
+        super().__init__(user_repository=user_repository, config=config)
+        self._test_repo = fitness_test_repository if fitness_test_repository is not None else FitnessTestRepository()
 
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)

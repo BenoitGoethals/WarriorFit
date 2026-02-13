@@ -5,7 +5,9 @@ import logging
 from typing import Optional, Dict, Any, Tuple, List
 
 import pandas as pd
+from dependency_injector.wiring import inject, Provide
 
+from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Runner, Cross  # Runner model given in prompt
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
@@ -15,10 +17,16 @@ from warriorfit.services.service_cross import (
 
 
 class CrossController:
-    def __init__(self) -> None:
-        self._service = ServiceCross()
-        self.be_mil_service = MilitaryService()
-        self._pdf_gen = ReportGeneratorPdf()
+    @inject
+    def __init__(
+        self,
+        service: ServiceCross = Provide[Container.cross_service],
+        mil_service: MilitaryService = Provide[Container.military_service],
+        pdf_gen: ReportGeneratorPdf = Provide[Container.report_generator_pdf],
+    ) -> None:
+        self._service = service
+        self.be_mil_service = mil_service
+        self._pdf_gen = pdf_gen
         self._logger = logging.getLogger(__name__)
 
     # ----- Helpers -----

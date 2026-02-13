@@ -7,22 +7,20 @@ from email.mime.text import MIMEText
 from typing import Iterable, Optional
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.config.smtp_config import SmtpConfig
-from warriorfit.logic.singleton import Singleton
 from warriorfit.utils.Os import Os
 
 
-class MailService(metaclass=Singleton):
+class MailService:
     """
     Simple SMTP mailer that sends HTML emails with optional calendar invites
     compatible with Google Calendar and Outlook by attaching a text/calendar
     (iCalendar/ICS) alternative part.
     """
 
-    def __init__(self, config: SmtpConfig = None):
+    def __init__(self, config: ApplicationConfig = None):
         if config is None:
-            self.config = ApplicationConfig().mail_server
-        else:
-            self.config = config
+            config = ApplicationConfig()
+        self.config = config.mail_server
         self._logger = logging.getLogger(__name__)
 
     # Public API

@@ -10,8 +10,8 @@ from warriorfit.data.repositories.abc_repository import ABCRepository
 
 class ReservationRepository(ABCRepository):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
     async def add_reservation(self, reservation: Reservation) -> Any | None:
         async with self.SessionLocal() as session:

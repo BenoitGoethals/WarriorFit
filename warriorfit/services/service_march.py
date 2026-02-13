@@ -20,10 +20,12 @@ class ServiceMarch(Service):
     :type be_mil_service: MilitaryService
     """
 
-    def __init__(self):
-        super().__init__()
-        self.__repo = MarchRepository()
-        self.be_mil_service = MilitaryService()
+    def __init__(self, march_repository: MarchRepository = None,
+                 user_repository=None, military_service: MilitaryService = None,
+                 config=None):
+        super().__init__(user_repository=user_repository, military_service=military_service, config=config)
+        self.__repo = march_repository if march_repository is not None else MarchRepository()
+        self.be_mil_service = military_service if military_service is not None else MilitaryService()
 
     async def get_all_march(self):
         """

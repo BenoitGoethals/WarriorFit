@@ -22,8 +22,8 @@ class ReportGeneratorCsv(GeneratorReport):
     :ivar calculate_swim_score: Method reference to calculate scores for swimming performance.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, military_service=None, service_test=None):
+        super().__init__(military_service=military_service, service_test=service_test)
 
     async def generate_report(
         self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool

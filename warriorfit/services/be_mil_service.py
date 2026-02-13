@@ -8,7 +8,6 @@ from pydantic.v1 import Field
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.Gender import Gender
 from warriorfit.data.model.db_model import ServiceMen
-from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
 
 class ServiceMenSchema(BaseModel):
@@ -27,12 +26,14 @@ class ServiceMenSchema(BaseModel):
     para: bool = False
     ops_test: bool = False
 
-class BEMILService(metaclass=Singleton):
-    BASE_URL = ApplicationConfig().hr_url
-    API_KEY = ApplicationConfig().hr_api_key
+class BEMILService:
 
-    def __init__(self):
+    def __init__(self, config: ApplicationConfig = None):
         self.__logger = logging.getLogger(__name__)
+        if config is None:
+            config = ApplicationConfig()
+        self.BASE_URL = config.hr_url
+        self.API_KEY = config.hr_api_key
 
     def _build_serviceman(self, data: dict) -> ServiceMen:
         # Validate with Pydantic schema first

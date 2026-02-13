@@ -2,8 +2,9 @@ from __future__ import annotations
 from typing import Optional, Dict, Any, Tuple
 
 import pandas as pd
+from dependency_injector.wiring import inject, Provide
 
-
+from warriorfit.core.container import Container
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import PhefTest, TestSession, ServiceMen
 from warriorfit.logic.phef_calculator import PhefCalculator
@@ -21,9 +22,14 @@ class PhefController:
     - Grid decoration and email HTML body
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
-        self.be_mil_service = MilitaryService()
+    @inject
+    def __init__(
+        self,
+        service: ServiceTest = Provide[Container.test_service],
+        mil_service: MilitaryService = Provide[Container.military_service],
+    ) -> None:
+        self._service = service
+        self.be_mil_service = mil_service
 
     # ----- Helpers -----
     @staticmethod

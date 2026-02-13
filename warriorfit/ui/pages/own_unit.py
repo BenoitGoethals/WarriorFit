@@ -14,9 +14,9 @@ from warriorfit.ui.pages.page import Page
 
 
 class OwnUnitPage(Page):
-    def __init__(self, mil_service: Optional[MilitaryService] = None):
+    def __init__(self):
         super().__init__()
-        self.controller = OwnUnitController(mil_service or MilitaryService())
+        self.controller = OwnUnitController()
         self._selected_serial = reactive.Value(None)
         self.report_path = reactive.Value(None)
 
@@ -169,12 +169,19 @@ class OwnUnitPage(Page):
 
 
 # Public API: keep same signatures
-_page = OwnUnitPage()
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = OwnUnitPage()
+    return _page
 
 
 def get_ui():
-    return _page.get_ui()
+    return _get_page().get_ui()
 
 
 def server(input, output, session):
-    _page.server(input, output, session)
+    _get_page().server(input, output, session)

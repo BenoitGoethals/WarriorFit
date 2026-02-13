@@ -15,12 +15,11 @@ from warriorfit.data.model.db_model import (
     FunctionalTest,
 )
 from warriorfit.data.repositories.mom_repositor import MomRepository
-from warriorfit.logic.singleton import Singleton
 from warriorfit.mom.message import Message
 from warriorfit.services.be_mil_service import BEMILService
 
 
-class Broker(metaclass=Singleton):
+class Broker:
     """
     Manages message queue services, including background tasks for processing,
     storing, and sending messages to an external HR service.
@@ -38,14 +37,17 @@ class Broker(metaclass=Singleton):
     :type _msg_queue: asyncio.Queue
     """
 
-    def __init__(self):
+    def __init__(self, mom_repository: MomRepository = None,
+                 be_mil_service: BEMILService = None,
+                 config: ApplicationConfig = None):
 
-        self._mom_repo = MomRepository()
+        self._mom_repo = mom_repository if mom_repository is not None else MomRepository()
         self._logger = logging.getLogger(__name__)
         self.running = False
         self._worker_task = None
         self._msg_queue = asyncio.Queue()
-        self._be_mil_service = BEMILService()
+        self._be_mil_service = be_mil_service if be_mil_service is not None else BEMILService()
+        self._config = config if config is not None else ApplicationConfig()
 
     async def worker(self):
         """Background task running on the main event loop"""

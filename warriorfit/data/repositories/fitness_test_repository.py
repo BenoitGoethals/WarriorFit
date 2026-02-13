@@ -20,8 +20,8 @@ from warriorfit.data.repositories.abc_repository import ABCRepository
 
 
 class FitnessTestRepository(ABCRepository):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
     async def add_test_session(self, test_session: TestSession) -> Optional[Any]:
         """

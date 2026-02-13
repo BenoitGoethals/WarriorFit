@@ -2,6 +2,9 @@ from __future__ import annotations
 from typing import Optional, Dict, Any
 import pandas as pd
 
+from dependency_injector.wiring import inject, Provide
+
+from warriorfit.core.container import Container
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import CombatSwimmingTest, TestSession, ServiceMen
 
@@ -17,11 +20,14 @@ class SwimmingController:
     - Grid decoration and email HTML body
     """
 
+    @inject
     def __init__(
         self,
+        service: ServiceTest = Provide[Container.test_service],
+        mil_service: MilitaryService = Provide[Container.military_service],
     ) -> None:
-        self._service = ServiceTest()
-        self.be_mil_service = MilitaryService()
+        self._service = service
+        self.be_mil_service = mil_service
 
     # ----- Validation -----
     @staticmethod

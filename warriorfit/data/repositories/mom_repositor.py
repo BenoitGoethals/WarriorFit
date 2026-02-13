@@ -27,8 +27,8 @@ class MomRepository(ABCRepository):
     :ivar _logger: Logger instance used for logging errors or important runtime details.
     :type _logger: logging.Logger
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
     async def add_hr_message(self, msg: HrMessage) -> HrMessage | None:
         """

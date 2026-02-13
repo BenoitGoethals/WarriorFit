@@ -11,8 +11,8 @@ from sqlalchemy import or_
 
 
 class UserRepository(ABCRepository):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None):
+        super().__init__(config=config)
 
     async def add_user(self, user: User) -> Optional[User]:
         """

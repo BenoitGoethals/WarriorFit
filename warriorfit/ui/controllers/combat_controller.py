@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 from typing import Tuple, Dict, Any, Optional
 import pandas as pd
+from dependency_injector.wiring import inject, Provide
+from warriorfit.core.container import Container
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import (
     CombatTestParatrooper,
@@ -18,9 +20,14 @@ class CombatController:
     Represents a controller for managing combat fitness tests.
     """
 
-    def __init__(self) -> None:
-        self._service = ServiceTest()
-        self.be_mil_service = MilitaryService()
+    @inject
+    def __init__(
+        self,
+        service: ServiceTest = Provide[Container.test_service],
+        mil_service: MilitaryService = Provide[Container.military_service],
+    ) -> None:
+        self._service = service
+        self.be_mil_service = mil_service
         self._logger = logging.getLogger(__name__)
 
     # ----- Helpers -----

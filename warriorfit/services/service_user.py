@@ -2,17 +2,16 @@
 User database service class for managing user-related database operations.
 """
 
-from warriorfit.logic.singleton import Singleton
 from warriorfit.services.service import Service
 
 
-class UserService(Service, metaclass=Singleton):
+class UserService(Service):
     """
     User database service class for managing user-related database operations.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, user_repository=None, config=None):
+        super().__init__(user_repository=user_repository, config=config)
 
     async def check_user(self, username_login, password_login):
         """
