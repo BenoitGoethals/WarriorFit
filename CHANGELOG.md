@@ -5,6 +5,28 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-02-14] - Documentation & Cross App Updates
+
+### Added
+- Add architectural structure document (`ARCHITECTURE.md`)
+- Add DI usage guide (`DI_USAGE_GUIDE.md`)
+- Add changelog (`CHANGELOG.md`)
+- Update cross app documentation with screenshots and expanded content
+
+### Fixed
+- Bug fix in `container.py` (DI wiring)
+
+## [PR #188] - 2026-02-13 - Dependency Injection Refactoring
+
+### Changed
+- Refactor to integrate Dependency Injection via `Container` using `dependency-injector` library
+- Replace hard-coded service instantiation with `Provide` annotations
+- Simplify constructors across controllers and services for enhanced testability and maintainability
+- Inject `NotifyMail` and `ReportGeneratorPdf` dependencies across services and controllers
+- Replace direct instantiations with DI-managed singletons
+- Update all 21 pages to use `@inject` with `Provide[Container.xxx_controller]`
+- Fix `Gender` literal type issue
+
 ## [Unreleased] - 2026-02-11
 
 ### Changed
