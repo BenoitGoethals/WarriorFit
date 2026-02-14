@@ -23,6 +23,9 @@ password: tester007!
 **Test mailserver view : https://mailstub.bensoft.be/
 **Test HR Simulator view : https://api.bensoft.be/
 
+Final view of the Architecture -> [Architectural Structure](documentation/ARCHITECTURE.md)
+
+
 
 ## Updates
 * 2025-09-1: Project started
@@ -43,6 +46,9 @@ password: tester007!
 * 2026-02-02: Cross app and api SSL/HTTPS Support**: Encrypted communication with SSL certificates
 * 2026-02-03: versioning by git hook pre-commit
 * 2026-02-07 : update cross app and rest api with 2oauth and certificates
+* 2026-02-13 : Big refactoring, use Dependency Injection
+* 2026-02-14 : Add Architectural structure document  [Architectural Structure](documentation/ARCHITECTURE.md)
+
 
 
 ## Project Description
@@ -76,6 +82,7 @@ The project documentation is structured in different documents:
 3. * [Datamodel/ERD](documentation/datamodel.md) (Done)
 4. * [Stories](documentation/stories.md) (Done)
 5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (Done)
+5. * [Architectural Structure](documentation/ARCHITECTURE.md) (Done)
 6. * [Module Structures](documentation/module_structure.md) (Done)
 7. * [MOM (broker)](documentation/broker.md) (In testing) Message-Oriented Middleware
 8. * [Install and deply](documentation/install.md) (Done)
