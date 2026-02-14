@@ -48,6 +48,7 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-02-07 : update cross app and rest api with 2oauth and certificates
 * 2026-02-13 : Big refactoring, use Dependency Injection
 * 2026-02-14 : Add Architectural structure document  [Architectural Structure](documentation/ARCHITECTURE.md)
+* 2026-02-14 : update cross md
 
 
 
