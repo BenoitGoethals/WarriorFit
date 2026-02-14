@@ -46,9 +46,10 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-02-02: Cross app and api SSL/HTTPS Support**: Encrypted communication with SSL certificates
 * 2026-02-03: versioning by git hook pre-commit
 * 2026-02-07 : update cross app and rest api with 2oauth and certificates
-* 2026-02-13 : Big refactoring, use Dependency Injection
-* 2026-02-14 : Add Architectural structure document  [Architectural Structure](documentation/ARCHITECTURE.md)
-* 2026-02-14 : update cross md
+* 2026-02-13 : Big refactoring, use Dependency Injection [DI Usage Guide](documentation/DI_USAGE_GUIDE.md)
+* 2026-02-14 : Add Architectural structure document [Architectural Structure](documentation/ARCHITECTURE.md)
+* 2026-02-14 : Bug fix container.py (DI wiring)
+* 2026-02-14 : Update cross app documentation [Cross App](documentation/crsossapp.md)
 
 
 
@@ -82,17 +83,19 @@ The project documentation is structured in different documents:
 2. * [Business Logic](documentation/business_logic.md) (Done)
 3. * [Datamodel/ERD](documentation/datamodel.md) (Done)
 4. * [Stories](documentation/stories.md) (Done)
-5. * [Initiale proposalInitiale proposal](documentation/project_proposel.md) (Done)
-5. * [Architectural Structure](documentation/ARCHITECTURE.md) (Done)
-6. * [Module Structures](documentation/module_structure.md) (Done)
-7. * [MOM (broker)](documentation/broker.md) (In testing) Message-Oriented Middleware
-8. * [Install and deply](documentation/install.md) (Done)
-9. * [Retrospective](documentation/retrospective.md) 
-10. * [Reservation Rooms](documentation/reservation_rooms.md) (out of scope,In Development)
-11. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (Done)
-12. * [Testing](documentation/testcases.md) (In Development)
-13. * [Cross App](documentation/crsossapp.md) (out of scope/In Development)
-14. * [Server architecture](documentation/server.md) (Done)
+5. * [Initial proposal](documentation/project_proposel.md) (Done)
+6. * [Architectural Structure](documentation/ARCHITECTURE.md) (Done)
+7. * [Module Structures](documentation/module_structure.md) (Done)
+8. * [MOM (broker)](documentation/broker.md) (In testing) Message-Oriented Middleware
+9. * [Install and Deploy](documentation/install.md) (Done)
+10. * [Retrospective](documentation/retrospective.md)
+11. * [Reservation Rooms](documentation/reservation_rooms.md) (out of scope, In Development)
+12. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (Done)
+13. * [Testing](documentation/testcases.md) (In Development)
+14. * [Cross App](documentation/crsossapp.md) (out of scope, In Development)
+15. * [Server architecture](documentation/server.md) (Done)
+16. * [DI Usage Guide](documentation/DI_USAGE_GUIDE.md) (Done)
+17. * [Changelog](CHANGELOG.md)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
