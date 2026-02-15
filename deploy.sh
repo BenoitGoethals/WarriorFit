@@ -6,7 +6,7 @@
 set -e  # Exit on error
 
 CONTAINER_NAME="warriorfit-app"
-IMAGE_NAME="api-warriorfit-app"
+IMAGE_NAME="warriorfit-app"
 PORT_MAPPING="8500:8000"
 
 echo "=== Docker Deployment Script ==="
