@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
@@ -548,6 +549,26 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         async def login_dialog():
+            # Dev mode: bypass login with a stub admin user
+            if os.getenv("APP_ENV", "development") == "development":
+                if _get_session_user() is None:
+                    from warriorfit.data.model.db_model import User as UserModel
+                    dev_user = UserModel(
+                        id=0,
+                        username="admin",
+                        email="admin@dev.local",
+                        password_hash="",
+                        role=Role.ADMIN,
+                        is_active=True,
+                    )
+                    UserStore.set_user(dev_user)
+                    _set_session_user(dev_user)
+                    login_user_text.set(
+                        f"User: admin  Role: {Role.ADMIN}  Unit: {ApplicationConfig().own_unit}"
+                    )
+                    nav_version.set(nav_version.get() + 1)
+                return
+
             status_text.set("")
             login = ui.div(
                 ui.h2("Login"),
@@ -593,11 +614,11 @@ class FitnessWarriorApp:
                     status_text.set("")
                     ui.modal_remove()
                     nav_version.set(nav_version.get() + 1)
-                    logger.info(f"User {username_login} logged in successfully")
+                    logger.info("User %s logged in successfully", username_login)
                 else:
                     status_text.set("Invalid username or password.")
             except (ValueError, TypeError, AttributeError) as e:
-                logger.error(f"Login error: {e}")
+                logger.error("Login error: %s", e)
                 status_text.set("An error occurred while logging in. Please try again.")
 
         @reactive.Effect
