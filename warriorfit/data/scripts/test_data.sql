@@ -1,25 +1,22 @@
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
+('ben', 'adminsuperben@example.com', 'gAAAAABpmy773oKCiEwMnubHhFzoGu9yef41NFcdvSwaGT5KmeiTAbG0iijuQ_RzsCzhn0o9Jcl_T1ctLQNPWLLaQk_IMpPEMw==', NOW(), 'ADMIN', TRUE, 'superben');
 
 
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
-('ben', 'adminsuperben@example.com', crypt('ben', gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'superben');
-
-
-INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
-('user1', 'user1@example.com', crypt('password', gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'SN001'),
-('user2', 'user2@example.com', crypt('password2', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN002'),
-('planner', 'user3@example.com', crypt('password', gen_salt('bf')), NOW(), 'PLANNER', TRUE, 'SN003'),
-('user9', 'user9@example.com', crypt('password9', gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'SN009'),
-('user10', 'user10@example.com', crypt('password10', gen_salt('bf')), NOW(), 'USER', TRUE, 'SN010'),
-('pti', 'ptitest@example.com', crypt('pti', gen_salt('bf')), NOW(), 'USER', TRUE, 'pti'),
-('tester', 'tester@example.com', public.crypt('tester007', public.gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'benoit'),
-('benoit', 'benoit@example.com', public.crypt('ranger14!', public.gen_salt('bf')), NOW(), 'ADMIN', TRUE, 'tester');
+('user1', 'user1@example.com', 'gAAAAABpmy77c_fzKkv2sL679kWs2Yw-izByjoFH2ZolRuXJZk7YBwffc1xV0m2aiuzWD68ge7ajN6ASyvkmpkrEmzWbTW3yiw==', NOW(), 'ADMIN', TRUE, 'SN001'),
+('user2', 'user2@example.com', 'gAAAAABpmy77MQ6Sy1vA_AAW8_yewGIbS8pCMtAjDDDgltRqHl0CFSrejN8pFY7BWRfHYm9lfDWzPPmOeNVIuZMPRujg6CsyKw==', NOW(), 'USER', TRUE, 'SN002'),
+('planner', 'user3@example.com', 'gAAAAABpmy77c_fzKkv2sL679kWs2Yw-izByjoFH2ZolRuXJZk7YBwffc1xV0m2aiuzWD68ge7ajN6ASyvkmpkrEmzWbTW3yiw==', NOW(), 'PLANNER', TRUE, 'SN003'),
+('user9', 'user9@example.com', 'gAAAAABpmy77XDakGG8uXlM5wGv3o-I9RAoEIEDxwmXqm7cCy7BoGJFaXn7Dbc2N_gT2b3_UOuHVELQKZF0MGfm_ggsbMFSC3Q==', NOW(), 'ADMIN', TRUE, 'SN009'),
+('user10', 'user10@example.com', 'gAAAAABpmy77ybnq3bqPhiLQKEs40UGw6jSOMa1a0zI2-pwO4gUbA2swTn5U3BdLVT0jtiOXsOWPLPyIQET5FQsR5RuXfd9YOw==', NOW(), 'USER', TRUE, 'SN010'),
+('pti', 'ptitest@example.com', 'gAAAAABpmy77m_2tAQl7y--cbKzt04nyIM7Dmg670LMX3e4BXmcLA8WDmImpIm5nH26PqeEoC5vO81ZtmjQ2v_g3kOQBnIVXAw==', NOW(), 'USER', TRUE, 'pti'),
+('tester', 'tester@example.com', 'gAAAAABpmy77jNdcibiTWG06uOmjdMvgNHfxle68fDOf7C-CYnh5ouHptFFu9qw4x1dhIWoC0uXalbOxis-wMJ8OZzKYDvWOqQ==', NOW(), 'ADMIN', TRUE, 'benoit'),
+('benoit', 'benoit@example.com', 'gAAAAABpmy77vZNwaIZ-mxM0huj2Ale92yliRwZjP-ryItws41zv5eqAQLXt4-p3voEffSxkEvogO_Q6DyrDCBerzv0R1WizUQ==', NOW(), 'ADMIN', TRUE, 'tester');
 
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number)
-VALUES ('pti2', 'ptitest2@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'snpt12'),
-       ('pti20', 'pti2@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI2'),
-       ('pti3', 'pti3@example.com', crypt('password', gen_salt('bf')), NOW(), 'APTI', TRUE, 'SNPTI3'),
-       ('pti10', 'pti10@example.com', crypt('password', gen_salt('bf')), NOW(), 'PTI', TRUE, 'SNPTI10');
+VALUES ('pti2', 'ptitest2@example.com', 'gAAAAABpmy77c_fzKkv2sL679kWs2Yw-izByjoFH2ZolRuXJZk7YBwffc1xV0m2aiuzWD68ge7ajN6ASyvkmpkrEmzWbTW3yiw==', NOW(), 'PTI', TRUE, 'snpt12'),
+       ('pti20', 'pti2@example.com', 'gAAAAABpmy77c_fzKkv2sL679kWs2Yw-izByjoFH2ZolRuXJZk7YBwffc1xV0m2aiuzWD68ge7ajN6ASyvkmpkrEmzWbTW3yiw==', NOW(), 'PTI', TRUE, 'SNPTI2'),
+       ('pti3', 'pti3@example.com', 'gAAAAABpmy77c_fzKkv2sL679kWs2Yw-izByjoFH2ZolRuXJZk7YBwffc1xV0m2aiuzWD68ge7ajN6ASyvkmpkrEmzWbTW3yiw==', NOW(), 'APTI', TRUE, 'SNPTI3'),
+       ('pti10', 'pti10@example.com', 'gAAAAABpmy77c_fzKkv2sL679kWs2Yw-izByjoFH2ZolRuXJZk7YBwffc1xV0m2aiuzWD68ge7ajN6ASyvkmpkrEmzWbTW3yiw==', NOW(), 'PTI', TRUE, 'SNPTI10');
 
 -- Test Sessions data
 -- Column name changed from executed -> canceled to match SQLAlchemy model

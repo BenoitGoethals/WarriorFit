@@ -96,7 +96,7 @@ class UserManagementController:
                     "Email": u.email,
                     "Role": str(u.role),
                     "Active": bool(u.is_active),
-                    "Password": u.password_hash,
+                    "Password": Auth.decrypt_password(u.password_hash),
                     "Created": getattr(u.created_at, "date", lambda: "")(),
                 }
                 for u in users
