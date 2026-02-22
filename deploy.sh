@@ -49,6 +49,7 @@ sudo docker run -d \
     --restart unless-stopped \
     --name "${CONTAINER_NAME}" \
     -p "${PORT_MAPPING}" \
+    -e WF_SECRET_KEY=8cfd3dda3c2098f6739850fbf7ade3fa701c073580b4b6f97a742ad9978f614f \
     "${IMAGE_NAME}"
 echo "Container started successfully."
 echo ""
