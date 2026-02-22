@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import os
 
 import bcrypt
 from cryptography.fernet import Fernet, InvalidToken
@@ -8,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from warriorfit.services.service_user import UserService
 
 # Configuration constants
-SECRET_KEY = "your-secret-key-here"  # In production, use a secure secret key
+SECRET_KEY = os.environ["WF_SECRET_KEY"]
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

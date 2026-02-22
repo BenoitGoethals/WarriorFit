@@ -1,6 +1,9 @@
 import logging
 import os
 import time
+
+from dotenv import load_dotenv
+load_dotenv()
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
