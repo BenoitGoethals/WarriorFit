@@ -7,6 +7,7 @@
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="PYTHONASYNCIODEBUG" value="1" />
+      <env name="APP_ENV" value="development" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
