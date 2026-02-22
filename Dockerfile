@@ -10,6 +10,13 @@ ENV PYTHONUNBUFFERED=1 \
     # Add /app to PYTHONPATH so python can find the 'warriorfit' package
     PYTHONPATH="/app"
 
+# WF_SECRET_KEY must be provided at runtime, e.g.:
+#   docker run -e WF_SECRET_KEY=<your-secret> ...
+# or via docker-compose environment / secrets.
+# It is intentionally NOT set here so it is never baked into the image.
+ARG WF_SECRET_KEY
+ENV WF_SECRET_KEY=${WF_SECRET_KEY}
+
 # Set working directory
 WORKDIR /app
 

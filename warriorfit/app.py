@@ -4,6 +4,8 @@ import time
 
 from dotenv import load_dotenv
 load_dotenv()
+
+from warriorfit.security.rate_limiter import login_rate_limiter
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
@@ -552,8 +554,14 @@ class FitnessWarriorApp:
 
         @reactive.Effect
         async def login_dialog():
-            # Dev mode: bypass login with a stub admin user
-            if os.getenv("APP_ENV", "development") == "development":
+            app_env = os.getenv("APP_ENV", "")
+            if app_env == "production":
+                raise RuntimeError(
+                    "Dev auto-login bypass must never run in production. "
+                    "Check APP_ENV and application startup configuration."
+                )
+            # Dev mode: bypass login with a stub admin user (only when APP_ENV=development)
+            if app_env == "development":
                 if _get_session_user() is None:
                     from warriorfit.data.model.db_model import User as UserModel
                     dev_user = UserModel(
@@ -588,16 +596,18 @@ class FitnessWarriorApp:
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login():
-            """
-            Handles the user login process by validating credentials, managing the user session, and updating
-            the application state upon successful login. If the login fails, appropriate status messages
-            are set to inform the user of the cause.
-
-            :raises Exception: If an error occurs during the login process.
-            """
             logger = getattr(FitnessWarriorApp, "logger", logging.getLogger(__name__))
             username_login = (input.username_login() or "").lower()
             password_login = input.password_login()
+
+            locked, seconds_left = login_rate_limiter.is_locked(username_login)
+            if locked:
+                minutes = (seconds_left + 59) // 60
+                status_text.set(
+                    f"Too many failed attempts. Try again in {minutes} minute(s)."
+                )
+                return
+
             try:
                 if await user_service.check_user(username_login, password_login):
                     user = await user_service.get_user_by_username(username_login)
@@ -606,6 +616,7 @@ class FitnessWarriorApp:
                             "Your account is disabled. Please contact your administrator."
                         )
                         return
+                    login_rate_limiter.reset(username_login)
                     UserStore.set_user(user)
                     await user_service.add_audit_log(
                         f"User {username_login} logged in", "login"
@@ -619,7 +630,18 @@ class FitnessWarriorApp:
                     nav_version.set(nav_version.get() + 1)
                     logger.info("User %s logged in successfully", username_login)
                 else:
-                    status_text.set("Invalid username or password.")
+                    login_rate_limiter.record_failure(username_login)
+                    locked, seconds_left = login_rate_limiter.is_locked(username_login)
+                    if locked:
+                        minutes = (seconds_left + 59) // 60
+                        status_text.set(
+                            f"Too many failed attempts. Account locked for {minutes} minute(s)."
+                        )
+                    else:
+                        left = login_rate_limiter.attempts_remaining(username_login)
+                        status_text.set(
+                            f"Invalid username or password. {left} attempt(s) remaining."
+                        )
             except (ValueError, TypeError, AttributeError) as e:
                 logger.error("Login error: %s", e)
                 status_text.set("An error occurred while logging in. Please try again.")
