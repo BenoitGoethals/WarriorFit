@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Any
 
-import bcrypt
 from sqlalchemy import select, delete, func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
@@ -149,12 +148,13 @@ class UserRepository(ABCRepository):
 
     async def check_user(self, user_name: str, plain_password: str) -> bool:
         """
-        Securely checks if the provided username and password match an entry in the database.
+        Checks if the provided username and password match an entry in the database.
 
         :param user_name: The username to verify.
         :param plain_password: The plain-text password to verify.
         :return: True if the username and password are valid; otherwise, False.
         """
+        from warriorfit.security.auth_service import Auth
         try:
             async with self.SessionLocal() as session:
                 query = select(User).where(User.username == user_name)
@@ -163,43 +163,16 @@ class UserRepository(ABCRepository):
                 if user is None:
                     self._logger.info("User '%s' not found.", user_name)
                     return False
-
-                stored_hash = user.password_hash
-                if not stored_hash:
-                    self._logger.error("User '%s' has no password hash set.", user_name)
+                if not user.password_hash:
+                    self._logger.error("User '%s' has no password set.", user_name)
                     return False
-
-                if isinstance(stored_hash, str):
-                    stored_hash_bytes = stored_hash.strip().encode("utf-8")
-                else:
-                    # If the ORM/model stores bytes, normalize it too
-                    stored_hash_bytes = bytes(stored_hash).strip()
-
-                try:
-                    password_matches = bcrypt.checkpw(
-                        plain_password.encode("utf-8"),
-                        stored_hash_bytes,
-                    )
-                except ValueError as e:
-                    # This is the typical "Invalid salt" path
-                    self._logger.error(
-                        "Invalid password hash format for user '%s': %s", user_name, e
-                    )
-                    return False
-
-                if not password_matches:
-                    self._logger.info("Password mismatch.")
-                    return False
-
-                self._logger.info("User '%s' authenticated successfully.", user_name)
-                return True
-
+                if Auth.verify_password(plain_password, user.password_hash):
+                    self._logger.info("User '%s' authenticated successfully.", user_name)
+                    return True
+                self._logger.info("Password mismatch for user '%s'.", user_name)
+                return False
         except SQLAlchemyError as e:
             self._logger.error("Database error in check_user: %s", e)
-            return False
-        except ValueError as e:
-            # Additional catch for any ValueError not caught above
-            self._logger.error("Password validation error for user '%s': %s", user_name, e)
             return False
 
     async def delete_user(self, id):
