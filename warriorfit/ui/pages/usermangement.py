@@ -1,5 +1,8 @@
 # Python
 from __future__ import annotations
+
+import re
+
 import pandas as pd
 from shiny import ui, render, reactive
 from warriorfit.ui.controllers.usermanagement_controller import (
@@ -115,6 +118,8 @@ class UserManagementPage(Page):
             },
         )
 
+
+
     def server(self, input, output, session):
 
         @reactive.Effect
@@ -135,6 +140,10 @@ class UserManagementPage(Page):
         async def um_serial_search_grid():
             df = await get_all_servicemen_df()
             return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+
+
+
+
 
         @reactive.Effect
         @reactive.event(input.um_serial_search_grid_selected_rows)
