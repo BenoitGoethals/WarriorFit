@@ -16,7 +16,7 @@
 
 **Project development methodology:** Agile
 
-**Project Development server:** https://bensoft.be/  (access with username tester and password tester007!)
+**Project Development server:** https://bensoft.be/  
 username: tester
 password: tester007!
 
@@ -50,6 +50,7 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-02-14 : Add Architectural structure document [Architectural Structure](documentation/ARCHITECTURE.md)
 * 2026-02-14 : Bug fix container.py (DI wiring)
 * 2026-02-14 : Update cross app documentation [Cross App](documentation/crsossapp.md)
+* 2026-02-15 : refactor security + audit security 
 
 
 
