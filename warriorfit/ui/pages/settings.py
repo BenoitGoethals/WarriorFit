@@ -85,7 +85,7 @@ class SettingsPage(Page):
                     self._inline_label_input(
                         label="Password",
                         label_for="db_password",
-                        input_tag=ui.input_password("db_password", None),
+                        input_tag=Page.input_password_with_toggle("db_password"),
                     ),
                     ui.h5("HR Configuration"),
                     self._inline_label_input(
@@ -130,7 +130,7 @@ class SettingsPage(Page):
                     self._inline_label_input(
                         label="Mail Password",
                         label_for="mail_password",
-                        input_tag=ui.input_password("mail_password", None),
+                        input_tag=Page.input_password_with_toggle("mail_password"),
                     ),
                     self._inline_label_input(
                         label="Sender Email",

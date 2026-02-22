@@ -49,7 +49,7 @@ class UserManagementPage(Page):
                         width="250px",
                     ),
                     ui.input_text("um_username", "Username"),
-                    ui.input_password("um_password", "Password"),
+                    Page.input_password_with_toggle("um_password", "Password"),
                     ui.input_text("um_email", "Email"),
                     ui.input_select(
                         "um_role",

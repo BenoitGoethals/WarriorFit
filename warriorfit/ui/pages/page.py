@@ -40,6 +40,36 @@ class Page(ABC):
     def refresh(self):
         pass
 
+    @staticmethod
+    def input_password_with_toggle(input_id: str, label: str | None = None) -> ui.Tag:
+        """Password input with a show/hide toggle button."""
+        btn_js = (
+            f"var i=document.getElementById('{input_id}');"
+            "if(i.type==='password'){i.type='text';this.textContent='🙈';}"
+            "else{i.type='password';this.textContent='👁';}"
+        )
+        input_group = ui.div(
+            ui.tags.input(
+                id=input_id,
+                type="password",
+                class_="form-control",
+                value="",
+                autocomplete="off",
+            ),
+            ui.tags.button(
+                "👁",
+                type="button",
+                class_="btn btn-outline-secondary",
+                title="Show/hide password",
+                onclick=btn_js,
+            ),
+            class_="input-group",
+        )
+        children: list = [input_group]
+        if label:
+            children = [ui.tags.label(label, for_=input_id, class_="form-label")] + children
+        return ui.div(*children, class_="form-group shiny-input-container")
+
     def refresh_on_nav(self, input, tab_name: str, refresh_tick=None):
         """
         Sets up a reactive effect to refresh the page when the specific tab is selected.
