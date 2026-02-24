@@ -13,7 +13,7 @@ This document serves as a guideline for developers during the implementation of 
 
 ### Scope
 
-The system includes user management, test input, calculations, PDF reporting, and email distribution. It is designed for local server deployment within Defense.
+The system includes user management, test input, calculations, PDF reporting, and email notifications. It is designed for local server deployment within Defense.
 
 ### References
 
@@ -73,8 +73,11 @@ Organized into **Controllers** and **Pages** using **Shiny**.
 - **Controllers**: Handle the logic for specific UI actions (e.g., `auditlog_events_controller.py`, `combat_controller.py`).
 - **Pages**: Define the Shiny UI layout (inputs, outputs, cards) for specific application screens (e.g., `dashboard_own_unit.py`, `cross_planning.py`).
 
-### 4.6 Integration (`military_api_rest`)
-Handles external communication or exposes RESTful endpoints for military data integration.
+### 4.6 BEMIL Integration (`military_api_rest`)
+Handles integration with the internal Belgian Military (BEMIL) personnel database.
+- **Serviceman lookup**: retrieves rank, name, gender, birthdate, age, and unit by serial number.
+- **Full servicemen list**: retrieves all servicemen for a unit, used for browse modals and dropdown population.
+- This integration is consumed by test input pages (PHEF, Combat, Swimming, Functional, March, Cross) and the Individual Test History page.
 
 ## 5. Data Flow
 1.  **User Action**: User interacts with a **Shiny Page** (e.g., clicks a button, enters text).
@@ -88,122 +91,54 @@ Handles external communication or exposes RESTful endpoints for military data in
 
 ## 6. Roles within the Application
 
-The application includes several roles. These roles determine which menu items they can see. PHEF tests are statutory and contain sensitive personal information.
+The application has three roles. These roles determine which tabs are visible. PHEF tests are statutory and contain sensitive personal information.
 
-### 1. Planner
+### 1. PTI (Physical Training Instructor)
 
-The Planner has access to all planning and management modules but no test input.
+The PTI can plan sessions, enter test results for their unit, and generate reports.
 
-**Main Menu:**
+**Available Tabs:**
 
-* **Dashboard** – Overview of scheduled sessions and PTI status
-* **Manage Sessions**
+* **Welcome** – Personal upcoming sessions dashboard
+* **Sessions** – Create, edit, delete test sessions
+* **PHEF Tests** – Enter and manage PHEF results (run + side-bridge)
+* **Combat Tests** – Enter and manage combat test results (3 components)
+* **Swimming Tests** – Enter and manage swimming test results
+* **Functional Tests** – Enter and manage functional test results (pull-ups, push-ups, sit-ups)
+* **March** – Register and manage march records
+* **Cross Planning** – Create and manage cross sessions
+* **Cross** – Enter cross runner results
+* **Cross Statistics** – View top-10 rankings
+* **Individual** – Search individual test history and generate PDF
+* **Status Unit** – Unit status grid (PHEF, Combat, Swimming) with unit PDF
+* **Dashboard** – Unit statistics and charts (PHEF not-done, pass rates)
+* **PHEF Not done** – List of servicemen missing PHEF for current year
+* **Calendar** – Personal test session calendar (FullCalendar)
+* **Fitness Room** – Reserve and manage fitness room bookings
 
-  * Create new session
-  * Edit / cancel / delete sessions
-  * View session history
-  * Room reservation management
-* **PTI Planning** – Overview of scheduled tasks per PTI
-* **Cross Management** – Planning and tracking of running events
-* **Reports & Statistics**
+### 2. APTI (Assistant PTI)
 
-  * Results per unit
-  * Participation rates
-  * Individual test history
-  * Export to PDF or Excel
+APTI has the same access as PTI.
 
-### 2. PTI (Physical Training Instructor)
+**Available Tabs:** Same as PTI (see above).
 
-The PTI can see all sessions and enter or validate results.
+### 3. Administrator
 
-* **Dashboard** – Overview of scheduled sessions and PTI status
-* **Manage Sessions**
+The administrator has access to all PTI/APTI tabs plus system management functions.
 
-  * Create new session
-  * Edit / cancel / delete sessions
-  * View session history
-  * Room reservation management
-* **PTI Planning** – Overview of scheduled tasks per PTI
-* **Cross Management** – Planning and tracking of running events
-* **Reports & Statistics**
+**Additional Tabs (beyond PTI/APTI):**
 
-  * Results per unit
-  * Participation rates
-  * Individual test history
-  * Export to PDF or Excel
-
-### 3. APTI (Assistant PTI)
-
-* **Dashboard** – Overview of scheduled sessions and PTI status
-* **Manage Sessions**
-
-  * Create new session
-  * Edit / cancel / delete sessions
-  * View session history
-  * Room reservation management
-* **PTI Planning** – Overview of scheduled tasks per PTI
-* **Cross Management** – Planning and tracking of running events
-* **Reports & Statistics**
-
-  * Results per unit
-  * Participation rates
-  * Individual test history
-  * Export to PDF or Excel
-
-### 4. Participant (Military Member) (TBD)
-
-Limited access to their own test results.
-
-### 5. Administrator
-
-The administrator has access to all management and system functions.
-
-**Main Menu:**
-
-* **Dashboard** – System status and logs
-* **User Management**
-
-  * Create / deactivate users
-  * Assign roles and permissions
-* **System Settings**
-  * Parameters and thresholds
-  * Mail and PDF services
-* **Audit & Logging** – History of changes
-* **Reports & Statistics** – High-level overview
-
-### 6. Guest (S3, S1, Company Commander)
-
-Guest has **read-only** access within their own unit.
-
-**Main Menu:**
-* **Dashboard** – Summary of unit physical readiness
-* **Results Overview**
-  * Average scores per test
-  * Statistics per section or platoon
-* **Reports**
-  * Generate unit report (read-only)
-  * Export to PDF
-* **Search / Filter** – By name, rank, or test date
-
-### 7. System (Automated processes)
-
-No UI menu – this role works behind the scenes.
-
-**Background Processes:**
-
-* Automatic validation checks
-* PDF generation and email distribution
-* Synchronization with central databases
-* Logging and error tracking
+* **User Management** – Create, edit, delete users; assign roles (admin, PTI, APTI)
+* **Audit Logs** – Read-only view of all system audit events
 
 ## 7. Technological Design Decisions
 
 The technology choices made in the initial project proposal.
 
-### Web / API and UI
+### UI Framework
 
-* **FastAPI**: REST API for HRM integration
-* **Shiny for Python**: UI framework
+* **Shiny for Python**: UI framework (reactive, server-rendered)
+* **shiny_calendar**: FullCalendar integration for calendar views
 
 ### Database / ORM
 
@@ -241,134 +176,135 @@ The technology choices made in the initial project proposal.
 
 
 ## 9. Stories (detail see Stories and Epics in stories.md)
-    
 
+Summary tables per epic. For full acceptance criteria see `stories.md`.
 
-## Epic 1: User Management
-**Total Points: 20**
+## Epic 1: User Management — 18 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
 | 1.1 | Create new user | 5 | Must Have |
-| 1.2 | User creation error handling | 3 | Must Have |
+| 1.2 | Error handling for user creation | 2 | Must Have |
 | 1.3 | Edit user | 5 | Must Have |
 | 1.4 | Password reset by admin | 2 | Should Have |
-| 1.6 | User list with search | 2 | Should Have |
+| 1.5 | User list with search/filter | 2 | Should Have |
+| 1.6 | Delete user | 2 | Should Have |
 
-## Epic 2: Test Session Planning
-**Total Points: 17**
+## Epic 2: Test Session Planning — 15 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
 | 2.1 | Create new test session | 5 | Must Have |
-| 2.2 | Update test session | 3 | Should Have |
-| 2.3 | Delete test session | 2 | Should Have |
-| 2.4 | View calendar | 5 | Should Have |
-| 2.5 | View session list | 2 | Must Have |
+| 2.2 | Update session | 3 | Should Have |
+| 2.3 | Delete session | 2 | Should Have |
+| 2.4 | View session list | 3 | Must Have |
+| 2.5 | Upcoming sessions on welcome page | 2 | Should Have |
 
-## Epic 3: PHEF Test Entry
-**Total Points: 18**
+## Epic 3: PHEF Test Input — 18 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
 | 3.1 | Select PHEF session | 2 | Must Have |
-| 3.2 | Look up military personnel via HRM | 3 | Must Have |
+| 3.2 | Lookup serviceman via BEMIL | 2 | Must Have |
 | 3.3 | Enter PHEF measurements | 5 | Must Have |
-| 3.4 | Save PHEF result | 5 | Must Have |
-| 3.5 | PHEF result list | 3 | Should Have |
+| 3.4 | Add PHEF result | 5 | Must Have |
+| 3.5 | Update/delete PHEF result | 2 | Should Have |
+| 3.6 | PHEF result grid | 2 | Should Have |
 
-## Epic 4: Combat Test Entry
-**Total Points: 13**
-
-| Story # | Story Name | Points | Priority |
-|---------|------------|--------|----------|
-| 4.1 | Enter combat test result | 8 | Must Have |
-| 4.2 | Combat result list | 3 | Should Have |
-| 4.3 | Combat statistics | 2 | Could Have |
-
-## Epic 5: Swimming Test Entry
-**Total Points: 8**
+## Epic 4: Combat Test Input — 10 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
-| 5.1 | Enter swimming test result | 5 | Should Have |
-| 5.2 | Swimming test result list | 2 | Should Have |
-| 5.3 | Mark safety incident | 1 | Should Have |
+| 4.1 | Enter combat test results | 5 | Must Have |
+| 4.2 | Add/update/delete combat result | 3 | Must Have |
+| 4.3 | Combat result grid | 2 | Should Have |
 
-## Epic 6: Functional Test Entry
-**Total Points: 15**
+## Epic 5: Swimming Test Input — 7 points
+
+| Story # | Story Name | Points | Priority |
+|---------|------------|--------|----------|
+| 5.1 | Enter swimming test result | 4 | Should Have |
+| 5.2 | Add/update/delete swim result | 2 | Should Have |
+| 5.3 | Swimming result grid | 1 | Should Have |
+
+## Epic 6: Functional Test Input — 12 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
 | 6.1 | Enter functional test measurements | 5 | Must Have |
-| 6.2 | Determine functional test GO/NO-GO | 3 | Must Have |
-| 6.3 | Save functional test | 5 | Must Have |
-| 6.4 | Functional test result list | 2 | Should Have |
+| 6.2 | Determine GO/NO-GO | 2 | Must Have |
+| 6.3 | Add/update/delete functional result | 3 | Must Have |
+| 6.4 | Functional result grid | 2 | Should Have |
 
-## Epic 7: Reporting
-**Total Points: 12**
-
-| Story # | Story Name | Points | Priority |
-|---------|------------|--------|----------|
-| 7.1 | PHEF failed overview | 5 | Should Have |
-| 7.2 | Combat failed overview | 3 | Could Have |
-| 7.3 | Functional test failed overview | 3 | Could Have |
-| 7.4 | Dashboard overview per test type | 1 | Should Have |
-
-## Epic 8: General Functionality
-**Total Points: 15**
+## Epic 7: March Registration — 13 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
-| 8.1 | HRM integration - GET military personnel | 5 | Must Have |
-| 8.2 | HRM integration - POST test result | 5 | Must Have |
-| 8.3 | Email service - send result | 3 | Must Have |
-| 8.4 | Audit logging service | 2 | Must Have |
+| 7.1 | Enter march | 5 | Must Have |
+| 7.2 | Update march | 3 | Should Have |
+| 7.3 | Delete march | 2 | Should Have |
+| 7.4 | March list view | 3 | Should Have |
 
-## Epic 9: Cross Planning
-**Total Points: 18**
-
-| Story # | Story Name | Points | Priority |
-|---------|------------|--------|----------|
-| 9.1 | Create cross session | 5 | Must Have |
-| 9.2 | Modify cross | 5 | Must Have |
-| 9.3 | Delete cross | 3 | Must Have |
-| 9.4 | Cross list filters & sorting | 3 | Should Have |
-| 9.5 | Export cross list | 2 | Could Have |
-
-## Epic 10: Cross Results
-**Total Points: 8**
+## Epic 8: Cross Session & Runner Management — 18 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
-| 10.1 | Enter cross results | 5 | Should Have |
-| 10.2 | Update cross results | 2 | Should Have |
-| 10.3 | Report cross list | 1 | Should Have |
+| 8.1 | Create/edit/delete cross session | 5 | Must Have |
+| 8.2 | Enter cross runner results | 5 | Must Have |
+| 8.3 | Update/delete cross runner | 3 | Should Have |
+| 8.4 | Cross planning list view | 2 | Should Have |
+| 8.5 | Cross statistics | 3 | Could Have |
 
-## Epic 11: Training March
-**Total Points: 15**
+## Epic 9: BEMIL Personnel Lookup — 5 points
 
 | Story # | Story Name | Points | Priority |
 |---------|------------|--------|----------|
-| 11.1 | Enter march | 5 | Must Have |
-| 11.2 | Update march | 3 | Must Have |
-| 11.3 | Delete march | 2 | Should Have |
-| 11.4 | Unit march overview (current year) | 3 | Should Have |
-| 11.5 | Personal march overview | 2 | Should Have |
+| 9.1 | Lookup serviceman by serial number | 3 | Must Have |
+| 9.2 | Browse all servicemen via modal | 2 | Should Have |
 
-## Epic 14: Individual Test History Management
+## Epic 10: Individual Test History — 15 points
 
-Story #| User Story | Priority | Story Points |
-|----|------------|----------|--------------|
-|  14.1 | Search Individual by Serial Number | High | 3 | 
-|  14.2 | Display Complete Test History | High | 5 |
-|  14.3 | View Test Details and Scores | High | 3 |
-|  14.4 | Generate Full Report | Medium | 5 |
-|  14.5 | Download PDF Report | Medium | 2 |
+| Story # | Story Name | Points | Priority |
+|---------|------------|--------|----------|
+| 10.1 | Search individual by serial number | 3 | Must Have |
+| 10.2 | Display complete test history | 5 | Must Have |
+| 10.3 | Generate individual PDF report | 5 | Should Have |
+| 10.4 | Download PDF report | 2 | Should Have |
 
-## Epic 15: Unit Status Overview & Quick Test Access
+## Epic 11: Unit Status & Dashboard — 12 points
 
-| ID | User Story | Priority | Story Points |
-|----|------------|----------|--------------|
-| Story 15.1 | View Unit Status Overview | High | 5 | 
-| Story 15.3 | Search for Specific Servicemen | High | 3 | 
+| Story # | Story Name | Points | Priority |
+|---------|------------|--------|----------|
+| 11.1 | View unit status grid | 5 | Must Have |
+| 11.2 | View individual history via modal | 2 | Should Have |
+| 11.3 | Unit dashboard with statistics | 3 | Should Have |
+| 11.4 | PHEF not-done list | 2 | Should Have |
+
+## Epic 12: Calendar Events — 5 points
+
+| Story # | Story Name | Points | Priority |
+|---------|------------|--------|----------|
+| 12.1 | View personal test calendar | 3 | Should Have |
+| 12.2 | View all test sessions calendar | 2 | Could Have |
+
+## Epic 13: Fitness Room Reservation — 8 points
+
+| Story # | Story Name | Points | Priority |
+|---------|------------|--------|----------|
+| 13.1 | Create room reservation | 5 | Should Have |
+| 13.2 | View reservations (weekly/monthly/list) | 2 | Should Have |
+| 13.3 | Delete reservation | 1 | Should Have |
+
+## Epic 14: Audit Logs — 5 points
+
+| Story # | Story Name | Points | Priority |
+|---------|------------|--------|----------|
+| 14.1 | View audit log | 3 | Must Have |
+| 14.2 | Filter audit log | 2 | Should Have |
+
+## Epic 15: Welcome Dashboard — 5 points
+
+| Story # | Story Name | Points | Priority |
+|---------|------------|--------|----------|
+| 15.1 | Welcome page with role-specific info | 3 | Must Have |
+| 15.2 | Upcoming sessions for PTI/APTI | 2 | Should Have |
