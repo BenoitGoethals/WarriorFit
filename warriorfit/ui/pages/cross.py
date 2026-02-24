@@ -38,6 +38,7 @@ class CrossPage(Page):
         return ui.nav_panel(
             "Cross",
             ui.h2("🏃 Cross Runners"),
+            ui.input_action_button("cross_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -304,6 +305,11 @@ class CrossPage(Page):
             status.set("Runner deleted successfully.")
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.cross_refresh_btn)
+        def _on_cross_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.effect
         @reactive.event(input.report_lst_run)

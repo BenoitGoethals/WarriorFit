@@ -28,6 +28,7 @@ class CrossPlanningPage(Page):
         return ui.nav_panel(
             "Cross Planning",
             ui.h2("🏃 Cross Planning"),
+            ui.input_action_button("cr_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Cross Form"),
@@ -224,6 +225,11 @@ class CrossPlanningPage(Page):
                 status.set(f"Selection error: {e}")
 
         # Buttons
+        @reactive.Effect
+        @reactive.event(input.cr_refresh_btn)
+        def _on_cr_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+
         @reactive.Effect
         @reactive.event(input.cr_clear_btn)
         def _on_clear():

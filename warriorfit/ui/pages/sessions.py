@@ -39,6 +39,7 @@ class SessionsPage(Page):
         return ui.nav_panel(
             "Sessions",
             ui.h2("📅 Fitness Test Sessions"),
+            ui.input_action_button("se_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Create / Edit Session"),
@@ -310,6 +311,11 @@ class SessionsPage(Page):
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             await _refresh_select()
             await _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.se_refresh_btn)
+        def _on_se_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.se_clear_btn)

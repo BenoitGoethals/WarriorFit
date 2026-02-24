@@ -48,6 +48,7 @@ class SwimTestPage(BaseTestPage):
             # One JS custom message handler to toggle input disabling (no repeated script injection).
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🏊 Swimming Tests"),
+            ui.input_action_button("swim_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -432,6 +433,11 @@ class SwimTestPage(BaseTestPage):
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Swimming test deleted successfully.")
             await _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.swim_refresh_btn)
+        def _on_swim_refresh() -> None:
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.swim_clear_btn)

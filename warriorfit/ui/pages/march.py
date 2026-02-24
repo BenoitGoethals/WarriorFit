@@ -23,6 +23,7 @@ class MarchPage(Page):
         return ui.nav_panel(
             "March",
             ui.h2("🧪 March Tests"),
+            ui.input_action_button("march_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -244,6 +245,11 @@ class MarchPage(Page):
             ui.update_numeric("distance", value=30)
             ui.update_checkbox("succeeded", value=False)
             ui.update_date("datetime_executed", value=datetime.now().date())
+
+        @reactive.Effect
+        @reactive.event(input.march_refresh_btn)
+        def _on_march_refresh():
+            refresh_trigger.set(refresh_trigger.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.clear_march_bn)

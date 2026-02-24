@@ -55,6 +55,7 @@ class FunctionalPage(BaseTestPage):
             # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Functional Tests"),
+            ui.input_action_button("functional_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -623,6 +624,11 @@ class FunctionalPage(BaseTestPage):
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Functional test deleted successfully.")
             await _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.functional_refresh_btn)
+        def _on_functional_refresh() -> None:
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.functional_clear_btn)

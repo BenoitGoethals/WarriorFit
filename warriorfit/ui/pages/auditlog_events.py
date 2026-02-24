@@ -24,7 +24,7 @@ class AuditLogEventsPage(Page):
             ui.h2("Audit Logs"),
             ui.card(
                 ui.card_header("Audit Logs"),
-                #   ui.input_action_button("au_refresh", "Refresh"),
+                ui.input_action_button("au_refresh", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
                 ui.output_data_frame("au_grid"),
                 full_screen=False,
             ),

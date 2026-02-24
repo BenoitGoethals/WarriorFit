@@ -60,6 +60,7 @@ class DashboardOwnUnitPage(Page):
         return ui.nav_panel(
             self.TAB_NAME,
             ui.h2(f"📊 {unit} Dashboard {year}"),
+            ui.input_action_button("dashboard_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.br(),
             ui.layout_columns(
                 ui.card(
@@ -213,6 +214,12 @@ class DashboardOwnUnitPage(Page):
             empty_msg="No PHEF data available for your unit.",
             non_div_msg="No histogram HTML was generated.",
         )
+
+        @reactive.Effect
+        @reactive.event(input.dashboard_refresh_btn)
+        def _on_dashboard_refresh():
+            self.refresh()
+            refresh_tick.set(refresh_tick.get() + 1)
 
 
 # Public API

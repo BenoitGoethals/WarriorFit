@@ -46,12 +46,18 @@ class StatusLoginUser(Page):
                         ),
                     )
                 ),
+                ui.input_action_button("wl_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
                 ui.output_ui("pti_dashboard_section"),
                 class_="container-fluid p-4",
             ),
         )
 
     def server(self, input, output, session):
+
+        @reactive.Effect
+        @reactive.event(input.wl_refresh_btn)
+        def _on_wl_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         async def _init() -> None:

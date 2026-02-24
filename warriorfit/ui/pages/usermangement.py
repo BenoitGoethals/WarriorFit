@@ -33,6 +33,7 @@ class UserManagementPage(Page):
         return ui.nav_panel(
             "User Management",
             ui.h2("👥 User Management"),
+            ui.input_action_button("um_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Users"),
@@ -307,6 +308,11 @@ class UserManagementPage(Page):
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_serial.set(None)
             self._clear_form(session)
+
+        @reactive.Effect
+        @reactive.event(input.um_refresh_btn)
+        def _on_um_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.um_clear_btn)
