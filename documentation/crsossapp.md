@@ -22,10 +22,10 @@ The Cross/Running Event system is a **three-component architecture** for timing 
 ```
 ┌─────────────────────┐        REST API        ┌──────────────────────┐
 │   Flet Client       │◄──────────────────────►│   FastAPI Backend    │
-│  (PTI on field)     │   JWT-authenticated     │  /api/cross/...      │
-│                     │   HTTP/HTTPS            │  /api/runners/...    │
-└─────────────────────┘                         └──────────┬───────────┘
-                                                           │
+│  (PTI on field)     │   JWT-authenticated    │  /api/cross/...      │
+│                     │   HTTP/HTTPS           │  /api/runners/...    │
+└─────────────────────┘                        └──────────┬───────────┘
+                                                          │
                                                     Shared PostgreSQL
                                                     (Cross, Runner tables)
                                                            │
