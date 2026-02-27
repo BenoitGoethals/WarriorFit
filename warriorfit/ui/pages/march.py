@@ -196,6 +196,8 @@ class MarchPage(Page):
             await self.controller.add_march(new_march)
             _clear_form()
             refresh_trigger.set(refresh_trigger.get() + 1)
+            status.set("March added.")
+            ui.notification_show("March added.", type="message", duration=3)
 
         async def valid_data() -> bool:
             # Check if combination of serial number, distance, and date is unique
@@ -229,6 +231,8 @@ class MarchPage(Page):
                 await self.controller.update_march(updated_march)
                 _clear_form()
                 refresh_trigger.set(refresh_trigger.get() + 1)
+                status.set("March updated.")
+                ui.notification_show("March updated.", type="message", duration=3)
 
         @reactive.Effect
         @reactive.event(input.delete_march_bn)
@@ -238,6 +242,8 @@ class MarchPage(Page):
                 await self.controller.delete_march(current_id)
                 _clear_form()
                 refresh_trigger.set(refresh_trigger.get() + 1)
+                status.set("March deleted.")
+                ui.notification_show("March deleted.", type="warning", duration=3)
 
         def _clear_form():
             selected_id.set(None)

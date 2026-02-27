@@ -515,6 +515,7 @@ class PhefPage(BaseTestPage):
             status.set(
                 f"Added PHEF test for {form.serialnr} in session {form.session_id}."
             )
+            ui.notification_show(f"PHEF test added for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -555,6 +556,7 @@ class PhefPage(BaseTestPage):
             status.set(
                 f"Updated PHEF test for {form.serialnr} in session {form.session_id}."
             )
+            ui.notification_show(f"PHEF test updated for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -574,6 +576,7 @@ class PhefPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("PHEF record deleted successfully.")
+            ui.notification_show("PHEF record deleted.", type="warning", duration=3)
             await _clear_form()
 
         @reactive.Effect

@@ -267,10 +267,12 @@ class UserManagementPage(Page):
             created = await self.controller.create_user(form)
             if created:
                 self.status.set(f"Created user '{form.serial}'.")
+                ui.notification_show(f"User '{form.serial}' created.", type="message", duration=3)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
                 self.status.set(f"Failed to create user '{form.serial}'.")
+                ui.notification_show(f"Failed to create user '{form.serial}'.", type="error", duration=3)
 
         @reactive.Effect
         @reactive.event(input.um_update_btn)
@@ -290,6 +292,7 @@ class UserManagementPage(Page):
                 self.status.set("Failed to update user.")
                 return
             self.status.set(f"Updated user '{form.serial}'.")
+            ui.notification_show(f"User '{form.serial}' updated.", type="message", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self._clear_form(session)
 
@@ -305,6 +308,7 @@ class UserManagementPage(Page):
                 self.status.set(f"No user found with serial '{sel_serial}'.")
                 return
             self.status.set(f"Deleted user '{sel_serial}'.")
+            ui.notification_show(f"User '{sel_serial}' deleted.", type="warning", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_serial.set(None)
             self._clear_form(session)
