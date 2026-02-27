@@ -30,6 +30,7 @@ dependencies = [
     "pytest>=8.4.2",
     "python-jose>=3.5.0",
     "pythonping>=1.1.4",
+    "pydantic-settings>=2.0.0",
     "pyyaml>=6.0.2",
     "reportlab>=4.4.4",
     "rsconnect-python>=1.27.1",
