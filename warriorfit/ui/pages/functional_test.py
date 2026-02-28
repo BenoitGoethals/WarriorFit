@@ -555,6 +555,7 @@ class FunctionalPage(BaseTestPage):
             status.set(
                 f"Added Functional test for {record['serialnr']} in session {record['id']}."
             )
+            ui.notification_show(f"Functional test added for {record['serialnr']}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -603,6 +604,7 @@ class FunctionalPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Functional test for {payload['serialnr']}.")
+            ui.notification_show(f"Functional test updated for {payload['serialnr']}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -623,6 +625,7 @@ class FunctionalPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Functional test deleted successfully.")
+            ui.notification_show("Functional test deleted.", type="warning", duration=3)
             await _clear_form()
 
         @reactive.Effect

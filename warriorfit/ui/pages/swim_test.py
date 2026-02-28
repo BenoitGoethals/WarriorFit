@@ -376,6 +376,7 @@ class SwimTestPage(BaseTestPage):
             status.set(
                 f"Added Swimming test for {payload['serialnr']} in session {payload['id']}."
             )
+            ui.notification_show(f"Swimming test added for {payload['serialnr']}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -414,6 +415,7 @@ class SwimTestPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Swimming test for {payload['serialnr']}.")
+            ui.notification_show(f"Swimming test updated for {payload['serialnr']}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -432,6 +434,7 @@ class SwimTestPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Swimming test deleted successfully.")
+            ui.notification_show("Swimming test deleted.", type="warning", duration=3)
             await _clear_form()
 
         @reactive.Effect
