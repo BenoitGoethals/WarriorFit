@@ -7,8 +7,9 @@ set -e  # Exit on error
 
 CONTAINER_NAME="warriorfit-app-test"
 IMAGE_NAME="warriorfit-app:test"
-PORT_MAPPING="8501:8000"
+PORT_MAPPING="8501:8501"
 APP_ENV="test"
+APP_PORT="8501"
 
 echo "=== WarriorFit Test Deployment ==="
 echo ""
@@ -59,6 +60,7 @@ sudo docker run -d \
     -p "${PORT_MAPPING}" \
     -e WF_SECRET_KEY="${WF_SECRET_KEY}" \
     -e APP_ENV="${APP_ENV}" \
+    -e APP_PORT="${APP_PORT}" \
     "${IMAGE_NAME}"
 echo "Container started successfully."
 echo ""

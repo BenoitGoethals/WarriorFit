@@ -33,14 +33,17 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Copy the rest of the application code
 COPY . .
 
-ENV APP_ENV=test
+# APP_ENV and APP_PORT are provided at runtime via docker run -e
+# APP_ENV: "production" or "test"
+# APP_PORT: 8000 (prod) or 8501 (test)
+ENV APP_ENV=production \
+    APP_PORT=8000
 
 # Install the project itself (if configured as a package)
 RUN uv sync --frozen
 
-# Expose the port
-EXPOSE 8000
+# Expose both prod and test ports (documentation only)
+EXPOSE 8000 8501
 
-# Run the Shiny app
-# Pointing to warriorfit/app.py instead of just app.py
-CMD ["shiny", "run", "--host", "0.0.0.0", "--port", "8000", "warriorfit/app.py"]
+# Run the Shiny app — port is read from APP_PORT at runtime
+CMD ["sh", "-c", "shiny run --host 0.0.0.0 --port ${APP_PORT} warriorfit/app.py"]

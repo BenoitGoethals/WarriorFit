@@ -9,6 +9,7 @@ CONTAINER_NAME="warriorfit-app"
 IMAGE_NAME="warriorfit-app:prod"
 PORT_MAPPING="8500:8000"
 APP_ENV="production"
+APP_PORT="8000"
 
 echo "=== WarriorFit Production Deployment ==="
 echo ""
@@ -59,6 +60,7 @@ sudo docker run -d \
     -p "${PORT_MAPPING}" \
     -e WF_SECRET_KEY="${WF_SECRET_KEY}" \
     -e APP_ENV="${APP_ENV}" \
+    -e APP_PORT="${APP_PORT}" \
     "${IMAGE_NAME}"
 echo "Container started successfully."
 echo ""
