@@ -5,6 +5,47 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-02-24] - Documentation Refactoring & Refresh Buttons
+
+### Added
+- Add refresh button (🔄) to all pages with DataGrids (15+ pages): PHEF, Combat, Swimming, Functional, March, Cross, Cross Planning, Cross Statistics, Sessions, User Management, Individual Test History, Status Unit, Audit Logs, Status Login, Dashboard
+- Add vertical spacing (`my-2`) to all refresh buttons for consistent UI
+
+### Changed
+- Rewrite `stories.md`: 15 epics aligned with actual Python Shiny application; remove REST API / HRM POST / Excel export / Redis references; fix roles (PTI, APTI, admin only — remove Planner/Guest roles); rename HRM integration to BEMIL Personnel Lookup; add Calendar Events, Fitness Room Reservation, Audit Logs, Welcome Dashboard epics
+- Rewrite `testcases.md`: replace API tests with Shiny UI interaction tests; add test sections for Calendar, Fitness Room, Audit Logs, Welcome Dashboard; add cross-cutting tests for security, reactive state, and refresh button consistency
+- Refactor `Design.md` to conform with `stories.md`: fix roles section (3 roles: PTI, APTI, admin with correct tab lists), update Section 4.6 to describe BEMIL integration instead of REST API, replace FastAPI reference with Shiny for Python + shiny_calendar, update all story tables (15 epics with correct numbering and point totals)
+
+---
+
+## [2026-02-22] - Security Audit & Password Improvements
+
+### Added
+- Add password strength validation on user creation and edit (PR #191)
+- Add password reveal/hide toggle button on all password fields
+
+### Fixed
+- Fix bug where password field was displaying the bcrypt hash in plain text (PR #193, #194)
+
+### Security
+- Security audit: review and harden secret handling, input validation, and role-based access controls
+- Update README: remove sensitive credentials from documentation
+
+### Changed
+- Update deploy configuration
+
+---
+
+## [2026-02-15] - Deploy & Development Updates
+
+### Added
+- Add development auto-login feature for local development workflow
+
+### Changed
+- Update `deploy.sh`: improvements to container startup and configuration
+
+---
+
 ## [2026-02-14] - Documentation & Cross App Updates
 
 ### Added

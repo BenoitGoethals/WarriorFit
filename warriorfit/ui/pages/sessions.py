@@ -39,6 +39,7 @@ class SessionsPage(Page):
         return ui.nav_panel(
             "Sessions",
             ui.h2("📅 Fitness Test Sessions"),
+            ui.input_action_button("se_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Create / Edit Session"),
@@ -258,6 +259,7 @@ class SessionsPage(Page):
                 return
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Session added successfully.")
+            ui.notification_show("Session added.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -294,6 +296,8 @@ class SessionsPage(Page):
             await _refresh_select()
             await _clear_form()
             self.refresh_tick.set(self.refresh_tick.get() + 1)
+            status.set("Session updated.")
+            ui.notification_show("Session updated.", type="message", duration=3)
 
         @reactive.Effect
         @reactive.event(input.se_delete_btn)
@@ -307,9 +311,15 @@ class SessionsPage(Page):
                 status.set("Failed to delete session.")
                 return
             status.set(f"Deleted session #{selected_id}.")
+            ui.notification_show(f"Session deleted.", type="warning", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             await _refresh_select()
             await _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.se_refresh_btn)
+        def _on_se_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.se_clear_btn)

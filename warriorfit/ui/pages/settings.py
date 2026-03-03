@@ -229,6 +229,10 @@ class SettingsPage(Page):
             )
             ok, msg = self.controller.save(data)
             self._status.set(("✅ " if ok else "❌ ") + msg)
+            if ok:
+                ui.notification_show("Settings saved.", type="message", duration=3)
+            else:
+                ui.notification_show(f"Failed to save settings: {msg}", type="error", duration=3)
 
         @output
         @render.text

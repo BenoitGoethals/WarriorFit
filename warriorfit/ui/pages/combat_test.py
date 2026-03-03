@@ -55,6 +55,7 @@ class CombatPage(BaseTestPage):
             # Register ONE JS custom message handler (same pattern as PHEF)
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Combat Tests"),
+            ui.input_action_button("combat_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -465,6 +466,7 @@ class CombatPage(BaseTestPage):
             status.set(
                 f"Added Combat test for {form.serialnr} in session {form.session_id}."
             )
+            ui.notification_show(f"Combat test added for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -501,6 +503,7 @@ class CombatPage(BaseTestPage):
             status.set(
                 f"Updated Combat test for {form.serialnr} in session {form.session_id}."
             )
+            ui.notification_show(f"Combat test updated for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -521,7 +524,13 @@ class CombatPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("Combat record deleted successfully.")
+            ui.notification_show("Combat record deleted.", type="warning", duration=3)
             await _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.combat_refresh_btn)
+        def _on_combat_refresh() -> None:
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.combat_clear_btn)

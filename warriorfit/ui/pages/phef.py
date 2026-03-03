@@ -56,6 +56,7 @@ class PhefPage(BaseTestPage):
             # Register ONE custom-message handler to toggle disabling inputs.
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 PHEF Tests"),
+            ui.input_action_button("ph_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -514,6 +515,7 @@ class PhefPage(BaseTestPage):
             status.set(
                 f"Added PHEF test for {form.serialnr} in session {form.session_id}."
             )
+            ui.notification_show(f"PHEF test added for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -554,6 +556,7 @@ class PhefPage(BaseTestPage):
             status.set(
                 f"Updated PHEF test for {form.serialnr} in session {form.session_id}."
             )
+            ui.notification_show(f"PHEF test updated for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -573,7 +576,13 @@ class PhefPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set("PHEF record deleted successfully.")
+            ui.notification_show("PHEF record deleted.", type="warning", duration=3)
             await _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.ph_refresh_btn)
+        def _on_ph_refresh() -> None:
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.ph_clear_btn)

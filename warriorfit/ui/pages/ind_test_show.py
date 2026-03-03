@@ -41,6 +41,7 @@ class IndTestShowPage(Page):
                     ui.input_action_button(
                         "ind_search", "Confirm Servicemen", width="200px"
                     ),
+                    ui.input_action_button("ind_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
                     ui.input_action_button(
                         "full_report_cy", "Generate Full Report", width="200px"
                     ),
@@ -63,6 +64,18 @@ class IndTestShowPage(Page):
 
     def server(self, input, output, session):
         status = reactive.Value("Ready.")
+
+        @reactive.effect
+        @reactive.event(input.ind_refresh_btn)
+        async def _on_ind_refresh():
+            s = self.serial.get()
+            if s:
+                try:
+                    df = await self.controller.collect_tests_df(s)
+                    self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
+                    status.set(f"Refreshed {len(self.tests_df.get())} records.")
+                except Exception:
+                    pass
 
         @reactive.effect
         @reactive.event(input.full_report_cy)

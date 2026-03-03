@@ -33,6 +33,7 @@ class UserManagementPage(Page):
         return ui.nav_panel(
             "User Management",
             ui.h2("👥 User Management"),
+            ui.input_action_button("um_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Users"),
@@ -266,10 +267,12 @@ class UserManagementPage(Page):
             created = await self.controller.create_user(form)
             if created:
                 self.status.set(f"Created user '{form.serial}'.")
+                ui.notification_show(f"User '{form.serial}' created.", type="message", duration=3)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
                 self.status.set(f"Failed to create user '{form.serial}'.")
+                ui.notification_show(f"Failed to create user '{form.serial}'.", type="error", duration=3)
 
         @reactive.Effect
         @reactive.event(input.um_update_btn)
@@ -289,6 +292,7 @@ class UserManagementPage(Page):
                 self.status.set("Failed to update user.")
                 return
             self.status.set(f"Updated user '{form.serial}'.")
+            ui.notification_show(f"User '{form.serial}' updated.", type="message", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self._clear_form(session)
 
@@ -304,9 +308,15 @@ class UserManagementPage(Page):
                 self.status.set(f"No user found with serial '{sel_serial}'.")
                 return
             self.status.set(f"Deleted user '{sel_serial}'.")
+            ui.notification_show(f"User '{sel_serial}' deleted.", type="warning", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_serial.set(None)
             self._clear_form(session)
+
+        @reactive.Effect
+        @reactive.event(input.um_refresh_btn)
+        def _on_um_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.um_clear_btn)

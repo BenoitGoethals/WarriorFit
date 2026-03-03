@@ -21,6 +21,7 @@ class CrossStaticsPage(Page):
         return ui.nav_panel(
             "Cross Statics",
             ui.h2("Cross Statistics"),
+            ui.input_action_button("cs_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.br(),
             ui.layout_columns(
                 ui.card(
@@ -59,19 +60,16 @@ class CrossStaticsPage(Page):
         async def _init():
             await self._controller.load()
 
+        @reactive.Effect
+        @reactive.event(input.cs_refresh_btn)
+        async def _on_cs_refresh():
+            await self.refresh()
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+
         @output
         @render.data_frame
         async def best_10_all_grid_5():
-            """
-            Renders the best 10 all-grid data as a DataGrid component.
-
-            This method fetches data asynchronously from the controller and constructs
-            a DataGrid view for the top ten entries. If no data is available, it creates
-            an empty DataFrame with default columns "Type", "Serial", and "Reason".
-
-            :return: A DataGrid representation of the best 10 all-grid data.
-            :rtype: render.DataGrid
-            """
+            _ = self.refresh_tick.get()
             dfc = await self._controller.best_10_all_df()
             if dfc.get(5) is None:
                 df = pd.DataFrame(columns=["Type", "Serial", "Reason"])
@@ -87,18 +85,7 @@ class CrossStaticsPage(Page):
         @output
         @render.data_frame
         async def best_10_all_grid_10():
-            """
-            Render a DataGrid showcasing the top 10 items across all grids. If no data is
-            available for the specific index, returns an empty DataFrame with predefined
-            columns: "Type", "Serial", and "Reason".
-
-            This asynchronous function interacts with a controller to retrieve the relevant
-            data and ensures that a fallback mechanism is in place when no result is
-            retrieved for the specified index.
-
-            :return: A DataGrid rendered with the specified content and settings.
-            :rtype: DataGrid
-            """
+            _ = self.refresh_tick.get()
             dfc = await self._controller.best_10_all_df()
             if dfc.get(10) is None:
                 df = pd.DataFrame(columns=["Type", "Serial", "Reason"])

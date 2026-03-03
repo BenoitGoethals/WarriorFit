@@ -18,7 +18,7 @@
 
 **Project Development server:** https://bensoft.be/  
 username: tester
-password: tester007!
+password: Tester@1401!
 
 **Test mailserver view : https://mailstub.bensoft.be/
 **Test HR Simulator view : https://api.bensoft.be/

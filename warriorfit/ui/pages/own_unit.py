@@ -28,7 +28,7 @@ class OwnUnitPage(Page):
                 ui.card_header(
                     f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"
                 ),
-                #  ui.input_action_button("refresh_servicemen", "Refresh"),
+                ui.input_action_button("refresh_servicemen", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
                 ui.output_data_frame("servicemen_grid"),
                 ui.input_action_button(
                     "full_report_unit", "Pdf Satus Unit", width="150px"
@@ -95,11 +95,10 @@ class OwnUnitPage(Page):
                 width="100%",
             )
 
-        #
-        # @reactive.Effect
-        # @reactive.event(input.refresh_servicemen)
-        # def _on_refresh():
-        #     self.refresh_tick.set(self.refresh_tick.get() + 1)
+        @reactive.Effect
+        @reactive.event(input.refresh_servicemen)
+        def _on_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
         @reactive.event(input.servicemen_grid_selected_rows)

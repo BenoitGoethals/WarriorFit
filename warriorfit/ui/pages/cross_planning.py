@@ -28,6 +28,7 @@ class CrossPlanningPage(Page):
         return ui.nav_panel(
             "Cross Planning",
             ui.h2("🏃 Cross Planning"),
+            ui.input_action_button("cr_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Cross Form"),
@@ -225,6 +226,11 @@ class CrossPlanningPage(Page):
 
         # Buttons
         @reactive.Effect
+        @reactive.event(input.cr_refresh_btn)
+        def _on_cr_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+
+        @reactive.Effect
         @reactive.event(input.cr_clear_btn)
         def _on_clear():
             self._clear_form(session)
@@ -250,8 +256,10 @@ class CrossPlanningPage(Page):
 
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{detail['id']} created.")
+                ui.notification_show(f"Cross #{detail['id']} created.", type="message", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Add failed: {e}")
+                ui.notification_show(f"Add failed: {e}", type="error", duration=3)
 
         @reactive.Effect
         @reactive.event(input.cr_update_btn)
@@ -275,8 +283,10 @@ class CrossPlanningPage(Page):
                 self._write_form(session, detail)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{sel} updated.")
+                ui.notification_show(f"Cross #{sel} updated.", type="message", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Update failed: {e}")
+                ui.notification_show(f"Update failed: {e}", type="error", duration=3)
 
         @reactive.Effect
         @reactive.event(input.cr_delete_btn)
@@ -299,8 +309,10 @@ class CrossPlanningPage(Page):
                 self._clear_form(session)
                 self.selected_cross_id.set("")
                 status.set(f"Cross #{cross_id} deleted.")
+                ui.notification_show(f"Cross #{cross_id} deleted.", type="warning", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Delete failed: {e}")
+                ui.notification_show(f"Delete failed: {e}", type="error", duration=3)
 
 
 # Expose singleton-style API compatible with app.py import pattern

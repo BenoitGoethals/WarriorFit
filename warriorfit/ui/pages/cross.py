@@ -38,6 +38,7 @@ class CrossPage(Page):
         return ui.nav_panel(
             "Cross",
             ui.h2("🏃 Cross Runners"),
+            ui.input_action_button("cross_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -261,6 +262,7 @@ class CrossPage(Page):
             self.selected_runner_id.set("")
             self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Added runner {payload['serialnr']}.")
+            ui.notification_show(f"Runner {payload['serialnr']} added.", type="message", duration=3)
 
         @reactive.Effect
         @reactive.event(input.runner_update_btn)
@@ -285,6 +287,7 @@ class CrossPage(Page):
             self.selected_runner_id.set("")
             self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Updated runner {payload['serialnr']}.")
+            ui.notification_show(f"Runner {payload['serialnr']} updated.", type="message", duration=3)
 
             _clear_form()
 
@@ -302,8 +305,14 @@ class CrossPage(Page):
                 status.set("Failed to delete runner.")
                 return
             status.set("Runner deleted successfully.")
+            ui.notification_show("Runner deleted.", type="warning", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             _clear_form()
+
+        @reactive.Effect
+        @reactive.event(input.cross_refresh_btn)
+        def _on_cross_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.effect
         @reactive.event(input.report_lst_run)
