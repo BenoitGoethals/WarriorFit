@@ -80,6 +80,8 @@ Requires `WF_SECRET_KEY` to be provided in the environment.
 
 ```bash
 WF_SECRET_KEY=<your_secret> ./deploy-prod.sh
+export WF_SECRET_KEY=your_secret_here
+
 ```
 
 - Container: `warriorfit-app`

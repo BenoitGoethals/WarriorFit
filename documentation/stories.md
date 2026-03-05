@@ -6,9 +6,9 @@ The point estimates below reflect implementation effort.
 
 ### Total Overview
 
-* **Total epics:** 15
-* **Total stories:** 55
-* **Total story points:** 166
+* **Total epics:** 19
+* **Total stories:** 71
+* **Total story points:** 196
 
 ### Story Point Legend
 
@@ -20,9 +20,11 @@ The point estimates below reflect implementation effort.
 
 ### Roles
 
-* **admin** – Full system access including user management and audit logs
+* **admin** – Full system access including user management, settings, audit logs, and status monitoring
 * **PTI** – Physical Training Instructor; manages test sessions, enters test results for own unit
 * **APTI** – Assistant PTI; same permissions as PTI but for a sub-unit
+* **PLANNER** – Limited role; can only access the Sessions planning page
+* **GUEST** – Read-only access to unit status and individual test history
 
 ---
 
@@ -48,21 +50,20 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Form fields: username, email, password (masked with toggle), role (dropdown), serial_number
+* Form fields: username, email, password (masked with toggle), role (dropdown), serial number
 * Username must be unique (3–30 characters, a-z, 0–9, ., _, -)
 * Email must be valid and unique
 * Password minimum 12 characters with complexity requirements
-* Serial_number must be unique and must exist in BEMIL
-* Role choices: admin, PTI, APTI
+* Serial number must be unique and must exist in BEMIL
+* Role choices: admin, PTI, APTI, PLANNER, GUEST
 * Audit log records creation (who, what, when)
 * Success notification: "User created"
 
 **Tasks:**
 
-* User creation form in Shiny UI
-* Backend create via UserService
-* Password hashing
-* Audit logging
+* User creation form
+* Backend user creation with password hashing
+* Audit logging on save
 
 ### Story 1.2: Error handling for user creation [2 points]
 
@@ -72,16 +73,16 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Username conflict: clear "Username already taken" message
+* Username conflict: "Username already taken" message
 * Email conflict: "Email already in use"
-* Serial_number conflict: error displayed in status field
+* Serial number conflict: error displayed in status field
 * Weak password: specific validation feedback
-* Status output shows error message inline
+* Error message shown inline in the form
 
 **Tasks:**
 
-* Input validation with status text output
-* Server-side checks before save
+* Input validation before save
+* Server-side uniqueness checks
 
 ### Story 1.3: Edit user [5 points]
 
@@ -91,8 +92,8 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Select user from DataGrid (click row → form pre-fills)
-* Editable: email, role, serial_number, active status, remarks
+* Select user from grid (click row → form pre-fills)
+* Editable fields: email, role, serial number, active status, remarks
 * Password field: leave blank to keep unchanged
 * Same validation as creation (unique constraints)
 * Audit log records all changes
@@ -114,13 +115,13 @@ The point estimates below reflect implementation effort.
 
 * New password field in edit form
 * Audit log records reset action
-* Password hashing before save
+* Password hashed before save
 * Status message confirms reset
 
 **Tasks:**
 
 * Password field with toggle in edit form
-* PUT call with new hashed password
+* Save new hashed password on submit
 
 ### Story 1.5: User list with search [2 points]
 
@@ -130,15 +131,15 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* DataGrid columns: username, email, role, serial_number, active status
-* Built-in DataGrid column filters
-* Click row to load in edit form
+* Grid columns: username, email, role, serial number, active status
+* Column filters on the grid
+* Click row to load user in edit form
 * Refresh button to reload data
 
 **Tasks:**
 
-* DataGrid with filters=True
-* Populate from UserService
+* Filterable grid populated from user data
+* Row selection triggers form fill
 
 ### Story 1.6: Delete user [2 points]
 
@@ -156,7 +157,7 @@ The point estimates below reflect implementation effort.
 **Tasks:**
 
 * Delete button with selected row check
-* Delete via UserService
+* Backend deletion with audit log
 
 ---
 
@@ -175,7 +176,7 @@ The point estimates below reflect implementation effort.
 
 ### Story 2.1: Create new test session [5 points]
 
-**As** PTI or admin
+**As** PTI, APTI, admin, or PLANNER
 **I want** to create a new test session
 **So that** fitness tests can be scheduled
 
@@ -183,27 +184,29 @@ The point estimates below reflect implementation effort.
 
 * Form fields: PTI serial number (dropdown from BEMIL), date, time (HH:MM), test type, description, canceled checkbox
 * Test types: PHEF, Combat, Functional, Swimming
-* PTI dropdown populates from BEMIL service (all known PTIs)
+* PTI dropdown populates from BEMIL (all known PTIs)
 * Validation: date and type are required, time format HH:MM
-* Session appears immediately in DataGrid after add
+* Session appears immediately in the list after add
 * Status message confirms "Session added successfully"
 * Form clears after successful add
+* Email notification sent to PTI on session creation (if mail configured)
+* Sessions page is accessible at root level for PLANNER; also under "Psychical Tests" menu for PTI/APTI/admin
 
 **Tasks:**
 
-* Session form in Shiny UI
-* SessionsController.add_session()
-* Validation method
+* Session creation form
+* Input validation
+* Email notification on successful save
 
 ### Story 2.2: Update session [3 points]
 
-**As** PTI or admin
+**As** PTI, APTI, admin, or PLANNER
 **I want** to modify a test session
 **So that** planning can be adjusted
 
 **Acceptance criteria:**
 
-* Click row in DataGrid → form pre-fills
+* Click row in grid → form pre-fills
 * Editable: PTI, date, time, type, description, canceled
 * "Update" button saves changes
 * Grid refreshes on save
@@ -211,12 +214,12 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* Row selection → form fill
+* Row selection triggers form fill
 * Update button handler
 
 ### Story 2.3: Delete session [2 points]
 
-**As** PTI or admin
+**As** PTI, APTI, admin, or PLANNER
 **I want** to cancel a test session
 **So that** incorrect planning is removed
 
@@ -228,27 +231,27 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* Delete button handler
-* SessionsController.delete_session()
+* Delete button with selected row check
+* Backend deletion
 
 ### Story 2.4: View session list [3 points]
 
-**As** PTI, APTI, or admin
+**As** PTI, APTI, admin, or PLANNER
 **I want** to see a list of test sessions
 **So that** I can review upcoming and recent tests
 
 **Acceptance criteria:**
 
-* DataGrid columns: Start date, Type, PTI serial, Canceled, Description
-* Filterable columns (filters=True)
+* Grid columns: Start date, Type, PTI serial, Canceled, Description
+* Filterable columns
 * Sorted by start date ascending
 * Refresh button to reload
 * Row selection loads session in form
 
 **Tasks:**
 
-* SessionsController.list_sessions_df()
-* DataGrid with sort and filters
+* Filterable and sortable session grid
+* Row selection triggers form fill
 
 ### Story 2.5: Upcoming sessions on welcome page [2 points]
 
@@ -258,14 +261,14 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* DataGrid on "Welcome" tab for PTI/APTI roles only
+* Grid on "Welcome" tab visible to PTI/APTI roles only
 * Shows sessions where PTI serial matches logged-in user
 * Filterable and refreshable
 
 **Tasks:**
 
-* StatusLoginUserController.get_upcoming_session()
-* Role check before showing widget
+* Upcoming sessions query filtered by logged-in user serial
+* Role check before showing the widget
 
 ---
 
@@ -297,13 +300,13 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* Session dropdown populated from SessionsController
-* Session selection state via reactive.Value
+* Session dropdown populated from available PHEF sessions
+* Session selection state retained during page use
 
 ### Story 3.2: Lookup serviceman via BEMIL [2 points]
 
 **As** PTI
-**I want** to validate serviceman via BEMIL before entering results
+**I want** to validate a serviceman via BEMIL before entering results
 **So that** data is correct
 
 **Acceptance criteria:**
@@ -317,8 +320,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* PhefController.search_military()
-* BEMIL servicemen browse modal with DataGrid
+* Serial number lookup against BEMIL
+* Browse modal with filterable servicemen grid
 
 ### Story 3.3: Enter PHEF measurements [5 points]
 
@@ -337,14 +340,14 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* Time parsing via PhefController.parse_time_to_seconds()
-* PhefCalculator.side_bridge_result() and running_result()
-* Reactive score outputs
+* Time parsing from mm:ss to seconds
+* Real-time score calculation per component
+* Reactive score display with color feedback
 
 ### Story 3.4: Add PHEF result [5 points]
 
 **As** PTI
-**I want** to save PHEF result
+**I want** to save a PHEF result
 **So that** it is registered
 
 **Acceptance criteria:**
@@ -355,11 +358,13 @@ The point estimates below reflect implementation effort.
 * Grid refreshes after save
 * Status: "Added PHEF test for [serial] in session [id]"
 * Form clears after save
+* Email notification sent on successful save (if mail configured)
 
 **Tasks:**
 
-* PhefController.add_phef()
-* Audit logging in service
+* Backend save with audit logging
+* Email notification on successful save
+* Form reset after save
 
 ### Story 3.5: Update/delete PHEF result [2 points]
 
@@ -376,8 +381,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* PhefController.update_phef() and delete_phef()
-* Row selection → form fill
+* Row selection fills form and switches button state
+* Backend update and delete
 
 ### Story 3.6: PHEF result grid [2 points]
 
@@ -387,15 +392,14 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Shows: Serial, Sidebridge R, Sidebridge L, Run time, Scores, Pass/Fail
+* Columns: Serial, Sidebridge R, Sidebridge L, Run time, Scores, Pass/Fail
 * Filtered by selected session
 * Sortable by serial
-* Refreshes on refresh_tick change
+* Refreshes when data changes
 
 **Tasks:**
 
-* PhefController.list_phef_df()
-* DataGrid with decorate_grid for color coding
+* Filterable result grid with color-coded pass/fail column
 
 ---
 
@@ -430,8 +434,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* Combat form with 3 GO/NO-GO checkboxes
-* Final result logic in controller
+* Combat form with 3 GO/NO-GO inputs
+* Final result logic based on all components
 
 ### Story 4.2: Add/update/delete combat result [3 points]
 
@@ -448,8 +452,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* CombatController CRUD methods
-* Reactive grid refresh
+* Backend create, update, delete
+* Grid refresh on each action
 
 ### Story 4.3: Combat result grid [2 points]
 
@@ -464,8 +468,7 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* CombatController.list_combat_df()
-* DataGrid with session filter
+* Filterable result grid filtered by session
 
 ---
 
@@ -496,8 +499,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* SwimTest form
-* SwimTestController lookup + save
+* Swimming test form with session selection and serial lookup
+* Backend save
 
 ### Story 5.2: Add/update/delete swim result [2 points]
 
@@ -513,7 +516,7 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* SwimTestController CRUD
+* Backend create, update, delete
 
 ### Story 5.3: Swimming result grid [1 point]
 
@@ -527,7 +530,7 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* SwimTestController.list_swim_df()
+* Result grid filtered by selected session
 
 ---
 
@@ -536,12 +539,12 @@ The point estimates below reflect implementation effort.
 **Epic total:** 12 points
 **Estimated:** 2–3 sprints
 
-| #   | Story                              | Points | Priority    |
-| --- | ---------------------------------- | ------ | ----------- |
-| 6.1 | Enter functional test measurements | 5      | Must Have   |
-| 6.2 | Determine GO/NO-GO                 | 2      | Must Have   |
-| 6.3 | Add/update/delete functional result| 3      | Must Have   |
-| 6.4 | Functional result grid             | 2      | Should Have |
+| #   | Story                               | Points | Priority    |
+| --- | ----------------------------------- | ------ | ----------- |
+| 6.1 | Enter functional test measurements  | 5      | Must Have   |
+| 6.2 | Determine GO/NO-GO                  | 2      | Must Have   |
+| 6.3 | Add/update/delete functional result | 3      | Must Have   |
+| 6.4 | Functional result grid              | 2      | Should Have |
 
 ### Story 6.1: Enter functional test measurements [5 points]
 
@@ -560,8 +563,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* FunctionalTest form
-* FunctionalController scoring service
+* Functional test form with session selection and serial lookup
+* Real-time scoring per component
 
 ### Story 6.2: Determine GO/NO-GO [2 points]
 
@@ -578,8 +581,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* GO/NO-GO logic in FunctionalCalculator
-* Reactive UI score display
+* GO/NO-GO calculation logic
+* Color-coded result display per component
 
 ### Story 6.3: Add/update/delete functional result [3 points]
 
@@ -596,7 +599,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* FunctionalController CRUD methods
+* Backend create, update, delete
+* Grid refresh on each action
 
 ### Story 6.4: Functional result grid [2 points]
 
@@ -610,7 +614,7 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* FunctionalController.list_functional_df()
+* Result grid filtered by selected session
 
 ---
 
@@ -619,12 +623,12 @@ The point estimates below reflect implementation effort.
 **Epic total:** 13 points
 **Estimated:** 2–3 sprints
 
-| #   | Story                   | Points | Priority    |
-| --- | ----------------------- | ------ | ----------- |
-| 7.1 | Enter march             | 5      | Must Have   |
-| 7.2 | Update march            | 3      | Should Have |
-| 7.3 | Delete march            | 2      | Should Have |
-| 7.4 | March list view         | 3      | Should Have |
+| #   | Story           | Points | Priority    |
+| --- | --------------- | ------ | ----------- |
+| 7.1 | Enter march     | 5      | Must Have   |
+| 7.2 | Update march    | 3      | Should Have |
+| 7.3 | Delete march    | 2      | Should Have |
+| 7.4 | March list view | 3      | Should Have |
 
 ### Story 7.1: Enter march [5 points]
 
@@ -643,12 +647,13 @@ The point estimates below reflect implementation effort.
 * "Add" button creates record
 * Uniqueness check: same serial + distance + date = duplicate rejected
 * Form clears after successful add
+* Email notification sent on successful add (if mail configured)
 
 **Tasks:**
 
-* March form in Shiny UI
-* MarchController.add_march() with uniqueness validation
-* MarchController.get_march_is_unique()
+* March registration form with serial lookup
+* Uniqueness validation before save
+* Email notification on successful save
 
 ### Story 7.2: Update march [3 points]
 
@@ -657,15 +662,15 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Click row → form pre-fills (ID stored internally)
+* Click row → form pre-fills
 * Editable: date, distance, succeeded
 * "Update" button saves
 * Grid updates immediately
 
 **Tasks:**
 
-* Row selection handler
-* MarchController.update_march()
+* Row selection triggers form fill
+* Backend update
 
 ### Story 7.3: Delete march [2 points]
 
@@ -679,7 +684,7 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* MarchController.delete_march()
+* Backend deletion with grid refresh
 
 ### Story 7.4: March list view [3 points]
 
@@ -688,15 +693,14 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Grid columns: service_number, distance, Succeeded (✓/✗), Date
-* Sortable by service_number
+* Grid columns: serial number, distance, Succeeded (✓/✗), Date
+* Sortable by serial number
 * Refresh button
-* ID column hidden from display (used for CRUD)
+* Internal ID not shown in grid
 
 **Tasks:**
 
-* MarchController.get_all_march()
-* Display DataFrame excluding internal columns
+* Sortable march grid excluding internal ID column
 
 ---
 
@@ -705,13 +709,13 @@ The point estimates below reflect implementation effort.
 **Epic total:** 18 points
 **Estimated:** 3 sprints
 
-| #   | Story                          | Points | Priority    |
-| --- | ------------------------------ | ------ | ----------- |
-| 8.1 | Create/edit/delete cross       | 5      | Must Have   |
-| 8.2 | Enter cross runner results     | 5      | Must Have   |
-| 8.3 | Update/delete cross runner     | 3      | Should Have |
-| 8.4 | Cross planning list view       | 2      | Should Have |
-| 8.5 | Cross statistics               | 3      | Could Have  |
+| #   | Story                      | Points | Priority    |
+| --- | -------------------------- | ------ | ----------- |
+| 8.1 | Create/edit/delete cross   | 5      | Must Have   |
+| 8.2 | Enter cross runner results | 5      | Must Have   |
+| 8.3 | Update/delete cross runner | 3      | Should Have |
+| 8.4 | Cross planning list view   | 2      | Should Have |
+| 8.5 | Cross statistics           | 3      | Could Have  |
 
 ### Story 8.1: Create/edit/delete cross session [5 points]
 
@@ -731,8 +735,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* CrossPlanningController CRUD
-* Reactive grid with refresh
+* Cross session form with create, update, delete
+* Grid refresh on each action
 
 ### Story 8.2: Enter cross runner results [5 points]
 
@@ -746,7 +750,7 @@ The point estimates below reflect implementation effort.
 * Serial number input + "Confirm Serial" via BEMIL
 * BEMIL search modal available
 * Enter running time (hh:mm:ss format)
-* System calculates running seconds
+* System calculates running time in seconds
 * "Add" adds runner to grid
 * Grid columns: Order, Serial, Running Time, Runner Name, Gender, Age, Seconds, Unit
 * Order assigned automatically (sequence)
@@ -755,8 +759,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* CrossController CRUD
-* Time format parsing and seconds calculation
+* Runner entry form with serial lookup and time parsing
+* Duplicate check before save
 
 ### Story 8.3: Update/delete cross runner [3 points]
 
@@ -772,7 +776,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* CrossController.update_cross() and delete_cross()
+* Row selection triggers form fill
+* Backend update and delete
 
 ### Story 8.4: Cross planning list view [2 points]
 
@@ -781,12 +786,12 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* DataGrid with all sessions
+* Grid with all sessions
 * Filterable and refreshable
 
 **Tasks:**
 
-* CrossPlanningController.list_df()
+* Filterable cross session grid
 
 ### Story 8.5: Cross statistics [3 points]
 
@@ -796,13 +801,13 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Two DataGrids: Top 10 all-time (5km), Top 10 all-time (10km)
+* Two grids: Top 10 all-time (5km), Top 10 all-time (10km)
 * Rankings based on fastest times
 * Refresh button to reload
 
 **Tasks:**
 
-* CrossStaticsController.best_10_all_df()
+* Top 10 rankings query per distance
 
 ---
 
@@ -824,16 +829,16 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Input: serial number (service_number)
-* Returns: rank, first_name, last_name, gender, birthdate, age, unit
+* Input: serial number
+* Returns: rank, first name, last name, gender, birthdate, age, unit
 * If not found: "Not found" message; dependent inputs remain disabled
 * Display format: "Rank SerialNr FirstName LastName Gender Age years old"
 * Used on: PHEF, Combat, Swimming, Functional, March, Cross pages
 
 **Tasks:**
 
-* BEMILService.get_military_by_serial()
-* Consistent display across all test pages
+* BEMIL lookup by serial number
+* Consistent display format across all test pages
 
 ### Story 9.2: Browse all servicemen via modal [2 points]
 
@@ -843,16 +848,15 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* "Search own Unit" icon button (🔍) opens modal
-* Modal contains DataGrid with columns: service_number, first_name, last_name, gender
-* Filterable DataGrid
-* Clicking a row fills serial number field and closes modal
+* "Search own Unit" icon button opens modal
+* Modal contains filterable grid with columns: serial number, first name, last name, gender
+* Clicking a row fills the serial number field and closes modal
 * Available on: PHEF, Combat, Swimming, Functional, March, Cross, Individual Test History pages
 
 **Tasks:**
 
-* Reusable modal pattern per page
-* BEMILService.get_all_service_men()
+* Browse modal with filterable servicemen grid
+* Row selection fills serial number field
 
 ---
 
@@ -870,7 +874,7 @@ The point estimates below reflect implementation effort.
 
 ### Story 10.1: Search individual by serial number [3 points]
 
-**As** PTI, APTI, or admin
+**As** PTI, APTI, admin, or GUEST
 **I want** to search for an individual by serial number
 **So that** I can access their complete test history
 
@@ -879,24 +883,24 @@ The point estimates below reflect implementation effort.
 * Serial number text input
 * "Confirm Servicemen" button triggers BEMIL lookup
 * "Search own Unit" modal available for browsing
-* If found: serviceman info displayed (rank, name, service_number, unit)
+* If found: serviceman info displayed (rank, name, serial number, unit)
 * If not found: "Not found" message; test grid stays empty
 * "Refresh" button reloads test data for current serial
 
 **Tasks:**
 
-* IndTestShowController.find_military()
-* BEMIL browse modal
+* Serial number lookup against BEMIL
+* Browse modal for serviceman selection
 
 ### Story 10.2: Display complete test history [5 points]
 
-**As** PTI, APTI, or admin
+**As** PTI, APTI, admin, or GUEST
 **I want** to view all tests for an individual
 **So that** I can assess their performance history
 
 **Acceptance criteria:**
 
-* DataGrid shows all test results across all types (PHEF, Combat, Swimming, Functional, March)
+* Grid shows all test results across all types (PHEF, Combat, Swimming, Functional, March)
 * Columns: Date, Type, Details, Scores, Total, Result
 * Tests sorted by date (newest first)
 * Record count shown in status ("Loaded N records")
@@ -904,8 +908,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* IndTestShowController.collect_tests_df()
-* Data aggregation across multiple test types
+* Aggregation of all test types into a single grid
+* Sort by date descending
 
 ### Story 10.3: Generate individual PDF report [5 points]
 
@@ -923,9 +927,8 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* ReportGeneratorPDF.generate_ind_report(serial_number)
-* Async PDF generation
-* report_path reactive value management
+* Async PDF generation for individual serviceman
+* Download button shown conditionally after generation
 
 ### Story 10.4: Download PDF report [2 points]
 
@@ -937,13 +940,12 @@ The point estimates below reflect implementation effort.
 
 * "Download PDF" button appears only after successful generation
 * Filename: "Report_{serial_number}.pdf"
-* Download uses Shiny download_button mechanism
-* Button disappears / report path resets after use
+* Button disappears / report resets after use
 
 **Tasks:**
 
-* Shiny @render.download handler
-* Conditional download_btn_ui output
+* File download handler
+* Conditional display of download button
 
 ---
 
@@ -961,14 +963,14 @@ The point estimates below reflect implementation effort.
 
 ### Story 11.1: View unit status grid [5 points]
 
-**As** PTI or APTI
+**As** PTI, APTI, admin, or GUEST
 **I want** to see the fitness test status of all servicemen in my unit
 **So that** I can assess overall unit readiness
 
 **Acceptance criteria:**
 
-* DataGrid with all servicemen in own unit
-* Columns: Service #, Rank, Name, Gender, Birthdate, PHEF status, Combat status, Swimming status
+* Grid with all servicemen in own unit
+* Columns: Serial number, Rank, Name, Gender, Birthdate, PHEF status, Combat status, Swimming status
 * Status color-coded (passed/failed/not done)
 * Filterable columns
 * "Refresh" button reloads data
@@ -977,26 +979,26 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* OwnUnitController.fetch_servicemen_df()
-* ReportGeneratorPDF.generate_total_report_current_year_own_unit()
+* Unit servicemen grid with color-coded status columns
+* PDF generation for unit status report
 
 ### Story 11.2: View individual test history via modal [2 points]
 
-**As** PTI or APTI
+**As** PTI, APTI, admin, or GUEST
 **I want** to click on a serviceman row to see their test details
 **So that** I can drill into individual performance
 
 **Acceptance criteria:**
 
 * Click row in unit status grid → modal opens
-* Modal shows DataGrid of all tests for that serviceman
+* Modal shows grid of all tests for that serviceman
 * Columns: Test Type, Session, Status
 * "Close" button or click outside to dismiss
 
 **Tasks:**
 
-* Row selection handler
-* OwnUnitController.fetch_tests_for_serial_df()
+* Row selection opens detail modal
+* Test history grid inside modal
 
 ### Story 11.3: Unit dashboard with statistics [3 points]
 
@@ -1007,14 +1009,14 @@ The point estimates below reflect implementation effort.
 **Acceptance criteria:**
 
 * Summary cards per test type (total tested, GO/NO-GO count, pass rate)
-* Plotly bar/pie charts for pass rates
+* Charts for pass rates
 * Current calendar year scope
 * Refresh button reloads all statistics
 
 **Tasks:**
 
-* DashboardOwnUnitController with cached queries
-* Plotly chart generation
+* Summary cards per test type
+* Chart generation for pass rates
 
 ### Story 11.4: PHEF not-done list [2 points]
 
@@ -1024,15 +1026,16 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Tab "PHEF Not done"
+* Tab "PHEF Not done" under Psychical Tests menu
 * Header shows current year and unit name
-* DataGrid with all servicemen missing a PHEF result for current year
+* Grid with all servicemen missing a PHEF result for current year
 * Filterable columns
 * Refresh button
 
 **Tasks:**
 
-* StatusTestsController.get_data() (servicemen without PHEF this year)
+* Query servicemen without a PHEF result in the current year
+* Filterable grid display
 
 ---
 
@@ -1041,10 +1044,10 @@ The point estimates below reflect implementation effort.
 **Epic total:** 5 points
 **Estimated:** 1 sprint
 
-| #   | Story                               | Points | Priority    |
-| --- | ----------------------------------- | ------ | ----------- |
-| 12.1 | View personal test calendar        | 3      | Should Have |
-| 12.2 | View all test sessions calendar    | 2      | Could Have  |
+| #   | Story                            | Points | Priority    |
+| --- | -------------------------------- | ------ | ----------- |
+| 12.1 | View personal test calendar     | 3      | Should Have |
+| 12.2 | View all test sessions calendar | 2      | Could Have  |
 
 ### Story 12.1: View personal test calendar [3 points]
 
@@ -1054,16 +1057,18 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* FullCalendar (shiny_calendar library) weekly time-grid view
+* Calendar opens as a full-page panel via "Personal Calendar" button in the top navigation bar
+* Weekly time-grid view
 * Shows sessions where PTI serial matches logged-in user
 * Events color-coded by test type
 * Click event → event turns red (highlight)
 * Calendar is read-only (no create from calendar)
+* "Close" button returns to the main navigation
 
 **Tasks:**
 
-* calendar_events page with shiny_calendar
-* CalendarEventsController filtered by user serial
+* Personal calendar view filtered by logged-in user serial
+* Global "Personal Calendar" button in navbar
 
 ### Story 12.2: View all test sessions calendar [2 points]
 
@@ -1073,13 +1078,16 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Toggle between personal and all-sessions calendar view
+* "Open Calendar" button in top navigation bar opens a full-page calendar panel
 * All sessions visible regardless of PTI
-* Same FullCalendar UI as personal view
+* Same calendar layout as personal view
+* "Close" button returns to main navigation
+* Personal and all-sessions calendars are mutually exclusive (opening one closes the other)
 
 **Tasks:**
 
-* CalendarEventsController.get_all_sessions_events()
+* All-sessions calendar view without PTI filter
+* Mutual exclusion with personal calendar panel
 
 ---
 
@@ -1088,11 +1096,11 @@ The point estimates below reflect implementation effort.
 **Epic total:** 8 points
 **Estimated:** 1–2 sprints
 
-| #   | Story                                  | Points | Priority    |
-| --- | -------------------------------------- | ------ | ----------- |
-| 13.1 | Create room reservation               | 5      | Should Have |
-| 13.2 | View reservations (weekly/monthly/list)| 2      | Should Have |
-| 13.3 | Delete reservation                    | 1      | Should Have |
+| #   | Story                                   | Points | Priority    |
+| --- | --------------------------------------- | ------ | ----------- |
+| 13.1 | Create room reservation                | 5      | Should Have |
+| 13.2 | View reservations (weekly/monthly/list) | 2      | Should Have |
+| 13.3 | Delete reservation                     | 1      | Should Have |
 
 ### Story 13.1: Create room reservation [5 points]
 
@@ -1107,11 +1115,12 @@ The point estimates below reflect implementation effort.
 * "Reserve" button creates reservation
 * Reservation appears immediately in list/calendar view
 * Error message on overlap conflict
+* Email notification sent to PTI on successful reservation (if mail configured)
 
 **Tasks:**
 
-* ReserveFitnessRoomController.create_reservation()
-* Overlap detection query
+* Room reservation form with overlap detection
+* Email notification on successful save
 
 ### Story 13.2: View reservations (weekly/monthly/list) [2 points]
 
@@ -1124,13 +1133,13 @@ The point estimates below reflect implementation effort.
 * Three views: Weekly calendar, Monthly calendar, List view
 * Weekly: time-grid per day showing room reservations with color
 * Monthly: day-level overview
-* List: filterable DataGrid with all reservations
+* List: filterable grid with all reservations
 * Each view shows: room, PTI, activity, date/time
 
 **Tasks:**
 
-* shiny_calendar integration for weekly/monthly
-* DataGrid for list view
+* Weekly and monthly calendar views
+* Filterable list view
 
 ### Story 13.3: Delete reservation [1 point]
 
@@ -1145,7 +1154,7 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* ReserveFitnessRoomController.delete_reservation()
+* Backend deletion with immediate grid/calendar refresh
 
 ---
 
@@ -1154,10 +1163,10 @@ The point estimates below reflect implementation effort.
 **Epic total:** 5 points
 **Estimated:** 1 sprint
 
-| #   | Story                  | Points | Priority    |
-| --- | ---------------------- | ------ | ----------- |
-| 14.1 | View audit log        | 3      | Must Have   |
-| 14.2 | Filter audit log      | 2      | Should Have |
+| #   | Story             | Points | Priority    |
+| --- | ----------------- | ------ | ----------- |
+| 14.1 | View audit log   | 3      | Must Have   |
+| 14.2 | Filter audit log | 2      | Should Have |
 
 ### Story 14.1: View audit log [3 points]
 
@@ -1168,15 +1177,14 @@ The point estimates below reflect implementation effort.
 **Acceptance criteria:**
 
 * Tab "Audit Logs" visible to admin only
-* DataGrid with all logged events
-* Columns: timestamp, event_type, actor, target, details
+* Grid with all logged events
+* Columns: timestamp, event type, actor, target, details
 * Logs are read-only (no edit/delete from UI)
 * Refresh button reloads data
 
 **Tasks:**
 
-* AuditLogEventsController.list_audit_logs_df()
-* DataGrid with read-only display
+* Read-only audit log grid
 
 ### Story 14.2: Filter audit log [2 points]
 
@@ -1186,13 +1194,13 @@ The point estimates below reflect implementation effort.
 
 **Acceptance criteria:**
 
-* Built-in DataGrid column filters (filters=True)
+* Column filters on the grid
 * Filter by event type, actor, date range
-* Results update reactively
+* Results update on filter change
 
 **Tasks:**
 
-* DataGrid filters configuration
+* Filterable columns on audit log grid
 
 ---
 
@@ -1201,10 +1209,10 @@ The point estimates below reflect implementation effort.
 **Epic total:** 5 points
 **Estimated:** 1 sprint
 
-| #   | Story                              | Points | Priority    |
-| --- | ---------------------------------- | ------ | ----------- |
-| 15.1 | Welcome page with role-specific info | 3    | Must Have   |
-| 15.2 | Upcoming sessions for PTI/APTI     | 2      | Should Have |
+| #   | Story                                | Points | Priority    |
+| --- | ------------------------------------ | ------ | ----------- |
+| 15.1 | Welcome page with role-specific info | 3     | Must Have   |
+| 15.2 | Upcoming sessions for PTI/APTI       | 2     | Should Have |
 
 ### Story 15.1: Welcome page with role-specific info [3 points]
 
@@ -1222,8 +1230,7 @@ The point estimates below reflect implementation effort.
 
 **Tasks:**
 
-* StatusLoginUser page
-* UserStore.get_user() for dynamic content
+* Welcome page with dynamic user info from session
 
 ### Story 15.2: Upcoming sessions for PTI/APTI [2 points]
 
@@ -1234,11 +1241,284 @@ The point estimates below reflect implementation effort.
 **Acceptance criteria:**
 
 * Section visible only when role is PTI or APTI
-* DataGrid: "Upcoming Test Sessions"
+* Grid: "Upcoming Test Sessions"
 * Filtered by logged-in user's serial number
 * Refreshable
 
 **Tasks:**
 
-* StatusLoginUserController.get_upcoming_session(serial_number)
-* Role-based conditional rendering
+* Upcoming sessions query filtered by user serial
+* Role-based conditional display
+
+---
+
+## Epic 16: Application Settings (8 points)
+
+**Epic total:** 8 points
+**Estimated:** 1–2 sprints
+
+| #   | Story                           | Points | Priority    |
+| --- | ------------------------------- | ------ | ----------- |
+| 16.1 | Configure application settings | 3      | Must Have   |
+| 16.2 | Configure mail server           | 3      | Should Have |
+| 16.3 | Configure HR integration        | 2      | Should Have |
+
+### Story 16.1: Configure application settings [3 points]
+
+**As** admin
+**I want** to configure database connection and application paths
+**So that** the application connects to the correct infrastructure
+
+**Acceptance criteria:**
+
+* Settings page accessible via Admin menu (admin only)
+* Fields: DB host, DB port, DB name, DB username, DB password (masked)
+* Field: PDF export path
+* Field: Own unit name
+* "Save All Configuration" button persists all settings
+* Success notification: "Settings saved."
+* Error notification on failure
+* Form pre-loads current values on page load
+
+**Tasks:**
+
+* Settings form with pre-load of current configuration
+* Save and persist all settings
+
+### Story 16.2: Configure mail server [3 points]
+
+**As** admin
+**I want** to configure SMTP email settings
+**So that** email notifications are sent correctly
+
+**Acceptance criteria:**
+
+* Fields: SMTP host, SMTP port, username, password (masked), sender email
+* Checkboxes: Use SSL, Use TLS
+* Saved together with other settings via "Save All Configuration"
+* Mail settings used for session, march, and reservation notifications
+
+**Tasks:**
+
+* Mail configuration section in settings form
+
+### Story 16.3: Configure HR integration [2 points]
+
+**As** admin
+**I want** to configure the HR (BEMIL) API connection
+**So that** serviceman lookups work correctly
+
+**Acceptance criteria:**
+
+* Fields: HR URL, HR API key
+* Saved together with other settings
+* Used for all personnel lookups
+
+**Tasks:**
+
+* HR URL and API key fields in settings form
+
+---
+
+## Epic 17: Application Status Monitoring (5 points)
+
+**Epic total:** 5 points
+**Estimated:** 1 sprint
+
+| #   | Story                         | Points | Priority    |
+| --- | ----------------------------- | ------ | ----------- |
+| 17.1 | View system health dashboard | 3      | Should Have |
+| 17.2 | View live application log    | 2      | Should Have |
+
+### Story 17.1: View system health dashboard [3 points]
+
+**As** admin
+**I want** to see the health status of all application dependencies
+**So that** I can quickly diagnose connectivity or service issues
+
+**Acceptance criteria:**
+
+* "Status Application" page accessible via Admin menu (admin only)
+* Status cards for: Database, HR Service, Mail Server, Server
+* Each card shows connection status (up/down + details)
+* Page refreshes status on navigation activation
+
+**Tasks:**
+
+* Health check per dependency displayed as status cards
+
+### Story 17.2: View live application log [2 points]
+
+**As** admin
+**I want** to see the live application log in the browser
+**So that** I can monitor errors and events without server access
+
+**Acceptance criteria:**
+
+* Scrollable log output panel on the Status Application page
+* Log content updates automatically every 2 seconds when the file changes
+* Maximum visible height with vertical scroll
+* Shows recent lines of the application log file
+
+**Tasks:**
+
+* Polled log file reader with automatic refresh
+
+---
+
+## Epic 18: Reports & Export (8 points)
+
+**Epic total:** 8 points
+**Estimated:** 1–2 sprints
+
+| #   | Story                         | Points | Priority    |
+| --- | ----------------------------- | ------ | ----------- |
+| 18.1 | Generate bulk fitness report | 5      | Should Have |
+| 18.2 | Select export format         | 1      | Should Have |
+| 18.3 | Download generated reports   | 2      | Should Have |
+
+### Story 18.1: Generate bulk fitness report [5 points]
+
+**As** PTI, APTI, or admin
+**I want** to generate a fitness report for a group of servicemen
+**So that** I can review results in bulk
+
+**Acceptance criteria:**
+
+* Reports page accessible from root navigation
+* Filter options: Own Unit (checkbox), This Year (checkbox), Test Type (all / PHEF / Functional / Combat / Swimming)
+* Custom report title field
+* "Generate Report" button triggers async generation
+* Status feedback shown (info / success / warning / error)
+* Generated file names listed after generation
+
+**Tasks:**
+
+* Report generation with filter options
+* Async generation with status feedback
+
+### Story 18.2: Select export format [1 point]
+
+**As** PTI, APTI, or admin
+**I want** to choose the export format before generating a report
+**So that** I get the output in the format I need
+
+**Acceptance criteria:**
+
+* Format dropdown: PDF, CSV, Both (PDF & CSV)
+* Selection applied at generation time
+* Both formats included in download if "Both" is selected
+
+**Tasks:**
+
+* Format selector applied to report generation
+
+### Story 18.3: Download generated reports [2 points]
+
+**As** PTI, APTI, or admin
+**I want** to download the generated report files
+**So that** I can store or share them
+
+**Acceptance criteria:**
+
+* "Download" button downloads all generated files as a ZIP archive
+* ZIP filename: "reports.zip"
+* Files in ZIP use their original filenames
+* Button available as soon as a report is generated
+
+**Tasks:**
+
+* ZIP archive packaging all generated files
+* File download handler
+
+---
+
+## Epic 19: Security & Authentication (7 points)
+
+**Epic total:** 7 points
+**Estimated:** 1–2 sprints
+
+| #   | Story                        | Points | Priority    |
+| --- | ---------------------------- | ------ | ----------- |
+| 19.1 | Login with username/password | 2     | Must Have   |
+| 19.2 | Rate limiting on login       | 2     | Must Have   |
+| 19.3 | Auto-logout on inactivity    | 2     | Should Have |
+| 19.4 | Role-based page access       | 1     | Must Have   |
+
+### Story 19.1: Login with username/password [2 points]
+
+**As** any user
+**I want** to authenticate with my credentials
+**So that** only authorized staff can access the system
+
+**Acceptance criteria:**
+
+* Login modal shown on application start (production mode)
+* Fields: username, password
+* "Login" button triggers authentication
+* Successful login: modal closes, role-appropriate navigation renders
+* Failed login: error message shown inline (red)
+* Audit log records login event
+* Disabled accounts receive "Account disabled" message
+
+**Tasks:**
+
+* Login modal with credential validation
+* Role-appropriate navigation after successful login
+* Audit log on login
+
+### Story 19.2: Rate limiting on login [2 points]
+
+**As** the system
+**I want** to lock accounts after repeated failed login attempts
+**So that** brute-force attacks are prevented
+
+**Acceptance criteria:**
+
+* Account locked after N consecutive failed attempts
+* Locked account shows remaining lock time in minutes
+* Successful login resets failure counter
+* Remaining attempts shown after each failure
+
+**Tasks:**
+
+* Per-username attempt tracking
+* Lock and unlock logic based on failure threshold
+
+### Story 19.3: Auto-logout on inactivity [2 points]
+
+**As** the system
+**I want** to automatically log out users after 10 minutes of inactivity
+**So that** unattended sessions are secured
+
+**Acceptance criteria:**
+
+* Activity tracked via browser events: click, keydown, mousemove, scroll, touch
+* Heartbeat ping every 30 seconds
+* Session cleared and page reloaded after 10 minutes of inactivity
+* Notification: "You were logged out due to 10 minutes of inactivity."
+
+**Tasks:**
+
+* Client-side activity tracking sent to server
+* Inactivity timer checked periodically server-side
+
+### Story 19.4: Role-based page access [1 point]
+
+**As** the system
+**I want** to show only pages appropriate for the logged-in role
+**So that** users cannot access unauthorized functionality
+
+**Acceptance criteria:**
+
+* Navigation dynamically built based on logged-in role
+* admin: all pages
+* PTI/APTI: all except Admin menu pages
+* GUEST: Status Unit and Individual pages only
+* PLANNER: Sessions page only
+* Pages not allowed for the current role are not rendered
+
+**Tasks:**
+
+* Per-page role whitelist
+* Navigation built from role-filtered page list
