@@ -61,6 +61,7 @@ sudo docker run -d \
     -e WF_SECRET_KEY="${WF_SECRET_KEY}" \
     -e APP_ENV="${APP_ENV}" \
     -e APP_PORT="${APP_PORT}" \
+    -v /etc/WarriorFit/config_test.yml:/etc/WarriorFit/config.yml:ro \
     "${IMAGE_NAME}"
 echo "Container started successfully."
 echo ""

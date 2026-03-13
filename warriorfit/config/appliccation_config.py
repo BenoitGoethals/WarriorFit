@@ -46,15 +46,11 @@ class ApplicationConfig(metaclass=Singleton):
         """
         ENV = os.getenv("APP_ENV", "development")
 
-        if ENV == "production":
-            # Running in Docker container
-            config_path = Path("/etc/WarriorFit/")
-            if config_path.is_dir():
-                config_path = config_path / "config.yml"
+        if ENV in ("production", "test"):
+            # Running in Docker container — config must be mounted at /etc/WarriorFit/config.yml
+            config_path = Path("/etc/WarriorFit/config.yml")
         elif ENV == "development":
             config_path = "warriorfit/config/config_dev.yml"
-        elif ENV == "test":
-            config_path = "warriorfit/config/config_test.yml"
 
         self.config_path = self._get_project_root() / config_path
         self.config_path_version = self._get_project_root() / "version.yaml"
