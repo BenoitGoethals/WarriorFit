@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any
 import yaml
@@ -44,12 +45,16 @@ class ApplicationConfig(metaclass=Singleton):
 
         :param config_path: Path to the configuration file.
         """
-        ENV = os.getenv("APP_ENV", "development")
+        env = os.getenv("APP_ENV", "development")
 
-        if ENV in ("production", "test"):
+        if env in ("production", "test"):
+            secret_key = os.environ["WF_SECRET_KEY"]
+            if secret_key == "" or secret_key is None:
+                logging.error("WF_SECRET_KEY environment variable is not set")
+                raise ValueError("WF_SECRET_KEY environment variable is not set")
             # Running in Docker container — config must be mounted at /etc/WarriorFit/config.yml
             config_path = Path("/etc/WarriorFit/config.yml")
-        elif ENV == "development":
+        elif env == "development":
             config_path = "warriorfit/config/config_dev.yml"
 
         self.config_path = self._get_project_root() / config_path
