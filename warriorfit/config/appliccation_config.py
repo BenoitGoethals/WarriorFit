@@ -52,8 +52,13 @@ class ApplicationConfig(metaclass=Singleton):
             if secret_key == "" or secret_key is None:
                 logging.error("WF_SECRET_KEY environment variable is not set")
                 raise ValueError("WF_SECRET_KEY environment variable is not set")
-            # Running in Docker container — config must be mounted at /etc/WarriorFit/config.yml
-            config_path = Path("/etc/WarriorFit/config.yml")
+            # Allow explicit override (e.g. local scripts targeting a specific DB)
+            config_override = os.getenv("APP_CONFIG_PATH")
+            if config_override:
+                config_path = Path(config_override)
+            else:
+                # Running in Docker container — config must be mounted at /etc/WarriorFit/config.yml
+                config_path = Path("/etc/WarriorFit/config.yml")
         elif env == "development":
             config_path = "warriorfit/config/config_dev.yml"
 
