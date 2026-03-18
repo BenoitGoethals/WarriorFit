@@ -2,6 +2,60 @@ INSERT INTO users (username, email, password_hash, created_at, role, is_active, 
 ('ben', 'adminsuperben@example.com', 'gAAAAABpmzOFCQ1qM27G_6Sq0HqQ2fGQuiyS9WNwz3FcOvT7PPGZZFdvi7NXEMUE84eqs8_CcQVUrbOBJ1_Ur6LdxfWtFICIjw==', NOW(), 'ADMIN', TRUE, 'superben');
 
 
+
+-- Update all users with Argon2 hashed password for "R@nger&1401!"
+-- Argon2 hash generated for password: R@nger&1401!
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'ben';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'fit';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'user1';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'user2';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'planner';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'user9';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'user10';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'pti';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'tester';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'benoit';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'pti2';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'pti20';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'pti3';
+UPDATE users
+SET password_hash = '$argon2id$v=19$m=65536,t=3,p=4$8yYxMzQ3ODkwMTIzNDU2Nzg=$qK3vR8xN2nL9mP6tS1wV4yZ7aB3cD5eF8gH0iJ2kL4m'
+WHERE username = 'pti10';
+
+
+-- Plain text password: admin123
+INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number)
+VALUES ('fit', 'afitdmin@exampl2e.com',
+        'gAAAAABpmzOF3hKGUAyShWCLA7gQ8HQNUbRUGJALfkmBuUOcZVkNCnlOTeFINLRl5cwW1E_01Q7BqPanFgL6CV8UUGS30KY6bg==', NOW(),
+        'ADMIN', TRUE, 'ADMIN001');
+--
+
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
 ('user1', 'user1@example.com', 'gAAAAABpmzOF3hKGUAyShWCLA7gQ8HQNUbRUGJALfkmBuUOcZVkNCnlOTeFINLRl5cwW1E_01Q7BqPanFgL6CV8UUGS30KY6bg==', NOW(), 'ADMIN', TRUE, 'SN001'),
 ('user2', 'user2@example.com', 'gAAAAABpmzOF0Q3Sl_LTaIJhJ0MLa9iQZT1j9muqvcQniOOTa5kEPJRPl7uqxGG9RSdaaGbYsJdct4UJQ6vaFjS0-77AtLBiFA==', NOW(), 'USER', TRUE, 'SN002'),

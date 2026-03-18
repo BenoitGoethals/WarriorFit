@@ -555,12 +555,7 @@ class FitnessWarriorApp:
         @reactive.Effect
         async def login_dialog():
             app_env = os.getenv("APP_ENV", "")
-            if app_env == "production":
-                raise RuntimeError(
-                    "Dev auto-login bypass must never run in production. "
-                    "Check APP_ENV and application startup configuration."
-                )
-            # Dev mode: bypass login with a stub admin user (only when APP_ENV=development)
+
             if app_env == "development":
                 if _get_session_user() is None:
                     from warriorfit.data.model.db_model import User as UserModel
