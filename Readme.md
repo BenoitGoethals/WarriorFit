@@ -50,7 +50,8 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-02-14 : Add Architectural structure document [Architectural Structure](documentation/ARCHITECTURE.md)
 * 2026-02-14 : Bug fix container.py (DI wiring)
 * 2026-02-14 : Update cross app documentation [Cross App](documentation/crsossapp.md)
-* 2026-02-15 : refactor security + audit security 
+* 2026-02-15 : refactor security + audit security
+* 2026-03-18 : security hardening — remove Fernet, migrate to bcrypt, fix audit log nullable user_id, add SECURITY.md
 
 
 
@@ -97,6 +98,7 @@ The project documentation is structured in different documents:
 15. * [Server architecture](documentation/server.md) (Done)
 16. * [DI Usage Guide](documentation/DI_USAGE_GUIDE.md) (Done)
 17. * [Changelog](CHANGELOG.md)
+18. * [Security](SECURITY.md) (Done)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0

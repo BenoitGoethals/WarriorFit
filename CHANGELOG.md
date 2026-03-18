@@ -5,6 +5,30 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-03-18] - Security Hardening & Test Data Cleanup
+
+### Security
+- Remove Fernet symmetric encryption entirely from codebase and dependencies (`cryptography` package dropped)
+- Migrate all password storage to bcrypt one-way hashing (cost factor 12); no plaintext-recovery path remains
+- Fix `AuditLog.user_id` nullable: failed login attempts (unauthenticated) now persist to `audit_logs` without crash
+- Capture real client IP (X-Forwarded-For aware) in audit log for login and login_failed events
+- Remove `decrypt_password()` exposure from user management list view
+- Password field no longer pre-filled from database row when editing a user
+
+### Added
+- `SECURITY.md`: full authentication flow, RBAC matrix, cryptography table, OWASP Top 10 assessment, and open issues tracker
+- Alembic migration `a1b2c3d4e5f6`: make `audit_logs.user_id` nullable
+- `warriorfit/data/scripts/update_passwords.sql`: migrate legacy non-bcrypt password hashes to bcrypt
+
+### Changed
+- `test_data.sql`: all seeded users now use a real bcrypt hash; Fernet and Argon2 placeholders removed
+- Editing a user without supplying a new password now preserves the existing hash
+
+### Removed
+- `cryptography` dependency removed from `pyproject.toml`
+
+---
+
 ## [2026-02-24] - Documentation Refactoring & Refresh Buttons
 
 ### Added
