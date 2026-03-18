@@ -43,19 +43,16 @@ class Service(ABC):
             bind=async_engine, expire_on_commit=False, class_=AsyncSession
         )
 
-    async def add_audit_log(self, details, action):
+    async def add_audit_log(self, details, action, ip_address: str = None):
         """
         Add an entry to the audit log with the provided details and action.
-
-        The method is intended to log actions performed by a user. It saves
-        information such as user's ID, the related action, details of the
-        action performed, and the IP address from where the action was
-        initiated into the audit log.
 
         :param details: Additional information related to the action.
         :type details: str
         :param action: The action performed by the user that is to be logged.
         :type action: str
+        :param ip_address: Client IP address. If not provided, defaults to None.
+        :type ip_address: str, optional
         :return: A coroutine that resolves once the audit log has been created.
         :rtype: Coroutine
         """
@@ -63,7 +60,7 @@ class Service(ABC):
         return await self._user_repo.create_audit_log(
             user_id=user_id,
             details=details,
-            ip_address=Os.what_is_my_ip(),
+            ip_address=ip_address,
             action=action,
         )
 

@@ -233,7 +233,7 @@ class UserManagementPage(Page):
                     username=row.get("Username", ""),
                     email=row.get("Email", ""),
                     role=row.get("Role", ""),
-                    password=row.get("Password", ""),
+                    password="",
                     is_active=row.get("Active", ""),
                 )
             )
@@ -244,7 +244,7 @@ class UserManagementPage(Page):
                 {
                     "serial": row[self.COLUMN_SERIAL],
                     "username": row.get("Username", ""),
-                    "password": row.get("Password", ""),
+                    "password": "",
                     "email": row.get("Email", ""),
                     "role": row.get("Role", ""),
                     "is_active": (

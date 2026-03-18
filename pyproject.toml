@@ -10,7 +10,6 @@ dependencies = [
     "alembic>=1.16.5",
     "asyncpg>=0.30.0",
     "bcrypt>=4.3.0",
-    "cryptography>=44.0.0",
     "python-dotenv>=1.0.0",
     "black>=25.1.0",
     "coverage>=7.12.0",

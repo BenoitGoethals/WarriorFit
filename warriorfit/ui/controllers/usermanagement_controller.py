@@ -96,7 +96,6 @@ class UserManagementController:
                     "Email": u.email,
                     "Role": str(u.role),
                     "Active": bool(u.is_active),
-                    "Password": Auth.decrypt_password(u.password_hash),
                     "Created": getattr(u.created_at, "date", lambda: "")(),
                 }
                 for u in users
@@ -121,7 +120,9 @@ class UserManagementController:
                  informative feedback on validation failures or success.
         :rtype: Tuple[bool, str]
         """
-        req = ["serial", "username", "password", "email", "role"]
+        req = ["serial", "username", "email", "role"]
+        if not is_update:
+            req.append("password")
         for f in req:
             if not getattr(form, f, "").strip():
                 return False, f"Field '{f}' is required."
@@ -158,7 +159,7 @@ class UserManagementController:
                 return False, f"User with email '{form.email}' already exists."
             if user_name_exist:
                 return False, f"User with username '{form.username}' already exists."
-        if not self.validate_password(form.password):
+        if form.password and not self.validate_password(form.password):
             return False, "Password must contain at least 8 uppercase, lowercase, digit and special character."
 
         return True, "OK"
@@ -223,7 +224,11 @@ class UserManagementController:
         user.id = user_id
         user.serial_number = form.serial
         user.username = form.username
-        user.password_hash = Auth.hash_password(form.password)
+        if form.password:
+            user.password_hash = Auth.hash_password(form.password)
+        else:
+            existing = await self._service.get_user_by_id(user_id)
+            user.password_hash = existing.password_hash if existing else ""
         user.email = form.email
         user.role = form.role
         user.is_active = form.is_active

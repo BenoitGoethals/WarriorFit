@@ -603,6 +603,11 @@ class FitnessWarriorApp:
                 )
                 return
 
+            client = getattr(session.http_conn, "client", None)
+            x_forwarded = session.http_conn.headers.get("x-forwarded-for", "")
+            client_ip = (x_forwarded.split(",")[0].strip() if x_forwarded
+                         else (client.host if client else None))
+
             try:
                 if await user_service.check_user(username_login, password_login):
                     user = await user_service.get_user_by_username(username_login)
@@ -614,7 +619,7 @@ class FitnessWarriorApp:
                     login_rate_limiter.reset(username_login)
                     UserStore.set_user(user)
                     await user_service.add_audit_log(
-                        f"User {username_login} logged in", "login"
+                        f"User {username_login} logged in", "login", ip_address=client_ip
                     )
                     _set_session_user(user)
                     login_user_text.set(
@@ -626,6 +631,11 @@ class FitnessWarriorApp:
                     logger.info("User %s logged in successfully", username_login)
                 else:
                     login_rate_limiter.record_failure(username_login)
+                    await user_service.add_audit_log(
+                        f"Failed login attempt for '{username_login}'",
+                        "login_failed",
+                        ip_address=client_ip,
+                    )
                     locked, seconds_left = login_rate_limiter.is_locked(username_login)
                     if locked:
                         minutes = (seconds_left + 59) // 60

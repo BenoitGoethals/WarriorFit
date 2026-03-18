@@ -38,7 +38,7 @@ class AuditLog(Base):
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     action: Mapped[str] = mapped_column(String(50), nullable=False)
     details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
