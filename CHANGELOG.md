@@ -5,6 +5,21 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-03-19] - Argon2id Migration & Docker Volume Fix
+
+### Security
+- Migrate password hashing from bcrypt to Argon2id (memory-hard, resistant to GPU/ASIC attacks); cost parameters tuned for production
+- Remove `bcrypt` and `passlib` dependencies; replace with `argon2-cffi`
+- Update authentication logic to verify Argon2id hashes
+
+### Changed
+- Update `test_data.sql` and SQL migration scripts to use Argon2id hashed passwords
+
+### Fixed
+- Remove read-only (`ro`) restriction from Docker volume mounts in deploy scripts; config file at `/etc/WarriorFit/config.yml` is now writable, resolving `[Errno 30] Read-only file system` error when saving settings from the UI
+
+---
+
 ## [2026-03-18] - Security Hardening & Test Data Cleanup
 
 ### Security
