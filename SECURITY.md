@@ -1,6 +1,6 @@
 # Security Documentation — WarriorFit
 
-> Last reviewed: 2026-03-18
+> Last reviewed: 2026-03-19
 
 ## Table of Contents
 1. [Authentication Flow](#authentication-flow)
@@ -44,8 +44,8 @@ login_dialog() triggered (app.py)
          UserService.check_user(username, password)
            └── UserRepository.check_user()
                  └── SELECT User WHERE username = ? (parameterized ORM)
-                       └── Auth.verify_password(plain, stored_hash)
-                             └── bcrypt.checkpw()
+                       └── await Auth.verify_password(plain, stored_hash)
+                             └── argon2.PasswordHasher.verify() via asyncio.to_thread()
              │
              ├── FAIL ──► LoginRateLimiter.record_failure()
              │            audit_log: action="login_failed", ip=client_ip, user_id=NULL
@@ -121,37 +121,40 @@ it at build time.
 
 ### Algorithms in Use
 
-| Purpose              | Algorithm               | Library            | Status           |
-|----------------------|-------------------------|--------------------|------------------|
-| Password hashing     | bcrypt (cost factor 12) | `bcrypt >= 4.3.0`  | Active           |
-| Token scheme (HS256) | OAuth2PasswordBearer    | `fastapi.security` | Declared, unused |
+| Purpose          | Algorithm                              | Library               | Status   |
+|------------------|----------------------------------------|-----------------------|----------|
+| Password hashing | Argon2id (time=3, mem=64 MB, p=4)      | `argon2-cffi >= 23.1` | Active   |
 
 ---
 
 ## Password Storage
 
-### Scheme — bcrypt
+### Scheme — Argon2id
 
-All passwords are stored as bcrypt hashes via `Auth.hash_password()`:
+All passwords are stored as Argon2id hashes via `Auth.hash_password()`:
 
 ```python
-bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+_ph = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=4)
+await asyncio.to_thread(_ph.hash, password)
 ```
 
 - One-way hash — plaintext is not recoverable.
-- Salt generated per-password by `bcrypt.gensalt()` (cost factor 12).
+- Salt generated per-password by `argon2-cffi` internally.
+- Parameters: time_cost=3 iterations, memory_cost=64 MB, parallelism=4 lanes.
+- Hash prefix: `$argon2id$v=19$...`
 - Stored in `users.password_hash VARCHAR(255)`.
+- CPU work offloaded to thread pool via `asyncio.to_thread()` — event loop is never blocked.
 
 Verification via `Auth.verify_password()`:
 
 ```python
-bcrypt.checkpw(plain_password.encode("utf-8"), stored_bytes)
+await asyncio.to_thread(_ph.verify, stored_hash, plain_password)
 ```
 
-> **Migration note:** Any accounts created before the bcrypt migration still have
-> Fernet-encrypted values in `password_hash`. Those accounts **cannot log in** —
-> bcrypt will reject the Fernet token and return `False`. An admin must reset their
-> password via User Management to issue a valid bcrypt hash.
+> **Migration note:** Any accounts created before the Argon2id migration still have
+> bcrypt or Fernet values in `password_hash`. Run `update_passwords.sql` to migrate
+> all non-Argon2id hashes to the test-reset hash, then have users set a new password.
+> Find legacy accounts with: `SELECT * FROM users WHERE password_hash NOT LIKE '$argon2id$%'`
 
 ### Password Complexity Policy
 
@@ -258,11 +261,11 @@ audit_logs
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | bcrypt hashing active | Resolved | `security/auth_service.py:41` | `bcrypt.hashpw()` with `bcrypt.gensalt()` (cost 12). Passwords not recoverable. |
+| 1 | Argon2id hashing active | Resolved | `security/auth_service.py` | `argon2-cffi` `PasswordHasher` (time=3, mem=64MB, p=4). Passwords not recoverable. CPU work offloaded via `asyncio.to_thread()`. |
 | 2 | `decrypt_password()` removed | Resolved | — | No plaintext-recovery path exists. |
-| 3 | Fernet removed from codebase | Resolved | — | `cryptography` dependency dropped. No reversible encryption in auth stack. |
-| 4 | Legacy Fernet values in DB | Residual / Low | DB: `users.password_hash` | Accounts created before migration cannot log in (bcrypt rejects Fernet tokens). No code path can decrypt them. Admin must reset those passwords. |
-| 5 | Dead auth constants | Info | `security/auth_service.py:12` | `ALGORITHM = "HS256"`, `ACCESS_TOKEN_EXPIRE_MINUTES = 30`, and `oauth2_scheme` are defined but never used. Dead code, no risk. |
+| 3 | Fernet and bcrypt removed | Resolved | — | `cryptography` and `bcrypt` dependencies dropped. No reversible encryption in auth stack. |
+| 4 | Legacy bcrypt/Fernet values in DB | Residual / Low | DB: `users.password_hash` | Accounts created before migration cannot log in (Argon2id rejects foreign hash formats). Run `update_passwords.sql` to force-reset, then have users change their password. |
+| 5 | Dead auth constants removed | Resolved | `security/auth_service.py` | `ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`, and `oauth2_scheme` have been removed. |
 
 ### A03 — Injection
 
@@ -274,7 +277,7 @@ audit_logs
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | Reversible passwords eliminated | Resolved | — | `hash_password()` is one-way bcrypt. No admin recovery mechanism. |
+| 1 | Reversible passwords eliminated | Resolved | — | `hash_password()` is one-way Argon2id. No admin recovery mechanism. |
 | 2 | Dev auto-login (see A01-3) | Medium | `app.py:559` | Covered above. |
 
 ### A05 — Security Misconfiguration
@@ -289,18 +292,19 @@ audit_logs
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | Unused dependencies | Low | `pyproject.toml:29,30` | `passlib>=1.7.4` and `python-jose>=3.5.0` are declared but never imported anywhere in the codebase. Unnecessary attack surface. |
-| 2 | Dependency audit | Info | `pyproject.toml` | Run `uv pip audit` or `pip-audit` regularly. Key packages to watch: `bcrypt`, `sqlalchemy`, `shiny`, `uvicorn`. |
+| 1 | `passlib` and `bcrypt` removed | Resolved | `pyproject.toml` | Both unused dependencies removed. |
+| 2 | Unused dependency `python-jose` | Low | `pyproject.toml` | `python-jose>=3.5.0` is declared but never imported. Unnecessary attack surface. |
+| 3 | Dependency audit | Info | `pyproject.toml` | Run `uv pip audit` or `pip-audit` regularly. Key packages to watch: `argon2-cffi`, `sqlalchemy`, `shiny`, `uvicorn`. |
 
 ### A07 — Identification and Authentication Failures
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | bcrypt hashing active | Resolved | `security/auth_service.py` | All new/updated passwords use bcrypt with per-password salts. Fernet removed. |
+| 1 | Argon2id hashing active | Resolved | `security/auth_service.py` | All new/updated passwords use Argon2id with per-password salts. bcrypt and Fernet removed. |
 | 2 | In-memory rate limiter | Medium | `security/rate_limiter.py:14` | Not persisted across restarts. Bypassable by restarting the container. In multi-instance deployment each process has independent counters — an attacker spreads 5 attempts per instance. |
 | 3 | No MFA | Low | — | Single-factor authentication only. No TOTP or hardware key support. |
 | 4 | No password expiry | Low | — | Passwords have no expiry or rotation policy enforced. |
-| 5 | Username timing oracle | Info | `data/repositories/user_repository.py:149` | "User not found" skips bcrypt (~0 ms); "wrong password" runs bcrypt (~100 ms). A timing oracle can confirm username existence. A constant minimum response delay would eliminate this. |
+| 5 | Username timing oracle | Info | `data/repositories/user_repository.py:149` | "User not found" returns immediately (~0 ms); "wrong password" runs Argon2id (~400 ms via thread pool). A timing oracle can confirm username existence. A constant minimum response delay would eliminate this. |
 
 ### A08 — Software and Data Integrity Failures
 
@@ -336,11 +340,10 @@ audit_logs
 | P1 | Medium | A01 | Dev auto-login has no guard | Add a hostname or secret-presence check before activating dev bypass |
 | P1 | Medium | A10 | HTTP request to HR URL has no timeout | Add `aiohttp.ClientTimeout(total=5)` to `_check_http_status()` |
 | P1 | Medium | A10 | HR URL not validated against allowlist | Validate scheme (`https`) and host before making the request |
-| P1 | Low | A01 | Legacy Fernet values still in DB | Find accounts with `password_hash NOT LIKE '$2b$%'` and force password reset |
+| P1 | Low | A02 | Legacy bcrypt/Fernet values still in DB | Run `update_passwords.sql`; find accounts with `password_hash NOT LIKE '$argon2id$%'` and force password reset |
 | P2 | Low | A09 | Logout events not audited | Add `audit_log` call in `_on_logout_button_click()` and `_auto_logout_timer()` |
 | P2 | Low | A09 | CRUD operations missing client IP | Thread client IP through `add_audit_log()` calls for user management actions |
-| P2 | Low | A06 | Unused dependencies increase attack surface | Remove `passlib` and `python-jose` from `pyproject.toml` |
+| P2 | Low | A06 | Unused dependency `python-jose` | Remove from `pyproject.toml` |
 | P3 | Low | A07 | No MFA | Integrate TOTP (e.g. `pyotp`) for ADMIN accounts at minimum |
 | P3 | Low | A07 | No password expiry | Add `password_changed_at` column; enforce rotation in `validate()` |
 | P3 | Info | A07 | Username timing oracle | Introduce a constant minimum delay in `check_user()` regardless of hit/miss |
-| P3 | Info | A02 | Dead constants in `auth_service.py` | Remove `ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`, `oauth2_scheme` |

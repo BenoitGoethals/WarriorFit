@@ -1,21 +1,16 @@
-import os
+import asyncio
 
-import bcrypt
-from fastapi.security import OAuth2PasswordBearer
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHashError
 
 from warriorfit.services.service_user import UserService
 
-# Configuration constants
-SECRET_KEY = os.environ["WF_SECRET_KEY"]
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+_ph = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=4)
 
 
 class Auth:
     """
-    Handles user authentication using bcrypt one-way hashing.
+    Handles user authentication using Argon2id one-way hashing.
     """
 
     @staticmethod
@@ -24,20 +19,21 @@ class Auth:
         user = await db_service.get_user_by_username(username)
         if not user:
             return None
-        if not Auth.verify_password(password, user.password_hash):
+        if not await Auth.verify_password(password, user.password_hash):
             return None
         return user
 
     @staticmethod
-    def hash_password(password: str) -> str:
-        """Hash a plain-text password with bcrypt."""
-        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    async def hash_password(password: str) -> str:
+        """Hash a plain-text password with Argon2id (offloaded to thread pool)."""
+        return await asyncio.to_thread(_ph.hash, password)
 
     @staticmethod
-    def verify_password(plain_password: str, stored: str) -> bool:
-        """Verify a plain password against a stored bcrypt hash."""
-        stored_bytes = stored.strip().encode("utf-8") if isinstance(stored, str) else bytes(stored).strip()
-        try:
-            return bcrypt.checkpw(plain_password.encode("utf-8"), stored_bytes)
-        except Exception:
-            return False
+    async def verify_password(plain_password: str, stored: str) -> bool:
+        """Verify a plain password against a stored Argon2id hash (offloaded to thread pool)."""
+        def _verify() -> bool:
+            try:
+                return _ph.verify(stored, plain_password)
+            except (VerifyMismatchError, VerificationError, InvalidHashError):
+                return False
+        return await asyncio.to_thread(_verify)

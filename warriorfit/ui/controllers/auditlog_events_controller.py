@@ -45,14 +45,15 @@ class AuditLogEventsController:
             user = next(
                 (user for user in users if user.id == getattr(l, "user_id", None)), None
             )
-            rows.append(
-                {
-                    "User": user.username,
-                    "Action": getattr(l, "action", ""),
-                    "Details": getattr(l, "details", ""),
-                    "IP": getattr(l, "ip_address", ""),
-                    "Created": getattr(l, "created_at", ""),
-                }
-            )
+            if user is not None:
+                rows.append(
+                    {
+                        "User": user.username,
+                        "Action": getattr(l, "action", ""),
+                        "Details": getattr(l, "details", ""),
+                        "IP": getattr(l, "ip_address", ""),
+                        "Created": getattr(l, "created_at", ""),
+                    }
+                )
 
         return pd.DataFrame(rows).sort_values(by="Created", ascending=False)

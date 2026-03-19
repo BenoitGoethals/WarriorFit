@@ -198,7 +198,7 @@ class UserManagementController:
         user = User()
         user.serial_number = form.serial
         user.username = form.username
-        user.password_hash = Auth.hash_password(form.password)
+        user.password_hash = await Auth.hash_password(form.password)
         user.email = form.email
         user.role = form.role
         user.is_active = form.is_active
@@ -225,7 +225,7 @@ class UserManagementController:
         user.serial_number = form.serial
         user.username = form.username
         if form.password:
-            user.password_hash = Auth.hash_password(form.password)
+            user.password_hash = await Auth.hash_password(form.password)
         else:
             existing = await self._service.get_user_by_id(user_id)
             user.password_hash = existing.password_hash if existing else ""

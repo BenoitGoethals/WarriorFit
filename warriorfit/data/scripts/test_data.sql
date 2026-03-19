@@ -1,22 +1,22 @@
 -- password for all users: R@nger&1401!
--- bcrypt hash (cost 12) generated 2026-03-18
--- $2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy
+-- argon2id hash (time=3, mem=64MB, p=4) generated 2026-03-19
+-- $argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA
 
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
-('ben',     'adminsuperben@example.com', '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'ADMIN',   TRUE, 'superben'),
-('fit',     'afitdmin@exampl2e.com',     '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'ADMIN',   TRUE, 'ADMIN001'),
-('user1',   'user1@example.com',         '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'ADMIN',   TRUE, 'SN001'),
-('user2',   'user2@example.com',         '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'USER',    TRUE, 'SN002'),
-('planner', 'user3@example.com',         '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'PLANNER', TRUE, 'SN003'),
-('user9',   'user9@example.com',         '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'ADMIN',   TRUE, 'SN009'),
-('user10',  'user10@example.com',        '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'USER',    TRUE, 'SN010'),
-('pti',     'ptitest@example.com',       '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'USER',    TRUE, 'pti'),
-('tester',  'tester@example.com',        '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'ADMIN',   TRUE, 'benoit'),
-('benoit',  'benoit@example.com',        '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'ADMIN',   TRUE, 'tester'),
-('pti2',    'ptitest2@example.com',      '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'PTI',     TRUE, 'snpt12'),
-('pti20',   'pti2@example.com',          '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'PTI',     TRUE, 'SNPTI2'),
-('pti3',    'pti3@example.com',          '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'APTI',    TRUE, 'SNPTI3'),
-('pti10',   'pti10@example.com',         '$2b$12$KlBTny.XeTKbJ1taCdY2M.635D3drtHB3.xjJMhBZy.YyhOwDUZzy', NOW(), 'PTI',     TRUE, 'SNPTI10');
+('ben',     'adminsuperben@example.com', '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'superben'),
+('fit',     'afitdmin@exampl2e.com',     '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'ADMIN001'),
+('user1',   'user1@example.com',         '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'SN001'),
+('user2',   'user2@example.com',         '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'USER',    TRUE, 'SN002'),
+('planner', 'user3@example.com',         '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'PLANNER', TRUE, 'SN003'),
+('user9',   'user9@example.com',         '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'SN009'),
+('user10',  'user10@example.com',        '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'USER',    TRUE, 'SN010'),
+('pti',     'ptitest@example.com',       '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'USER',    TRUE, 'pti'),
+('tester',  'tester@example.com',        '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'benoit'),
+('benoit',  'benoit@example.com',        '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'tester'),
+('pti2',    'ptitest2@example.com',      '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'PTI',     TRUE, 'snpt12'),
+('pti20',   'pti2@example.com',          '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'PTI',     TRUE, 'SNPTI2'),
+('pti3',    'pti3@example.com',          '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'APTI',    TRUE, 'SNPTI3'),
+('pti10',   'pti10@example.com',         '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'PTI',     TRUE, 'SNPTI10');
 
 -- Test Sessions data
 INSERT INTO test_sessions (serial_number_pti, datetime_start, canceled, description, type_test)

@@ -166,7 +166,7 @@ class UserRepository(ABCRepository):
                 if not user.password_hash:
                     self._logger.error("User '%s' has no password set.", user_name)
                     return False
-                if Auth.verify_password(plain_password, user.password_hash):
+                if await Auth.verify_password(plain_password, user.password_hash):
                     self._logger.info("User '%s' authenticated successfully.", user_name)
                     return True
                 self._logger.info("Password mismatch for user '%s'.", user_name)
