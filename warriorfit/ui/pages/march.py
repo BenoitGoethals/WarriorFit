@@ -41,7 +41,7 @@ class MarchPage(Page):
                             ),
                         ),
                         ui.input_action_button(
-                            "march_search", "Conform Serial", width="200px"
+                            "march_search", "Confirm Serial", width="200px",class_="btn btn-primary btn-sm",
                         ),
                         ui.output_text("march_military"),
                         ui.br(),

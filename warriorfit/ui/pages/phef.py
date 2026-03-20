@@ -79,7 +79,8 @@ class PhefPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "ph_search", "Confirm Serial", width="200px"
+                            "ph_search", "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm", width="200px",
                         ),
                         ui.output_text("ph_military"),
                         ui.layout_columns(

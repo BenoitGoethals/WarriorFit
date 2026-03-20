@@ -71,7 +71,8 @@ class SwimTestPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "swim_search", "Confirm Serial", width="200px"
+                            "swim_search", "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm", width="200px",
                         ),
                         ui.output_text("swim_military"),
                         ui.layout_columns(

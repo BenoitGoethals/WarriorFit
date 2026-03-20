@@ -78,7 +78,8 @@ class FunctionalPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "functional_search", "Confirm Serial", width="200px"
+                            "functional_search", "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm", width="200px",
                         ),
                         ui.output_text("functional_military"),
                         ui.layout_columns(

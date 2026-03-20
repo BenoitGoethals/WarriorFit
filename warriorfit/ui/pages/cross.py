@@ -76,7 +76,8 @@ class CrossPage(Page):
                 ui.card_header("Runner"),
                 ui.input_text("runner_serialnr", "Serial Number"),
                 ui.input_action_button(
-                    "runner_search", "Confirm Serial", width="150px"
+                    "runner_search", "✅ Confirm Serial",
+                    class_="btn btn-primary btn-sm", width="200px",
                 ),
                 ui.output_text("runner_military"),
                 ui.input_text(

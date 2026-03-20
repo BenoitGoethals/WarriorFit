@@ -42,7 +42,7 @@ class StatusLoginUser(Page):
                                 class_="lead text-muted",
                             ),
                             ui.output_ui("welcome_image"),
-                            class_="text-center py-5 bg-light rounded-3 mb-4 shadow-sm",
+                            class_="text-center py-5 wf-hero mb-4",
                         ),
                     )
                 ),

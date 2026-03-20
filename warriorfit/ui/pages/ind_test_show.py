@@ -30,25 +30,31 @@ class IndTestShowPage(Page):
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Lookup"),
-                    ui.input_text("ind_serial", "Serial number"),
+                    ui.div(
+                        ui.input_text("ind_serial", "Serial number"),
+                        class_="wf-serial-input",
+                    ),
                     ui.input_action_button(
                         "ind_search_serial_search_btn",
                         "🔍 Search own Unit",
-                        class_="btn btn-lm",
-                        style="margin-top: 5px;",
-                        width="200px",
+                        class_="btn btn-info btn-sm w-100 mt-1",
                     ),
                     ui.input_action_button(
-                        "ind_search", "Confirm Servicemen", width="200px"
+                        "ind_search", "✅ Confirm Serviceman",
+                        class_="btn btn-primary btn-sm w-100 mt-2",
                     ),
-                    ui.input_action_button("ind_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+                    ui.hr(),
                     ui.input_action_button(
-                        "full_report_cy", "Generate Full Report", width="200px"
+                        "full_report_cy", "📄 Generate Full Report",
+                        class_="btn btn-secondary btn-sm w-100",
                     ),
                     ui.output_ui("download_btn_ui"),
-                    ui.br(),
-                    ui.output_text("ind_status"),
+                    ui.input_action_button(
+                        "ind_refresh_btn", "🔄 Refresh",
+                        class_="btn btn-outline-secondary btn-sm w-100 mt-1",
+                    ),
                     ui.hr(),
+                    ui.output_text("ind_status"),
                     ui.h4("Serviceman"),
                     ui.output_text("ind_mil_info"),
                     full_screen=False,

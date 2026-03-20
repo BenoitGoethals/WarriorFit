@@ -32,57 +32,115 @@ class UserManagementPage(Page):
     def get_ui(self):
         return ui.nav_panel(
             "User Management",
-            ui.h2("👥 User Management"),
-            ui.input_action_button("um_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
-            ui.layout_columns(
-                ui.card(
-                    ui.card_header("Users"),
-                    ui.output_data_frame("um_grid"),
-                ),
-                ui.card(
-                    ui.card_header("Create / Edit User"),
-                    ui.input_text("um_serial", "Serial Number"),
+            ui.div(
+                ui.div(
+                    ui.h2("👥 User Management"),
                     ui.input_action_button(
-                        "um_serial_search_btn",
-                        "🔍 Search own Unit",
-                        class_="btn btn-lm",
-                        style="margin-top: 5px;",
-                        width="250px",
+                        "um_refresh_btn", "🔄 Refresh",
+                        class_="btn btn-outline-secondary btn-sm",
                     ),
-                    ui.input_text("um_username", "Username"),
-                    Page.input_password_with_toggle("um_password", "Password"),
-                    ui.input_text("um_email", "Email"),
-                    ui.input_select(
-                        "um_role",
-                        "Role",
-                        choices=self.controller.role_choices(),
-                    ),
-                    ui.input_checkbox("um_is_active", "Active"),
-                    ui.br(),
-                    ui.layout_columns(
-                        ui.input_action_button(
-                            "um_create_btn", "Create", class_="btn-primary w-100"
-                        ),
-                        ui.input_action_button(
-                            "um_update_btn", "Update", class_="btn-warning w-100"
-                        ),
-                        ui.input_action_button(
-                            "um_clear_btn", "Clear Form", class_="btn-secondary w-100"
-                        ),
-                        ui.input_action_button(
-                            "um_delete_btn",
-                            "Delete Selected",
-                            class_="btn-secondary w-100",
-                        ),
-                        col_widths=(4,),
-                    ),
-                    ui.br(),
-                    ui.output_text("um_status"),
-                    ui.output_text("selected_user"),
-                    full_screen=False,
+                    class_="d-flex align-items-center gap-3 mb-3",
                 ),
-                col_widths=(8, 4),
-                id="user_management",
+                ui.layout_columns(
+                    # ── Left: Users grid ──────────────────────────────────
+                    ui.card(
+                        ui.card_header(
+                            ui.div(
+                                ui.tags.span("👥", class_="me-2"),
+                                "Users",
+                                class_="fw-semibold",
+                            )
+                        ),
+                        ui.output_data_frame("um_grid"),
+                        full_screen=True,
+                    ),
+                    # ── Right: Create / Edit sidebar ─────────────────────
+                    ui.card(
+                        ui.card_header(
+                            ui.div(
+                                ui.tags.span("✏️", class_="me-2"),
+                                "Create / Edit User",
+                                class_="fw-semibold",
+                            ),
+                            class_="bg-primary text-white",
+                        ),
+
+                        # Section: Lookup
+                        ui.div(
+                            ui.div("Lookup", class_="wf-section-label"),
+                            ui.div(
+                                ui.input_text("um_serial", "Serial Number"),
+                                class_="wf-serial-input",
+                            ),
+                            ui.input_action_button(
+                                "um_serial_search_btn",
+                                "🔍 Search own Unit",
+                                class_="btn btn-info btn-sm w-100 mt-1",
+                            ),
+                            class_="wf-sidebar-section",
+                        ),
+
+                        # Section: User details
+                        ui.div(
+                            ui.div("User Details", class_="wf-section-label"),
+                            ui.input_text("um_username", "Username"),
+                            Page.input_password_with_toggle("um_password", "Password"),
+                            ui.input_text("um_email", "Email"),
+                            ui.input_select(
+                                "um_role", "Role",
+                                choices=self.controller.role_choices(),
+                            ),
+                            ui.div(
+                                ui.input_checkbox("um_is_active", "Active"),
+                                class_="mt-2",
+                            ),
+                            class_="wf-sidebar-section",
+                        ),
+
+                        # Section: Actions
+                        ui.div(
+                            ui.div("Actions", class_="wf-section-label"),
+                            ui.div(
+                                ui.input_action_button(
+                                    "um_create_btn", "➕ Create",
+                                    class_="btn btn-primary btn-sm flex-fill",
+                                ),
+                                ui.input_action_button(
+                                    "um_update_btn", "💾 Update",
+                                    class_="btn btn-warning btn-sm flex-fill",
+                                ),
+                                class_="d-flex gap-2 mb-2",
+                            ),
+                            ui.div(
+                                ui.input_action_button(
+                                    "um_clear_btn", "🗑 Clear",
+                                    class_="btn btn-outline-secondary btn-sm flex-fill",
+                                ),
+                                ui.input_action_button(
+                                    "um_delete_btn", "❌ Delete",
+                                    class_="btn btn-danger btn-sm flex-fill",
+                                ),
+                                class_="d-flex gap-2",
+                            ),
+                            class_="wf-sidebar-section",
+                        ),
+
+                        # Status bar
+                        ui.div(
+                            ui.output_text("um_status"),
+                            class_="wf-status-bar",
+                        ),
+                        ui.div(
+                            ui.output_text("selected_user"),
+                            class_="wf-selected-hint",
+                        ),
+
+                        full_screen=False,
+                    ),
+                    col_widths=(8, 4),
+                    id="user_management",
+                ),
+                class_="container-fluid p-3",
             ),
         )
 

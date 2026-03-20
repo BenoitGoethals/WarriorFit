@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from pathlib import Path
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -316,7 +317,19 @@ class FitnessWarriorApp:
     @staticmethod
     def build_app_ui():
         return ui.page_fillable(
+            ui.tags.head(
+                ui.tags.link(rel="stylesheet", href="custom.css"),
+            ),
             ui.output_ui("main_content_container"),
+            ui.tags.script(
+                """
+                $(document).on('shown.bs.tab', function() {
+                    setTimeout(function() {
+                        window.dispatchEvent(new Event('resize'));
+                    }, 100);
+                });
+                """
+            ),
         )
 
     @staticmethod
@@ -435,36 +448,30 @@ class FitnessWarriorApp:
             if show_calendar.get():
                 return ui.div(
                     ui.div(
-                        ui.h3(
-                            "Calendar",
-                            style="display: inline-block; margin-right: 20px;",
-                        ),
+                        ui.h3("📅 Calendar"),
                         ui.input_action_button(
-                            "close_calendar", "Close", class_="btn btn-secondary"
+                            "close_calendar", "✕ Close", class_="btn btn-outline-secondary btn-sm"
                         ),
-                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;",
+                        class_="wf-calendar-panel-header",
                     ),
-                    ui.div(calendar_events.get_ui(), style="padding: 15px;"),
-                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;",
+                    ui.div(calendar_events.get_ui(), class_="wf-calendar-panel-body"),
+                    class_="wf-calendar-panel",
                 )
             elif show_personal_calendar.get():
                 return ui.div(
                     ui.div(
-                        ui.h3(
-                            "Personal Calendar",
-                            style="display: inline-block; margin-right: 20px;",
-                        ),
+                        ui.h3("📅 Personal Calendar"),
                         ui.input_action_button(
                             "close_personal_calendar",
-                            "Close",
-                            class_="btn btn-secondary",
+                            "✕ Close",
+                            class_="btn btn-outline-secondary btn-sm",
                         ),
-                        style="padding: 15px; background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;",
+                        class_="wf-calendar-panel-header",
                     ),
                     ui.div(
-                        calendar_events.get_ui(all_test=False), style="padding: 15px;"
+                        calendar_events.get_ui(all_test=False), class_="wf-calendar-panel-body"
                     ),
-                    style="margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 5px;",
+                    class_="wf-calendar-panel",
                 )
             else:
                 _ = nav_version.get()
@@ -513,7 +520,7 @@ class FitnessWarriorApp:
                 ui.nav_control(
                     ui.div(
                         ui.output_text("login_user"),
-                        style="display: flex; align-items: center; height: 100%;",
+                        style="display:flex; align-items:center; height:100%; color:rgba(255,255,255,0.7); font-size:0.8rem; padding:0 0.5rem; white-space:nowrap; max-width:280px; overflow:hidden; text-overflow:ellipsis;",
                     )
                 )
             )
@@ -521,8 +528,9 @@ class FitnessWarriorApp:
                 ui.nav_control(
                     ui.input_action_button(
                         "open_personal_calendar_modal_global",
-                        "Personal Calendar",
-                        class_="btn btn-primary",
+                        "📅 My Calendar",
+                        class_="btn btn-outline-secondary btn-sm",
+                        style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
                     )
                 )
             )
@@ -530,13 +538,20 @@ class FitnessWarriorApp:
                 ui.nav_control(
                     ui.input_action_button(
                         "open_calendar_modal_global",
-                        "Open Calendar",
-                        class_="btn btn-primary",
+                        "📅 Unit Calendar",
+                        class_="btn btn-outline-secondary btn-sm",
+                        style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
                     )
                 )
             )
             nav_items.append(
-                ui.nav_control(ui.input_action_button("logout_btn", "Logout"))
+                ui.nav_control(
+                    ui.input_action_button(
+                        "logout_btn", "Sign Out",
+                        class_="btn btn-sm",
+                        style="background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.25);",
+                    )
+                )
             )
 
             nav_items = [i for i in nav_items if i is not None]
@@ -546,6 +561,22 @@ class FitnessWarriorApp:
         @render.text
         def login_status():
             return status_text()
+
+        @output
+        @render.ui
+        def login_status_ui():
+            msg = status_text()
+            if not msg:
+                return ui.div()
+            return ui.div(
+                msg,
+                style=(
+                    "margin-top:0.75rem; padding:0.55rem 0.85rem;"
+                    "background:#fff5f5; border:1px solid #feb2b2;"
+                    "border-left:4px solid #e53e3e; border-radius:6px;"
+                    "color:#742a2a; font-size:0.82rem; font-weight:500; line-height:1.4;"
+                ),
+            )
 
         @output
         @render.text
@@ -577,16 +608,21 @@ class FitnessWarriorApp:
 
             status_text.set("")
             login = ui.div(
-                ui.h2("Login"),
-                ui.input_text("username_login", "Username"),
-                ui.input_password("password_login", "Password"),
-                ui.input_action_button("handle_login", "Login"),
                 ui.div(
-                    ui.output_text("login_status", inline=True),
-                    style="color: red; font-weight: bold;",
+                    ui.div("⚔️ WarriorFit", class_="wf-login-logo"),
+                    ui.div("Physical Training Management System", class_="wf-login-subtitle"),
+                    ui.tags.label("Username", for_="username_login", class_="form-label"),
+                    ui.input_text("username_login", None, placeholder="Enter username"),
+                    ui.tags.label("Password", for_="password_login", class_="form-label mt-2"),
+                    ui.input_password("password_login", None, placeholder="Enter password"),
+                    ui.input_action_button(
+                        "handle_login", "Sign In", class_="btn btn-primary w-100 mt-3"
+                    ),
+                    ui.output_ui("login_status_ui"),
+                    class_="wf-login-card",
                 ),
             )
-            ui.modal_show(ui.modal(login, easy_close=False, size="m", footer=None))
+            ui.modal_show(ui.modal(login, easy_close=False, size="s", footer=None))
 
         @reactive.Effect
         @reactive.event(input.handle_login)
@@ -791,4 +827,4 @@ class FitnessWarriorApp:
 
 FitnessWarriorApp.setup_logger()
 FitnessWarriorApp.get_broker().start()
-app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server)
+app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server, static_assets=Path(__file__).parent / "www")
