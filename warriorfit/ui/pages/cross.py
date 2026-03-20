@@ -38,7 +38,7 @@ class CrossPage(Page):
         return ui.nav_panel(
             "Cross",
             ui.h2("🏃 Cross Runners"),
-            ui.input_action_button("cross_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("cross_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(

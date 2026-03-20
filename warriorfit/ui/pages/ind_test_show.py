@@ -51,7 +51,7 @@ class IndTestShowPage(Page):
                     ui.output_ui("download_btn_ui"),
                     ui.input_action_button(
                         "ind_refresh_btn", "🔄 Refresh",
-                        class_="btn btn-outline-secondary btn-sm w-100 mt-1",
+                        class_="btn btn-secondary btn-sm w-100 mt-1",
                     ),
                     ui.hr(),
                     ui.output_text("ind_status"),

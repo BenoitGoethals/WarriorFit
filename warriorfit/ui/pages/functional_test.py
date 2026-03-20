@@ -55,7 +55,7 @@ class FunctionalPage(BaseTestPage):
             # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Functional Tests"),
-            ui.input_action_button("functional_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("functional_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(

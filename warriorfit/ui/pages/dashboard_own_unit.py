@@ -60,7 +60,7 @@ class DashboardOwnUnitPage(Page):
         return ui.nav_panel(
             self.TAB_NAME,
             ui.h2(f"📊 {unit} Dashboard {year}"),
-            ui.input_action_button("dashboard_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("dashboard_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.br(),
             ui.layout_columns(
                 ui.card(

@@ -48,7 +48,7 @@ class SwimTestPage(BaseTestPage):
             # One JS custom message handler to toggle input disabling (no repeated script injection).
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🏊 Swimming Tests"),
-            ui.input_action_button("swim_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("swim_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(

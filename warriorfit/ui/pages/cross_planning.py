@@ -28,7 +28,7 @@ class CrossPlanningPage(Page):
         return ui.nav_panel(
             "Cross Planning",
             ui.h2("🏃 Cross Planning"),
-            ui.input_action_button("cr_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("cr_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Cross Form"),

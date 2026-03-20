@@ -55,7 +55,7 @@ class CombatPage(BaseTestPage):
             # Register ONE JS custom message handler (same pattern as PHEF)
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Combat Tests"),
-            ui.input_action_button("combat_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("combat_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(

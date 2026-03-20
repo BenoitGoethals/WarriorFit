@@ -23,7 +23,7 @@ class MarchPage(Page):
         return ui.nav_panel(
             "March",
             ui.h2("🧪 March Tests"),
-            ui.input_action_button("march_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("march_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(

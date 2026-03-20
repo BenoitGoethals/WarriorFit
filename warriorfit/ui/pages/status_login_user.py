@@ -46,7 +46,7 @@ class StatusLoginUser(Page):
                         ),
                     )
                 ),
-                ui.input_action_button("wl_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+                ui.input_action_button("wl_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
                 ui.output_ui("pti_dashboard_section"),
                 class_="container-fluid p-4",
             ),

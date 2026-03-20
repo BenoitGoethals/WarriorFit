@@ -56,7 +56,7 @@ class PhefPage(BaseTestPage):
             # Register ONE custom-message handler to toggle disabling inputs.
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 PHEF Tests"),
-            ui.input_action_button("ph_refresh_btn", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+            ui.input_action_button("ph_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
             ui.layout_columns(
                 ui.div(
                     ui.card(

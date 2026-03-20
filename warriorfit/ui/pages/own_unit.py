@@ -28,7 +28,7 @@ class OwnUnitPage(Page):
                 ui.card_header(
                     f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"
                 ),
-                ui.input_action_button("refresh_servicemen", "🔄 Refresh", class_="btn-outline-secondary btn-sm my-2"),
+                ui.input_action_button("refresh_servicemen", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
                 ui.output_data_frame("servicemen_grid"),
                 ui.input_action_button(
                     "full_report_unit", "Pdf Satus Unit", width="150px"
