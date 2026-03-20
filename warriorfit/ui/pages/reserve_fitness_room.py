@@ -32,8 +32,8 @@ class ReserveFitnessRoomPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Reserve Room",
-            ui.h2("🗓️ PTI Room Booking System"),
+            "Reserve Sport Area",
+            ui.h2("🗓️ PTI Sport Area Booking System"),
             ui.input_action_button(
                 "open_modal", "➕ New Reservation", class_="btn-success"
             ),
@@ -498,45 +498,48 @@ class ReserveFitnessRoomPage(Page):
                 ui.div(
                     ui.div(
                         ui.div(
-                            ui.h3("New Reservation"),
+                            ui.h3("➕ New Reservation"),
                             ui.input_action_button(
-                                "close_modal", "✕", class_="modal-close"
+                                "close_modal", "✕", class_="wf-overlay-close"
                             ),
-                            class_="modal-header",
+                            class_="wf-overlay-header",
                         ),
-                        ui.input_select(
-                            "pti_name",
-                            "PTI Name *",
-                            choices=[
-                                f"{pti.serial_number} - {pti.username} "
-                                for pti in self.pti_s
-                            ],
-                        ),
-                        ui.input_text(
-                            "activity", "Activity", placeholder="E.g. Personal Training"
-                        ),
-                        ui.input_date("date", "Date *", value=datetime.now().date()),
-                        ui.layout_columns(
+                        ui.div(
                             ui.input_select(
-                                "start_time",
-                                "Start Time *",
-                                choices=[""] + self.time_slots,
+                                "pti_name",
+                                "PTI Name *",
+                                choices=[
+                                    f"{pti.serial_number} - {pti.username} "
+                                    for pti in self.pti_s
+                                ],
                             ),
-                            ui.input_select(
-                                "end_time", "End Time *", choices=[""] + self.time_slots
+                            ui.input_text(
+                                "activity", "Activity", placeholder="E.g. Personal Training"
                             ),
-                            col_widths=[6, 6],
+                            ui.input_date("date", "Date *", value=datetime.now().date()),
+                            ui.layout_columns(
+                                ui.input_select(
+                                    "start_time",
+                                    "Start Time *",
+                                    choices=[""] + self.time_slots,
+                                ),
+                                ui.input_select(
+                                    "end_time", "End Time *", choices=[""] + self.time_slots
+                                ),
+                                col_widths=[6, 6],
+                            ),
+                            ui.div("Select Sport Area *", class_="wf-section-label mt-3"),
+                            ui.output_ui("room_choice"),
+                            ui.input_action_button(
+                                "reserve",
+                                "✅ Confirm Reservation",
+                                class_="btn btn-success w-100 mt-3",
+                            ),
+                            class_="wf-overlay-body",
                         ),
-                        ui.h4("Select Room *", style="margin-top: 20px;"),
-                        ui.output_ui("room_choice"),
-                        ui.input_action_button(
-                            "reserve",
-                            "Confirm Reservation",
-                            class_="btn-success w-100 mt-3",
-                        ),
-                        class_="modal-content",
+                        class_="wf-overlay-panel",
                     ),
-                    class_="modal-backdrop",
+                    class_="wf-overlay",
                     onclick="if(event.target === this) Shiny.setInputValue('close_modal', Math.random())",
                 )
             )
@@ -610,7 +613,7 @@ class ReserveFitnessRoomPage(Page):
                 return
 
             if selected_room.get() is None:
-                ui.notification_show("Please select a room", type="error")
+                ui.notification_show("Please select a sport area", type="error")
                 return
 
             # Check if time is already booked (check for overlaps)
@@ -639,7 +642,7 @@ class ReserveFitnessRoomPage(Page):
 
                         if start_idx < res_end_idx and end_idx > res_start_idx:
                             ui.notification_show(
-                                f"This room is already booked from {r_start} to {r_end}",
+                                f"This sport area is already booked from {r_start} to {r_end}",
                                 type="error",
                             )
                             return

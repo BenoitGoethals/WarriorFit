@@ -505,6 +505,69 @@ body {
 }
 
 /* ============================================================
+   Reservation Overlay (custom div-modal, Reserve Room page)
+   ============================================================ */
+.wf-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(15, 34, 55, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.wf-overlay-panel {
+  background: var(--wf-card-bg);
+  border-radius: var(--wf-radius-lg);
+  box-shadow: var(--wf-shadow-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wf-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 1.4rem;
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 100%);
+  border-radius: var(--wf-radius-lg) var(--wf-radius-lg) 0 0;
+}
+.wf-overlay-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.wf-overlay-body {
+  padding: 1.4rem;
+  overflow-y: auto;
+}
+
+.wf-overlay-close {
+  background: rgba(255,255,255,0.15) !important;
+  border: 1px solid rgba(255,255,255,0.25) !important;
+  color: #fff !important;
+  border-radius: var(--wf-radius-sm) !important;
+  font-size: 0.9rem !important;
+  padding: 0.2rem 0.55rem !important;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background var(--wf-ease) !important;
+}
+.wf-overlay-close:hover {
+  background: rgba(255,255,255,0.28) !important;
+}
+
+/* ============================================================
    Calendar (Reserve Room)
    ============================================================ */
 .calendar-container {

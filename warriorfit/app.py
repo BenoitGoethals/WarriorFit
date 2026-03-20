@@ -9,14 +9,11 @@ load_dotenv()
 from warriorfit.security.rate_limiter import login_rate_limiter
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
-
 from shiny import App, ui, render
-
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Role
 from warriorfit.mom.broker import Broker
-from warriorfit.services.service_user import UserService
 from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
 
@@ -178,7 +175,7 @@ class FitnessWarriorApp:
                 allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
             ),
             PageSpec(
-                tab="Reserve Room",
+                tab="Reserve Sport Area",
                 group="root",
                 ui_factory=reserve_fitness_room.get_ui,
                 server_factory=reserve_fitness_room.server,

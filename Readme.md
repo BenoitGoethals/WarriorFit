@@ -54,6 +54,7 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-03-18 : security hardening — remove Fernet, migrate to bcrypt, fix audit log nullable user_id, add SECURITY.md
 * 2026-03-19 : migrate password hashing from bcrypt to Argon2id, remove bcrypt/passlib dependencies
 * 2026-03-19 : fix Docker read-only volume mount — settings can now be saved from the UI in production
+* 2026-03-20 : modern UI/UX redesign — custom CSS design system (navy/amber theme), consistent button colours across all test pages, improved login modal with visible error feedback, sidebar form restructure (User Management), Plotly chart fix on Dashboard tab switch
 
 
 
