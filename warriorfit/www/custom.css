@@ -1,0 +1,805 @@
+/* ============================================================
+   WarriorFit — Modern UI Theme
+   ============================================================ */
+
+/* ---- Design Tokens ---- */
+:root {
+  --wf-primary:       #1a3a5c;
+  --wf-primary-mid:   #2c5282;
+  --wf-primary-light: #3b6cb7;
+  --wf-accent:        #f6a623;
+  --wf-accent-dark:   #d4891a;
+  --wf-success:       #2d8a5e;
+  --wf-success-light: #38a169;
+  --wf-danger:        #c0392b;
+  --wf-danger-light:  #e53e3e;
+  --wf-warning:       #c6850a;
+  --wf-info:          #2b6cb0;
+  --wf-bg:            #f0f4f8;
+  --wf-card-bg:       #ffffff;
+  --wf-text:          #1a202c;
+  --wf-text-muted:    #718096;
+  --wf-border:        #e2e8f0;
+  --wf-shadow:        0 1px 3px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --wf-shadow-md:     0 4px 14px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  --wf-shadow-lg:     0 12px 36px rgba(0,0,0,0.14), 0 4px 10px rgba(0,0,0,0.08);
+  --wf-radius:        10px;
+  --wf-radius-sm:     6px;
+  --wf-radius-lg:     16px;
+  --wf-ease:          0.18s ease;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background-color: var(--wf-bg) !important;
+  color: var(--wf-text) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* ============================================================
+   Navbar
+   ============================================================ */
+.navbar,
+.bslib-page-navbar > .navbar {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 55%, var(--wf-primary-mid) 100%) !important;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.25) !important;
+  border-bottom: 2px solid var(--wf-accent) !important;
+  padding: 0 1.4rem !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  max-height: 52px !important;
+  overflow: visible !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Prevent the inner collapse row from ever wrapping */
+.navbar .navbar-collapse,
+.navbar > .container,
+.navbar > .container-fluid {
+  flex-wrap: nowrap !important;
+  overflow: visible;
+}
+.navbar .navbar-nav {
+  flex-wrap: nowrap !important;
+  align-items: center;
+  height: 52px;
+}
+/* Nav controls row (right side) must also not wrap */
+.navbar .navbar-nav.ms-auto,
+.navbar .nav-item {
+  flex-shrink: 0;
+}
+
+.navbar-brand {
+  font-weight: 700 !important;
+  font-size: 1.15rem !important;
+  color: #ffffff !important;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Nav links */
+.navbar .nav-link,
+.bslib-page-navbar .nav-link {
+  color: rgba(255,255,255,0.82) !important;
+  font-weight: 500 !important;
+  font-size: 0.84rem !important;
+  padding: 0.3rem 0.85rem !important;
+  border-radius: var(--wf-radius-sm) !important;
+  transition: color var(--wf-ease), background var(--wf-ease) !important;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.navbar .nav-link:hover,
+.navbar .nav-link.active,
+.bslib-page-navbar .nav-link:hover,
+.bslib-page-navbar .nav-link.active {
+  color: #ffffff !important;
+  background: rgba(255,255,255,0.14) !important;
+}
+
+/* Dropdown menus */
+.navbar .dropdown-menu,
+.bslib-page-navbar .dropdown-menu {
+  background: #0f2237 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: var(--wf-radius) !important;
+  box-shadow: var(--wf-shadow-md) !important;
+  padding: 0.35rem 0 !important;
+  min-width: 210px;
+}
+.navbar .dropdown-item,
+.bslib-page-navbar .dropdown-item {
+  color: rgba(255,255,255,0.82) !important;
+  font-size: 0.84rem;
+  padding: 0.5rem 1.1rem;
+  transition: background var(--wf-ease), color var(--wf-ease);
+}
+.navbar .dropdown-item:hover,
+.bslib-page-navbar .dropdown-item:hover {
+  background: rgba(255,255,255,0.14) !important;
+  color: #ffffff !important;
+}
+.navbar .dropdown-divider { border-color: rgba(255,255,255,0.1) !important; }
+
+/* ============================================================
+   Cards
+   ============================================================ */
+.card {
+  border: 1px solid var(--wf-border) !important;
+  border-radius: var(--wf-radius) !important;
+  box-shadow: var(--wf-shadow) !important;
+  background: var(--wf-card-bg) !important;
+  transition: box-shadow var(--wf-ease), transform var(--wf-ease);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.card:hover { box-shadow: var(--wf-shadow-md) !important; }
+
+.card-header {
+  border-bottom: 1px solid var(--wf-border) !important;
+  padding: 0.8rem 1.1rem !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  letter-spacing: 0.01em;
+  background: var(--wf-card-bg) !important;
+}
+
+/* Coloured card headers */
+.card-header.bg-primary,
+.card-header.bg-primary.text-white {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 100%) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.card-header.bg-secondary,
+.card-header.bg-secondary.text-white {
+  background: linear-gradient(130deg, #2d3748 0%, #4a5568 100%) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.card-header.bg-success,
+.card-header.bg-success.text-white {
+  background: linear-gradient(130deg, #1a5e3a 0%, var(--wf-success-light) 100%) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.card-header.bg-info,
+.card-header.bg-info.text-white {
+  background: linear-gradient(130deg, #1a3a6a 0%, var(--wf-info) 100%) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.card-header.bg-danger,
+.card-header.bg-danger.text-white {
+  background: linear-gradient(130deg, #7b1c14 0%, var(--wf-danger-light) 100%) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.card-header.bg-warning,
+.card-header.bg-warning.text-white {
+  background: linear-gradient(130deg, #7d4e00 0%, var(--wf-accent) 100%) !important;
+  color: #fff !important;
+  border-bottom: none !important;
+}
+.card-header.bg-white { background: var(--wf-card-bg) !important; }
+
+.card-body { padding: 1.1rem 1.2rem !important; }
+.card-footer {
+  border-top: 1px solid var(--wf-border) !important;
+  padding: 0.75rem 1.1rem !important;
+  background: #f9fbfd !important;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  border-radius: var(--wf-radius-sm) !important;
+  font-weight: 500 !important;
+  font-size: 0.84rem !important;
+  padding: 0.45rem 1rem !important;
+  transition: all var(--wf-ease) !important;
+  letter-spacing: 0.02em;
+  border: none !important;
+}
+.btn:focus { outline: none !important; box-shadow: 0 0 0 3px rgba(26,58,92,0.2) !important; }
+
+.btn-primary {
+  background: linear-gradient(130deg, var(--wf-primary) 0%, var(--wf-primary-mid) 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(26,58,92,0.28) !important;
+}
+.btn-primary:hover {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 100%) !important;
+  box-shadow: 0 4px 12px rgba(26,58,92,0.38) !important;
+  transform: translateY(-1px);
+  color: #fff !important;
+}
+
+.btn-secondary {
+  background: #4a5568 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.12) !important;
+}
+.btn-secondary:hover { background: #2d3748 !important; transform: translateY(-1px); color: #fff !important; }
+
+.btn-success {
+  background: linear-gradient(130deg, #1a5e3a 0%, var(--wf-success-light) 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(45,138,94,0.28) !important;
+}
+.btn-success:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(45,138,94,0.35) !important; }
+
+.btn-danger {
+  background: linear-gradient(130deg, #7b1c14 0%, var(--wf-danger-light) 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 6px rgba(192,57,43,0.28) !important;
+}
+.btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(192,57,43,0.35) !important; }
+
+.btn-warning {
+  background: linear-gradient(130deg, var(--wf-warning) 0%, var(--wf-accent) 100%) !important;
+  color: #fff !important;
+}
+.btn-warning:hover { transform: translateY(-1px); }
+
+.btn-info {
+  background: linear-gradient(130deg, var(--wf-info) 0%, var(--wf-primary-light) 100%) !important;
+  color: #fff !important;
+}
+.btn-info:hover { transform: translateY(-1px); }
+
+.btn-outline-secondary {
+  border: 1.5px solid var(--wf-border) !important;
+  color: var(--wf-text-muted) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.btn-outline-secondary:hover {
+  background: var(--wf-bg) !important;
+  color: var(--wf-text) !important;
+  border-color: #cbd5e0 !important;
+}
+
+.btn-outline-primary {
+  border: 1.5px solid var(--wf-primary) !important;
+  color: var(--wf-primary) !important;
+  background: transparent !important;
+}
+.btn-outline-primary:hover {
+  background: var(--wf-primary) !important;
+  color: #fff !important;
+}
+
+.btn-sm { padding: 0.3rem 0.75rem !important; font-size: 0.78rem !important; }
+.btn-lg { padding: 0.6rem 1.4rem !important; font-size: 0.95rem !important; }
+
+/* Full-width helper retained from original */
+.btn.w-100 { display: block; }
+
+/* ============================================================
+   Forms
+   ============================================================ */
+.form-control,
+.form-select,
+.selectize-input {
+  border: 1.5px solid var(--wf-border) !important;
+  border-radius: var(--wf-radius-sm) !important;
+  font-size: 0.875rem !important;
+  padding: 0.5rem 0.875rem !important;
+  background: #fff !important;
+  color: var(--wf-text) !important;
+  transition: border-color var(--wf-ease), box-shadow var(--wf-ease) !important;
+}
+.form-control:focus,
+.form-select:focus,
+.selectize-input.focus {
+  border-color: var(--wf-primary-light) !important;
+  box-shadow: 0 0 0 3px rgba(44,82,130,0.15) !important;
+  outline: none !important;
+}
+.form-label {
+  font-weight: 500 !important;
+  font-size: 0.78rem !important;
+  color: var(--wf-text-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  margin-bottom: 0.35rem !important;
+}
+.form-text { font-size: 0.78rem !important; color: var(--wf-text-muted) !important; }
+.input-group .btn { border-radius: 0 var(--wf-radius-sm) var(--wf-radius-sm) 0 !important; }
+.form-check-input:checked {
+  background-color: var(--wf-primary) !important;
+  border-color: var(--wf-primary) !important;
+}
+
+/* ============================================================
+   Tables
+   ============================================================ */
+.table {
+  font-size: 0.84rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+.table thead th {
+  background: var(--wf-primary) !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 0.7rem 0.9rem !important;
+  border: none !important;
+  white-space: nowrap;
+}
+.table tbody tr { transition: background var(--wf-ease); }
+.table tbody tr:hover { background: #edf2f7 !important; }
+.table tbody td {
+  padding: 0.6rem 0.9rem !important;
+  border-bottom: 1px solid var(--wf-border) !important;
+  vertical-align: middle;
+  border-top: none !important;
+}
+.table-striped tbody tr:nth-child(odd) { background: #f9fbfd; }
+
+/* Shiny DataGrid */
+.shiny-data-grid-grid,
+.shiny-data-grid-table,
+.shiny-html-output .dataTable {
+  border-radius: var(--wf-radius) !important;
+  overflow: hidden !important;
+  box-shadow: var(--wf-shadow) !important;
+}
+
+/* ============================================================
+   Hero / Welcome Banner
+   ============================================================ */
+.wf-hero {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 55%, var(--wf-primary-mid) 100%);
+  color: #fff !important;
+  border-radius: var(--wf-radius-lg) !important;
+  padding: 3rem 2rem !important;
+  box-shadow: var(--wf-shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+.wf-hero::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(246,166,35,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.wf-hero h1,
+.wf-hero .display-4 { color: #fff !important; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.wf-hero p,
+.wf-hero .lead { color: rgba(255,255,255,0.82) !important; }
+.wf-hero img { border-radius: var(--wf-radius) !important; margin-top: 1.5rem; max-height: 280px; object-fit: cover; }
+
+/* Legacy class used on welcome page — remap to hero look */
+.bg-light.rounded-3 {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 55%, var(--wf-primary-mid) 100%) !important;
+  border-radius: var(--wf-radius-lg) !important;
+}
+.bg-light.rounded-3 h1,
+.bg-light.rounded-3 .display-4 { color: #fff !important; }
+.bg-light.rounded-3 p,
+.bg-light.rounded-3 .lead,
+.bg-light.rounded-3 .text-muted { color: rgba(255,255,255,0.78) !important; }
+
+/* ============================================================
+   Stat Value (dashboard cards)
+   ============================================================ */
+.display-4 {
+  font-size: 2.4rem !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+}
+.wf-stat-value {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--wf-primary);
+  line-height: 1;
+}
+
+/* ============================================================
+   Page Layout
+   ============================================================ */
+.container-fluid {
+  padding: 1.4rem 1.75rem !important;
+}
+.bslib-page-navbar > .tab-content > .tab-pane.active {
+  padding: 1.2rem 1.5rem !important;
+}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+.badge {
+  border-radius: 20px !important;
+  padding: 0.32em 0.75em !important;
+  font-weight: 500 !important;
+  font-size: 0.74rem !important;
+}
+.bg-primary  { background-color: var(--wf-primary) !important; }
+.bg-success  { background-color: var(--wf-success-light) !important; }
+.bg-danger   { background-color: var(--wf-danger-light) !important; }
+.bg-warning  { background-color: var(--wf-accent) !important; }
+.bg-info     { background-color: var(--wf-info) !important; }
+
+/* ============================================================
+   Alerts
+   ============================================================ */
+.alert {
+  border-radius: var(--wf-radius) !important;
+  border: none !important;
+  font-size: 0.875rem;
+  box-shadow: var(--wf-shadow);
+}
+.alert-danger  { background: #fff5f5 !important; color: #742a2a !important; border-left: 4px solid var(--wf-danger-light) !important; }
+.alert-success { background: #f0fff4 !important; color: #1a4731 !important; border-left: 4px solid var(--wf-success-light) !important; }
+.alert-warning { background: #fffbf0 !important; color: #744210 !important; border-left: 4px solid var(--wf-accent) !important; }
+.alert-info    { background: #ebf8ff !important; color: #1a365d !important; border-left: 4px solid var(--wf-info) !important; }
+
+/* ============================================================
+   Modal
+   ============================================================ */
+.modal-content {
+  border-radius: var(--wf-radius-lg) !important;
+  border: none !important;
+  box-shadow: var(--wf-shadow-lg) !important;
+  overflow: hidden;
+}
+.modal-header {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 100%);
+  color: #fff;
+  border-bottom: none !important;
+  padding: 1.2rem 1.5rem !important;
+}
+.modal-header .modal-title { font-weight: 600; font-size: 1rem; color: #fff; }
+.modal-header .btn-close { filter: invert(1) brightness(1.4); }
+.modal-body { padding: 1.5rem !important; }
+.modal-footer {
+  border-top: 1px solid var(--wf-border) !important;
+  padding: 0.9rem 1.5rem !important;
+  background: #f9fbfd !important;
+}
+
+
+/* Login modal specific */
+.modal .modal-body h2 {
+  color: var(--wf-primary);
+  font-weight: 700;
+  font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+}
+.wf-login-card {
+  background: #fff;
+  border-radius: var(--wf-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--wf-shadow-md);
+}
+.wf-login-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--wf-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+.wf-login-subtitle {
+  color: var(--wf-text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   Calendar (Reserve Room)
+   ============================================================ */
+.calendar-container {
+  background: var(--wf-card-bg);
+  padding: 1.5rem !important;
+  border-radius: var(--wf-radius-lg) !important;
+  box-shadow: var(--wf-shadow) !important;
+}
+.calendar-table { width: 100%; border-collapse: collapse; }
+.calendar-table th {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 100%) !important;
+  color: #fff !important;
+  padding: 0.75rem !important;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: none !important;
+}
+.calendar-table td {
+  border: 1px solid var(--wf-border);
+  padding: 0.5rem;
+  height: 90px;
+  vertical-align: top;
+  cursor: pointer;
+  transition: background var(--wf-ease);
+}
+.calendar-table td:hover  { background: #edf2f7 !important; }
+.calendar-table td.today  { background: #ebf8ff !important; border-color: var(--wf-info) !important; }
+.calendar-table td.selected { background: #e6f0ff !important; border-color: var(--wf-primary-light) !important; }
+.calendar-table td.other-month { background: #f9fbfd; color: #b0bec5; }
+
+.room-card {
+  border: 2px solid var(--wf-border);
+  border-radius: var(--wf-radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--wf-card-bg);
+  transition: all var(--wf-ease);
+  cursor: pointer;
+}
+.room-card:hover { border-color: var(--wf-primary-light); box-shadow: var(--wf-shadow); }
+.room-card.selected { border-color: var(--wf-primary); background: #e6f0ff; }
+
+.reservation-card {
+  background: var(--wf-card-bg);
+  border: 1px solid var(--wf-border);
+  border-radius: var(--wf-radius-sm);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.6rem;
+  transition: box-shadow var(--wf-ease);
+}
+.reservation-card:hover { box-shadow: var(--wf-shadow); }
+
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.calendar-month { font-size: 1.15rem; font-weight: 700; color: var(--wf-primary); }
+.day-number { font-size: 0.82rem; font-weight: 600; color: var(--wf-text-muted); display: block; margin-bottom: 0.25rem; }
+.reservation-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin: 1px 2px; }
+.reservation-badge { font-size: 0.7rem; border-radius: 4px; padding: 1px 5px; display: inline-block; margin: 1px; }
+
+/* Room colour palette */
+.room-color-1 { background-color: #3b82f6; }
+.room-color-2 { background-color: #10b981; }
+.room-color-3 { background-color: #f59e0b; }
+.room-color-4 { background-color: #8b5cf6; }
+
+/* ============================================================
+   Calendar Panel (full-screen overlay from app.py)
+   ============================================================ */
+.wf-calendar-panel {
+  background: var(--wf-card-bg);
+  border-radius: var(--wf-radius-lg);
+  box-shadow: var(--wf-shadow-md);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+.wf-calendar-panel-header {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 100%);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.wf-calendar-panel-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  flex: 1;
+}
+.wf-calendar-panel-body { padding: 1.25rem 1.5rem; }
+
+/* ============================================================
+   Section headings (h2/h3 within pages)
+   ============================================================ */
+.tab-pane h2, .tab-pane > div > h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--wf-primary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tab-pane h3, .tab-pane > div > h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--wf-primary);
+}
+
+/* ============================================================
+   Horizontal rule
+   ============================================================ */
+hr { border-color: var(--wf-border) !important; margin: 1rem 0 !important; }
+
+/* ============================================================
+   Utility overrides
+   ============================================================ */
+.text-primary  { color: var(--wf-primary) !important; }
+.text-success  { color: var(--wf-success-light) !important; }
+.text-danger   { color: var(--wf-danger-light) !important; }
+.text-warning  { color: var(--wf-accent) !important; }
+.text-info     { color: var(--wf-info) !important; }
+.text-muted    { color: var(--wf-text-muted) !important; }
+.bg-light      { background-color: var(--wf-bg) !important; }
+.shadow-sm     { box-shadow: var(--wf-shadow) !important; }
+.shadow        { box-shadow: var(--wf-shadow-md) !important; }
+.rounded-3     { border-radius: var(--wf-radius) !important; }
+.rounded-pill  { border-radius: 999px !important; }
+
+/* ============================================================
+   Sidebar Form (User Management & similar)
+   ============================================================ */
+
+/* Section divider label */
+.wf-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--wf-text-muted);
+  border-bottom: 1px solid var(--wf-border);
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Section block inside the sidebar card */
+.wf-sidebar-section {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--wf-border);
+}
+.wf-sidebar-section:last-of-type { border-bottom: none; }
+
+/* Tighten form fields inside sidebar */
+.wf-sidebar-section .shiny-input-container {
+  margin-bottom: 0.65rem !important;
+}
+.wf-sidebar-section .shiny-input-container:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Status bar at the bottom of the sidebar */
+.wf-status-bar {
+  padding: 0.55rem 1.25rem;
+  background: #f9fbfd;
+  border-top: 1px solid var(--wf-border);
+  font-size: 0.8rem;
+  color: var(--wf-text-muted);
+  font-style: italic;
+  min-height: 2rem;
+}
+
+/* Serial Number — highlighted lookup field */
+.wf-serial-input .form-control {
+  border: 2px solid var(--wf-primary-light) !important;
+  background: #eef4ff !important;
+  font-weight: 600 !important;
+  color: var(--wf-primary) !important;
+  letter-spacing: 0.04em;
+}
+.wf-serial-input .form-control:focus {
+  border-color: var(--wf-primary) !important;
+  background: #e0ecff !important;
+  box-shadow: 0 0 0 3px rgba(44,82,130,0.18) !important;
+}
+
+/* Selected-user hint */
+.wf-selected-hint {
+  padding: 0.35rem 1.25rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--wf-primary);
+  font-weight: 500;
+  min-height: 1.5rem;
+}
+
+/* ============================================================
+   Week Calendar (Room Booking)
+   ============================================================ */
+.week-calendar {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+.week-calendar th {
+  background: linear-gradient(130deg, #0f2237 0%, var(--wf-primary) 100%) !important;
+  color: #fff !important;
+  padding: 0.65rem 0.4rem;
+  text-align: center;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+.week-calendar td {
+  border: 1px solid var(--wf-border);
+  padding: 2px;
+  height: 58px;
+  vertical-align: top;
+  position: relative;
+}
+.week-calendar td.time-label {
+  background: #f9fbfd;
+  font-weight: 600;
+  text-align: center;
+  width: 80px;
+  padding: 0.4rem;
+  color: var(--wf-text-muted);
+  font-size: 0.78rem;
+}
+.week-calendar td.day-cell {
+  cursor: pointer;
+  background: #fff;
+  transition: background var(--wf-ease);
+}
+.week-calendar td.day-cell:hover { background: #edf2f7 !important; }
+.week-calendar td.day-cell.past { background: #f9fbfd; }
+.week-header-date { font-size: 0.73rem; display: block; color: rgba(255,255,255,0.65); }
+
+.reservation-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  border-radius: var(--wf-radius-sm);
+  padding: 3px 5px;
+  font-size: 0.72rem;
+  overflow: hidden;
+  cursor: pointer;
+  border-left: 3px solid;
+  transition: opacity var(--wf-ease);
+}
+.reservation-block:hover { opacity: 0.8; }
+.reservation-block.room-1 { background: #fecaca; border-color: #ef4444; color: #7f1d1d; }
+.reservation-block.room-2 { background: #bfdbfe; border-color: #3b82f6; color: #1e3a8a; }
+.reservation-block.room-3 { background: #bbf7d0; border-color: #10b981; color: #064e3b; }
+.reservation-block.room-4 { background: #fed7aa; border-color: #f59e0b; color: #78350f; }
+
+/* ============================================================
+   Scrollbar (subtle)
+   ============================================================ */
+::-webkit-scrollbar              { width: 5px; height: 5px; }
+::-webkit-scrollbar-track        { background: transparent; }
+::-webkit-scrollbar-thumb        { background: #cbd5e0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover  { background: #a0aec0; }
+
+/* ============================================================
+   Shiny-specific polish
+   ============================================================ */
+/* Shiny notification toast */
+.shiny-notification {
+  border-radius: var(--wf-radius) !important;
+  box-shadow: var(--wf-shadow-md) !important;
+  border: none !important;
+}
+
+/* Loading spinner position */
+.shiny-busy-indicator-bar { background-color: var(--wf-accent) !important; }
+
+/* DataGrid filter row */
+.shiny-data-grid-grid thead input {
+  border-radius: var(--wf-radius-sm) !important;
+  border: 1px solid var(--wf-border) !important;
+  font-size: 0.78rem !important;
+  padding: 0.3rem 0.5rem !important;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+  .container-fluid { padding: 0.9rem 1rem !important; }
+  .wf-hero, .bg-light.rounded-3 { padding: 1.5rem 1rem !important; }
+  .display-4 { font-size: 1.8rem !important; }
+  .card-body  { padding: 0.85rem !important; }
+}
