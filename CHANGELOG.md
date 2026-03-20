@@ -5,6 +5,36 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-03-20] - Modern UI/UX Redesign
+
+### Added
+- Custom CSS design system (`warriorfit/www/custom.css`) — navy/amber theme with CSS design tokens, consistent across all pages
+- Reservation overlay panel (`wf-overlay-*` classes) replacing conflicting Bootstrap modal class names
+- Sidebar form structure for User Management: labeled sections (Lookup / User Details / Actions), status bar, selected-user hint
+- Serial Number input highlighted with blue-tinted background (`wf-serial-input`) on User Management and Individual pages
+
+### Changed
+- All Refresh buttons changed from `btn-outline-secondary` (transparent) to `btn-secondary` (solid background) across all 13 pages
+- All "Confirm Serial" buttons on test pages (`phef`, `combat`, `swim`, `functional`, `cross`, `march`) given `btn-primary` colour and fixed `width="200px"`
+- "Search own Unit" button changed from invalid `btn-lm` class to `btn-info` on User Management and Individual pages
+- Login modal redesigned: branded logo, field labels, inline error output via `ui.output_ui` (replaces fragile JS observer)
+- Calendar overlay panels styled with `wf-calendar-panel-*` classes replacing raw inline styles
+- Navbar controls (calendar buttons, sign-out) use cohesive ghost-button style
+- Navbar height locked at 52px with `flex-wrap: nowrap` to prevent height jumps between tabs
+- Reserve Room page renamed to "Reserve Sport Area" throughout all visible UI text
+- `PageSpec` tab name updated to `"Reserve Sport Area"` to match `nav_panel` title (fixes blank page on navigation)
+
+### Fixed
+- Plotly/chart diagrams blank on first Dashboard visit — fixed by firing `window.resize` event on `shown.bs.tab`
+- Dropdown menus (Psychical Tests, Cross/Runs, Admin) hidden after navbar height fix — resolved by setting `overflow: visible` on navbar collapse
+- Reservation form overlay broken after inline `<style>` block removal — CSS classes renamed to non-conflicting `wf-overlay-*` names
+- Login error message (wrong password / rate limit) not visible in modal — replaced CSS `:empty` trick with server-side `ui.output_ui`
+
+### Removed
+- 220-line inline `<style>` block from `reserve_fitness_room.py` — all styles consolidated into `custom.css`
+
+---
+
 ## [2026-03-19] - Argon2id Migration & Docker Volume Fix
 
 ### Security
