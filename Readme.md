@@ -40,7 +40,7 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-01-18: Testing completed, release to 1.0 RC
 * 2026-01-19: added search in tests sessions
 * 2026-01-27: update retrospective
-* 2026-01-27: demo video uploaded https://youtu.be/3xY8XZYLF6U
+* 2026-01-27: demo video uploaded https://youtu.be/bblCsxhbMEg
 * 2026-01-28: make HRM simulator API secure with key:
 * 2026-02-01: setup nginx reverse proxy
 * 2026-02-02: Cross app and api SSL/HTTPS Support**: Encrypted communication with SSL certificates
@@ -54,7 +54,12 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-03-18 : security hardening — remove Fernet, migrate to bcrypt, fix audit log nullable user_id, add SECURITY.md
 * 2026-03-19 : migrate password hashing from bcrypt to Argon2id, remove bcrypt/passlib dependencies
 * 2026-03-19 : fix Docker read-only volume mount — settings can now be saved from the UI in production
-* 2026-03-20 : modern UI/UX redesign — custom CSS design system (navy/amber theme, `www/custom.css`), consistent button colours (Refresh, Confirm Serial, Search own Unit) across all pages, login modal error feedback fixed, User Management sidebar restructured, Plotly chart fix on Dashboard tab switch, Reserve Room renamed to Sport Area, reservation overlay CSS fixed
+* 2026-03-20 : modern UI/UX redesign — custom CSS design system (navy/amber theme, `www/custom.css`), 
+  consistent button colours (Refresh, Confirm Serial, Search own Unit) across all pages, 
+  login modal error feedback fixed, User Management sidebar restructured, 
+  Plotly chart fix on Dashboard tab switch, 
+  Reserve Room renamed to Sport Area, reservation overlay CSS fixed
+* 2026-03-21 : update video demo
 
 
 
