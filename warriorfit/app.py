@@ -619,7 +619,7 @@ class FitnessWarriorApp:
                     class_="wf-login-card",
                 ),
             )
-            ui.modal_show(ui.modal(login, easy_close=False, size="s", footer=None))
+            ui.modal_show(ui.modal(login, easy_close=False, size="m", footer=None))
 
         @reactive.Effect
         @reactive.event(input.handle_login)

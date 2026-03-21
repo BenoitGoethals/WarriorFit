@@ -490,6 +490,16 @@ body {
   border-radius: var(--wf-radius-lg);
   padding: 2rem;
   box-shadow: var(--wf-shadow-md);
+  max-width: 380px;
+  margin: 0 auto;
+  text-align: center;
+}
+.wf-login-card .form-label {
+  display: block;
+  text-align: left;
+}
+.wf-login-card .shiny-input-container {
+  text-align: left;
 }
 .wf-login-logo {
   font-size: 2rem;
