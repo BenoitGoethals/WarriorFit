@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+from pathlib import Path
 from typing import Any
+
+from lxml import etree
 
 import pandas as pd
 from numpy import floating  # kept for return type compatibility
@@ -332,3 +336,26 @@ class ServiceCross(Service):
             top_runners_by_distance[distance] = runners[:10]
 
         return top_runners_by_distance
+
+    async def read_xml_chronos(self, xml_file) -> bool:
+        _XSD_PATH = Path(__file__).parent.parent / "data" / "chronorace.xsd"
+        _logger = logging.getLogger(__name__)
+
+        def _validate_and_parse(file_info) -> bool:
+            try:
+                file_path = file_info[0]["datapath"]
+                schema_doc = etree.parse(str(_XSD_PATH))
+                schema = etree.XMLSchema(schema_doc)
+                xml_doc = etree.parse(file_path)
+                if not schema.validate(xml_doc):
+                    _logger.warning("Chronos XML failed XSD validation: %s", schema.error_log)
+                    return False
+                _logger.info("Chronos XML validated successfully.")
+                return True
+            except Exception as exc:
+                _logger.error("Failed to read/validate Chronos XML: %s", exc)
+                return False
+
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, _validate_and_parse, xml_file)
+

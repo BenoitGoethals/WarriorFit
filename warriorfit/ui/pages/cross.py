@@ -53,10 +53,11 @@ class CrossPage(Page):
                     ui.card_header("Runners"),
                     ui.output_data_frame("runners_grid"),
                     ui.br(),
-                    ui.input_action_button("report_lst_run", "Generate Report"),
-                    ui.download_button(
-                        "download_report_cross_run", "Download", class_="btn-primary"
-                    ),
+
+                    ui.output_ui("upload_btn_ui"),
+                    ui.output_ui("download_generated_report_btn_ui"),
+
+
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
@@ -66,6 +67,25 @@ class CrossPage(Page):
     def server(self, input, output, session):
         status = reactive.Value("Ready.")
         cross_selected_id = reactive.Value("")  # or None
+
+        @output
+        @render.ui
+        async def upload_btn_ui():
+            df = await runners_df()
+            if not df.empty:
+                return ui.div()  # hidden: no cross selected or no runners registered
+            return ui.input_file("file", "Upload Chronos Data", accept=".xml")
+
+        @output
+        @render.ui
+        async def download_generated_report_btn_ui():
+            df = await runners_df()
+            if not cross_selected_id.get() or df.empty:
+                return ui.div()
+            return ui.div(
+                ui.input_action_button("report_lst_run", "Generate Report", class_="btn-secondary"),
+                ui.download_button("download_report_cross_run", "Download", class_="btn-primary"),
+            )
 
         @output
         @render.ui
@@ -123,6 +143,7 @@ class CrossPage(Page):
             val = (input.cross_select() or "").strip()
             self.selected_cross_id.set(val)
 
+
         @reactive.Effect
         @reactive.event(input.cross_locker)
         def on_cross_locker():
@@ -130,6 +151,19 @@ class CrossPage(Page):
             cross_selected_id.set(val)
             self.selected_cross_id.set(val)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
+
+        @reactive.effect
+        async def _handle_file_upload():
+            f = input.file()
+            if not f:
+                return
+            passed = await self.controller.parse_chronos_data(f)
+            if passed is not None:
+                ui.notification_show("File uploaded successfully.", type="message", duration=3)
+            else:
+                ui.notification_show("Failed to upload file.", type="error", duration=3)
+
+
 
         def _read_form() -> Dict[str, Any]:
             return {
