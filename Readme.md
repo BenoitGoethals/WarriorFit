@@ -60,6 +60,8 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   Plotly chart fix on Dashboard tab switch, 
   Reserve Room renamed to Sport Area, reservation overlay CSS fixed
 * 2026-03-21 : update video demo
+* 2026-03-21 : add runtime memory & process metrics dashboard (RSS, VMS, CPU, threads, uptime) on Status Application page using `psutil`
+* 2026-03-21 : clarify reactive refresh strategy — `refresh_tick` for DataGrids (event-driven), `reactive.invalidate_later` for live metrics only
 
 
 

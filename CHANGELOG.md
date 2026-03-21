@@ -5,6 +5,24 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-03-21] - Runtime Metrics Dashboard & Reactive Refresh
+
+### Added
+- Live **Runtime Metrics** row on Status Application page (auto-refreshes every 5 s via `reactive.invalidate_later`):
+  - 🧠 Physical Memory RSS (MB)
+  - 💾 Virtual Memory VMS (MB)
+  - ⚙️ CPU usage % with total core count
+  - 🔀 Active thread count
+  - ⏱️ Process uptime (hh:mm:ss)
+- `psutil` used for process metrics (`memory-profiler` already a dependency, pulls `psutil` transitively)
+
+### Changed
+- Clarified reactive refresh strategy across the codebase:
+  - `refresh_tick` (event-driven) for DataGrids — only re-queries DB after explicit user action (CRUD / button click)
+  - `reactive.invalidate_later` reserved for live-polling outputs (metrics, logs, status checks)
+
+---
+
 ## [2026-03-20] - Modern UI/UX Redesign
 
 ### Added
