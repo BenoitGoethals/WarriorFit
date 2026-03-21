@@ -26,6 +26,8 @@ class DashboardOwnUnitPage(Page):
     def refresh(self) -> None:
         # Dashboard is cache-heavy; refresh should clear controller caches.
         self.controller.reset_cache()
+        reactive.invalidate_later(0.5)
+
 
     @staticmethod
     def _ui_stats_card(
@@ -143,6 +145,7 @@ class DashboardOwnUnitPage(Page):
             @output(id=output_id)
             @render.ui
             async def _stats_card() -> ui.Tag:
+                reactive.invalidate_later(0.5)
                 _ = refresh_tick.get()
                 stats = await _safe_stats(fetcher)
                 return self._ui_stats_card(
@@ -164,6 +167,7 @@ class DashboardOwnUnitPage(Page):
             @render.ui
             async def _plot() -> Tag | HTML:
                 _ = refresh_tick.get()
+                reactive.invalidate_later(0.5)
                 try:
                     html = await fetcher()
                     if not html:
