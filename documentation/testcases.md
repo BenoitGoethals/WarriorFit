@@ -456,6 +456,28 @@ Test status: `[x]` = implemented/passing, `[ ]` = pending.
 
 ---
 
+### Story 8.6: Import Chronos XML Race Result [5 points]
+
+**Functional Tests:**
+- [ ] Upload button hidden when no cross session selected
+- [ ] Upload button hidden when cross selected but no runners registered
+- [ ] Upload button visible when cross selected and runners exist
+- [ ] Upload valid XML file — runners grid refreshes, success notification shown
+- [ ] Upload invalid XML (does not match XSD) — error notification shown, no data saved
+- [ ] Upload XML with bib matching service_number — runner time updated in DB
+- [ ] Upload XML with bib not in service_men — skipped silently, other runners still saved
+- [ ] `Cross.executed` flag set to `True` after successful import
+- [ ] Upload same file a second time in same session — not processed again (dedup guard)
+- [ ] `<net>` time "00:35:12" correctly parsed to 2112.0 seconds
+
+**UI Tests:**
+- [ ] Download/Generate Report buttons hidden when no cross selected or no runners
+- [ ] Download/Generate Report buttons visible after runners registered
+- [ ] Runners grid auto-refreshes after import without page reload
+- [ ] Upload input accepts only `.xml` files
+
+---
+
 ## Epic 9: BEMIL Personnel Lookup
 
 ### Story 9.1: Lookup Serviceman by Serial Number [3 points]

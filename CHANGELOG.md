@@ -5,6 +5,32 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-03-22] - Chronos XML Import for Cross Results
+
+### Added
+- **Chronos XML import** on Cross page: upload a Chronos race result file (`.xml`) to bulk-import runner times
+- `chronorace.xsd` XSD schema — uploaded files are validated before processing; invalid files are rejected with an error notification
+- `lxml` dependency added for XSD validation (`pyproject.toml`, `uv.lock`)
+- Upload button shown only when a cross is selected **and** runners are already registered (hidden otherwise)
+- Download/Generate Report buttons also shown conditionally (cross selected + runners exist)
+- `Cross.executed` flag set to `True` automatically after a successful Chronos import
+- Deduplication guard in `_handle_file_upload`: same filename cannot be processed twice in one session
+- Dedicated `_upload_tick` reactive value so runners grid refreshes after import without re-triggering the upload effect
+
+### Changed
+- `read_xml_chronos_and_save` (service): parses `<athlete>/<bib>` as military serial number; maps `<net>` (hh:mm:ss) to `running_time` in seconds
+- `add_runners_to_cross` (repository): returns `bool`; marks `cross.executed = True` with `flush()` inside the same transaction
+- File processing moved from `render.text` to `@reactive.effect` (`_handle_file_upload`) — side-effects (notifications, DB writes) no longer mixed with UI rendering
+- `upload_btn_ui` and `download_generated_report_btn_ui` now use `@render.ui` with async `runners_df()` as sole visibility guard
+- Test data `tests/chronorace_data.xml`: all 20 `<bib>` values replaced with real `service_number` values from `test_data.sql`
+
+### Fixed
+- `upload_btn_ui` condition was inverted (`not df.empty`) — corrected to `df.empty`
+- `download_generated_report_btn_ui` buttons were floating expressions (never returned) — wrapped in `ui.div()` and returned
+- Infinite upload loop caused by `refresh_tick` invalidating `upload_btn_ui` — resolved by separating concerns into `_upload_tick`
+
+---
+
 ## [2026-03-21] - Runtime Metrics Dashboard & Reactive Refresh
 
 ### Added

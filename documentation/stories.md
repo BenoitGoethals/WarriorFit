@@ -7,8 +7,8 @@ The point estimates below reflect implementation effort.
 ### Total Overview
 
 * **Total epics:** 19
-* **Total stories:** 71
-* **Total story points:** 196
+* **Total stories:** 72
+* **Total story points:** 201
 
 ### Story Point Legend
 
@@ -704,18 +704,19 @@ The point estimates below reflect implementation effort.
 
 ---
 
-## Epic 8: Cross Session & Runner Management (18 points)
+## Epic 8: Cross Session & Runner Management (23 points)
 
-**Epic total:** 18 points
-**Estimated:** 3 sprints
+**Epic total:** 23 points
+**Estimated:** 4 sprints
 
-| #   | Story                      | Points | Priority    |
-| --- | -------------------------- | ------ | ----------- |
-| 8.1 | Create/edit/delete cross   | 5      | Must Have   |
-| 8.2 | Enter cross runner results | 5      | Must Have   |
-| 8.3 | Update/delete cross runner | 3      | Should Have |
-| 8.4 | Cross planning list view   | 2      | Should Have |
-| 8.5 | Cross statistics           | 3      | Could Have  |
+| #   | Story                          | Points | Priority    |
+| --- | ------------------------------ | ------ | ----------- |
+| 8.1 | Create/edit/delete cross       | 5      | Must Have   |
+| 8.2 | Enter cross runner results     | 5      | Must Have   |
+| 8.3 | Update/delete cross runner     | 3      | Should Have |
+| 8.4 | Cross planning list view       | 2      | Should Have |
+| 8.5 | Cross statistics               | 3      | Could Have  |
+| 8.6 | Import Chronos XML race result | 5      | Should Have |
 
 ### Story 8.1: Create/edit/delete cross session [5 points]
 
@@ -808,6 +809,30 @@ The point estimates below reflect implementation effort.
 **Tasks:**
 
 * Top 10 rankings query per distance
+
+### Story 8.6: Import Chronos XML race result [5 points]
+
+**As** PTI
+**I want** to import a Chronos race result XML file for a cross session
+**So that** runner times from an official timing system are bulk-loaded without manual entry
+
+**Acceptance criteria:**
+
+* Upload button visible only when a cross session is selected **and** runners are registered
+* Uploaded file validated against `chronorace.xsd` before processing; invalid files show error notification
+* `<bib>` value in XML matches `service_number` in `service_men` table — unmatched bibs are skipped and logged
+* `<net>` time (hh:mm:ss) parsed and stored as `running_time` in seconds
+* After successful import `Cross.executed` flag is set to `True`
+* Runners grid refreshes automatically after successful import
+* Success / failure notification shown to user
+* Same file cannot be processed twice in one session (deduplication by filename)
+
+**Tasks:**
+
+* `ServiceCross.read_xml_chronos_and_save`: XSD validation + athlete parsing + DB save
+* `CrossRepository.add_runners_to_cross`: persist runners + set `executed = True` in one transaction
+* `upload_btn_ui`: conditional visibility via `runners_df`
+* `_handle_file_upload`: async reactive effect with dedup guard and dedicated `_upload_tick`
 
 ---
 
