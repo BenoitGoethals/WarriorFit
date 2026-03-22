@@ -11,7 +11,7 @@
               <xs:element name="athlete" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="bib" type="xs:int"/>
+                    <xs:element name="bib" type="xs:string"/>
                     <xs:element name="name" type="xs:string"/>
                     <xs:element name="category" type="xs:string"/>
                     <xs:element name="start" type="xs:dateTime" minOccurs="0"/>

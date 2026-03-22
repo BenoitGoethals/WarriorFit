@@ -337,25 +337,51 @@ class ServiceCross(Service):
 
         return top_runners_by_distance
 
-    async def read_xml_chronos(self, xml_file) -> bool:
+    async def read_xml_chronos(self, xml_file, cross_id: int) -> bool:
         _XSD_PATH = Path(__file__).parent.parent / "data" / "chronorace.xsd"
         _logger = logging.getLogger(__name__)
 
-        def _validate_and_parse(file_info) -> bool:
-            try:
-                file_path = file_info[0]["datapath"]
-                schema_doc = etree.parse(str(_XSD_PATH))
-                schema = etree.XMLSchema(schema_doc)
-                xml_doc = etree.parse(file_path)
-                if not schema.validate(xml_doc):
-                    _logger.warning("Chronos XML failed XSD validation: %s", schema.error_log)
-                    return False
-                _logger.info("Chronos XML validated successfully.")
-                return True
-            except Exception as exc:
-                _logger.error("Failed to read/validate Chronos XML: %s", exc)
-                return False
+        try:
+            # xml_file is Shiny's input.file() list — extract the temp path
+            file_path = xml_file[0]["datapath"]
 
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, _validate_and_parse, xml_file)
+            schema_doc = etree.parse(str(_XSD_PATH))
+            schema = etree.XMLSchema(schema_doc)
+            xml_doc = etree.parse(file_path)
+
+            if not schema.validate(xml_doc):
+                _logger.warning("Chronos XML failed XSD validation: %s", schema.error_log)
+                return False
+            _logger.info("Chronos XML validated successfully.")
+            runners = []
+            for athlete in xml_doc.xpath("//athlete"):
+                bib = (athlete.findtext("bib") or "").strip()
+                net = (athlete.findtext("net") or "0:00:00").strip()
+
+                # Convert net time "hh:mm:ss" to total seconds (float)
+                parts = net.split(":")
+                if len(parts) == 3:
+                    running_time = int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+                elif len(parts) == 2:
+                    running_time = int(parts[0]) * 60 + float(parts[1])
+                else:
+                    running_time = float(parts[0])
+
+                runner = Runner(serial_number=bib, running_time=running_time)
+                runners.append(runner)
+
+            ok_save = await self._cross_repo.add_runners_to_cross(cross_id, runners)
+            if not ok_save:
+                _logger.error("Failed to save runners to cross %d", cross_id)
+                return False
+            _logger.info("Added %d runners to cross %d", len(runners), cross_id)
+            await self.add_audit_log(details=f"Added {len(runners)} runners to cross {cross_id}", action="add")
+            return True
+
+        except Exception as exc:
+            _logger.error("Failed to read/validate Chronos XML: %s", exc)
+            return False
+
+
+
 

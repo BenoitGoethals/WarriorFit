@@ -2,125 +2,125 @@
     <race name="10KM" date="2026-03-21">
 
         <athlete>
-            <bib>1</bib><name>Runner 1</name><category>M30</category>
+            <bib>BE-20250017</bib><name>Mathis De Graaf</name><category>M30</category>
             <start>2026-03-21T10:00:00</start>
             <finish>2026-03-21T10:35:12</finish>
             <net>00:35:12</net><rank>1</rank>
         </athlete>
 
         <athlete>
-            <bib>2</bib><name>Runner 2</name><category>M30</category>
+            <bib>BE-20250021</bib><name>Lars Martens</name><category>M30</category>
             <start>2026-03-21T10:00:00</start>
             <finish>2026-03-21T10:36:45</finish>
             <net>00:36:45</net><rank>2</rank>
         </athlete>
 
         <athlete>
-            <bib>3</bib><name>Runner 3</name><category>M40</category>
+            <bib>BE-20250011</bib><name>Victor Goossens</name><category>M40</category>
             <start>2026-03-21T10:00:00</start>
             <finish>2026-03-21T10:38:10</finish>
             <net>00:38:10</net><rank>3</rank>
         </athlete>
 
         <athlete>
-            <bib>4</bib><name>Runner 4</name><category>M40</category>
+            <bib>BE-20250025</bib><name>Elias Wauters</name><category>M40</category>
             <start>2026-03-21T10:00:00</start>
             <finish>2026-03-21T10:39:55</finish>
             <net>00:39:55</net><rank>4</rank>
         </athlete>
 
         <athlete>
-            <bib>5</bib><name>Runner 5</name><category>M50</category>
+            <bib>BE-20250026</bib><name>Chloé Renard</name><category>F30</category>
             <finish>2026-03-21T10:41:02</finish>
             <net>00:41:02</net><rank>5</rank>
         </athlete>
 
         <athlete>
-            <bib>6</bib><name>Runner 6</name><category>M30</category>
+            <bib>BE-20250027</bib><name>Rayan Aerts</name><category>M30</category>
             <finish>2026-03-21T10:42:18</finish>
             <net>00:42:18</net><rank>6</rank>
         </athlete>
 
         <athlete>
-            <bib>7</bib><name>Runner 7</name><category>F30</category>
+            <bib>BE-20250028</bib><name>Elise Declerck</name><category>F30</category>
             <finish>2026-03-21T10:43:25</finish>
             <net>00:43:25</net><rank>7</rank>
         </athlete>
 
         <athlete>
-            <bib>8</bib><name>Runner 8</name><category>F40</category>
+            <bib>BE-20250029</bib><name>Baptiste Verschueren</name><category>M40</category>
             <finish>2026-03-21T10:44:11</finish>
             <net>00:44:11</net><rank>8</rank>
         </athlete>
 
         <athlete>
-            <bib>9</bib><name>Runner 9</name><category>M30</category>
+            <bib>BE-20250030</bib><name>Eva Meunier</name><category>F40</category>
             <finish>2026-03-21T10:45:02</finish>
             <net>00:45:02</net><rank>9</rank>
         </athlete>
 
         <athlete>
-            <bib>10</bib><name>Runner 10</name><category>M40</category>
+            <bib>BE-20250031</bib><name>Mohamed El Hadi</name><category>M30</category>
             <finish>2026-03-21T10:46:30</finish>
             <net>00:46:30</net><rank>10</rank>
         </athlete>
 
         <athlete>
-            <bib>11</bib><name>Runner 11</name><category>F30</category>
+            <bib>BE-20250032</bib><name>Charlotte Devos</name><category>F30</category>
             <finish>2026-03-21T10:47:12</finish>
             <net>00:47:12</net><rank>11</rank>
         </athlete>
 
         <athlete>
-            <bib>12</bib><name>Runner 12</name><category>M50</category>
+            <bib>BE-20250033</bib><name>Nathan Van Damme</name><category>M50</category>
             <finish>2026-03-21T10:48:45</finish>
             <net>00:48:45</net><rank>12</rank>
         </athlete>
 
         <athlete>
-            <bib>13</bib><name>Runner 13</name><category>F40</category>
+            <bib>BE-20250034</bib><name>Clara Vandamme</name><category>F40</category>
             <finish>2026-03-21T10:49:30</finish>
             <net>00:49:30</net><rank>13</rank>
         </athlete>
 
         <athlete>
-            <bib>14</bib><name>Runner 14</name><category>M30</category>
+            <bib>BE-20250035</bib><name>Simon Vandenbossche</name><category>M30</category>
             <finish>2026-03-21T10:50:12</finish>
             <net>00:50:12</net><rank>14</rank>
         </athlete>
 
         <athlete>
-            <bib>15</bib><name>Runner 15</name><category>F30</category>
+            <bib>BE-20250036</bib><name>Anaïs Moreau</name><category>F30</category>
             <finish>2026-03-21T10:51:40</finish>
             <net>00:51:40</net><rank>15</rank>
         </athlete>
 
         <athlete>
-            <bib>16</bib><name>Runner 16</name><category>M40</category>
+            <bib>BE-20250037</bib><name>Yanis Verhoeven</name><category>M40</category>
             <finish>2026-03-21T10:52:55</finish>
             <net>00:52:55</net><rank>16</rank>
         </athlete>
 
         <athlete>
-            <bib>17</bib><name>Runner 17</name><category>F50</category>
+            <bib>BE-20250038</bib><name>Manon Peters</name><category>F50</category>
             <finish>2026-03-21T10:54:10</finish>
             <net>00:54:10</net><rank>17</rank>
         </athlete>
 
         <athlete>
-            <bib>18</bib><name>Runner 18</name><category>M30</category>
+            <bib>BE-20250039</bib><name>Quentin De Wilde</name><category>M30</category>
             <finish>2026-03-21T10:55:33</finish>
             <net>00:55:33</net><rank>18</rank>
         </athlete>
 
         <athlete>
-            <bib>19</bib><name>Runner 19</name><category>F40</category>
+            <bib>BE-20250040</bib><name>Paula Coenen</name><category>F40</category>
             <finish>2026-03-21T10:57:01</finish>
             <net>00:57:01</net><rank>19</rank>
         </athlete>
 
         <athlete>
-            <bib>20</bib><name>Runner 20</name><category>M50</category>
+            <bib>BE-20250041</bib><name>Arne Jacobs</name><category>M50</category>
             <finish>2026-03-21T10:58:44</finish>
             <net>00:58:44</net><rank>20</rank>
         </athlete>

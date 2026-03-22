@@ -157,9 +157,13 @@ class CrossPage(Page):
             f = input.file()
             if not f:
                 return
-            passed = await self.controller.parse_chronos_data(f)
-            if passed is not None:
+            cid = self.selected_cross_id.get()
+            if not cid:
+                return
+            passed = await self.controller.parse_chronos_data(f, int(cid))
+            if passed:
                 ui.notification_show("File uploaded successfully.", type="message", duration=3)
+               # self.refresh_tick.set(self.refresh_tick.get() + 1)
             else:
                 ui.notification_show("Failed to upload file.", type="error", duration=3)
 

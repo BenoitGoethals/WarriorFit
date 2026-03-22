@@ -1,7 +1,6 @@
 -- password for all users: R@nger&1401!
 -- argon2id hash (time=3, mem=64MB, p=4) generated 2026-03-19
--- $argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA
-
+-- $argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGR
 INSERT INTO users (username, email, password_hash, created_at, role, is_active, serial_number) VALUES
 ('ben',     'adminsuperben@example.com', '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'superben'),
 ('fit',     'afitdmin@exampl2e.com',     '$argon2id$v=19$m=65536,t=3,p=4$0VPSG5WBx59bDno275B94Q$ahAV4VBFV4sY6HDbSO3kQ0zg8SQDkYIXkukKljoGRFA', NOW(), 'ADMIN',   TRUE, 'ADMIN001'),
