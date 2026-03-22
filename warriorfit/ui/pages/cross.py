@@ -50,14 +50,17 @@ class CrossPage(Page):
                     ui.output_ui("runner_card"),
                 ),
                 ui.card(
-                    ui.card_header("Runners"),
+                    ui.card_header(
+                        ui.div(
+                            "Runners",
+                            ui.output_ui("runners_summary_ui"),
+                            style="display:flex; align-items:center; gap:1rem;",
+                        )
+                    ),
                     ui.output_data_frame("runners_grid"),
                     ui.br(),
-
                     ui.output_ui("upload_btn_ui"),
                     ui.output_ui("download_generated_report_btn_ui"),
-
-
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
@@ -85,6 +88,28 @@ class CrossPage(Page):
             return ui.div(
                 ui.input_action_button("report_lst_run", "Generate Report", class_="btn-secondary"),
                 ui.download_button("download_report_cross_run", "Download", class_="btn-primary"),
+            )
+
+        @output
+        @render.ui
+        async def runners_summary_ui():
+            cid = cross_selected_id.get()
+            if not cid:
+                return ui.div()
+            df = await runners_df()
+            count = len(df)
+            cross = await self.controller.get_cross_by_id(int(cid))
+            distance = f"{cross.distance} km" if cross else "—"
+            return ui.div(
+                ui.span(
+                    f"📏 {distance}",
+                    style="font-size:0.82rem; background:#1a3a5c; color:#fff; border-radius:4px; padding:2px 8px;",
+                ),
+                ui.span(
+                    f"👟 {count} runner{'s' if count != 1 else ''}",
+                    style="font-size:0.82rem; background:#f6a623; color:#fff; border-radius:4px; padding:2px 8px;",
+                ),
+                style="display:flex; gap:0.5rem; align-items:center;",
             )
 
         @output
@@ -194,7 +219,7 @@ class CrossPage(Page):
             crosses = await self.controller.load_crosses()
             items = {
                 str(c.id): getattr(
-                    c, "name", f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')}"
+                    c, "name", f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')} {c.distance} K"
                 )
                 for c in (crosses or [])
             }

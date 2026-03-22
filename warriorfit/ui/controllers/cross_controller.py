@@ -161,26 +161,31 @@ class CrossController:
             cross = await self._service.get_cross_with_runners(int(cross_id))
             if cross is None:
                 return pd.DataFrame()
-            data = []
             cross.sort(key=lambda r: r.running_time, reverse=False)
-            for r in cross:
-                runner = await self.be_mil_service.get_servicemen_by_serial(
-                    r.serial_number, lazy=False
-                )
-                data.append(
-                    {
-                        "Order": 0,
-                        "ID": r.id,
-                        "Serial": r.serial_number or "",
-                        "Running Time": self.format_seconds(r.running_time),
-                        "Runner Name": (
-                            runner.first_name + " " + runner.last_name if runner else ""
-                        ),
-                        "Gender": runner.gender if runner else "",
-                        "Age": runner.age_from_birthdate() if runner else "",
-                        "Unit": runner.unit if runner else "",
-                    }
-                )
+
+            # Fetch all servicemen concurrently instead of sequentially
+            servicemen = await asyncio.gather(
+                *[
+                    self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)
+                    for r in cross
+                ]
+            )
+
+            data = [
+                {
+                    "Order": 0,
+                    "ID": r.id,
+                    "Serial": r.serial_number or "",
+                    "Running Time": self.format_seconds(r.running_time),
+                    "Runner Name": (
+                        f"{sm.first_name} {sm.last_name}" if sm else ""
+                    ),
+                    "Gender": sm.gender if sm else "",
+                    "Age": sm.age_from_birthdate() if sm else "",
+                    "Unit": sm.unit if sm else "",
+                }
+                for r, sm in zip(cross, servicemen)
+            ]
             df = pd.DataFrame(data)
 
             if df.empty:
