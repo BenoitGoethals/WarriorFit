@@ -396,7 +396,7 @@ class CrossRepository(ABCRepository):
                     cross = await session.get(Cross, cross_id)
                     if not cross:
                         self._logger.error("Cross %d not found", cross_id)
-                        return None
+                        return False
                     for runner in runners:
                         # Persist runner (new or detached)
                         if runner.id is None:
