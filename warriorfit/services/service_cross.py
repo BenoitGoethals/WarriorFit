@@ -153,7 +153,25 @@ class ServiceCross(Service):
         return pd.DataFrame.from_records(rows)
 
     async def get_cross_stats(self):
+        """
+        Calculate and return various statistical metrics for a set of cross events.
 
+        This function processes data related to cross events, including computing the
+        average time, time gap, and best time across all events. It also aggregates
+        demographic statistics, such as age group distributions and gender-based average
+        times. Furthermore, the function identifies and organizes the top 10 runners
+        per distance in ascending order of running time.
+
+        :return: A tuple containing the following:
+            - Average running time across all cross events.
+            - Time gap between the maximum and minimum running times.
+            - Best (minimum) running time across all events.
+            - Dictionary mapping age groups to their respective counts.
+            - Tuple containing the average running times for female and male participants.
+            - Dictionary mapping distances to a list of the top 10 Runner objects
+              (ordered by ascending running time) for each distance.
+        :rtype: tuple[float, float, float, dict[str, int], tuple[float, float], dict[Any, list[Runner]]]
+        """
         all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
         if not all_cross:
             return 0.0, 0.0, 0.0, {}, (0.0, 0.0), {}
@@ -244,6 +262,19 @@ class ServiceCross(Service):
         )
 
     async def get_average(self, all_cross: list[Cross]) -> float:
+        """
+        Calculates the average running time across all provided 'Cross' objects.
+
+        This method iterates through a list of 'Cross' objects, which contain multiple runners,
+        and computes the average running time by summing the running times of all runners and
+        dividing the result by the number of 'Cross' objects provided.
+
+        :param all_cross: A list of 'Cross' objects. Each 'Cross' object contains runners with
+            individual running times.
+        :type all_cross: list[Cross]
+        :return: The average running time as a float. If the input list is empty, returns 0.0.
+        :rtype: float
+        """
         # Preserves old semantics: sum(all runners) / len(all_cross)
         total = 0.0
         for cross in all_cross:
@@ -252,6 +283,20 @@ class ServiceCross(Service):
         return total / float(len(all_cross)) if all_cross else 0.0
 
     async def get_gap_time(self, all_cross: list[Cross]) -> float:
+        """
+        Computes the difference between the maximum and minimum running times of runners
+        in a given list of Cross objects. This function is designed to evaluate the "gap
+        time," which represents the disparity between the slowest and fastest runners’
+        performance.
+
+        :param all_cross: A list of Cross objects. Each Cross object contains a collection
+            of runners, and each runner has a `running_time` attribute representing their
+            running time.
+        :type all_cross: list[Cross]
+        :return: The gap time as a floating-point number. If no valid times are present
+            in the input, 0.0 is returned.
+        :rtype: float
+        """
         worst_time = float("-inf")
         best_time = float("inf")
 
@@ -268,6 +313,18 @@ class ServiceCross(Service):
         return worst_time - best_time
 
     async def get_best_time(self, all_cross: list[Cross]) -> float:
+        """
+        Determines the best (maximum) running time among all runners in the provided
+        list of Cross objects. Iterates through each Cross and its associated runners
+        to find the highest recorded running time.
+
+        :param all_cross: A list of Cross objects. Each Cross contains runners with
+                          running times to evaluate.
+        :type all_cross: list[Cross]
+        :return: The maximum running time among all runners in the provided Cross
+                 objects.
+        :rtype: float
+        """
         # Preserves old behavior: returns the MAX running_time
         best_time = 0.0
         for cross in all_cross:
@@ -278,6 +335,16 @@ class ServiceCross(Service):
         return best_time
 
     async def get_age_group(self, all_cross: list[Cross]) -> dict[str, int]:
+        """
+        Asynchronously retrieves age group distribution based on the provided list of cross entries.
+        For each runner in the cross entries with a valid serial number, the serviceman's age is determined,
+        then categorized into predefined age groups.
+
+        :param all_cross: A list containing Cross objects, where each Cross contains runners to process.
+        :type all_cross: list[Cross]
+        :return: A dictionary mapping age group identifiers to the count of servicemen in each group.
+        :rtype: dict[str, int]
+        """
         age_groups: dict[str, int] = {}
 
         for cross in all_cross:
@@ -298,6 +365,23 @@ class ServiceCross(Service):
     async def get_gender_time(
         self, all_cross: list[Cross]
     ) -> tuple[floating[Any], floating[Any]]:
+        """
+        Calculate and return the average running times for female and male runners from
+        the provided list of crosses. The function asynchronously processes the list of
+        runners, determines the gender of each by querying a service, and computes the
+        average running time for each gender. If no times are available for a gender,
+        a default value of 0.0 is returned.
+
+        :param all_cross: A list of Cross objects, each representing a running event.
+            Each Cross contains a list of runners, where each runner has attributes
+            such as serial number and running time.
+        :type all_cross: list[Cross]
+        :return: A tuple containing the average running time for female runners
+            (first element) and the average running time for male runners (second
+            element). Each element is a floating-point number (numpy floating-like)
+            or 0.0 if no times exist for that gender.
+        :rtype: tuple[floating[Any], floating[Any]]
+        """
         all_runners_f: list[float] = []
         all_runners_m: list[float] = []
 
@@ -325,6 +409,18 @@ class ServiceCross(Service):
     async def get_top_10_runners_based_on_running_time(
         self, all_cross: list[Cross]
     ) -> dict[Any, list[Runner]]:
+        """
+        Asynchronously retrieves the top 10 runners for each unique distance across a list of Cross objects,
+        based on their running times. For each distance, the runners are sorted in ascending order of their
+        running times, and the top 10 runners are selected.
+
+        :param all_cross: A list of Cross objects, where each Cross object contains a distance and a list
+            of runners.
+        :type all_cross: list[Cross]
+        :return: A dictionary where keys are distances (unique to each Cross object) and values are lists
+            of the top 10 runners for that distance, sorted by running time.
+        :rtype: dict[Any, list[Runner]]
+        """
         top_runners_by_distance: dict[Any, list[Runner]] = {}
 
         for cross in all_cross:
