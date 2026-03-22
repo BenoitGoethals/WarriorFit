@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import datetime
 import logging
 from typing import Optional, Dict, Any, Tuple, List
@@ -264,3 +265,6 @@ class CrossController:
         :rtype: Awaitable
         """
         return await self._pdf_gen.generate_run_report("Run report", (int(cross_id)))
+
+    async def parse_chronos_data(self, xml_file, cross_id: int) -> bool:
+        return await self._service.read_xml_chronos_and_save(xml_file, cross_id)

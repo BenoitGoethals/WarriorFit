@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+from pathlib import Path
 from typing import Any
+
+from lxml import etree
 
 import pandas as pd
 from numpy import floating  # kept for return type compatibility
@@ -332,3 +336,68 @@ class ServiceCross(Service):
             top_runners_by_distance[distance] = runners[:10]
 
         return top_runners_by_distance
+
+    async def  read_xml_chronos_and_save(self, xml_file, cross_id: int) -> bool:
+        """
+        Reads and validates a Chronos XML file against a predefined XSD schema and processes the data to
+        add runners to a specified cross event. This function ensures that the XML data conforms to the
+        Chronos format and extracts the relevant details about athletes, including their bib numbers
+        and net running times. The processed data is then saved to the cross repository.
+
+        :param xml_file: The XML file containing Chronos data. It should be in the format expected by the
+            XSD schema. Typically, this is provided as a list with a "datapath" key containing the path
+            to the temporary XML file.
+        :type xml_file: list[dict[str, str]]
+        :param cross_id: The unique identifier of the cross event to which the runners will be added.
+        :return: A boolean value indicating whether the XML file was successfully read, validated, and
+            processed. Returns True if all operations succeeded, and False if any step failed.
+        :rtype: bool
+        :raises Exception: If an error occurs during file reading, validation, or data processing.
+        """
+        _XSD_PATH = Path(__file__).parent.parent / "data" / "chronorace.xsd"
+        _logger = logging.getLogger(__name__)
+
+        try:
+            # xml_file is Shiny's input.file() list — extract the temp path
+            file_path = xml_file[0]["datapath"]
+
+            schema_doc = etree.parse(str(_XSD_PATH))
+            schema = etree.XMLSchema(schema_doc)
+            xml_doc = etree.parse(file_path)
+
+            if not schema.validate(xml_doc):
+                _logger.warning("Chronos XML failed XSD validation: %s", schema.error_log)
+                return False
+            _logger.info("Chronos XML validated successfully.")
+            runners = []
+            for athlete in xml_doc.xpath("//athlete"):
+                bib = (athlete.findtext("bib") or "").strip()
+                net = (athlete.findtext("net") or "0:00:00").strip()
+
+                # Convert net time "hh:mm:ss" to total seconds (float)
+                parts = net.split(":")
+                if len(parts) == 3:
+                    running_time = int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+                elif len(parts) == 2:
+                    running_time = int(parts[0]) * 60 + float(parts[1])
+                else:
+                    running_time = float(parts[0])
+
+                runner = Runner(serial_number=bib, running_time=running_time)
+                runners.append(runner)
+
+            ok_save = await self._cross_repo.add_runners_to_cross(cross_id, runners)
+            if not ok_save:
+                _logger.error("Failed to save runners to cross %d", cross_id)
+                return False
+            _logger.info("Added %d runners to cross %d", len(runners), cross_id)
+            await self.add_audit_log(details=f"Added {len(runners)} runners to cross {cross_id}", action="add")
+            return True
+
+        except Exception as exc:
+            _logger.error("Failed to read/validate Chronos XML: %s", exc)
+            return False
+
+
+
+

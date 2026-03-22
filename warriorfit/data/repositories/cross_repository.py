@@ -388,3 +388,52 @@ class CrossRepository(ABCRepository):
                 exc_info=True,
             )
             return False
+
+    async def add_runners_to_cross(self, cross_id, runners)-> bool:
+        try:
+            async with self.SessionLocal() as session:
+                async with session.begin():
+                    cross = await session.get(Cross, cross_id)
+                    if not cross:
+                        self._logger.error("Cross %d not found", cross_id)
+                        return False
+                    for runner in runners:
+                        # Persist runner (new or detached)
+                        if runner.id is None:
+                            session.add(runner)
+                            await session.flush()  # ensure runner.id
+                        else:
+                            # ensure runner is attached to this session
+                            runner = await session.merge(runner)
+                            await session.flush()
+
+                        # Avoid touching cross.runners (prevents lazy-load)
+                        exists = await session.execute(
+                            select(1)
+                            .select_from(CrossRunners)
+                            .where(
+                                CrossRunners.cross_id == cross_id,
+                                CrossRunners.runner_id == runner.id,
+                            )
+                        )
+                        if exists.scalar() is None:
+                            await session.execute(
+                                insert(CrossRunners).values(
+                                    cross_id=cross_id, runner_id=runner.id
+                                )
+                            )
+
+                    # Mark cross as executed after all runners are saved
+                    cross.executed = True
+                    await session.flush()
+                    return True
+
+
+        except SQLAlchemyError as e:
+            self._logger.error("Linking runners to cross failed: %s", e)
+            return False
+
+
+
+
+

@@ -679,6 +679,15 @@ wheels = [
 ]
 
 [[package]]
+name = "file-info"
+version = "1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ad/21/282f67de7efdcc2c75eba4cd525766396e6eeb861faba40a6117aff0e10d/file-info-1.2.tar.gz", hash = "sha256:2d97ff67846ddfd626860dff17ae964a75c7d0f23cf22294df6d326cbca21876", size = 2414, upload-time = "2019-05-12T13:22:33.546Z" }
+
+[[package]]
 name = "fqdn"
 version = "1.5.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2951,6 +2960,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "fastapi-cache" },
     { name = "fastapi-cache2" },
+    { name = "file-info" },
     { name = "greenlet" },
     { name = "memcache" },
     { name = "memory-profiler" },
@@ -2993,6 +3003,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.116.1" },
     { name = "fastapi-cache", specifier = ">=0.1.0" },
     { name = "fastapi-cache2", specifier = ">=0.2.2" },
+    { name = "file-info", specifier = ">=1.2" },
     { name = "greenlet", specifier = ">=3.2.4" },
     { name = "memcache", specifier = ">=0.14.0" },
     { name = "memory-profiler", specifier = ">=0.61.0" },
