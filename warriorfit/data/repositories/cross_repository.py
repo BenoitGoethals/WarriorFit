@@ -423,8 +423,9 @@ class CrossRepository(ABCRepository):
                                 )
                             )
 
-                        # If you need current state, refresh here while session is active
-                    await session.refresh(runner)
+                    # Mark cross as executed after all runners are saved
+                    cross.executed = True
+                    await session.flush()
                     return True
 
 

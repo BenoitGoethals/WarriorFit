@@ -72,7 +72,7 @@ class CrossPage(Page):
         @render.ui
         async def upload_btn_ui():
             df = await runners_df()
-            if not df.empty:
+            if not df.empty or not cross_selected_id.get():
                 return ui.div()  # hidden: no cross selected or no runners registered
             return ui.input_file("file", "Upload Chronos Data", accept=".xml")
 
@@ -152,18 +152,26 @@ class CrossPage(Page):
             self.selected_cross_id.set(val)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
 
+        _last_uploaded = reactive.Value("")
+        _upload_tick = reactive.Value(0)
+
         @reactive.effect
         async def _handle_file_upload():
             f = input.file()
             if not f:
                 return
+            # deduplicate: skip if this file was already processed
+            file_key = f[0]["name"]
+            if file_key == _last_uploaded.get():
+                return
             cid = self.selected_cross_id.get()
             if not cid:
                 return
             passed = await self.controller.parse_chronos_data(f, int(cid))
+            _last_uploaded.set(file_key)
             if passed:
+                _upload_tick.set(_upload_tick.get() + 1)  # refresh grid only
                 ui.notification_show("File uploaded successfully.", type="message", duration=3)
-               # self.refresh_tick.set(self.refresh_tick.get() + 1)
             else:
                 ui.notification_show("Failed to upload file.", type="error", duration=3)
 
@@ -198,6 +206,7 @@ class CrossPage(Page):
         async def runners_df():
             cid = self.selected_cross_id.get()
             _ = self.refresh_tick.get()
+            _ = _upload_tick.get()
             if not cid:
                 return pd.DataFrame()
             df = await self.controller.list_runners_df(int(cid))

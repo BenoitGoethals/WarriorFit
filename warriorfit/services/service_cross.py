@@ -337,7 +337,23 @@ class ServiceCross(Service):
 
         return top_runners_by_distance
 
-    async def read_xml_chronos(self, xml_file, cross_id: int) -> bool:
+    async def  read_xml_chronos_and_save(self, xml_file, cross_id: int) -> bool:
+        """
+        Reads and validates a Chronos XML file against a predefined XSD schema and processes the data to
+        add runners to a specified cross event. This function ensures that the XML data conforms to the
+        Chronos format and extracts the relevant details about athletes, including their bib numbers
+        and net running times. The processed data is then saved to the cross repository.
+
+        :param xml_file: The XML file containing Chronos data. It should be in the format expected by the
+            XSD schema. Typically, this is provided as a list with a "datapath" key containing the path
+            to the temporary XML file.
+        :type xml_file: list[dict[str, str]]
+        :param cross_id: The unique identifier of the cross event to which the runners will be added.
+        :return: A boolean value indicating whether the XML file was successfully read, validated, and
+            processed. Returns True if all operations succeeded, and False if any step failed.
+        :rtype: bool
+        :raises Exception: If an error occurs during file reading, validation, or data processing.
+        """
         _XSD_PATH = Path(__file__).parent.parent / "data" / "chronorace.xsd"
         _logger = logging.getLogger(__name__)
 

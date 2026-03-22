@@ -267,4 +267,4 @@ class CrossController:
         return await self._pdf_gen.generate_run_report("Run report", (int(cross_id)))
 
     async def parse_chronos_data(self, xml_file, cross_id: int) -> bool:
-        return await self._service.read_xml_chronos(xml_file, cross_id)
+        return await self._service.read_xml_chronos_and_save(xml_file, cross_id)
