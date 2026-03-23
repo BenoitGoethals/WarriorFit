@@ -1,8 +1,8 @@
 """Unit tests for ApplicationConfig."""
+import io
 import os
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
@@ -11,9 +11,8 @@ from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.config.settings_data import SettingsData
 from warriorfit.logic.singleton import Singleton
 
-
 # ---------------------------------------------------------------------------
-# Helpers
+# Test data
 # ---------------------------------------------------------------------------
 
 MINIMAL_CONFIG = {
@@ -43,192 +42,180 @@ MINIMAL_CONFIG = {
 MINIMAL_VERSION = {"version": "2.0.0", "date": "2026-03-23"}
 
 
-def _clear_singleton():
-    """Remove ApplicationConfig from the Singleton registry so each test gets a fresh instance."""
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(autouse=True)
+def clear_singleton():
+    """Ensure every test starts with a fresh ApplicationConfig instance."""
     from warriorfit.config.appliccation_config import ApplicationConfig
+    Singleton._instances.pop(ApplicationConfig, None)
+    yield
     Singleton._instances.pop(ApplicationConfig, None)
 
 
-def _make_config(env: str = "development", extra_env: dict | None = None):
+@pytest.fixture()
+def app_config():
     """
-    Instantiate ApplicationConfig with all I/O mocked.
-    Returns the instance.
+    Fully mocked ApplicationConfig instance (development env).
+    YAML loading and the DB engine are replaced with mocks; builtins.open is untouched
+    so that tests calling save_config() can write real files.
     """
-    _clear_singleton()
     from warriorfit.config.appliccation_config import ApplicationConfig
 
-    env_vars = {"APP_ENV": env}
-    if extra_env:
-        env_vars.update(extra_env)
-
-    yaml_data = {
-        "config": yaml.dump(MINIMAL_CONFIG),
-        "version": yaml.dump(MINIMAL_VERSION),
-    }
-
-    def fake_open(path, *args, **kwargs):
-        path_str = str(path)
-        if "version" in path_str:
-            content = yaml_data["version"]
-        else:
-            content = yaml_data["config"]
-        return mock_open(read_data=content)()
-
     with (
-        patch.dict(os.environ, env_vars, clear=False),
-        patch("builtins.open", side_effect=fake_open),
+        patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
+        patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
+        patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
         patch("warriorfit.config.appliccation_config.create_async_engine", return_value=MagicMock()),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
     ):
-        instance = ApplicationConfig()
-
-    return instance
+        yield ApplicationConfig()
 
 
 # ---------------------------------------------------------------------------
 # Singleton behaviour
 # ---------------------------------------------------------------------------
 
-def test_singleton_returns_same_instance():
-    cfg1 = _make_config()
+def test_singleton_returns_same_instance(app_config):
     from warriorfit.config.appliccation_config import ApplicationConfig
-    cfg2 = ApplicationConfig()   # no args — returns cached instance
-    assert cfg1 is cfg2
+    second = ApplicationConfig()
+    assert app_config is second
 
 
 # ---------------------------------------------------------------------------
 # settings_data is populated correctly
 # ---------------------------------------------------------------------------
 
-def test_settings_data_db_fields():
-    cfg = _make_config()
-    sd = cfg.settings_data
-    assert sd.db_host == "localhost"
-    assert sd.db_port == 5432
-    assert sd.db_database == "warriorfit_db"
-    assert sd.db_username == "wf_user"
-    assert sd.db_password == "secret"
+def test_settings_data_db_host(app_config):
+    assert app_config.settings_data.db_host == "localhost"
 
 
-def test_settings_data_unit():
-    cfg = _make_config()
-    assert cfg.settings_data.own_unit == "Alpha"
+def test_settings_data_db_port(app_config):
+    assert app_config.settings_data.db_port == 5432
 
 
-def test_settings_data_hr():
-    cfg = _make_config()
-    assert cfg.settings_data.hr_url == "https://hr.example.com/api"
-    assert cfg.settings_data.hr_api_key == "hr-key-123"
+def test_settings_data_db_database(app_config):
+    assert app_config.settings_data.db_database == "warriorfit_db"
 
 
-def test_settings_data_mail_server():
-    cfg = _make_config()
-    mail = cfg.settings_data.mail_server
-    assert isinstance(mail, SmtpConfig)
-    assert mail.host == "smtp.example.com"
-    assert mail.use_tls is True
+def test_settings_data_db_credentials(app_config):
+    assert app_config.settings_data.db_username == "wf_user"
+    assert app_config.settings_data.db_password == "secret"
+
+
+def test_settings_data_unit(app_config):
+    assert app_config.settings_data.own_unit == "Alpha"
+
+
+def test_settings_data_hr_url(app_config):
+    assert app_config.settings_data.hr_url == "https://hr.example.com/api"
+
+
+def test_settings_data_hr_api_key(app_config):
+    assert app_config.settings_data.hr_api_key == "hr-key-123"
+
+
+def test_settings_data_mail_server_type(app_config):
+    assert isinstance(app_config.settings_data.mail_server, SmtpConfig)
+
+
+def test_settings_data_mail_server_host(app_config):
+    assert app_config.settings_data.mail_server.host == "smtp.example.com"
+
+
+def test_settings_data_mail_server_tls(app_config):
+    assert app_config.settings_data.mail_server.use_tls is True
 
 
 # ---------------------------------------------------------------------------
 # Properties delegate to settings_data
 # ---------------------------------------------------------------------------
 
-def test_property_hr_url():
-    cfg = _make_config()
-    assert cfg.hr_url == "https://hr.example.com/api"
+def test_property_hr_url(app_config):
+    assert app_config.hr_url == "https://hr.example.com/api"
 
 
-def test_property_hr_api_key():
-    cfg = _make_config()
-    assert cfg.hr_api_key == "hr-key-123"
+def test_property_hr_api_key(app_config):
+    assert app_config.hr_api_key == "hr-key-123"
 
 
-def test_property_own_unit():
-    cfg = _make_config()
-    assert cfg.own_unit == "Alpha"
+def test_property_own_unit(app_config):
+    assert app_config.own_unit == "Alpha"
 
 
-def test_property_mail_server():
-    cfg = _make_config()
-    assert cfg.mail_server.host == "smtp.example.com"
+def test_property_mail_server(app_config):
+    assert app_config.mail_server.host == "smtp.example.com"
 
 
-def test_property_pdf_output_path():
-    cfg = _make_config()
-    assert cfg.pdf_output_path == "/tmp/wf_pdf"
+def test_property_pdf_output_path(app_config):
+    assert app_config.pdf_output_path == "/tmp/wf_pdf"
 
 
 # ---------------------------------------------------------------------------
 # Version tuple
 # ---------------------------------------------------------------------------
 
-def test_version_is_tuple_of_three():
-    cfg = _make_config()
-    assert isinstance(cfg.version, tuple)
-    assert len(cfg.version) == 3
+def test_version_is_tuple_of_three(app_config):
+    assert isinstance(app_config.version, tuple)
+    assert len(app_config.version) == 3
 
 
-def test_version_values():
-    cfg = _make_config()
-    # version = (status, version_number, date)
-    assert cfg.version[0] == "stable"
-    assert cfg.version[1] == "2.0.0"
-    assert cfg.version[2] == "2026-03-23"
+def test_version_status(app_config):
+    status, *_ = app_config.version
+    assert status == "stable"
+
+
+def test_version_number(app_config):
+    _, version_num, *_ = app_config.version
+    assert version_num == "2.0.0"
+
+
+def test_version_date(app_config):
+    *_, date = app_config.version
+    assert date == "2026-03-23"
 
 
 # ---------------------------------------------------------------------------
-# config property returns the engine
+# config property returns the DB engine
 # ---------------------------------------------------------------------------
 
-def test_config_property_returns_engine():
-    cfg = _make_config()
-    assert cfg.config is not None
+def test_config_property_returns_engine(app_config):
+    assert app_config.config is not None
 
 
 # ---------------------------------------------------------------------------
 # Environment-based config path selection
 # ---------------------------------------------------------------------------
 
-def test_development_env_uses_dev_config(tmp_path):
-    _clear_singleton()
+def test_development_env_uses_dev_config():
     from warriorfit.config.appliccation_config import ApplicationConfig
-
-    captured_paths = []
-
-    def fake_open(path, *args, **kwargs):
-        captured_paths.append(str(path))
-        if "version" in str(path):
-            return mock_open(read_data=yaml.dump(MINIMAL_VERSION))()
-        return mock_open(read_data=yaml.dump(MINIMAL_CONFIG))()
 
     with (
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
-        patch("builtins.open", side_effect=fake_open),
+        patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
+        patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
         patch("warriorfit.config.appliccation_config.create_async_engine", return_value=MagicMock()),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
     ):
-        ApplicationConfig()
+        cfg = ApplicationConfig()
 
-    assert any("config_dev.yml" in p for p in captured_paths)
+    assert "config_dev.yml" in str(cfg.config_path)
 
 
-def test_production_env_requires_secret_key():
-    _clear_singleton()
+def test_production_env_missing_secret_key_raises():
     from warriorfit.config.appliccation_config import ApplicationConfig
 
-    env = {"APP_ENV": "production"}
-    # Remove WF_SECRET_KEY if present
-    env_clean = {k: v for k, v in os.environ.items() if k != "WF_SECRET_KEY"}
-    env_clean["APP_ENV"] = "production"
+    env = {k: v for k, v in os.environ.items() if k != "WF_SECRET_KEY"}
+    env["APP_ENV"] = "production"
 
-    with patch.dict(os.environ, env_clean, clear=True):
-        with pytest.raises((KeyError, ValueError)):
+    with patch.dict(os.environ, env, clear=True):
+        with pytest.raises(KeyError):
             ApplicationConfig()
 
 
 def test_production_env_with_secret_key_and_config_override(tmp_path):
-    import io
-    _clear_singleton()
     from warriorfit.config.appliccation_config import ApplicationConfig
 
     config_file = tmp_path / "config.yml"
@@ -239,9 +226,8 @@ def test_production_env_with_secret_key_and_config_override(tmp_path):
     _real_open = io.open
 
     def fake_open(path, *args, **kwargs):
-        if "version" in str(path):
-            return _real_open(version_file, *args, **kwargs)
-        return _real_open(config_file, *args, **kwargs)
+        target = version_file if "version" in str(path) else config_file
+        return _real_open(target, *args, **kwargs)
 
     with (
         patch.dict(os.environ, {
@@ -259,10 +245,10 @@ def test_production_env_with_secret_key_and_config_override(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# _ensure_directory creates missing directories
+# _ensure_directory
 # ---------------------------------------------------------------------------
 
-def test_ensure_directory_creates_path(tmp_path):
+def test_ensure_directory_creates_missing_path(tmp_path):
     from warriorfit.config.appliccation_config import ApplicationConfig
     new_dir = tmp_path / "sub" / "dir"
     assert not new_dir.exists()
@@ -270,7 +256,7 @@ def test_ensure_directory_creates_path(tmp_path):
     assert Path(result).exists()
 
 
-def test_ensure_directory_existing_path(tmp_path):
+def test_ensure_directory_is_idempotent_on_existing_path(tmp_path):
     from warriorfit.config.appliccation_config import ApplicationConfig
     result = ApplicationConfig._ensure_directory(str(tmp_path))
     assert Path(result).exists()
@@ -280,11 +266,9 @@ def test_ensure_directory_existing_path(tmp_path):
 # save_config writes correct YAML
 # ---------------------------------------------------------------------------
 
-def test_save_config_writes_yaml(tmp_path):
-    cfg = _make_config()
-
+def test_save_config_writes_yaml(app_config, tmp_path):
     output_file = tmp_path / "saved_config.yml"
-    cfg.config_path = output_file
+    app_config.config_path = output_file
 
     new_settings = SettingsData(
         db_host="db.new",
@@ -308,7 +292,7 @@ def test_save_config_writes_yaml(tmp_path):
         hr_api_key="new-key",
     )
 
-    cfg.save_config(new_settings)
+    app_config.save_config(new_settings)
 
     saved = yaml.safe_load(output_file.read_text(encoding="utf-8"))
     assert saved["db"]["host"] == "db.new"
@@ -320,24 +304,26 @@ def test_save_config_writes_yaml(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# SettingsData helpers (tested here for completeness)
+# SettingsData helpers
 # ---------------------------------------------------------------------------
 
-def test_settings_data_has_database_config_true():
-    sd = SettingsData(db_host="h", db_database="d", db_username="u", db_password="p")
-    assert sd.has_database_config() is True
+@pytest.mark.parametrize("host,db,user,pwd,expected", [
+    ("h", "d", "u", "p", True),
+    ("",  "d", "u", "p", False),
+    ("h", "",  "u", "p", False),
+    ("h", "d", "",  "p", False),
+    ("h", "d", "u", "",  False),
+])
+def test_settings_data_has_database_config(host, db, user, pwd, expected):
+    sd = SettingsData(db_host=host, db_database=db, db_username=user, db_password=pwd)
+    assert sd.has_database_config() is expected
 
 
-def test_settings_data_has_database_config_false():
-    sd = SettingsData(db_host="", db_database="d", db_username="u", db_password="p")
-    assert sd.has_database_config() is False
-
-
-def test_settings_data_has_hr_config_true():
-    sd = SettingsData(hr_url="https://hr.example.com", hr_api_key="key")
-    assert sd.has_hr_config() is True
-
-
-def test_settings_data_has_hr_config_false():
-    sd = SettingsData(hr_url="", hr_api_key="key")
-    assert sd.has_hr_config() is False
+@pytest.mark.parametrize("url,api_key,expected", [
+    ("https://hr.example.com", "key", True),
+    ("",                       "key", False),
+    ("https://hr.example.com", "",    False),
+])
+def test_settings_data_has_hr_config(url, api_key, expected):
+    sd = SettingsData(hr_url=url, hr_api_key=api_key)
+    assert sd.has_hr_config() is expected
