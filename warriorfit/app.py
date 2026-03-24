@@ -509,15 +509,20 @@ class FitnessWarriorApp:
 
             nav_items: list[Any] = []
 
-            # Root pages first (flat)
+            # Root pages first (flat), except About
             for p in pages_for_role:
-                if p.group == "root":
+                if p.group == "root" and p.tab != "About":
                     nav_items.append(_safe_panel(p.ui_factory()))
 
             # Grouped menus
             nav_items.append(_build_menu("Psychical Tests", pages_for_role))
             nav_items.append(_build_menu("Cross/Runs", pages_for_role))
             nav_items.append(_build_menu("Admin", pages_for_role))
+
+            # About always last
+            for p in pages_for_role:
+                if p.tab == "About":
+                    nav_items.append(_safe_panel(p.ui_factory()))
 
             # Global controls
             nav_items.append(ui.nav_spacer())
