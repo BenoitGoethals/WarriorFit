@@ -292,10 +292,10 @@ class FitnessWarriorApp:
             ),
             PageSpec(
                 tab="About",
-                group="Admin",
+                group="root",
                 ui_factory=about.get_ui,
                 server_factory=about.server,
-                allowed_roles={Role.ADMIN},
+                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST, Role.PLANNER},
             ),
         ]
 
