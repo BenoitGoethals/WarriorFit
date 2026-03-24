@@ -41,6 +41,7 @@ from warriorfit.ui.pages import (
     status_application,
 )
 from warriorfit.ui.pages import usermangement
+from warriorfit.ui.pages import about
 from warriorfit.ui.pages import phef
 from warriorfit.ui.pages import sessions
 from warriorfit.ui.pages import functional_test
@@ -287,6 +288,13 @@ class FitnessWarriorApp:
                 group="Admin",
                 ui_factory=status_application.get_ui,
                 server_factory=status_application.server,
+                allowed_roles={Role.ADMIN},
+            ),
+            PageSpec(
+                tab="About",
+                group="Admin",
+                ui_factory=about.get_ui,
+                server_factory=about.server,
                 allowed_roles={Role.ADMIN},
             ),
         ]
