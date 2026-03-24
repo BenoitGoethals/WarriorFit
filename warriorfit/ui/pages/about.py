@@ -1,8 +1,16 @@
 from shiny import ui
+from dependency_injector.wiring import inject, Provide
+from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.core.container import Container
 from warriorfit.ui.pages.page import Page
 
 
 class AboutPage(Page):
+
+    @inject
+    def __init__(self, config: ApplicationConfig = Provide[Container.config]):
+        super().__init__()
+        self._config = config
 
     def refresh(self):
         pass
@@ -75,6 +83,18 @@ class AboutPage(Page):
                                     ui.tags.tr(
                                         ui.tags.td("Purpose", class_="fw-bold pe-3 py-1"),
                                         ui.tags.td("Physical fitness tracking & management"),
+                                    ),
+                                    ui.tags.tr(
+                                        ui.tags.td("Version", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(self._config.version[1]),
+                                    ),
+                                    ui.tags.tr(
+                                        ui.tags.td("Status", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(self._config.version[0]),
+                                    ),
+                                    ui.tags.tr(
+                                        ui.tags.td("Release Date", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(self._config.version[2]),
                                     ),
                                 ),
                                 class_="table table-sm table-borderless mb-0",

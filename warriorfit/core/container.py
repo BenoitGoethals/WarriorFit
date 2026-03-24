@@ -79,6 +79,7 @@ class Container(containers.DeclarativeContainer):
             "warriorfit.ui.pages.dashboard_own_unit",
             "warriorfit.ui.pages.reports",
             "warriorfit.ui.pages.status_application",
+            "warriorfit.ui.pages.about",
             "warriorfit.ui.pages.ind_test_show",
             "warriorfit.ui.pages.own_unit",
             "warriorfit.ui.pages.settings",
