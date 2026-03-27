@@ -870,9 +870,58 @@ hr { border-color: var(--wf-border) !important; margin: 1rem 0 !important; }
 /* ============================================================
    Responsive
    ============================================================ */
+
+/* Tablet: stack side-by-side layouts into single column */
+@media (max-width: 992px) {
+  /* Force layout_columns to stack vertically */
+  .bslib-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Bootstrap row columns: full width on tablet */
+  .row > [class*="col-lg-"],
+  .row > [class*="col-md-"] {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Sidebar: stack above content */
+  .bslib-sidebar-layout {
+    grid-template-columns: 1fr !important;
+  }
+  .bslib-sidebar-layout > .sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
   .container-fluid { padding: 0.9rem 1rem !important; }
   .wf-hero, .bg-light.rounded-3 { padding: 1.5rem 1rem !important; }
   .display-4 { font-size: 1.8rem !important; }
   .card-body  { padding: 0.85rem !important; }
+
+  /* Buttons: fill available width */
+  .btn { width: 100% !important; max-width: 300px !important; }
+
+  /* Text areas with fixed width */
+  textarea, .form-control { width: 100% !important; max-width: 100% !important; }
+
+  /* DataGrid: reduce height on mobile */
+  .shiny-data-grid {
+    height: 50vh !important;
+  }
+
+  /* Dashboard stat cards: smaller text */
+  .display-4 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.3rem !important; }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .container-fluid { padding: 0.5rem !important; }
+  .card-body { padding: 0.6rem !important; }
+  .card-header { padding: 0.5rem 0.8rem !important; font-size: 0.85rem !important; }
+  .navbar-brand { font-size: 0.85rem !important; }
 }
