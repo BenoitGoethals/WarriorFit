@@ -211,12 +211,12 @@ class SessionsController:
         return await self._service.get_test_session_by_id(sel_id)
 
     async def _recipients_for_unit(self) -> list[str]:
-        return [
-            r.mail
-            for r in await self.be_mil_service.get_all_be_mil_from_unit(
-                ApplicationConfig().own_unit
-            )
-        ]
+        results = await self.be_mil_service.get_all_be_mil_from_unit(
+            ApplicationConfig().own_unit
+        )
+        if not results:
+            return []
+        return [r.mail for r in results if r.mail]
 
     def _build_added_html(self, ts: TestSession) -> str:
         """
@@ -330,15 +330,18 @@ class SessionsController:
         :return: None
         :rtype: None
         """
+        recipients = await self._recipients_for_unit()
+        if not recipients:
+            return
         MailService().send_html(
             subject=subject,
             html_body=html_body,
             from_email=ApplicationConfig().mail_server.sender_email,
-            to=await self._recipients_for_unit(),
+            to=recipients,
         )
         if invite:
             MailService().send_with_calendar_invite(
-                to=await self._recipients_for_unit(),
+                to=recipients,
                 subject="Fitness Assessment Invite",
                 html_body="Fitness Session scheduled",
                 start=start_dt,

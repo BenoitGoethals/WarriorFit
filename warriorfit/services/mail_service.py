@@ -1,4 +1,5 @@
 import logging
+import os
 import smtplib
 import ssl
 from datetime import datetime, timedelta
@@ -132,6 +133,9 @@ class MailService:
     def _deliver(
         self, from_email: str, recipients: list[str], msg: MIMEMultipart
     ) -> None:
+        if os.getenv("APP_ENV", "development") == "development":
+            self._logger.debug("Mail suppressed in development mode")
+            return
 
         if not Os.is_alive(self.config.host):
             logging.error(f"SMTP server {self.config.host} is not alive")
