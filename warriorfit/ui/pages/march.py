@@ -213,7 +213,7 @@ class MarchPage(Page):
         @reactive.Effect
         @reactive.event(input.update_march_bn)
         async def _update():
-            if not valid_data():
+            if not await valid_data():
                 status.set("Invalid data.")
                 return
             current_id = selected_id.get()

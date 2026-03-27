@@ -107,6 +107,7 @@ class CalendarPage(Page):
             await shiny_calendar_call_js_func(session, "my_calendar", js_func)
 
         @reactive.effect
+        @reactive.event(input.my_calendar)
         async def _handle_calendar_events():
             msg = input.my_calendar()
             if not isinstance(msg, dict):

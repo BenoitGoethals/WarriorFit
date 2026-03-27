@@ -252,12 +252,7 @@ class CombatPage(BaseTestPage):
         async def _refresh_session_choices() -> None:
             await self.refresh_session_choices(input, self.controller)
 
-        @reactive.Effect
-        async def _init() -> None:
-            _ = self.refresh_tick.get()
-            await _refresh_session_choices()
-            await _clear_form()
-            status.set("Ready.")
+        # Session refresh handled by _init() defined above
 
         # Setup session management using base class
         self.setup_session_management(

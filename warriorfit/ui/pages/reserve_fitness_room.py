@@ -573,12 +573,14 @@ class ReserveFitnessRoomPage(Page):
             return ui.div(*room_buttons)
 
         @reactive.Effect
-        def _handle_room_selection():
-            # Listen to all possible room buttons
+        def _register_room_handlers():
             for room in rooms.get():
                 button_id = f"room_{room.id}"
-                if input[button_id]() > 0:
-                    selected_room.set(room.id)
+
+                @reactive.Effect
+                @reactive.event(input[button_id])
+                def _select(room_id=room.id):
+                    selected_room.set(room_id)
 
         @reactive.Effect
         @reactive.event(input.reserve)
