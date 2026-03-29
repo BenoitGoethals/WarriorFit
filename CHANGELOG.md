@@ -5,6 +5,14 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-03-29] - User Manual & Documentation
+
+### Added
+- **User Manual** (`documentation/USER_MANUAL.md`) — comprehensive step-by-step guide covering all 6 user roles (Admin, PTI, APTI, Planner, Guest, User) with GUI workflows for every page
+- User Manual reference added to `README.md` (Updates section and Project Structure)
+
+---
+
 ## [2026-03-22] - Chronos XML Import for Cross Results
 
 ### Added

@@ -63,6 +63,7 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-03-21 : add runtime memory & process metrics dashboard (RSS, VMS, CPU, threads, uptime) on Status Application page using `psutil`
 * 2026-03-21 : clarify reactive refresh strategy — `refresh_tick` for DataGrids (event-driven), `reactive.invalidate_later` for live metrics only
 * 2026-03-22 : Chronos XML import for cross results — upload race XML, validate against XSD, bulk-save runner times, auto-set `Cross.executed = True`; `lxml` added as dependency
+* 2026-03-29 : add [User Manual](documentation/USER_MANUAL.md) — step-by-step guide for all user roles (Admin, PTI, APTI, Planner, Guest)
 
 
 
@@ -110,6 +111,7 @@ The project documentation is structured in different documents:
 16. * [DI Usage Guide](documentation/DI_USAGE_GUIDE.md) (Done)
 17. * [Changelog](CHANGELOG.md)
 18. * [Security](SECURITY.md) (Done)
+19. * [User Manual](documentation/USER_MANUAL.md) (Done)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
