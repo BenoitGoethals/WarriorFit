@@ -281,7 +281,7 @@ class SwimTestPage(BaseTestPage):
             return render.DataGrid(
                 df_view,
                 filters=False,
-                selection_mode="row",
+                selection_mode="rows",
                 width="100%",
             )
 
@@ -488,7 +488,7 @@ class SwimTestPage(BaseTestPage):
         @render.data_frame
         async def swim_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.swim_serial_search_grid_selected_rows)

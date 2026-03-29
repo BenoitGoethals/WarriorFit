@@ -421,7 +421,7 @@ class FunctionalPage(BaseTestPage):
                 return render.DataGrid(
                     df,
                     filters=False,
-                    selection_mode="row",
+                    selection_mode="rows",
                     width="100%",
                 )
 
@@ -437,7 +437,7 @@ class FunctionalPage(BaseTestPage):
             return render.DataGrid(
                 df_view,
                 filters=False,
-                selection_mode="row",
+                selection_mode="rows",
                 width="100%",
             )
 
@@ -679,7 +679,7 @@ class FunctionalPage(BaseTestPage):
         @render.data_frame
         async def functional_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.functional_serial_search_grid_selected_rows)

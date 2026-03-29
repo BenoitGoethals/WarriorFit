@@ -630,7 +630,7 @@ class PhefPage(BaseTestPage):
         @render.data_frame
         async def ph_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.ph_serial_search_grid_selected_rows)

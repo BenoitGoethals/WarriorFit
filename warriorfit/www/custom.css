@@ -359,17 +359,15 @@ body {
   box-shadow: var(--wf-shadow) !important;
 }
 
-/* Let DataGrids auto-size to content instead of fixed-height scroll */
+/* Cap DataGrids to ~20 rows then scroll */
 .shiny-data-grid {
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
+  max-height: 680px !important;
+  overflow: auto !important;
 }
 .shiny-data-grid .shiny-data-grid-grid {
-  height: auto !important;
-  max-height: none !important;
+  max-height: 680px !important;
   overflow-x: auto !important;
-  overflow-y: visible !important;
+  overflow-y: auto !important;
 }
 
 /* ============================================================

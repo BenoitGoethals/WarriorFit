@@ -198,7 +198,7 @@ class UserManagementPage(Page):
         @render.data_frame
         async def um_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
 
 

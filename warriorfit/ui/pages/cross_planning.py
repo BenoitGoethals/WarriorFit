@@ -194,7 +194,6 @@ class CrossPlanningPage(Page):
                 df_view,
                 selection_mode="rows",
                 filters=False,
-                row_selection_mode="single",
                 width="100%",
             )
 

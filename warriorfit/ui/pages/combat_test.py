@@ -345,7 +345,7 @@ class CombatPage(BaseTestPage):
             return render.DataGrid(
                 df,
                 filters=False,
-                selection_mode="row",
+                selection_mode="rows",
                 width="100%",
             )
 
@@ -573,7 +573,7 @@ class CombatPage(BaseTestPage):
         @render.data_frame
         async def combat_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.combat_serial_search_grid_selected_rows)

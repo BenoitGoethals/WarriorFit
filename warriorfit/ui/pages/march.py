@@ -141,7 +141,7 @@ class MarchPage(Page):
                 display_df = df.drop(columns=columns_to_drop)
                 display_df = display_df.sort_values(by=["service_number"])
                 return render.DataGrid(
-                    display_df, selection_mode="row", filters=False, width="100%"
+                    display_df, selection_mode="rows", filters=False, width="100%"
                 )
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 # Return empty grid on error
@@ -149,7 +149,7 @@ class MarchPage(Page):
                     columns=["service_number", "distance", "Succeeded", "Date"]
                 )
                 return render.DataGrid(
-                    empty_df, selection_mode="row", filters=False, width="100%"
+                    empty_df, selection_mode="rows", filters=False, width="100%"
                 )
 
         @reactive.Effect
@@ -330,7 +330,7 @@ class MarchPage(Page):
         @render.data_frame
         async def march_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="row", filters=True, width="100%")
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.march_serial_search_grid_selected_rows)

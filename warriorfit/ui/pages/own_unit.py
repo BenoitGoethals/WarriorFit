@@ -91,7 +91,7 @@ class OwnUnitPage(Page):
             return render.DataGrid(
                 df,
                 filters=True,
-                selection_mode="row",
+                selection_mode="rows",
                 width="100%",
             )
 
