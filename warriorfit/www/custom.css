@@ -356,8 +356,20 @@ body {
 .shiny-data-grid-table,
 .shiny-html-output .dataTable {
   border-radius: var(--wf-radius) !important;
-  overflow: hidden !important;
   box-shadow: var(--wf-shadow) !important;
+}
+
+/* Let DataGrids auto-size to content instead of fixed-height scroll */
+.shiny-data-grid {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+.shiny-data-grid .shiny-data-grid-grid {
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
 }
 
 /* ============================================================
@@ -893,6 +905,74 @@ hr { border-color: var(--wf-border) !important; margin: 1rem 0 !important; }
     width: 100% !important;
     max-width: 100% !important;
   }
+
+  /* --- Navbar: collapse into hamburger on tablet and below --- */
+  .navbar,
+  .bslib-page-navbar > .navbar {
+    height: auto !important;
+    min-height: 52px !important;
+    max-height: none !important;
+    flex-wrap: wrap !important;
+  }
+  .navbar .navbar-collapse,
+  .navbar > .container,
+  .navbar > .container-fluid {
+    flex-wrap: wrap !important;
+  }
+  /* Override Bootstrap navbar-expand-md: force collapse at 992px */
+  .navbar.navbar-expand-md .navbar-collapse {
+    display: none !important;
+    flex-basis: 100% !important;
+    order: 2;
+  }
+  .navbar.navbar-expand-md .navbar-collapse.show,
+  .navbar.navbar-expand-md .navbar-collapse.collapsing {
+    display: flex !important;
+    flex-direction: column;
+  }
+  .navbar.navbar-expand-md .navbar-toggler {
+    display: flex !important;
+  }
+  .navbar .navbar-nav {
+    flex-wrap: wrap !important;
+    flex-direction: column !important;
+    width: 100%;
+    height: auto !important;
+    padding: 0.5rem 0;
+  }
+  .navbar .navbar-nav .nav-item {
+    flex-shrink: 1 !important;
+    width: 100%;
+  }
+  .navbar .nav-link,
+  .bslib-page-navbar .nav-link {
+    padding: 0.5rem 0.85rem !important;
+    font-size: 0.84rem !important;
+  }
+  /* Hamburger toggler styling */
+  .navbar-toggler {
+    border-color: rgba(255,255,255,0.3) !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  .navbar-toggler-icon {
+    filter: invert(1) !important;
+  }
+  /* Stack nav controls vertically in collapsed menu */
+  .navbar .navbar-nav.ms-auto {
+    flex-shrink: 1 !important;
+    flex-wrap: wrap !important;
+    gap: 0.3rem;
+    padding: 0.5rem 0;
+  }
+  /* Dropdown menus in collapsed navbar */
+  .navbar .dropdown-menu {
+    position: static !important;
+    float: none !important;
+    width: 100% !important;
+    background: rgba(0,0,0,0.15) !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
 }
 
 /* Mobile */
@@ -908,9 +988,9 @@ hr { border-color: var(--wf-border) !important; margin: 1rem 0 !important; }
   /* Text areas with fixed width */
   textarea, .form-control { width: 100% !important; max-width: 100% !important; }
 
-  /* DataGrid: reduce height on mobile */
+  /* DataGrid: allow horizontal scroll on mobile */
   .shiny-data-grid {
-    height: 50vh !important;
+    overflow-x: auto !important;
   }
 
   /* Dashboard stat cards: smaller text */
