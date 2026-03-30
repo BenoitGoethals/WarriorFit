@@ -15,12 +15,19 @@ class DataCollector:
     Responsible for collecting and processing fitness test data for servicemen.
     """
 
-    def __init__(self, service_test: ServiceTest = None,
-                 service_march: ServiceMarch = None,
-                 military_service: MilitaryService = None) -> None:
+    def __init__(
+        self,
+        service_test: ServiceTest = None,
+        service_march: ServiceMarch = None,
+        military_service: MilitaryService = None,
+    ) -> None:
         self._service = service_test if service_test is not None else ServiceTest()
-        self._service_mars = service_march if service_march is not None else ServiceMarch()
-        self.be_mil = military_service if military_service is not None else MilitaryService()
+        self._service_mars = (
+            service_march if service_march is not None else ServiceMarch()
+        )
+        self.be_mil = (
+            military_service if military_service is not None else MilitaryService()
+        )
 
     # -------------------------
     # Small helpers

@@ -12,7 +12,9 @@ from warriorfit.core.container import Container
 class MarchPage(Page):
 
     @inject
-    def __init__(self, controller: MarchController = Provide[Container.march_controller]):
+    def __init__(
+        self, controller: MarchController = Provide[Container.march_controller]
+    ):
         super().__init__()
         self.controller = controller
 
@@ -23,7 +25,11 @@ class MarchPage(Page):
         return ui.nav_panel(
             "March",
             ui.h2("🧪 March Tests"),
-            ui.input_action_button("march_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "march_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -41,7 +47,10 @@ class MarchPage(Page):
                             ),
                         ),
                         ui.input_action_button(
-                            "march_search", "Confirm Serial", width="200px",class_="btn btn-primary btn-sm",
+                            "march_search",
+                            "Confirm Serial",
+                            width="200px",
+                            class_="btn btn-primary btn-sm",
                         ),
                         ui.output_text("march_military"),
                         ui.br(),
@@ -330,7 +339,9 @@ class MarchPage(Page):
         @render.data_frame
         async def march_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
+            return render.DataGrid(
+                df, selection_mode="rows", filters=True, width="100%"
+            )
 
         @reactive.Effect
         @reactive.event(input.march_serial_search_grid_selected_rows)

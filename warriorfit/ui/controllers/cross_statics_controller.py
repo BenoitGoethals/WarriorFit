@@ -17,7 +17,9 @@ class CrossStaticsController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceCross()
-        self._mil_service = mil_service if mil_service is not None else MilitaryService()
+        self._mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
         self._stats = None
 
     async def load(self):

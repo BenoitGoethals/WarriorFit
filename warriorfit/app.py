@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from warriorfit.security.rate_limiter import login_rate_limiter
@@ -295,7 +296,13 @@ class FitnessWarriorApp:
                 group="root",
                 ui_factory=about.get_ui,
                 server_factory=about.server,
-                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST, Role.PLANNER},
+                allowed_roles={
+                    Role.ADMIN,
+                    Role.PTI,
+                    Role.APTI,
+                    Role.GUEST,
+                    Role.PLANNER,
+                },
             ),
         ]
 
@@ -455,7 +462,9 @@ class FitnessWarriorApp:
                     ui.div(
                         ui.h3("📅 Calendar"),
                         ui.input_action_button(
-                            "close_calendar", "✕ Close", class_="btn btn-outline-secondary btn-sm"
+                            "close_calendar",
+                            "✕ Close",
+                            class_="btn btn-outline-secondary btn-sm",
                         ),
                         class_="wf-calendar-panel-header",
                     ),
@@ -474,7 +483,8 @@ class FitnessWarriorApp:
                         class_="wf-calendar-panel-header",
                     ),
                     ui.div(
-                        calendar_events.get_ui(all_test=False), class_="wf-calendar-panel-body"
+                        calendar_events.get_ui(all_test=False),
+                        class_="wf-calendar-panel-body",
                     ),
                     class_="wf-calendar-panel",
                 )
@@ -557,7 +567,8 @@ class FitnessWarriorApp:
             nav_items.append(
                 ui.nav_control(
                     ui.input_action_button(
-                        "logout_btn", "Sign Out",
+                        "logout_btn",
+                        "Sign Out",
                         class_="btn btn-sm",
                         style="background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.25);",
                     )
@@ -600,6 +611,7 @@ class FitnessWarriorApp:
             if app_env == "development":
                 if _get_session_user() is None:
                     from warriorfit.data.model.db_model import User as UserModel
+
                     dev_user = UserModel(
                         id=0,
                         username="admin",
@@ -620,11 +632,20 @@ class FitnessWarriorApp:
             login = ui.div(
                 ui.div(
                     ui.div("⚔️ WarriorFit", class_="wf-login-logo"),
-                    ui.div("Physical Training Management System", class_="wf-login-subtitle"),
-                    ui.tags.label("Username", for_="username_login", class_="form-label"),
+                    ui.div(
+                        "Physical Training Management System",
+                        class_="wf-login-subtitle",
+                    ),
+                    ui.tags.label(
+                        "Username", for_="username_login", class_="form-label"
+                    ),
                     ui.input_text("username_login", None, placeholder="Enter username"),
-                    ui.tags.label("Password", for_="password_login", class_="form-label mt-2"),
-                    ui.input_password("password_login", None, placeholder="Enter password"),
+                    ui.tags.label(
+                        "Password", for_="password_login", class_="form-label mt-2"
+                    ),
+                    ui.input_password(
+                        "password_login", None, placeholder="Enter password"
+                    ),
                     ui.input_action_button(
                         "handle_login", "Sign In", class_="btn btn-primary w-100 mt-3"
                     ),
@@ -651,8 +672,11 @@ class FitnessWarriorApp:
 
             client = getattr(session.http_conn, "client", None)
             x_forwarded = session.http_conn.headers.get("x-forwarded-for", "")
-            client_ip = (x_forwarded.split(",")[0].strip() if x_forwarded
-                         else (client.host if client else None))
+            client_ip = (
+                x_forwarded.split(",")[0].strip()
+                if x_forwarded
+                else (client.host if client else None)
+            )
 
             try:
                 if await user_service.check_user(username_login, password_login):
@@ -665,7 +689,9 @@ class FitnessWarriorApp:
                     login_rate_limiter.reset(username_login)
                     UserStore.set_user(user)
                     await user_service.add_audit_log(
-                        f"User {username_login} logged in", "login", ip_address=client_ip
+                        f"User {username_login} logged in",
+                        "login",
+                        ip_address=client_ip,
                     )
                     _set_session_user(user)
                     login_user_text.set(
@@ -837,4 +863,8 @@ class FitnessWarriorApp:
 
 FitnessWarriorApp.setup_logger()
 FitnessWarriorApp.get_broker().start()
-app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server, static_assets=Path(__file__).parent / "www")
+app = App(
+    ui=FitnessWarriorApp.build_app_ui(),
+    server=FitnessWarriorApp.server,
+    static_assets=Path(__file__).parent / "www",
+)

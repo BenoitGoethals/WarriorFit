@@ -19,7 +19,9 @@ from warriorfit.core.container import Container
 
 class CrossPage(Page):
     @inject
-    def __init__(self, controller: CrossController = Provide[Container.cross_controller]):
+    def __init__(
+        self, controller: CrossController = Provide[Container.cross_controller]
+    ):
         super().__init__()
         self.controller = controller
         self.refresh_tick = reactive.Value(0)
@@ -38,7 +40,11 @@ class CrossPage(Page):
         return ui.nav_panel(
             "Cross",
             ui.h2("🏃 Cross Runners"),
-            ui.input_action_button("cross_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "cross_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -86,8 +92,12 @@ class CrossPage(Page):
             if not cross_selected_id.get() or df.empty:
                 return ui.div()
             return ui.div(
-                ui.input_action_button("report_lst_run", "Generate Report", class_="btn-secondary"),
-                ui.download_button("download_report_cross_run", "Download", class_="btn-primary"),
+                ui.input_action_button(
+                    "report_lst_run", "Generate Report", class_="btn-secondary"
+                ),
+                ui.download_button(
+                    "download_report_cross_run", "Download", class_="btn-primary"
+                ),
             )
 
         @output
@@ -121,8 +131,10 @@ class CrossPage(Page):
                 ui.card_header("Runner"),
                 ui.input_text("runner_serialnr", "Serial Number"),
                 ui.input_action_button(
-                    "runner_search", "✅ Confirm Serial",
-                    class_="btn btn-primary btn-sm", width="200px",
+                    "runner_search",
+                    "✅ Confirm Serial",
+                    class_="btn btn-primary btn-sm",
+                    width="200px",
                 ),
                 ui.output_text("runner_military"),
                 ui.input_text(
@@ -168,7 +180,6 @@ class CrossPage(Page):
             val = (input.cross_select() or "").strip()
             self.selected_cross_id.set(val)
 
-
         @reactive.Effect
         @reactive.event(input.cross_locker)
         def on_cross_locker():
@@ -196,11 +207,11 @@ class CrossPage(Page):
             _last_uploaded.set(file_key)
             if passed:
                 _upload_tick.set(_upload_tick.get() + 1)  # refresh grid only
-                ui.notification_show("File uploaded successfully.", type="message", duration=3)
+                ui.notification_show(
+                    "File uploaded successfully.", type="message", duration=3
+                )
             else:
                 ui.notification_show("Failed to upload file.", type="error", duration=3)
-
-
 
         def _read_form() -> Dict[str, Any]:
             return {
@@ -219,7 +230,9 @@ class CrossPage(Page):
             crosses = await self.controller.load_crosses()
             items = {
                 str(c.id): getattr(
-                    c, "name", f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')} {c.distance} K"
+                    c,
+                    "name",
+                    f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')} {c.distance} K",
                 )
                 for c in (crosses or [])
             }
@@ -335,7 +348,9 @@ class CrossPage(Page):
             self.selected_runner_id.set("")
             self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Added runner {payload['serialnr']}.")
-            ui.notification_show(f"Runner {payload['serialnr']} added.", type="message", duration=3)
+            ui.notification_show(
+                f"Runner {payload['serialnr']} added.", type="message", duration=3
+            )
 
         @reactive.Effect
         @reactive.event(input.runner_update_btn)
@@ -360,7 +375,9 @@ class CrossPage(Page):
             self.selected_runner_id.set("")
             self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Updated runner {payload['serialnr']}.")
-            ui.notification_show(f"Runner {payload['serialnr']} updated.", type="message", duration=3)
+            ui.notification_show(
+                f"Runner {payload['serialnr']} updated.", type="message", duration=3
+            )
 
             _clear_form()
 

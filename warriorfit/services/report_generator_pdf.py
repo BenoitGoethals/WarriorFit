@@ -35,10 +35,16 @@ class ReportGeneratorPdf(GeneratorReport):
         ("BOX", (0, 0), (-1, -1), 0.5),  # Outer box
     ]
 
-    def __init__(self, cross_service: ServiceCross = None,
-                 military_service=None, service_test=None):
+    def __init__(
+        self,
+        cross_service: ServiceCross = None,
+        military_service=None,
+        service_test=None,
+    ):
         super().__init__(military_service=military_service, service_test=service_test)
-        self._cross_service = cross_service if cross_service is not None else ServiceCross()
+        self._cross_service = (
+            cross_service if cross_service is not None else ServiceCross()
+        )
         self._report_generators = {
             ReportType.PHEF: self.generate_phef_report,
             ReportType.FUNCTIONAL: self.generate_functional_report,

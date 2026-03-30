@@ -26,7 +26,9 @@ class PhefController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
 
     # ----- Helpers -----
     @staticmethod

@@ -12,7 +12,9 @@ from warriorfit.core.container import Container
 
 class OwnUnitPage(Page):
     @inject
-    def __init__(self, controller: OwnUnitController = Provide[Container.own_unit_controller]):
+    def __init__(
+        self, controller: OwnUnitController = Provide[Container.own_unit_controller]
+    ):
         super().__init__()
         self.controller = controller
         self._selected_serial = reactive.Value(None)
@@ -28,7 +30,11 @@ class OwnUnitPage(Page):
                 ui.card_header(
                     f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"
                 ),
-                ui.input_action_button("refresh_servicemen", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+                ui.input_action_button(
+                    "refresh_servicemen",
+                    "🔄 Refresh",
+                    class_="btn btn-secondary btn-sm my-2",
+                ),
                 ui.output_data_frame("servicemen_grid"),
                 ui.input_action_button(
                     "full_report_unit", "Pdf Satus Unit", width="150px"

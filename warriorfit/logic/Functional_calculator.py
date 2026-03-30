@@ -298,9 +298,7 @@ class FunctionalCalculator:
         if age_cat not in table:
             return 0.0
         age_group_data = table[age_cat]
-        sorted_scores = sorted(
-            age_group_data.items(), key=lambda x: x[0], reverse=True
-        )
+        sorted_scores = sorted(age_group_data.items(), key=lambda x: x[0], reverse=True)
         for score, required_reps in sorted_scores:
             if count >= required_reps:
                 return float(

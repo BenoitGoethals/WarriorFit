@@ -19,7 +19,12 @@ class UserManagementPage(Page):
     NO_SELECTION_MESSAGE = "No row selected"
 
     @inject
-    def __init__(self, controller: UserManagementController = Provide[Container.usermanagement_controller]) -> None:
+    def __init__(
+        self,
+        controller: UserManagementController = Provide[
+            Container.usermanagement_controller
+        ],
+    ) -> None:
         super().__init__()
         self.controller = controller
         self.status = reactive.Value("Ready.")
@@ -36,7 +41,8 @@ class UserManagementPage(Page):
                 ui.div(
                     ui.h2("👥 User Management"),
                     ui.input_action_button(
-                        "um_refresh_btn", "🔄 Refresh",
+                        "um_refresh_btn",
+                        "🔄 Refresh",
                         class_="btn btn-outline-secondary btn-sm",
                     ),
                     class_="d-flex align-items-center gap-3 mb-3",
@@ -64,7 +70,6 @@ class UserManagementPage(Page):
                             ),
                             class_="bg-primary text-white",
                         ),
-
                         # Section: Lookup
                         ui.div(
                             ui.div("Lookup", class_="wf-section-label"),
@@ -79,7 +84,6 @@ class UserManagementPage(Page):
                             ),
                             class_="wf-sidebar-section",
                         ),
-
                         # Section: User details
                         ui.div(
                             ui.div("User Details", class_="wf-section-label"),
@@ -87,7 +91,8 @@ class UserManagementPage(Page):
                             Page.input_password_with_toggle("um_password", "Password"),
                             ui.input_text("um_email", "Email"),
                             ui.input_select(
-                                "um_role", "Role",
+                                "um_role",
+                                "Role",
                                 choices=self.controller.role_choices(),
                             ),
                             ui.div(
@@ -96,35 +101,37 @@ class UserManagementPage(Page):
                             ),
                             class_="wf-sidebar-section",
                         ),
-
                         # Section: Actions
                         ui.div(
                             ui.div("Actions", class_="wf-section-label"),
                             ui.div(
                                 ui.input_action_button(
-                                    "um_create_btn", "➕ Create",
+                                    "um_create_btn",
+                                    "➕ Create",
                                     class_="btn btn-primary btn-sm flex-fill",
                                 ),
                                 ui.input_action_button(
-                                    "um_update_btn", "💾 Update",
+                                    "um_update_btn",
+                                    "💾 Update",
                                     class_="btn btn-warning btn-sm flex-fill",
                                 ),
                                 class_="d-flex gap-2 mb-2",
                             ),
                             ui.div(
                                 ui.input_action_button(
-                                    "um_clear_btn", "🗑 Clear",
+                                    "um_clear_btn",
+                                    "🗑 Clear",
                                     class_="btn btn-outline-secondary btn-sm flex-fill",
                                 ),
                                 ui.input_action_button(
-                                    "um_delete_btn", "❌ Delete",
+                                    "um_delete_btn",
+                                    "❌ Delete",
                                     class_="btn btn-danger btn-sm flex-fill",
                                 ),
                                 class_="d-flex gap-2",
                             ),
                             class_="wf-sidebar-section",
                         ),
-
                         # Status bar
                         ui.div(
                             ui.output_text("um_status"),
@@ -134,7 +141,6 @@ class UserManagementPage(Page):
                             ui.output_text("selected_user"),
                             class_="wf-selected-hint",
                         ),
-
                         full_screen=False,
                     ),
                     col_widths=(8, 4),
@@ -177,8 +183,6 @@ class UserManagementPage(Page):
             },
         )
 
-
-
     def server(self, input, output, session):
 
         @reactive.Effect
@@ -198,11 +202,9 @@ class UserManagementPage(Page):
         @render.data_frame
         async def um_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
-
-
-
-
+            return render.DataGrid(
+                df, selection_mode="rows", filters=True, width="100%"
+            )
 
         @reactive.Effect
         @reactive.event(input.um_serial_search_grid_selected_rows)
@@ -325,12 +327,16 @@ class UserManagementPage(Page):
             created = await self.controller.create_user(form)
             if created:
                 self.status.set(f"Created user '{form.serial}'.")
-                ui.notification_show(f"User '{form.serial}' created.", type="message", duration=3)
+                ui.notification_show(
+                    f"User '{form.serial}' created.", type="message", duration=3
+                )
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
                 self.status.set(f"Failed to create user '{form.serial}'.")
-                ui.notification_show(f"Failed to create user '{form.serial}'.", type="error", duration=3)
+                ui.notification_show(
+                    f"Failed to create user '{form.serial}'.", type="error", duration=3
+                )
 
         @reactive.Effect
         @reactive.event(input.um_update_btn)
@@ -350,7 +356,9 @@ class UserManagementPage(Page):
                 self.status.set("Failed to update user.")
                 return
             self.status.set(f"Updated user '{form.serial}'.")
-            ui.notification_show(f"User '{form.serial}' updated.", type="message", duration=3)
+            ui.notification_show(
+                f"User '{form.serial}' updated.", type="message", duration=3
+            )
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self._clear_form(session)
 
@@ -366,7 +374,9 @@ class UserManagementPage(Page):
                 self.status.set(f"No user found with serial '{sel_serial}'.")
                 return
             self.status.set(f"Deleted user '{sel_serial}'.")
-            ui.notification_show(f"User '{sel_serial}' deleted.", type="warning", duration=3)
+            ui.notification_show(
+                f"User '{sel_serial}' deleted.", type="warning", duration=3
+            )
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_serial.set(None)
             self._clear_form(session)

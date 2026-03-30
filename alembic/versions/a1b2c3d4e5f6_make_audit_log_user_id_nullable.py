@@ -7,6 +7,7 @@ Create Date: 2026-03-18 00:00:00.000000
 Allows audit_log entries for unauthenticated events (e.g. failed login attempts)
 where no user_id is available.
 """
+
 from typing import Sequence, Union
 
 from alembic import op

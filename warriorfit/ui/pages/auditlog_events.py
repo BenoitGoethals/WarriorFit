@@ -11,7 +11,12 @@ from warriorfit.core.container import Container
 
 class AuditLogEventsPage(Page):
     @inject
-    def __init__(self, controller: AuditLogEventsController = Provide[Container.auditlog_events_controller]) -> None:
+    def __init__(
+        self,
+        controller: AuditLogEventsController = Provide[
+            Container.auditlog_events_controller
+        ],
+    ) -> None:
         super().__init__()
         self.ctrl = controller
 
@@ -24,7 +29,9 @@ class AuditLogEventsPage(Page):
             ui.h2("Audit Logs"),
             ui.card(
                 ui.card_header("Audit Logs"),
-                ui.input_action_button("au_refresh", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+                ui.input_action_button(
+                    "au_refresh", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+                ),
                 ui.output_data_frame("au_grid"),
                 full_screen=False,
             ),

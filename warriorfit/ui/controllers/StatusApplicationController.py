@@ -16,6 +16,7 @@ class StatusApplicationController:
         config: ApplicationConfig = None,
     ) -> None:
         from warriorfit.data.repositories.user_repository import UserRepository
+
         self._repo = repo if repo is not None else UserRepository()
         self._config = config if config is not None else ApplicationConfig()
 

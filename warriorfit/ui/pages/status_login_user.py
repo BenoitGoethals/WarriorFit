@@ -14,7 +14,12 @@ from warriorfit.ui.user_store import UserStore
 
 class StatusLoginUser(Page):
     @inject
-    def __init__(self, controller: StatusLogUserController = Provide[Container.status_log_user_controller]):
+    def __init__(
+        self,
+        controller: StatusLogUserController = Provide[
+            Container.status_log_user_controller
+        ],
+    ):
         super().__init__()
         self.controller = controller
 
@@ -46,7 +51,11 @@ class StatusLoginUser(Page):
                         ),
                     )
                 ),
-                ui.input_action_button("wl_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+                ui.input_action_button(
+                    "wl_refresh_btn",
+                    "🔄 Refresh",
+                    class_="btn btn-secondary btn-sm my-2",
+                ),
                 ui.output_ui("pti_dashboard_section"),
                 class_="container-fluid p-4",
             ),

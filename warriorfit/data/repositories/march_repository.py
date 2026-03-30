@@ -136,7 +136,9 @@ class MarchRepository(ABCRepository):
 
                     if existing_march:
                         self._logger.info(
-                            "March already exists for service_number %s at %s", mars.service_number, mars.datetime_executed
+                            "March already exists for service_number %s at %s",
+                            mars.service_number,
+                            mars.datetime_executed,
                         )
                         return existing_march
 

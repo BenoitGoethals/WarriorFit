@@ -261,7 +261,9 @@ class FitnessTestRepository(ABCRepository):
 
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error fetching test sessions for service member %s: %s", serial, str(e)
+                "Database error fetching test sessions for service member %s: %s",
+                serial,
+                str(e),
             )
             return []
 
@@ -388,7 +390,9 @@ class FitnessTestRepository(ABCRepository):
                 return list(tests) if tests else None
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error fetching passed fitness tests for year %d: %s", year, str(e)
+                "Database error fetching passed fitness tests for year %d: %s",
+                year,
+                str(e),
             )
             return None
 
@@ -694,7 +698,9 @@ class FitnessTestRepository(ABCRepository):
                         await session.flush()
                     else:
                         self._logger.error(
-                            "FitnessTest %d not in TestSession %d", fitness_test_id, test_session_id
+                            "FitnessTest %d not in TestSession %d",
+                            fitness_test_id,
+                            test_session_id,
                         )
                         return False
 
@@ -705,7 +711,10 @@ class FitnessTestRepository(ABCRepository):
                     return True
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error deleting FitnessTest %d from TestSession %d: %s", fitness_test_id, test_session_id, str(e)
+                "Database error deleting FitnessTest %d from TestSession %d: %s",
+                fitness_test_id,
+                test_session_id,
+                str(e),
             )
             return False
 
@@ -957,7 +966,9 @@ class FitnessTestRepository(ABCRepository):
                     return list(combat_tests) if combat_tests else []
         except (SQLAlchemyError, Exception) as e:
             self._logger.error(
-                "Error fetching Combat tests for military unit %s: %s", service_number, str(e)
+                "Error fetching Combat tests for military unit %s: %s",
+                service_number,
+                str(e),
             )
             return []
 
@@ -1001,7 +1012,9 @@ class FitnessTestRepository(ABCRepository):
                     return list(swim_tests) if swim_tests else []
         except (SQLAlchemyError, Exception) as e:
             self._logger.error(
-                "Error fetching Swimming tests for military unit %s: %s", service_number, str(e)
+                "Error fetching Swimming tests for military unit %s: %s",
+                service_number,
+                str(e),
             )
             return []
 
@@ -1033,6 +1046,8 @@ class FitnessTestRepository(ABCRepository):
 
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error fetching upcoming session for PTI %s: %s", serial_number_pti, str(e)
+                "Database error fetching upcoming session for PTI %s: %s",
+                serial_number_pti,
+                str(e),
             )
             return None

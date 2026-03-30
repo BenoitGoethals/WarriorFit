@@ -10,6 +10,7 @@ from warriorfit.core.Gender import Gender
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.mom.message import Message
 
+
 class ServiceMenSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -25,6 +26,7 @@ class ServiceMenSchema(BaseModel):
     unit: str = Field(..., max_length=100)
     para: bool = False
     ops_test: bool = False
+
 
 class BEMILService:
 

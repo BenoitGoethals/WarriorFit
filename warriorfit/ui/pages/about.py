@@ -28,7 +28,6 @@ class AboutPage(Page):
                     ),
                     class_="mb-4",
                 ),
-
                 ui.layout_columns(
                     ui.card(
                         ui.card_header(
@@ -40,7 +39,9 @@ class AboutPage(Page):
                         ui.div(
                             ui.tags.h5("Goethals Benoit", class_="mb-1"),
                             ui.tags.p(
-                                ui.tags.span("Adjudant Majoor", class_="badge bg-secondary me-2"),
+                                ui.tags.span(
+                                    "Adjudant Majoor", class_="badge bg-secondary me-2"
+                                ),
                                 ui.tags.span("OR-9", class_="badge bg-dark"),
                                 class_="mb-2",
                             ),
@@ -73,27 +74,41 @@ class AboutPage(Page):
                             ui.tags.table(
                                 ui.tags.tbody(
                                     ui.tags.tr(
-                                        ui.tags.td("Application", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(
+                                            "Application", class_="fw-bold pe-3 py-1"
+                                        ),
                                         ui.tags.td("WarriorFit"),
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td("Organisation", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(
+                                            "Organisation", class_="fw-bold pe-3 py-1"
+                                        ),
                                         ui.tags.td("Belgian Defence"),
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td("Purpose", class_="fw-bold pe-3 py-1"),
-                                        ui.tags.td("Physical fitness tracking & management"),
+                                        ui.tags.td(
+                                            "Purpose", class_="fw-bold pe-3 py-1"
+                                        ),
+                                        ui.tags.td(
+                                            "Physical fitness tracking & management"
+                                        ),
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td("Version", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(
+                                            "Version", class_="fw-bold pe-3 py-1"
+                                        ),
                                         ui.tags.td(self._config.version[1]),
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td("Status", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(
+                                            "Status", class_="fw-bold pe-3 py-1"
+                                        ),
                                         ui.tags.td(self._config.version[0]),
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td("Release Date", class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(
+                                            "Release Date", class_="fw-bold pe-3 py-1"
+                                        ),
                                         ui.tags.td(self._config.version[2]),
                                     ),
                                 ),

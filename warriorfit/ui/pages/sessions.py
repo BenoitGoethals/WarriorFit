@@ -19,7 +19,9 @@ class SessionsPage(Page):
     NO_SELECTION_MESSAGE = "No row selected"
 
     @inject
-    def __init__(self, controller: SessionsController = Provide[Container.sessions_controller]) -> None:
+    def __init__(
+        self, controller: SessionsController = Provide[Container.sessions_controller]
+    ) -> None:
         super().__init__()
         self.controller = controller
 
@@ -39,7 +41,9 @@ class SessionsPage(Page):
         return ui.nav_panel(
             "Sessions",
             ui.h2("📅 Fitness Test Sessions"),
-            ui.input_action_button("se_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "se_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+            ),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Create / Edit Session"),

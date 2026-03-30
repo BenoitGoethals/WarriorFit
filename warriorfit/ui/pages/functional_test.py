@@ -39,7 +39,10 @@ class FunctionalPage(BaseTestPage):
     )
 
     @inject
-    def __init__(self, controller: FunctionalController = Provide[Container.functional_controller]) -> None:
+    def __init__(
+        self,
+        controller: FunctionalController = Provide[Container.functional_controller],
+    ) -> None:
         super().__init__()
         self.controller = controller
 
@@ -55,7 +58,11 @@ class FunctionalPage(BaseTestPage):
             # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Functional Tests"),
-            ui.input_action_button("functional_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "functional_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -78,8 +85,10 @@ class FunctionalPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "functional_search", "✅ Confirm Serial",
-                            class_="btn btn-primary btn-sm", width="200px",
+                            "functional_search",
+                            "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm",
+                            width="200px",
                         ),
                         ui.output_text("functional_military"),
                         ui.layout_columns(
@@ -556,7 +565,11 @@ class FunctionalPage(BaseTestPage):
             status.set(
                 f"Added Functional test for {record['serialnr']} in session {record['id']}."
             )
-            ui.notification_show(f"Functional test added for {record['serialnr']}.", type="message", duration=3)
+            ui.notification_show(
+                f"Functional test added for {record['serialnr']}.",
+                type="message",
+                duration=3,
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -605,7 +618,11 @@ class FunctionalPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Functional test for {payload['serialnr']}.")
-            ui.notification_show(f"Functional test updated for {payload['serialnr']}.", type="message", duration=3)
+            ui.notification_show(
+                f"Functional test updated for {payload['serialnr']}.",
+                type="message",
+                duration=3,
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -679,7 +696,9 @@ class FunctionalPage(BaseTestPage):
         @render.data_frame
         async def functional_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
+            return render.DataGrid(
+                df, selection_mode="rows", filters=True, width="100%"
+            )
 
         @reactive.Effect
         @reactive.event(input.functional_serial_search_grid_selected_rows)

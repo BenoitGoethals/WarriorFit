@@ -33,12 +33,24 @@ class ServiceCross(Service):
     :type be_mil_service: MilitaryService
     """
 
-    def __init__(self, cross_repository: CrossRepository = None,
-                 user_repository=None, military_service: MilitaryService = None,
-                 config=None) -> None:
-        super().__init__(user_repository=user_repository, military_service=military_service, config=config)
-        self._cross_repo = cross_repository if cross_repository is not None else CrossRepository()
-        self.be_mil_service = military_service if military_service is not None else MilitaryService()
+    def __init__(
+        self,
+        cross_repository: CrossRepository = None,
+        user_repository=None,
+        military_service: MilitaryService = None,
+        config=None,
+    ) -> None:
+        super().__init__(
+            user_repository=user_repository,
+            military_service=military_service,
+            config=config,
+        )
+        self._cross_repo = (
+            cross_repository if cross_repository is not None else CrossRepository()
+        )
+        self.be_mil_service = (
+            military_service if military_service is not None else MilitaryService()
+        )
 
     async def get_runner(self, runner_id: int) -> Runner | None:
         return await self._cross_repo.get_runner(runner_id)
@@ -433,7 +445,7 @@ class ServiceCross(Service):
 
         return top_runners_by_distance
 
-    async def  read_xml_chronos_and_save(self, xml_file, cross_id: int) -> bool:
+    async def read_xml_chronos_and_save(self, xml_file, cross_id: int) -> bool:
         """
         Reads and validates a Chronos XML file against a predefined XSD schema and processes the data to
         add runners to a specified cross event. This function ensures that the XML data conforms to the
@@ -462,7 +474,9 @@ class ServiceCross(Service):
             xml_doc = etree.parse(file_path)
 
             if not schema.validate(xml_doc):
-                _logger.warning("Chronos XML failed XSD validation: %s", schema.error_log)
+                _logger.warning(
+                    "Chronos XML failed XSD validation: %s", schema.error_log
+                )
                 return False
             _logger.info("Chronos XML validated successfully.")
             runners = []
@@ -473,7 +487,9 @@ class ServiceCross(Service):
                 # Convert net time "hh:mm:ss" to total seconds (float)
                 parts = net.split(":")
                 if len(parts) == 3:
-                    running_time = int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+                    running_time = (
+                        int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+                    )
                 elif len(parts) == 2:
                     running_time = int(parts[0]) * 60 + float(parts[1])
                 else:
@@ -487,13 +503,12 @@ class ServiceCross(Service):
                 _logger.error("Failed to save runners to cross %d", cross_id)
                 return False
             _logger.info("Added %d runners to cross %d", len(runners), cross_id)
-            await self.add_audit_log(details=f"Added {len(runners)} runners to cross {cross_id}", action="add")
+            await self.add_audit_log(
+                details=f"Added {len(runners)} runners to cross {cross_id}",
+                action="add",
+            )
             return True
 
         except Exception as exc:
             _logger.error("Failed to read/validate Chronos XML: %s", exc)
             return False
-
-
-
-

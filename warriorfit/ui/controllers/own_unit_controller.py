@@ -39,12 +39,22 @@ class OwnUnitController:
         report_generator_pdf: ReportGeneratorPdf = None,
     ):
         _config = config if config is not None else ApplicationConfig()
-        self._mil_service = mil_service if mil_service is not None else MilitaryService()
+        self._mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
         self.unit_name: str = _config.own_unit
-        self._data_collector = data_collector if data_collector is not None else DataCollector()
+        self._data_collector = (
+            data_collector if data_collector is not None else DataCollector()
+        )
         self._service = test_service if test_service is not None else ServiceTest()
-        self._service_mars = march_service if march_service is not None else ServiceMarch()
-        self._report_generator_pdf = report_generator_pdf if report_generator_pdf is not None else ReportGeneratorPdf()
+        self._service_mars = (
+            march_service if march_service is not None else ServiceMarch()
+        )
+        self._report_generator_pdf = (
+            report_generator_pdf
+            if report_generator_pdf is not None
+            else ReportGeneratorPdf()
+        )
 
     @benchmark
     async def fetch_servicemen_df(self) -> pd.DataFrame:

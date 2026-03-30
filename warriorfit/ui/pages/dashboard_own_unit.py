@@ -19,7 +19,12 @@ class DashboardOwnUnitPage(Page):
     TAB_NAME: Final[str] = "Dashboard"
 
     @inject
-    def __init__(self, controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller]) -> None:
+    def __init__(
+        self,
+        controller: DashboardOwnUnitController = Provide[
+            Container.dashboard_own_unit_controller
+        ],
+    ) -> None:
         super().__init__()
         self.controller = controller
 
@@ -27,7 +32,6 @@ class DashboardOwnUnitPage(Page):
         # Dashboard is cache-heavy; refresh should clear controller caches.
         self.controller.reset_cache()
         reactive.invalidate_later(0.5)
-
 
     @staticmethod
     def _ui_stats_card(
@@ -62,7 +66,11 @@ class DashboardOwnUnitPage(Page):
         return ui.nav_panel(
             self.TAB_NAME,
             ui.h2(f"📊 {unit} Dashboard {year}"),
-            ui.input_action_button("dashboard_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "dashboard_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.br(),
             ui.layout_columns(
                 ui.card(

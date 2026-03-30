@@ -32,7 +32,9 @@ class SwimTestPage(BaseTestPage):
     )
 
     @inject
-    def __init__(self, controller: SwimmingController = Provide[Container.swimming_controller]) -> None:
+    def __init__(
+        self, controller: SwimmingController = Provide[Container.swimming_controller]
+    ) -> None:
         super().__init__()
         self.controller = controller
 
@@ -48,7 +50,9 @@ class SwimTestPage(BaseTestPage):
             # One JS custom message handler to toggle input disabling (no repeated script injection).
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🏊 Swimming Tests"),
-            ui.input_action_button("swim_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "swim_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -71,8 +75,10 @@ class SwimTestPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "swim_search", "✅ Confirm Serial",
-                            class_="btn btn-primary btn-sm", width="200px",
+                            "swim_search",
+                            "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm",
+                            width="200px",
                         ),
                         ui.output_text("swim_military"),
                         ui.layout_columns(
@@ -377,7 +383,11 @@ class SwimTestPage(BaseTestPage):
             status.set(
                 f"Added Swimming test for {payload['serialnr']} in session {payload['id']}."
             )
-            ui.notification_show(f"Swimming test added for {payload['serialnr']}.", type="message", duration=3)
+            ui.notification_show(
+                f"Swimming test added for {payload['serialnr']}.",
+                type="message",
+                duration=3,
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -416,7 +426,11 @@ class SwimTestPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Swimming test for {payload['serialnr']}.")
-            ui.notification_show(f"Swimming test updated for {payload['serialnr']}.", type="message", duration=3)
+            ui.notification_show(
+                f"Swimming test updated for {payload['serialnr']}.",
+                type="message",
+                duration=3,
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -488,7 +502,9 @@ class SwimTestPage(BaseTestPage):
         @render.data_frame
         async def swim_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
+            return render.DataGrid(
+                df, selection_mode="rows", filters=True, width="100%"
+            )
 
         @reactive.Effect
         @reactive.event(input.swim_serial_search_grid_selected_rows)

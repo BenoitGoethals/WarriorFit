@@ -38,7 +38,9 @@ class AuditLog(Base):
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False
     )
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    user_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
     action: Mapped[str] = mapped_column(String(50), nullable=False)
     details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
@@ -484,11 +486,15 @@ class Reservation(Base):
     )
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), nullable=False)
     date: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
-    start_time: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
+    start_time: Mapped[datetime] = mapped_column(
+        server_default=func.current_timestamp()
+    )
     end_time: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
     serial_number: Mapped[str] = mapped_column(String(50), nullable=False)
     activity: Mapped[str] = mapped_column(String(100), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=func.current_timestamp()
+    )
 
     room: Mapped["Room"] = relationship(
         "Room",

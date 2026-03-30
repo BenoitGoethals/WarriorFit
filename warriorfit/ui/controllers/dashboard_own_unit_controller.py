@@ -46,12 +46,16 @@ class DashboardOwnUnitController:
     ) -> None:
         _config = config if config is not None else ApplicationConfig()
         self._service = test_service if test_service is not None else ServiceTest()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
         self.unit_name = _config.own_unit
         self._mils = None
         self._all_military_own_unit = None
         self._results_tests_for_unit: dict[str, list[Any]] = {}
-        self._march_service = march_service if march_service is not None else ServiceMarch()
+        self._march_service = (
+            march_service if march_service is not None else ServiceMarch()
+        )
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:

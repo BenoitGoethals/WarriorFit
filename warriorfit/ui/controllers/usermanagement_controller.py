@@ -160,17 +160,20 @@ class UserManagementController:
             if user_name_exist:
                 return False, f"User with username '{form.username}' already exists."
         if form.password and not self.validate_password(form.password):
-            return False, "Password must contain at least 8 uppercase, lowercase, digit and special character."
+            return (
+                False,
+                "Password must contain at least 8 uppercase, lowercase, digit and special character.",
+            )
 
         return True, "OK"
 
-    def validate_password(self,pw: str) -> bool:
+    def validate_password(self, pw: str) -> bool:
         return (
-                len(pw) >= 8
-                and re.search(r"[A-Z]", pw)
-                and re.search(r"[a-z]", pw)
-                and re.search(r"\d", pw)
-                and re.search(r"[^\w\s]", pw)
+            len(pw) >= 8
+            and re.search(r"[A-Z]", pw)
+            and re.search(r"[a-z]", pw)
+            and re.search(r"\d", pw)
+            and re.search(r"[^\w\s]", pw)
         )
 
     def set_selected_user(self, user: UserForm):

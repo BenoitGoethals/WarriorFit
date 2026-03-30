@@ -29,21 +29,31 @@ from warriorfit.ui.pages.notify_mail import NotifyMail
 from warriorfit.ui.controllers.phef_controller import PhefController
 from warriorfit.ui.controllers.cross_controller import CrossController
 from warriorfit.ui.controllers.march_controller import MarchController
-from warriorfit.ui.controllers.reserve_fitness_room_controller import ReserveFitnessRoomController
+from warriorfit.ui.controllers.reserve_fitness_room_controller import (
+    ReserveFitnessRoomController,
+)
 from warriorfit.ui.controllers.usermanagement_controller import UserManagementController
-from warriorfit.ui.controllers.calendar_events_controller import CalendarEventsController
+from warriorfit.ui.controllers.calendar_events_controller import (
+    CalendarEventsController,
+)
 from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
 from warriorfit.ui.controllers.functional_controller import FunctionalController
 from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
-from warriorfit.ui.controllers.auditlog_events_controller import AuditLogEventsController
+from warriorfit.ui.controllers.auditlog_events_controller import (
+    AuditLogEventsController,
+)
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
 from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.controllers.session_controller import SessionsController
 from warriorfit.ui.controllers.combat_controller import CombatController
-from warriorfit.ui.controllers.dashboard_own_unit_controller import DashboardOwnUnitController
+from warriorfit.ui.controllers.dashboard_own_unit_controller import (
+    DashboardOwnUnitController,
+)
 from warriorfit.ui.controllers.reports_controller import ReportsController
-from warriorfit.ui.controllers.StatusApplicationController import StatusApplicationController
+from warriorfit.ui.controllers.StatusApplicationController import (
+    StatusApplicationController,
+)
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.controllers.setting_controller import SettingsController
@@ -222,24 +232,85 @@ class Container(containers.DeclarativeContainer):
     )
 
     # Controllers
-    phef_controller = providers.Singleton(PhefController, service=test_service, mil_service=military_service)
-    cross_controller = providers.Singleton(CrossController, service=cross_service, mil_service=military_service, pdf_gen=report_generator_pdf)
-    march_controller = providers.Singleton(MarchController, service=march_service, mil_service=military_service)
-    reserve_fitness_room_controller = providers.Singleton(ReserveFitnessRoomController, service=reserve_fitness_room_service)
-    usermanagement_controller = providers.Singleton(UserManagementController, mil_service=military_service, user_service=user_service)
-    calendar_events_controller = providers.Singleton(CalendarEventsController, test_service=test_service, cross_service=cross_service)
-    cross_statics_controller = providers.Singleton(CrossStaticsController, service=cross_service, mil_service=military_service)
-    functional_controller = providers.Singleton(FunctionalController, service=test_service, mil_service=military_service)
-    cross_planning_controller = providers.Singleton(CrossPlanningController, service=cross_service)
-    auditlog_events_controller = providers.Singleton(AuditLogEventsController, user_service=user_service)
-    status_log_user_controller = providers.Singleton(StatusLogUserController, service=test_service)
-    status_tests_controller = providers.Singleton(StatusTestsController, mil_service=military_service, data_collector=data_collector, config=config)
-    swimming_controller = providers.Singleton(SwimmingController, service=test_service, mil_service=military_service)
-    sessions_controller = providers.Singleton(SessionsController, service=test_service, mil_service=military_service)
-    combat_controller = providers.Singleton(CombatController, service=test_service, mil_service=military_service)
-    dashboard_own_unit_controller = providers.Singleton(DashboardOwnUnitController, test_service=test_service, mil_service=military_service, march_service=march_service, config=config)
-    reports_controller = providers.Singleton(ReportsController, csv_gen=report_generator_csv, pdf_gen=report_generator_pdf)
-    status_application_controller = providers.Singleton(StatusApplicationController, repo=user_repository, config=config)
-    ind_test_show_controller = providers.Singleton(IndTestShowController, mil_service=military_service, data_collector=data_collector, report_generator_pdf=report_generator_pdf)
-    own_unit_controller = providers.Singleton(OwnUnitController, mil_service=military_service, data_collector=data_collector, test_service=test_service, march_service=march_service, config=config, report_generator_pdf=report_generator_pdf)
+    phef_controller = providers.Singleton(
+        PhefController, service=test_service, mil_service=military_service
+    )
+    cross_controller = providers.Singleton(
+        CrossController,
+        service=cross_service,
+        mil_service=military_service,
+        pdf_gen=report_generator_pdf,
+    )
+    march_controller = providers.Singleton(
+        MarchController, service=march_service, mil_service=military_service
+    )
+    reserve_fitness_room_controller = providers.Singleton(
+        ReserveFitnessRoomController, service=reserve_fitness_room_service
+    )
+    usermanagement_controller = providers.Singleton(
+        UserManagementController,
+        mil_service=military_service,
+        user_service=user_service,
+    )
+    calendar_events_controller = providers.Singleton(
+        CalendarEventsController, test_service=test_service, cross_service=cross_service
+    )
+    cross_statics_controller = providers.Singleton(
+        CrossStaticsController, service=cross_service, mil_service=military_service
+    )
+    functional_controller = providers.Singleton(
+        FunctionalController, service=test_service, mil_service=military_service
+    )
+    cross_planning_controller = providers.Singleton(
+        CrossPlanningController, service=cross_service
+    )
+    auditlog_events_controller = providers.Singleton(
+        AuditLogEventsController, user_service=user_service
+    )
+    status_log_user_controller = providers.Singleton(
+        StatusLogUserController, service=test_service
+    )
+    status_tests_controller = providers.Singleton(
+        StatusTestsController,
+        mil_service=military_service,
+        data_collector=data_collector,
+        config=config,
+    )
+    swimming_controller = providers.Singleton(
+        SwimmingController, service=test_service, mil_service=military_service
+    )
+    sessions_controller = providers.Singleton(
+        SessionsController, service=test_service, mil_service=military_service
+    )
+    combat_controller = providers.Singleton(
+        CombatController, service=test_service, mil_service=military_service
+    )
+    dashboard_own_unit_controller = providers.Singleton(
+        DashboardOwnUnitController,
+        test_service=test_service,
+        mil_service=military_service,
+        march_service=march_service,
+        config=config,
+    )
+    reports_controller = providers.Singleton(
+        ReportsController, csv_gen=report_generator_csv, pdf_gen=report_generator_pdf
+    )
+    status_application_controller = providers.Singleton(
+        StatusApplicationController, repo=user_repository, config=config
+    )
+    ind_test_show_controller = providers.Singleton(
+        IndTestShowController,
+        mil_service=military_service,
+        data_collector=data_collector,
+        report_generator_pdf=report_generator_pdf,
+    )
+    own_unit_controller = providers.Singleton(
+        OwnUnitController,
+        mil_service=military_service,
+        data_collector=data_collector,
+        test_service=test_service,
+        march_service=march_service,
+        config=config,
+        report_generator_pdf=report_generator_pdf,
+    )
     settings_controller = providers.Singleton(SettingsController, config=config)

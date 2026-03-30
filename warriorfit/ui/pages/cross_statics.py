@@ -10,7 +10,12 @@ from warriorfit.utils.formaters import Formatter
 
 class CrossStaticsPage(Page):
     @inject
-    def __init__(self, controller: CrossStaticsController = Provide[Container.cross_statics_controller]):
+    def __init__(
+        self,
+        controller: CrossStaticsController = Provide[
+            Container.cross_statics_controller
+        ],
+    ):
         super().__init__()
         self._controller = controller
 
@@ -21,7 +26,9 @@ class CrossStaticsPage(Page):
         return ui.nav_panel(
             "Cross Statics",
             ui.h2("Cross Statistics"),
-            ui.input_action_button("cs_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "cs_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+            ),
             ui.br(),
             ui.layout_columns(
                 ui.card(

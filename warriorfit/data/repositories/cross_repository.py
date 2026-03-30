@@ -97,12 +97,16 @@ class CrossRepository(ABCRepository):
             return cross
         except IntegrityError as e:
             self._logger.error(
-                "Integrity error adding cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
+                "Integrity error adding cross %s: %s",
+                getattr(cross, "id", "unknown"),
+                str(e),
             )
             return None
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error adding cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
+                "Database error adding cross %s: %s",
+                getattr(cross, "id", "unknown"),
+                str(e),
             )
             return None
 
@@ -342,12 +346,16 @@ class CrossRepository(ABCRepository):
 
         except IntegrityError as e:
             self._logger.error(
-                "Integrity error updating cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
+                "Integrity error updating cross %s: %s",
+                getattr(cross, "id", "unknown"),
+                str(e),
             )
             return None
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error updating cross %s: %s", getattr(cross, 'id', 'unknown'), str(e)
+                "Database error updating cross %s: %s",
+                getattr(cross, "id", "unknown"),
+                str(e),
             )
             return None
 
@@ -389,7 +397,7 @@ class CrossRepository(ABCRepository):
             )
             return False
 
-    async def add_runners_to_cross(self, cross_id, runners)-> bool:
+    async def add_runners_to_cross(self, cross_id, runners) -> bool:
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
@@ -428,12 +436,6 @@ class CrossRepository(ABCRepository):
                     await session.flush()
                     return True
 
-
         except SQLAlchemyError as e:
             self._logger.error("Linking runners to cross failed: %s", e)
             return False
-
-
-
-
-

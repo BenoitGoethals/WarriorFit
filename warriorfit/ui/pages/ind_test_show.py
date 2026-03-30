@@ -12,7 +12,10 @@ from warriorfit.core.container import Container
 
 class IndTestShowPage(Page):
     @inject
-    def __init__(self, controller: IndTestShowController = Provide[Container.ind_test_show_controller]):
+    def __init__(
+        self,
+        controller: IndTestShowController = Provide[Container.ind_test_show_controller],
+    ):
         super().__init__()
         self.controller = controller
         self.serial = reactive.Value("")
@@ -40,17 +43,20 @@ class IndTestShowPage(Page):
                         class_="btn btn-info btn-sm w-100 mt-1",
                     ),
                     ui.input_action_button(
-                        "ind_search", "✅ Confirm Serviceman",
+                        "ind_search",
+                        "✅ Confirm Serviceman",
                         class_="btn btn-primary btn-sm w-100 mt-2",
                     ),
                     ui.hr(),
                     ui.input_action_button(
-                        "full_report_cy", "📄 Generate Full Report",
+                        "full_report_cy",
+                        "📄 Generate Full Report",
                         class_="btn btn-secondary btn-sm w-100",
                     ),
                     ui.output_ui("download_btn_ui"),
                     ui.input_action_button(
-                        "ind_refresh_btn", "🔄 Refresh",
+                        "ind_refresh_btn",
+                        "🔄 Refresh",
                         class_="btn btn-secondary btn-sm w-100 mt-1",
                     ),
                     ui.hr(),
@@ -78,7 +84,9 @@ class IndTestShowPage(Page):
             if s:
                 try:
                     df = await self.controller.collect_tests_df(s)
-                    self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
+                    self.tests_df.set(
+                        df if isinstance(df, pd.DataFrame) else pd.DataFrame()
+                    )
                     status.set(f"Refreshed {len(self.tests_df.get())} records.")
                 except Exception:
                     pass
@@ -90,8 +98,10 @@ class IndTestShowPage(Page):
             self.report_path.set(None)
             if s:
                 status.set("Generating report...")
-                output_path = await self.controller._report_generator_pdf.generate_ind_report(
-                    serial_number=s
+                output_path = (
+                    await self.controller._report_generator_pdf.generate_ind_report(
+                        serial_number=s
+                    )
                 )
                 if output_path:
                     self.report_path.set(output_path)
@@ -195,7 +205,9 @@ class IndTestShowPage(Page):
         @render.data_frame
         async def ind_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
+            return render.DataGrid(
+                df, selection_mode="rows", filters=True, width="100%"
+            )
 
         @reactive.Effect
         @reactive.event(input.ind_serial_search_grid_selected_rows)

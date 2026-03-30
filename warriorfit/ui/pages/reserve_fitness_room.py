@@ -16,7 +16,12 @@ from warriorfit.core.container import Container
 class ReserveFitnessRoomPage(Page):
 
     @inject
-    def __init__(self, controller: ReserveFitnessRoomController = Provide[Container.reserve_fitness_room_controller]):
+    def __init__(
+        self,
+        controller: ReserveFitnessRoomController = Provide[
+            Container.reserve_fitness_room_controller
+        ],
+    ):
 
         super().__init__()
         self.rooms: List[Room] = []
@@ -514,9 +519,13 @@ class ReserveFitnessRoomPage(Page):
                                 ],
                             ),
                             ui.input_text(
-                                "activity", "Activity", placeholder="E.g. Personal Training"
+                                "activity",
+                                "Activity",
+                                placeholder="E.g. Personal Training",
                             ),
-                            ui.input_date("date", "Date *", value=datetime.now().date()),
+                            ui.input_date(
+                                "date", "Date *", value=datetime.now().date()
+                            ),
                             ui.layout_columns(
                                 ui.input_select(
                                     "start_time",
@@ -524,11 +533,15 @@ class ReserveFitnessRoomPage(Page):
                                     choices=[""] + self.time_slots,
                                 ),
                                 ui.input_select(
-                                    "end_time", "End Time *", choices=[""] + self.time_slots
+                                    "end_time",
+                                    "End Time *",
+                                    choices=[""] + self.time_slots,
                                 ),
                                 col_widths=[6, 6],
                             ),
-                            ui.div("Select Sport Area *", class_="wf-section-label mt-3"),
+                            ui.div(
+                                "Select Sport Area *", class_="wf-section-label mt-3"
+                            ),
                             ui.output_ui("room_choice"),
                             ui.input_action_button(
                                 "reserve",

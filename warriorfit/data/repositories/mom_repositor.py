@@ -27,6 +27,7 @@ class MomRepository(ABCRepository):
     :ivar _logger: Logger instance used for logging errors or important runtime details.
     :type _logger: logging.Logger
     """
+
     def __init__(self, config=None):
         super().__init__(config=config)
 
@@ -51,12 +52,16 @@ class MomRepository(ABCRepository):
             return msg
         except IntegrityError as e:
             self._logger.error(
-                "Integrity error adding cross %s: %s", getattr(msg, 'id', 'unknown'), str(e)
+                "Integrity error adding cross %s: %s",
+                getattr(msg, "id", "unknown"),
+                str(e),
             )
             return None
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error adding cross %s: %s", getattr(msg, 'id', 'unknown'), str(e)
+                "Database error adding cross %s: %s",
+                getattr(msg, "id", "unknown"),
+                str(e),
             )
             return None
 

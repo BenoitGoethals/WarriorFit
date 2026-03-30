@@ -1,4 +1,5 @@
 """Unit tests for ServiceCross.read_xml_chronos_and_save."""
+
 import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
@@ -69,7 +70,10 @@ def _xml_with_net(net_value: str) -> str:
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _build_service(repo_result: bool = True) -> tuple[ServiceCross, AsyncMock, AsyncMock]:
+
+def _build_service(
+    repo_result: bool = True,
+) -> tuple[ServiceCross, AsyncMock, AsyncMock]:
     """Return (service, add_runners_mock, audit_log_mock)."""
     add_runners: AsyncMock = AsyncMock(return_value=repo_result)
     audit_log: AsyncMock = AsyncMock(return_value=None)
@@ -93,6 +97,7 @@ def run(coro):
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def svc_ok() -> tuple[ServiceCross, AsyncMock, AsyncMock]:
@@ -119,6 +124,7 @@ def invalid_xml_file(tmp_path) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Happy path
 # ---------------------------------------------------------------------------
+
 
 def test_valid_xml_returns_true(svc_ok, valid_xml_file):
     svc, _, _ = svc_ok
@@ -151,8 +157,8 @@ def test_valid_xml_runner_times(svc_ok, valid_xml_file):
     run(svc.read_xml_chronos_and_save(valid_xml_file, cross_id=1))
     _, runners = add_runners.call_args[0]
     times = {r.serial_number: r.running_time for r in runners}
-    assert times["101"] == pytest.approx(2110.0)   # 0:35:10
-    assert times["202"] == pytest.approx(2250.0)   # 0:37:30
+    assert times["101"] == pytest.approx(2110.0)  # 0:35:10
+    assert times["202"] == pytest.approx(2250.0)  # 0:37:30
 
 
 def test_audit_log_called_on_success(svc_ok, valid_xml_file):
@@ -164,6 +170,7 @@ def test_audit_log_called_on_success(svc_ok, valid_xml_file):
 # ---------------------------------------------------------------------------
 # XSD validation failure
 # ---------------------------------------------------------------------------
+
 
 def test_invalid_xml_returns_false(svc_ok, invalid_xml_file):
     svc, _, _ = svc_ok
@@ -180,6 +187,7 @@ def test_invalid_xml_does_not_save(svc_ok, invalid_xml_file):
 # Repository failure
 # ---------------------------------------------------------------------------
 
+
 def test_repo_failure_returns_false(svc_fail, valid_xml_file):
     svc, _, _ = svc_fail
     assert run(svc.read_xml_chronos_and_save(valid_xml_file, cross_id=1)) is False
@@ -189,11 +197,14 @@ def test_repo_failure_returns_false(svc_fail, valid_xml_file):
 # File not found
 # ---------------------------------------------------------------------------
 
+
 def test_missing_file_returns_false(svc_ok):
     svc, _, _ = svc_ok
-    result = run(svc.read_xml_chronos_and_save(
-        [{"datapath": "/nonexistent/path/file.xml"}], cross_id=1
-    ))
+    result = run(
+        svc.read_xml_chronos_and_save(
+            [{"datapath": "/nonexistent/path/file.xml"}], cross_id=1
+        )
+    )
     assert result is False
 
 
@@ -201,15 +212,21 @@ def test_missing_file_returns_false(svc_ok):
 # Net time parsing
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("net_value, expected_seconds", [
-    ("0:35:10", 2110.0),   # hh:mm:ss
-    ("35:10",   2110.0),   # mm:ss
-    ("2110",    2110.0),   # plain seconds
-    ("1:00:00", 3600.0),   # exactly 1 hour
-])
+
+@pytest.mark.parametrize(
+    "net_value, expected_seconds",
+    [
+        ("0:35:10", 2110.0),  # hh:mm:ss
+        ("35:10", 2110.0),  # mm:ss
+        ("2110", 2110.0),  # plain seconds
+        ("1:00:00", 3600.0),  # exactly 1 hour
+    ],
+)
 def test_net_time_parsing(svc_ok, tmp_path, net_value: str, expected_seconds: float):
     svc, add_runners, _ = svc_ok
-    xml_file = _write_xml(tmp_path, f"net_{net_value.replace(':', '_')}.xml", _xml_with_net(net_value))
+    xml_file = _write_xml(
+        tmp_path, f"net_{net_value.replace(':', '_')}.xml", _xml_with_net(net_value)
+    )
     run(svc.read_xml_chronos_and_save(xml_file, cross_id=1))
     _, runners = add_runners.call_args[0]
     assert runners[0].running_time == pytest.approx(expected_seconds)

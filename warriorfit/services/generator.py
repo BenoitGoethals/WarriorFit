@@ -40,9 +40,12 @@ class GeneratorReport(ABC):
     :type be_mil_service: MilitaryService
     """
 
-    def __init__(self, military_service: MilitaryService = None,
-                 service_test: ServiceTest = None):
-        self.be_mil_service = military_service if military_service is not None else MilitaryService()
+    def __init__(
+        self, military_service: MilitaryService = None, service_test: ServiceTest = None
+    ):
+        self.be_mil_service = (
+            military_service if military_service is not None else MilitaryService()
+        )
         self._service = service_test if service_test is not None else ServiceTest()
         self._user_service = self._service
         self._logger = logging.getLogger(__name__)

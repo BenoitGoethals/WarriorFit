@@ -11,7 +11,10 @@ from warriorfit.core.container import Container
 
 class StatusTests(Page):
     @inject
-    def __init__(self, controller: StatusTestsController = Provide[Container.status_tests_controller]):
+    def __init__(
+        self,
+        controller: StatusTestsController = Provide[Container.status_tests_controller],
+    ):
         super().__init__()
         self._controller = controller
         self.refresh_tick = reactive.Value(0)

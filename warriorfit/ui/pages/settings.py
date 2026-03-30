@@ -13,7 +13,9 @@ from warriorfit.core.container import Container
 
 class SettingsPage(Page):
     @inject
-    def __init__(self, controller: SettingsController = Provide[Container.settings_controller]):
+    def __init__(
+        self, controller: SettingsController = Provide[Container.settings_controller]
+    ):
         super().__init__()
         self.controller = controller
         self._status = reactive.Value("")
@@ -232,7 +234,9 @@ class SettingsPage(Page):
             if ok:
                 ui.notification_show("Settings saved.", type="message", duration=3)
             else:
-                ui.notification_show(f"Failed to save settings: {msg}", type="error", duration=3)
+                ui.notification_show(
+                    f"Failed to save settings: {msg}", type="error", duration=3
+                )
 
         @output
         @render.text

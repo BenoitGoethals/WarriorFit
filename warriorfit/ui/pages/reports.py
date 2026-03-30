@@ -16,7 +16,9 @@ from warriorfit.core.container import Container
 
 class ReportsPage(Page):
     @inject
-    def __init__(self, controller: ReportsController = Provide[Container.reports_controller]) -> None:
+    def __init__(
+        self, controller: ReportsController = Provide[Container.reports_controller]
+    ) -> None:
         super().__init__()
         self.controller = controller
         self._status_msg = reactive.Value(

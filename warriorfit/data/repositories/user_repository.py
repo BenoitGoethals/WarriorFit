@@ -36,10 +36,14 @@ class UserRepository(ABCRepository):
                 await session.refresh(user)
                 return user
         except IntegrityError as e:
-            self._logger.error("Integrity error adding user %s: %s", user.username, str(e))
+            self._logger.error(
+                "Integrity error adding user %s: %s", user.username, str(e)
+            )
             return None
         except SQLAlchemyError as e:
-            self._logger.error("Database error adding user %s: %s", user.username, str(e))
+            self._logger.error(
+                "Database error adding user %s: %s", user.username, str(e)
+            )
             return None
 
     async def user_mail_exist(self, mail: str) -> bool:
@@ -155,6 +159,7 @@ class UserRepository(ABCRepository):
         :return: True if the username and password are valid; otherwise, False.
         """
         from warriorfit.security.auth_service import Auth
+
         try:
             async with self.SessionLocal() as session:
                 query = select(User).where(User.username == user_name)
@@ -167,7 +172,9 @@ class UserRepository(ABCRepository):
                     self._logger.error("User '%s' has no password set.", user_name)
                     return False
                 if await Auth.verify_password(plain_password, user.password_hash):
-                    self._logger.info("User '%s' authenticated successfully.", user_name)
+                    self._logger.info(
+                        "User '%s' authenticated successfully.", user_name
+                    )
                     return True
                 self._logger.info("Password mismatch for user '%s'.", user_name)
                 return False
@@ -196,7 +203,9 @@ class UserRepository(ABCRepository):
             self._logger.info("User with ID %d deleted successfully.", id)
             return True
         except SQLAlchemyError as e:
-            self._logger.error("Database error deleting user with ID %d: %s", id, str(e))
+            self._logger.error(
+                "Database error deleting user with ID %d: %s", id, str(e)
+            )
             return False
 
     async def serial_exists(self, serial: str) -> bool:
@@ -253,7 +262,9 @@ class UserRepository(ABCRepository):
                     return True
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error deleting user with serial %s: %s", selected_serial, str(e)
+                "Database error deleting user with serial %s: %s",
+                selected_serial,
+                str(e),
             )
             return False
 

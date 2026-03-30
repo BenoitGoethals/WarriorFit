@@ -39,7 +39,9 @@ class CombatPage(BaseTestPage):
     )
 
     @inject
-    def __init__(self, controller: CombatController = Provide[Container.combat_controller]) -> None:
+    def __init__(
+        self, controller: CombatController = Provide[Container.combat_controller]
+    ) -> None:
         super().__init__()
         self.controller = controller
 
@@ -55,7 +57,11 @@ class CombatPage(BaseTestPage):
             # Register ONE JS custom message handler (same pattern as PHEF)
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Combat Tests"),
-            ui.input_action_button("combat_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "combat_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -78,8 +84,10 @@ class CombatPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "combat_search", "✅ Confirm Serial",
-                            class_="btn btn-primary btn-sm", width="200px",
+                            "combat_search",
+                            "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm",
+                            width="200px",
                         ),
                         ui.output_text("combat_military"),
                         ui.layout_columns(
@@ -462,7 +470,9 @@ class CombatPage(BaseTestPage):
             status.set(
                 f"Added Combat test for {form.serialnr} in session {form.session_id}."
             )
-            ui.notification_show(f"Combat test added for {form.serialnr}.", type="message", duration=3)
+            ui.notification_show(
+                f"Combat test added for {form.serialnr}.", type="message", duration=3
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -499,7 +509,9 @@ class CombatPage(BaseTestPage):
             status.set(
                 f"Updated Combat test for {form.serialnr} in session {form.session_id}."
             )
-            ui.notification_show(f"Combat test updated for {form.serialnr}.", type="message", duration=3)
+            ui.notification_show(
+                f"Combat test updated for {form.serialnr}.", type="message", duration=3
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -573,7 +585,9 @@ class CombatPage(BaseTestPage):
         @render.data_frame
         async def combat_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
+            return render.DataGrid(
+                df, selection_mode="rows", filters=True, width="100%"
+            )
 
         @reactive.Effect
         @reactive.event(input.combat_serial_search_grid_selected_rows)

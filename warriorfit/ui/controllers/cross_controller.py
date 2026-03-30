@@ -23,7 +23,9 @@ class CrossController:
         pdf_gen: ReportGeneratorPdf = None,
     ) -> None:
         self._service = service if service is not None else ServiceCross()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
         self._pdf_gen = pdf_gen if pdf_gen is not None else ReportGeneratorPdf()
         self._logger = logging.getLogger(__name__)
 
@@ -166,7 +168,9 @@ class CrossController:
             # Fetch all servicemen concurrently instead of sequentially
             servicemen = await asyncio.gather(
                 *[
-                    self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)
+                    self.be_mil_service.get_servicemen_by_serial(
+                        r.serial_number, lazy=False
+                    )
                     for r in cross
                 ]
             )
@@ -177,9 +181,7 @@ class CrossController:
                     "ID": r.id,
                     "Serial": r.serial_number or "",
                     "Running Time": self.format_seconds(r.running_time),
-                    "Runner Name": (
-                        f"{sm.first_name} {sm.last_name}" if sm else ""
-                    ),
+                    "Runner Name": (f"{sm.first_name} {sm.last_name}" if sm else ""),
                     "Gender": sm.gender if sm else "",
                     "Age": sm.age_from_birthdate() if sm else "",
                     "Unit": sm.unit if sm else "",
