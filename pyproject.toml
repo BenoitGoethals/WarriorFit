@@ -54,3 +54,10 @@ select = ["E", "F", "W", "I"]
 
 [tool.mypy]
 strict = true
+
+[dependency-groups]
+dev = [
+    "mkdocs~=1.6",
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]~=1.0",
+]
