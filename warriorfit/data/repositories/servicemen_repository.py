@@ -1,9 +1,10 @@
+from sqlalchemy import delete as sa_delete
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 from warriorfit.data.model.db_model import ServiceMen, Unit
 from warriorfit.data.repositories.abc_repository import ABCRepository
-from sqlalchemy import select, delete as sa_delete
-from sqlalchemy.exc import SQLAlchemyError
 
 
 class ServicemenRepository(ABCRepository):
@@ -22,7 +23,7 @@ class ServicemenRepository(ABCRepository):
                     service_men = await session.add(service_men)
                     await session.refresh(service_men)
                     return service_men
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self._logger.exception("Failed to create serviceman")
             if session is not None:
                 await session.rollback()
@@ -43,16 +44,12 @@ class ServicemenRepository(ABCRepository):
             self._logger.exception(e)
             return None
 
-    async def get_by_service_number(
-        self, service_number: str, lazy=True
-    ) -> ServiceMen | None:
+    async def get_by_service_number(self, service_number: str, lazy=True) -> ServiceMen | None:
         """
         Get a single serviceman by unique service number.
         """
         if lazy:
-            query = select(ServiceMen).where(
-                ServiceMen.service_number == service_number
-            )
+            query = select(ServiceMen).where(ServiceMen.service_number == service_number)
         else:
             query = (
                 select(ServiceMen)
@@ -124,7 +121,7 @@ class ServicemenRepository(ABCRepository):
                         sa_delete(ServiceMen).where(ServiceMen.id == serviceman_id)
                     )
             return bool(getattr(result, "rowcount", 0))
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self._logger.exception("Failed to delete serviceman id=%s", serviceman_id)
             if session is not None:
                 await session.rollback()

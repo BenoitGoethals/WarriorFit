@@ -2,17 +2,16 @@ import asyncio
 import json
 import logging
 from datetime import datetime
-from sqlalchemy import TIMESTAMP, func
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import (
-    PhefTest,
-    HrMessage,
-    TestSession,
-    FitnessTest,
-    CombatTestParatrooper,
     CombatSwimmingTest,
-    March,
+    CombatTestParatrooper,
+    FitnessTest,
     FunctionalTest,
+    HrMessage,
+    March,
+    PhefTest,
 )
 from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.mom.message import Message
@@ -43,25 +42,20 @@ class Broker:
         be_mil_service: BEMILService = None,
         config: ApplicationConfig = None,
     ):
-
-        self._mom_repo = (
-            mom_repository if mom_repository is not None else MomRepository()
-        )
+        self._mom_repo = mom_repository if mom_repository is not None else MomRepository()
         self._logger = logging.getLogger(__name__)
         self.running = False
         self._worker_task = None
         self._msg_queue = asyncio.Queue()
-        self._be_mil_service = (
-            be_mil_service if be_mil_service is not None else BEMILService()
-        )
+        self._be_mil_service = be_mil_service if be_mil_service is not None else BEMILService()
         self._config = config if config is not None else ApplicationConfig()
 
     async def worker(self):
         """Background task running on the main event loop"""
         hr_url = ApplicationConfig().hr_url
-        print(f"🚀 Message Queue Service started")
+        print("🚀 Message Queue Service started")
         print(f"📍 Target URL: {hr_url}")
-        print(f"⏱  Check interval: 5 seconds\n")
+        print("⏱  Check interval: 5 seconds\n")
         self._logger.info(
             "Message Queue Service started",
             extra={"target_url": hr_url, "check_interval_seconds": 5},
@@ -210,9 +204,7 @@ class Broker:
                 )
                 return
 
-            hr_m = HrMessage(
-                message=json.dumps(dto.to_dict()), datetime_created=datetime.now()
-            )
+            hr_m = HrMessage(message=json.dumps(dto.to_dict()), datetime_created=datetime.now())
             await self._msg_queue.put(hr_m)
             self._logger.debug(
                 f"Message queued for {test_type}",
@@ -316,9 +308,7 @@ class Broker:
                     "error_message": str(e),
                     "message_id": message_id,
                     "message_content": (
-                        message_hr.message[:200]
-                        if hasattr(message_hr, "message")
-                        else None
+                        message_hr.message[:200] if hasattr(message_hr, "message") else None
                     ),
                 },
             )
@@ -414,9 +404,7 @@ class Broker:
                     extra={"task_id": id(self._worker_task)},
                 )
             except RuntimeError as e:
-                error_msg = (
-                    "Could not start Broker worker. No running event loop found."
-                )
+                error_msg = "Could not start Broker worker. No running event loop found."
                 print(f"⚠️ Warning: {error_msg}")
                 self._logger.error(
                     error_msg,

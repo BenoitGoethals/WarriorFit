@@ -1,4 +1,5 @@
 from typing import Optional
+
 from warriorfit.data.model.db_model import User
 from warriorfit.logic.singleton import Singleton
 

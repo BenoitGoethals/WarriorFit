@@ -1,24 +1,22 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import pandas as pd
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class CrossPlanningPage(Page):
     @inject
     def __init__(
         self,
-        controller: CrossPlanningController = Provide[
-            Container.cross_planning_controller
-        ],
+        controller: CrossPlanningController = Provide[Container.cross_planning_controller],
     ):
         super().__init__()
         self._controller = controller
@@ -132,9 +130,7 @@ class CrossPlanningPage(Page):
         session.send_input_message("cr_date", {"value": date_val})
         session.send_input_message("cr_time", {"value": time_val})
         session.send_input_message("cr_distance", {"value": rec.get("distance", 0)})
-        session.send_input_message(
-            "cr_executed", {"value": bool(rec.get("executed", False))}
-        )
+        session.send_input_message("cr_executed", {"value": bool(rec.get("executed", False))})
         session.send_input_message("cr_desc", {"value": rec.get("description", "")})
 
     def _clear_form(self, session) -> None:
@@ -180,9 +176,7 @@ class CrossPlanningPage(Page):
             df = (
                 pd.DataFrame(data)
                 if data
-                else pd.DataFrame(
-                    columns=["ID", "Start", "Executed", "Description", "Distance"]
-                )
+                else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", "Distance"])
             )
             df = df.sort_values(by=["Start"], kind="stable").reset_index(drop=True)
             return df
@@ -262,9 +256,7 @@ class CrossPlanningPage(Page):
 
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{detail['id']} created.")
-                ui.notification_show(
-                    f"Cross #{detail['id']} created.", type="message", duration=3
-                )
+                ui.notification_show(f"Cross #{detail['id']} created.", type="message", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Add failed: {e}")
                 ui.notification_show(f"Add failed: {e}", type="error", duration=3)
@@ -291,9 +283,7 @@ class CrossPlanningPage(Page):
                 self._write_form(session, detail)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{sel} updated.")
-                ui.notification_show(
-                    f"Cross #{sel} updated.", type="message", duration=3
-                )
+                ui.notification_show(f"Cross #{sel} updated.", type="message", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Update failed: {e}")
                 ui.notification_show(f"Update failed: {e}", type="error", duration=3)
@@ -319,9 +309,7 @@ class CrossPlanningPage(Page):
                 self._clear_form(session)
                 self.selected_cross_id.set("")
                 status.set(f"Cross #{cross_id} deleted.")
-                ui.notification_show(
-                    f"Cross #{cross_id} deleted.", type="warning", duration=3
-                )
+                ui.notification_show(f"Cross #{cross_id} deleted.", type="warning", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Delete failed: {e}")
                 ui.notification_show(f"Delete failed: {e}", type="error", duration=3)

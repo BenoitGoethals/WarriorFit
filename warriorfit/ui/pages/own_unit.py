@@ -2,19 +2,17 @@
 from __future__ import annotations
 
 import pandas as pd
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class OwnUnitPage(Page):
     @inject
-    def __init__(
-        self, controller: OwnUnitController = Provide[Container.own_unit_controller]
-    ):
+    def __init__(self, controller: OwnUnitController = Provide[Container.own_unit_controller]):
         super().__init__()
         self.controller = controller
         self._selected_serial = reactive.Value(None)
@@ -36,9 +34,7 @@ class OwnUnitPage(Page):
                     class_="btn btn-secondary btn-sm my-2",
                 ),
                 ui.output_data_frame("servicemen_grid"),
-                ui.input_action_button(
-                    "full_report_unit", "Pdf Satus Unit", width="150px"
-                ),
+                ui.input_action_button("full_report_unit", "Pdf Satus Unit", width="150px"),
                 ui.output_ui("download_btn_unit"),
                 ui.br(),
                 full_screen=True,
@@ -56,12 +52,10 @@ class OwnUnitPage(Page):
         async def full_report_unit():
             self.report_path.set(None)
             status_report_unit.set("Generating report...")
-            output_path = (
-                await self.controller._report_generator_pdf.generate_total_report_current_year_own_unit()
-            )
+            output_path = await self.controller._report_generator_pdf.generate_total_report_current_year_own_unit()
             if output_path:
                 self.report_path.set(output_path)
-                status_report_unit.set(f"Full report generated.")
+                status_report_unit.set("Full report generated.")
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 ui.notification_show("Report generated", type="message", duration=2)
             else:
@@ -129,15 +123,11 @@ class OwnUnitPage(Page):
                         ui.h4(f"Executed Fitness Tests — {serial}"),
                         ui.output_data_frame("serviceman_tests_grid"),
                         easy_close=True,
-                        footer=ui.input_action_button(
-                            "close_serviceman_tests", "Close"
-                        ),
+                        footer=ui.input_action_button("close_serviceman_tests", "Close"),
                     )
                 )
             except Exception:
-                ui.notification_show(
-                    "Error loading serviceman tests", type="error", duration=2
-                )
+                ui.notification_show("Error loading serviceman tests", type="error", duration=2)
 
         @output
         @render.data_frame

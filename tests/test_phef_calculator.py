@@ -1,7 +1,7 @@
 # tests/test_phef_calculator.py
 
 import unittest
-import pytest
+
 from warriorfit.core.Gender import Gender
 from warriorfit.logic.phef_calculator import PhefCalculator
 
@@ -27,9 +27,7 @@ class TestPhefCalculator(unittest.TestCase):
         Test the side_bridge_result method for a female under 30 years old
         achieving a low score.
         """
-        result = PhefCalculator.side_bridge_result(
-            40, 25, Gender.F
-        )  # 40 seconds equivalent
+        result = PhefCalculator.side_bridge_result(40, 25, Gender.F)  # 40 seconds equivalent
         self.assertEqual(1, result)
 
     def test_side_bridge_result_male_30_to_39_medium_score(self):

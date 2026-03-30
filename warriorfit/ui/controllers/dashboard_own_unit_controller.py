@@ -1,21 +1,22 @@
 from __future__ import annotations
-from typing import List, Dict, Any
+
+from typing import Any, Dict, List
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from warriorfit.config.appliccation_config import ApplicationConfig
 
+from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import (
-    PhefTest,
-    FunctionalTest,
-    CombatTestParatrooper,
     CombatSwimmingTest,
-    ServiceMen,
+    CombatTestParatrooper,
+    FunctionalTest,
     March,
+    PhefTest,
+    ServiceMen,
 )
 from warriorfit.logic.phef_calculator import PhefCalculator
-
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
 from warriorfit.services.service_test import ServiceTest
@@ -46,16 +47,12 @@ class DashboardOwnUnitController:
     ) -> None:
         _config = config if config is not None else ApplicationConfig()
         self._service = test_service if test_service is not None else ServiceTest()
-        self.be_mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
         self.unit_name = _config.own_unit
         self._mils = None
         self._all_military_own_unit = None
         self._results_tests_for_unit: dict[str, list[Any]] = {}
-        self._march_service = (
-            march_service if march_service is not None else ServiceMarch()
-        )
+        self._march_service = march_service if march_service is not None else ServiceMarch()
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:
@@ -72,12 +69,10 @@ class DashboardOwnUnitController:
         """
         try:
             if self._mils is None:
-                people = await self.be_mil_service.get_all_be_mil_from_unit(
-                    self.unit_name
-                )
+                people = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
                 self._mils = {p.service_number for p in (people or [])}
             return self._mils
-        except (AttributeError, TypeError) as e:
+        except (AttributeError, TypeError):
             return set()
 
     async def _get_all_military_own_unit(self) -> dict[str, ServiceMen]:
@@ -97,12 +92,10 @@ class DashboardOwnUnitController:
         """
         try:
             if self._all_military_own_unit is None:
-                data = await self.be_mil_service.get_all_be_mil_from_unit(
-                    self.unit_name
-                )
+                data = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
                 self._all_military_own_unit = {s.service_number: s for s in data}
             return self._all_military_own_unit
-        except (AttributeError, TypeError) as e:
+        except (AttributeError, TypeError):
             return {}
 
     async def phef_total_score(self, test: PhefTest) -> tuple[float, bool]:
@@ -166,11 +159,7 @@ class DashboardOwnUnitController:
                 else:
                     tests = []
                 results.extend(
-                    [
-                        test
-                        for test in tests
-                        if getattr(test, "serial_number", None) in serials
-                    ]
+                    [test for test in tests if getattr(test, "serial_number", None) in serials]
                 )
             self._results_tests_for_unit[key] = results
         return self._results_tests_for_unit.get(key, [])
@@ -236,14 +225,10 @@ class DashboardOwnUnitController:
         }
 
     async def combat_stats(self) -> Dict[str, Any]:
-        tests: List[CombatTestParatrooper] = await self._tests_for_unit(
-            TypeFitnessTest.COMBAT
-        )
+        tests: List[CombatTestParatrooper] = await self._tests_for_unit(TypeFitnessTest.COMBAT)
         total = len(tests)
         passed = sum(
-            1
-            for t in tests
-            if t.rope_passed and t.obstacle_passed and t.running_time <= 7200
+            1 for t in tests if t.rope_passed and t.obstacle_passed and t.running_time <= 7200
         )
         pass_rate = (passed / total * 100) if total > 0 else 0
         return {
@@ -254,14 +239,9 @@ class DashboardOwnUnitController:
         }
 
     async def functional_stats(self) -> Dict[str, Any]:
-        tests: List[FunctionalTest] = await self._tests_for_unit(
-            TypeFitnessTest.FUNCTIONAL
-        )
+        tests: List[FunctionalTest] = await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL)
         total = len(tests)
-        agg = sum(
-            int(t.push_ups or 0) + int(t.sit_ups or 0) + int(t.pull_ups or 0)
-            for t in tests
-        )
+        agg = sum(int(t.push_ups or 0) + int(t.sit_ups or 0) + int(t.pull_ups or 0) for t in tests)
         avg = (agg / total) if total > 0 else 0
         return {
             "total": total,
@@ -271,9 +251,7 @@ class DashboardOwnUnitController:
         }
 
     async def swimming_stats(self) -> Dict[str, Any]:
-        tests: List[CombatSwimmingTest] = await self._tests_for_unit(
-            TypeFitnessTest.SWIMMING
-        )
+        tests: List[CombatSwimmingTest] = await self._tests_for_unit(TypeFitnessTest.SWIMMING)
         total = len(tests)
         passed = sum(1 for t in tests if t.swim_paased)
         pass_rate = (passed / total * 100) if total > 0 else 0
@@ -304,9 +282,7 @@ class DashboardOwnUnitController:
             "Functional": len(await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL)),
             "Swimming": len(await self._tests_for_unit(TypeFitnessTest.SWIMMING)),
         }
-        data = pd.DataFrame(
-            {"Test Type": list(counts.keys()), "Count": list(counts.values())}
-        )
+        data = pd.DataFrame({"Test Type": list(counts.keys()), "Count": list(counts.values())})
         fig = px.pie(
             data,
             values="Count",
@@ -345,9 +321,7 @@ class DashboardOwnUnitController:
         )
         func_fail = len(functional_tests) - func_pass
 
-        swim_tests: List[CombatSwimmingTest] = await self._tests_for_unit(
-            TypeFitnessTest.SWIMMING
-        )
+        swim_tests: List[CombatSwimmingTest] = await self._tests_for_unit(TypeFitnessTest.SWIMMING)
         swim_pass = sum(1 for t in swim_tests if t.swim_paased)
         swim_fail = len(swim_tests) - swim_pass
 
@@ -432,9 +406,7 @@ class DashboardOwnUnitController:
             yaxis_title="Number of Tests",
             showlegend=False,
         )
-        fig.add_vline(
-            x=50, line_dash="dash", line_color="red", annotation_text="Pass Threshold"
-        )
+        fig.add_vline(x=50, line_dash="dash", line_color="red", annotation_text="Pass Threshold")
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_phef_hist")
 
     async def failed_phef_df(self) -> pd.DataFrame:

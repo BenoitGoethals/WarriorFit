@@ -1,4 +1,4 @@
-from sqlalchemy import TypeDecorator, Integer
+from sqlalchemy import Integer, TypeDecorator
 
 
 class IntEnumType(TypeDecorator):

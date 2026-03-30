@@ -4,15 +4,14 @@ from dataclasses import dataclass
 from typing import Any, Final, Optional
 
 import pandas as pd
+from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.core.container import Container
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.ui.controllers.functional_controller import FunctionalController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,28 +91,18 @@ class FunctionalPage(BaseTestPage):
                         ),
                         ui.output_text("functional_military"),
                         ui.layout_columns(
-                            ui.input_numeric(
-                                "functional_push_ups", "Push-ups", value=0, min=0
-                            ),
-                            ui.div(
-                                "Score :", ui.output_ui("functional_push_ups_score")
-                            ),
+                            ui.input_numeric("functional_push_ups", "Push-ups", value=0, min=0),
+                            ui.div("Score :", ui.output_ui("functional_push_ups_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
-                            ui.input_numeric(
-                                "functional_sit_ups", "Sit-ups", value=0, min=0
-                            ),
+                            ui.input_numeric("functional_sit_ups", "Sit-ups", value=0, min=0),
                             ui.div("Score :", ui.output_ui("functional_sit_ups_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
-                            ui.input_numeric(
-                                "functional_pull_ups", "Pull-ups", value=0, min=0
-                            ),
-                            ui.div(
-                                "Score :", ui.output_ui("functional_pull_ups_score")
-                            ),
+                            ui.input_numeric("functional_pull_ups", "Pull-ups", value=0, min=0),
+                            ui.div("Score :", ui.output_ui("functional_pull_ups_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
@@ -315,9 +304,7 @@ class FunctionalPage(BaseTestPage):
             if self.selected_military is None:
                 return ui.span("")
             try:
-                passed = _passes_total(
-                    int(push_val.get()), int(sit_val.get()), int(pull_val.get())
-                )
+                passed = _passes_total(int(push_val.get()), int(sit_val.get()), int(pull_val.get()))
                 return ui.span(
                     "PASSED" if passed else "FAILED",
                     style=(
@@ -367,9 +354,7 @@ class FunctionalPage(BaseTestPage):
             status.set("Ready.")
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -399,9 +384,7 @@ class FunctionalPage(BaseTestPage):
                 self.set_buttons(self.get_prefix(), can_add=False, can_update=False)
                 return
 
-            military_text.set(
-                f"{val.rank} {val.service_number} {val.first_name} {val.last_name}"
-            )
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             status.set("Serial confirmed. Enter results.")
             await self.toggle_inputs(session, self._DISABLE_IDS, disabled=False)
             self.set_buttons(self.get_prefix(), can_add=True, can_update=True)
@@ -438,7 +421,7 @@ class FunctionalPage(BaseTestPage):
                 df = self.controller.decorate_grid(df)
                 df = df.sort_values(by=["Serial"])
                 df_view = df.drop(columns=["ID"], errors="ignore")
-            except (KeyError, TypeError, ValueError, AttributeError) as e:
+            except (KeyError, TypeError, ValueError, AttributeError):
                 # Log the error for debugging (consider using proper logging)
                 # For now, fall back to showing undecorated data
                 df_view = df.drop(columns=["ID"], errors="ignore")
@@ -511,9 +494,7 @@ class FunctionalPage(BaseTestPage):
                 session, self._DISABLE_IDS, disabled=(self.selected_military is None)
             )
             status.set(
-                f"Selected Functional Test: {serial}"
-                if serial
-                else "Selected Functional Test."
+                f"Selected Functional Test: {serial}" if serial else "Selected Functional Test."
             )
 
         # ----------------------------
@@ -562,9 +543,7 @@ class FunctionalPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Added Functional test for {record['serialnr']} in session {record['id']}."
-            )
+            status.set(f"Added Functional test for {record['serialnr']} in session {record['id']}.")
             ui.notification_show(
                 f"Functional test added for {record['serialnr']}.",
                 type="message",
@@ -607,13 +586,9 @@ class FunctionalPage(BaseTestPage):
                 "pull_ups": res["pull_ups"],
             }
 
-            updated = await self.controller.update_functional(
-                int(functional_id_raw), payload
-            )
+            updated = await self.controller.update_functional(int(functional_id_raw), payload)
             if not updated:
-                status.set(
-                    f"Failed to update Functional test for {payload['serialnr']}."
-                )
+                status.set(f"Failed to update Functional test for {payload['serialnr']}.")
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
@@ -634,9 +609,7 @@ class FunctionalPage(BaseTestPage):
                 status.set("Select a row to delete.")
                 return
 
-            ok = await self.controller.delete_functional(
-                int(sess_id_raw), int(functional_id_raw)
-            )
+            ok = await self.controller.delete_functional(int(sess_id_raw), int(functional_id_raw))
             if not ok:
                 status.set("Failed to delete selected Functional record.")
                 return
@@ -676,9 +649,7 @@ class FunctionalPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -696,9 +667,7 @@ class FunctionalPage(BaseTestPage):
         @render.data_frame
         async def functional_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.functional_serial_search_grid_selected_rows)
@@ -709,9 +678,7 @@ class FunctionalPage(BaseTestPage):
                 if df is not None and not df.empty:
                     row_idx = indices[0]
                     row = df.iloc[row_idx]
-                    ui.update_text(
-                        "functional_serialnr", value=str(row["service_number"])
-                    )
+                    ui.update_text("functional_serialnr", value=str(row["service_number"]))
                     ui.modal_remove()
 
     async def _clear_form_hook(self, input: Any, session: Any) -> None:

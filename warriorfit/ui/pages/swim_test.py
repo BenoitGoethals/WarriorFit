@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import pandas as pd
+from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,9 +81,7 @@ class SwimTestPage(BaseTestPage):
                         ),
                         ui.output_text("swim_military"),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "swim_passed", "Swimming Test Passed", value=False
-                            ),
+                            ui.input_checkbox("swim_passed", "Swimming Test Passed", value=False),
                             ui.div("Status:", ui.output_ui("swim_status_display")),
                             col_widths=(8, 4),
                         ),
@@ -123,9 +120,7 @@ class SwimTestPage(BaseTestPage):
                     ),
                 ),
                 ui.card(
-                    ui.card_header(
-                        "Swimming Tests (includes members outside own unit)"
-                    ),
+                    ui.card_header("Swimming Tests (includes members outside own unit)"),
                     ui.output_data_frame("swim_grid"),
                     full_screen=False,
                 ),
@@ -218,9 +213,7 @@ class SwimTestPage(BaseTestPage):
             status.set("Ready.")
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -250,9 +243,7 @@ class SwimTestPage(BaseTestPage):
                 _set_buttons(can_add=False, can_update=False)
                 return
 
-            military_text.set(
-                f"{val.rank} {val.service_number} {val.first_name} {val.last_name}"
-            )
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             status.set("Serial confirmed. Set result and save.")
             await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
@@ -334,11 +325,7 @@ class SwimTestPage(BaseTestPage):
                 self.selected_military = None
 
             await _toggle_inputs(disabled=(self.selected_military is None))
-            status.set(
-                f"Selected Swimming Test: {serial}"
-                if serial
-                else "Selected Swimming Test."
-            )
+            status.set(f"Selected Swimming Test: {serial}" if serial else "Selected Swimming Test.")
 
         # ----------------------------
         # CRUD
@@ -380,9 +367,7 @@ class SwimTestPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Added Swimming test for {payload['serialnr']} in session {payload['id']}."
-            )
+            status.set(f"Added Swimming test for {payload['serialnr']} in session {payload['id']}.")
             ui.notification_show(
                 f"Swimming test added for {payload['serialnr']}.",
                 type="message",
@@ -482,9 +467,7 @@ class SwimTestPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -502,9 +485,7 @@ class SwimTestPage(BaseTestPage):
         @render.data_frame
         async def swim_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.swim_serial_search_grid_selected_rows)

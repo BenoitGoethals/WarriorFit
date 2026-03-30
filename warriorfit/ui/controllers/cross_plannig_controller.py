@@ -131,7 +131,6 @@ class CrossPlanningController:
         :type cross_id: int
         :return: None
         """
-        cross = self.get_cross(cross_id)
         self._service.delete_cross(cross_id)
 
     # --- Getters already present ---

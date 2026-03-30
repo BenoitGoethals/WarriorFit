@@ -1,6 +1,7 @@
 # tests/test_Functional_calculator.py
 
 import pytest
+
 from warriorfit.core.Gender import Gender
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 

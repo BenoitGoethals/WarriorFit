@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
 import pandas as pd
 
 from warriorfit.config.appliccation_config import ApplicationConfig
@@ -29,12 +28,8 @@ class StatusTestsController:
         config: ApplicationConfig = None,
     ):
         _config = config if config is not None else ApplicationConfig()
-        self._mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
-        self.data_collector = (
-            data_collector if data_collector is not None else DataCollector()
-        )
+        self._mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.data_collector = data_collector if data_collector is not None else DataCollector()
         self.unit_name: str = _config.own_unit
 
     async def get_data(self) -> pd.DataFrame:

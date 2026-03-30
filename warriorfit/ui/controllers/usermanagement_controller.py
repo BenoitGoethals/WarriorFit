@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
-from warriorfit.data.model.db_model import User, Role
+from warriorfit.data.model.db_model import Role, User
 from warriorfit.security.auth_service import Auth
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_user import UserService
@@ -128,9 +128,7 @@ class UserManagementController:
                 return False, f"Field '{f}' is required."
         if "@" not in form.email or "." not in form.email.split("@")[-1]:
             return False, "Invalid email address."
-        if not self.USER_REGEX.match(form.username) or not (
-            3 < len(form.username) < 30
-        ):
+        if not self.USER_REGEX.match(form.username) or not (3 < len(form.username) < 30):
             return (
                 False,
                 "Username must be valid (a..z,A..Z,0..9,_). Length must be between 3 and 30. ",
@@ -147,10 +145,7 @@ class UserManagementController:
 
             if form.email.strip() != (self.selected_user.email or "") and mail_unique:
                 return False, f"User with email '{form.email}' already exists."
-            if (
-                form.username.strip() != (self.selected_user.username or "")
-                and user_name_exist
-            ):
+            if form.username.strip() != (self.selected_user.username or "") and user_name_exist:
                 return False, f"User with username '{form.username}' already exists."
         else:
             if exists:

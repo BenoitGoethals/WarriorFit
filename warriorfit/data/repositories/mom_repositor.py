@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from warriorfit.data.model.db_model import HrMessage
@@ -106,9 +106,7 @@ class MomRepository(ABCRepository):
                     result = await session.execute(query)
 
                     if result.rowcount == 0:
-                        self._logger.error(
-                            "No HR message found with ID %s to delete.", id_msg
-                        )
+                        self._logger.error("No HR message found with ID %s to delete.", id_msg)
                         return False
                     return True
         except SQLAlchemyError as e:

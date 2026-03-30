@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from warriorfit.config.smtp_config import SmtpConfig
@@ -39,9 +39,7 @@ class SettingsData:
 
     def has_database_config(self) -> bool:
         """Check if all required database configuration is present."""
-        return bool(
-            self.db_host and self.db_database and self.db_username and self.db_password
-        )
+        return bool(self.db_host and self.db_database and self.db_username and self.db_password)
 
     def has_hr_config(self) -> bool:
         """Check if HR system configuration is present."""

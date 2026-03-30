@@ -1,22 +1,20 @@
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     pass
 from warriorfit.core.Gender import Gender
 from warriorfit.data.model.db_model import (
-    TestSession,
-    FitnessTest,
-    PhefTest,
     CombatSwimmingTest,
-    FunctionalTest,
     CombatTestParatrooper,
+    FitnessTest,
+    FunctionalTest,
+    PhefTest,
     ServiceMen,
+    TestSession,
 )
 from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
-
 from warriorfit.services.service import Service
 from warriorfit.ui.pages.notify_mail import NotifyMail
 
@@ -72,9 +70,7 @@ class ServiceTest(Service):
         return await self._test_repo.get_all_combat_swimming_test(id)
 
     async def get_all_test_sessions_type_fitness_test(self, type_test, this_year=True):
-        return await self._test_repo.get_all_test_sessions_type_fitness_test(
-            type_test, this_year
-        )
+        return await self._test_repo.get_all_test_sessions_type_fitness_test(type_test, this_year)
 
     async def get_all_test_sessions_type_fitness_test_for_service_men(
         self, serial: str, type_test, this_year=True
@@ -113,9 +109,7 @@ class ServiceTest(Service):
         """
         from warriorfit.app import FitnessWarriorApp
 
-        add_test = await self._test_repo.add_fitness_test_to_TestSession(
-            fitness_test, test
-        )
+        add_test = await self._test_repo.add_fitness_test_to_TestSession(fitness_test, test)
         body = ""
         if add_test or military.unit is None:
             match test.type:
@@ -130,12 +124,8 @@ class ServiceTest(Service):
                     body = self.build_email_body_combat(test)
             await FitnessWarriorApp.get_broker().send_message(test)
             if body:
-                notify = (
-                    self._notify_mail if self._notify_mail is not None else NotifyMail()
-                )
-                await notify.send_mail(
-                    body=body, subject="Result Test", to=str(military.mail)
-                )
+                notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
+                await notify.send_mail(body=body, subject="Result Test", to=str(military.mail))
             await self.add_audit_log(
                 details=f"Fitness test {test.serial_number} {test.type} added to test session {fitness_test}",
                 action="add",
@@ -144,9 +134,7 @@ class ServiceTest(Service):
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
-        deleted = await self._test_repo.delete_fitness_test_from_test_session(
-            param, param1
-        )
+        deleted = await self._test_repo.delete_fitness_test_from_test_session(param, param1)
         if deleted:
             await self.add_audit_log(
                 details=f"Fitness test {param1} deleted from test session {param}",
@@ -189,9 +177,7 @@ class ServiceTest(Service):
     async def delete_test_session(self, sel_id):
         deleted = await self._test_repo.delete_test_session(sel_id)
         if deleted:
-            await self.add_audit_log(
-                details=f"Test session {sel_id} deleted", action="delete"
-            )
+            await self.add_audit_log(details=f"Test session {sel_id} deleted", action="delete")
         return deleted
 
     async def get_all_pti(self):
@@ -231,7 +217,7 @@ class ServiceTest(Service):
                 </tr>
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 8px;"><strong>Test Date:</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime('%Y-%m-%d') if session else '-'}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime("%Y-%m-%d") if session else "-"}</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Test Results</th>
@@ -283,7 +269,7 @@ class ServiceTest(Service):
                 </tr>
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 8px;"><strong>Test Date</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime('%Y-%m-%d')}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime("%Y-%m-%d")}</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Result</th>
@@ -298,7 +284,6 @@ class ServiceTest(Service):
     def build_email_body_functional(
         self, sm: ServiceMen, session: TestSession, test: FunctionalTest | FitnessTest
     ) -> str:
-
         def normalize_gender(g: Gender | str) -> Gender:
             if isinstance(g, str):
                 return Gender.M if g.lower().startswith("m") else Gender.F
@@ -313,7 +298,7 @@ class ServiceTest(Service):
         return f"""
               Dear {sm.rank} {sm.first_name} {sm.last_name},
               <br><br>
-              Your functional test results from {session.datetime_start.strftime('%Y-%m-%d')} are:
+              Your functional test results from {session.datetime_start.strftime("%Y-%m-%d")} are:
               <br><br>
               <table border="1" cellpadding="5" style="border-collapse: collapse;">
                   <tr>
@@ -360,29 +345,29 @@ class ServiceTest(Service):
                    <tr>
                        <td style="padding: 8px;">Obstacle Course</td>
                        <td style="padding: 8px;">{str(test.obstacle_passed)}</td>
-                       <td style="padding: 8px; color: {'green' if test.obstacle_passed else 'red'}">
-                           {'PASSED' if test.obstacle_passed else 'FAILED'}
+                       <td style="padding: 8px; color: {"green" if test.obstacle_passed else "red"}">
+                           {"PASSED" if test.obstacle_passed else "FAILED"}
                        </td>
                    </tr>
                    <tr>
                        <td style="padding: 8px;">Rope Course</td>
                        <td style="padding: 8px;">{str(test.rope_passed)}</td>
-                       <td style="padding: 8px; color: {'green' if test.rope_passed else 'red'}">
-                           {'PASSED' if test.rope_passed else 'FAILED'}
+                       <td style="padding: 8px; color: {"green" if test.rope_passed else "red"}">
+                           {"PASSED" if test.rope_passed else "FAILED"}
                        </td>
                    </tr>
                    <tr>
                        <td style="padding: 8px;">Speed March</td>
                        <td style="padding: 8px;">{self.format_seconds(test.running_time)}</td>
-                       <td style="padding: 8px; color: {'green' if test.running_time <= 2400 else 'red'}">
-                           {'PASSED' if test.running_time <= 2400 else 'FAILED'}
+                       <td style="padding: 8px; color: {"green" if test.running_time <= 2400 else "red"}">
+                           {"PASSED" if test.running_time <= 2400 else "FAILED"}
                        </td>
                    </tr>
                    <tr>
                        <td style="padding: 8px; font-weight: bold;">Overall Result</td>
                        <td style="padding: 8px;"></td>
-                       <td style="padding: 8px; color: {'green' if (test.obstacle_passed and  test.rope_passed and test.running_time <= 2400) else 'red'}; font-weight: bold">
-                           {'PASSED' if (test.obstacle_passed and test.rope_passed and test.running_time <= 2400) else 'FAILED'}
+                       <td style="padding: 8px; color: {"green" if (test.obstacle_passed and test.rope_passed and test.running_time <= 2400) else "red"}; font-weight: bold">
+                           {"PASSED" if (test.obstacle_passed and test.rope_passed and test.running_time <= 2400) else "FAILED"}
                        </td>
                    </tr>
                </tbody>

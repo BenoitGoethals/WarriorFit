@@ -2,26 +2,24 @@ import os
 import time
 
 import psutil
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
+
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.StatusApplicationController import (
     StatusApplicationController,
 )
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 _process = psutil.Process(os.getpid())
 _start_time = time.time()
 
 
 class StatusApplicationPage(Page):
-
     @inject
     def __init__(
         self,
-        controller: StatusApplicationController = Provide[
-            Container.status_application_controller
-        ],
+        controller: StatusApplicationController = Provide[Container.status_application_controller],
     ):
         super().__init__()
         self._controller = controller

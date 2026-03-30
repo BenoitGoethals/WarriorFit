@@ -1,7 +1,9 @@
 from typing import Optional
+
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware  # NEW
+from pydantic import BaseModel
+
 from warriorfit.mom.message import Message
 
 

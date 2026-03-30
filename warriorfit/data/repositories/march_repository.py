@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from warriorfit.data.model.db_model import March, ServiceMen, Unit
@@ -59,9 +59,7 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def get_all_march_by_unit_name(
-        self, unit_name: str, this_year=True
-    ) -> list[March]:
+    async def get_all_march_by_unit_name(self, unit_name: str, this_year=True) -> list[March]:
         if this_year:
             end, start = await self.running_year()
             query = (
@@ -81,9 +79,7 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def get_all_march_form_service_men(
-        self, service_men: str, this_year=True
-    ) -> list[March]:
+    async def get_all_march_form_service_men(self, service_men: str, this_year=True) -> list[March]:
         """
         Fetches all marches associated with a given service member, optionally filtering
         for the current year.
@@ -178,7 +174,7 @@ class MarchRepository(ABCRepository):
                         self._logger.error("No March found with ID %d.", ind_march)
                         return False
                     return True
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             self._logger.exception("Failed to delete March")
             if session is not None:
                 await session.rollback()
@@ -217,9 +213,7 @@ class MarchRepository(ABCRepository):
                     await session.refresh(existing_mars)
                     return existing_mars
         except SQLAlchemyError as e:
-            self._logger.exception(
-                "Failed to update March with ID %d: %s", march.id, str(e)
-            )
+            self._logger.exception("Failed to update March with ID %d: %s", march.id, str(e))
             if session is not None:
                 await session.rollback()
             return None

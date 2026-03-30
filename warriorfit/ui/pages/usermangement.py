@@ -1,17 +1,16 @@
 # Python
 from __future__ import annotations
 
-import re
-
 import pandas as pd
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
+
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.usermanagement_controller import (
-    UserManagementController,
     UserForm,
+    UserManagementController,
 )
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class UserManagementPage(Page):
@@ -21,9 +20,7 @@ class UserManagementPage(Page):
     @inject
     def __init__(
         self,
-        controller: UserManagementController = Provide[
-            Container.usermanagement_controller
-        ],
+        controller: UserManagementController = Provide[Container.usermanagement_controller],
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -184,7 +181,6 @@ class UserManagementPage(Page):
         )
 
     def server(self, input, output, session):
-
         @reactive.Effect
         @reactive.event(input.um_serial_search_btn)
         async def um_create_btn_search__btn_modal() -> None:
@@ -202,9 +198,7 @@ class UserManagementPage(Page):
         @render.data_frame
         async def um_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.um_serial_search_grid_selected_rows)
@@ -216,9 +210,7 @@ class UserManagementPage(Page):
                     row_idx = indices[0]
                     row = df.iloc[row_idx]
                     ui.update_text("um_serial", value=str(row["service_number"]))
-                    ui.update_text(
-                        "um_username", value=row["first_name"] + row["last_name"]
-                    )
+                    ui.update_text("um_username", value=row["first_name"] + row["last_name"])
                     ui.update_text("um_email", value=row["mail"])
 
                     ui.modal_remove()
@@ -270,9 +262,7 @@ class UserManagementPage(Page):
             if to_drop:
                 df = df.drop(columns=to_drop)
 
-            return render.DataGrid(
-                df, filters=True, selection_mode="rows", width="100%"
-            )
+            return render.DataGrid(df, filters=True, selection_mode="rows", width="100%")
 
         @output
         @render.text
@@ -308,9 +298,7 @@ class UserManagementPage(Page):
                     "email": row.get("Email", ""),
                     "role": row.get("Role", ""),
                     "is_active": (
-                        bool(row.get("Active"))
-                        if pd.notna(row.get("Active"))
-                        else False
+                        bool(row.get("Active")) if pd.notna(row.get("Active")) else False
                     ),
                 },
             )
@@ -327,9 +315,7 @@ class UserManagementPage(Page):
             created = await self.controller.create_user(form)
             if created:
                 self.status.set(f"Created user '{form.serial}'.")
-                ui.notification_show(
-                    f"User '{form.serial}' created.", type="message", duration=3
-                )
+                ui.notification_show(f"User '{form.serial}' created.", type="message", duration=3)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
@@ -349,16 +335,12 @@ class UserManagementPage(Page):
             if not ok:
                 self.status.set(msg)
                 return
-            updated = await self.controller.update_user(
-                int(self.selected_id.get()), form
-            )
+            updated = await self.controller.update_user(int(self.selected_id.get()), form)
             if not updated:
                 self.status.set("Failed to update user.")
                 return
             self.status.set(f"Updated user '{form.serial}'.")
-            ui.notification_show(
-                f"User '{form.serial}' updated.", type="message", duration=3
-            )
+            ui.notification_show(f"User '{form.serial}' updated.", type="message", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self._clear_form(session)
 
@@ -374,9 +356,7 @@ class UserManagementPage(Page):
                 self.status.set(f"No user found with serial '{sel_serial}'.")
                 return
             self.status.set(f"Deleted user '{sel_serial}'.")
-            ui.notification_show(
-                f"User '{sel_serial}' deleted.", type="warning", duration=3
-            )
+            ui.notification_show(f"User '{sel_serial}' deleted.", type="warning", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_serial.set(None)
             self._clear_form(session)

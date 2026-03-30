@@ -3,15 +3,16 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from shiny import ui, render, reactive
 
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
+
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.reports_controller import (
-    ReportsController,
     ReportRequest,
+    ReportsController,
 )
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class ReportsPage(Page):
@@ -36,9 +37,7 @@ class ReportsPage(Page):
             ui.h2("Reports"),
             ui.layout_sidebar(
                 ui.sidebar(
-                    ui.input_text(
-                        "report_title", "Report Title:", "Fitness Test Report"
-                    ),
+                    ui.input_text("report_title", "Report Title:", "Fitness Test Report"),
                     ui.input_checkbox("own_Unit", "Own Unit", value=True),
                     ui.input_checkbox("this_year", "This Year", value=True),
                     ui.input_select(
@@ -64,9 +63,7 @@ class ReportsPage(Page):
                     ui.input_action_button(
                         "generate_report", "Generate Report", class_="btn-primary"
                     ),
-                    ui.download_button(
-                        "download_report", "Download", class_="btn-primary"
-                    ),
+                    ui.download_button("download_report", "Download", class_="btn-primary"),
                     width=300,
                 ),
                 ui.card(

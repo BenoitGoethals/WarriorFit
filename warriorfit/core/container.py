@@ -5,58 +5,57 @@ Dependency Injection Container for WarriorFit application.
 from dependency_injector import containers, providers
 
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.repositories.user_repository import UserRepository
-from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
-from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
 from warriorfit.data.repositories.cross_repository import CrossRepository
+from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
 from warriorfit.data.repositories.march_repository import MarchRepository
-from warriorfit.data.repositories.reservation_repository import ReservationRepository
 from warriorfit.data.repositories.mom_repositor import MomRepository
-from warriorfit.services.service_user import UserService
-from warriorfit.services.service_test import ServiceTest
-from warriorfit.services.service_cross import ServiceCross
-from warriorfit.services.service_march import ServiceMarch
-from warriorfit.services.reserve_fitness_room_service import ReserveFitnessRoomService
+from warriorfit.data.repositories.reservation_repository import ReservationRepository
+from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
+from warriorfit.data.repositories.user_repository import UserRepository
+from warriorfit.mom.broker import Broker
 from warriorfit.services.be_mil_service import BEMILService
-from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.mail_service import MailService
-from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
+from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.report_generator_csv import ReportGeneratorCsv
-from warriorfit.mom.broker import Broker
-from warriorfit.ui.pages.notify_mail import NotifyMail
-
-from warriorfit.ui.controllers.phef_controller import PhefController
-from warriorfit.ui.controllers.cross_controller import CrossController
-from warriorfit.ui.controllers.march_controller import MarchController
-from warriorfit.ui.controllers.reserve_fitness_room_controller import (
-    ReserveFitnessRoomController,
-)
-from warriorfit.ui.controllers.usermanagement_controller import UserManagementController
-from warriorfit.ui.controllers.calendar_events_controller import (
-    CalendarEventsController,
-)
-from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
-from warriorfit.ui.controllers.functional_controller import FunctionalController
-from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
+from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
+from warriorfit.services.reserve_fitness_room_service import ReserveFitnessRoomService
+from warriorfit.services.service_cross import ServiceCross
+from warriorfit.services.service_march import ServiceMarch
+from warriorfit.services.service_test import ServiceTest
+from warriorfit.services.service_user import UserService
 from warriorfit.ui.controllers.auditlog_events_controller import (
     AuditLogEventsController,
 )
-from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
-from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
-from warriorfit.ui.controllers.swimming_controller import SwimmingController
-from warriorfit.ui.controllers.session_controller import SessionsController
+from warriorfit.ui.controllers.calendar_events_controller import (
+    CalendarEventsController,
+)
 from warriorfit.ui.controllers.combat_controller import CombatController
+from warriorfit.ui.controllers.cross_controller import CrossController
+from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
+from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
 from warriorfit.ui.controllers.dashboard_own_unit_controller import (
     DashboardOwnUnitController,
 )
+from warriorfit.ui.controllers.functional_controller import FunctionalController
+from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
+from warriorfit.ui.controllers.march_controller import MarchController
+from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
+from warriorfit.ui.controllers.phef_controller import PhefController
 from warriorfit.ui.controllers.reports_controller import ReportsController
+from warriorfit.ui.controllers.reserve_fitness_room_controller import (
+    ReserveFitnessRoomController,
+)
+from warriorfit.ui.controllers.session_controller import SessionsController
+from warriorfit.ui.controllers.setting_controller import SettingsController
+from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
+from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
 from warriorfit.ui.controllers.StatusApplicationController import (
     StatusApplicationController,
 )
-from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
-from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
-from warriorfit.ui.controllers.setting_controller import SettingsController
+from warriorfit.ui.controllers.swimming_controller import SwimmingController
+from warriorfit.ui.controllers.usermanagement_controller import UserManagementController
+from warriorfit.ui.pages.notify_mail import NotifyMail
 
 
 class Container(containers.DeclarativeContainer):
@@ -261,15 +260,11 @@ class Container(containers.DeclarativeContainer):
     functional_controller = providers.Singleton(
         FunctionalController, service=test_service, mil_service=military_service
     )
-    cross_planning_controller = providers.Singleton(
-        CrossPlanningController, service=cross_service
-    )
+    cross_planning_controller = providers.Singleton(CrossPlanningController, service=cross_service)
     auditlog_events_controller = providers.Singleton(
         AuditLogEventsController, user_service=user_service
     )
-    status_log_user_controller = providers.Singleton(
-        StatusLogUserController, service=test_service
-    )
+    status_log_user_controller = providers.Singleton(StatusLogUserController, service=test_service)
     status_tests_controller = providers.Singleton(
         StatusTestsController,
         mil_service=military_service,

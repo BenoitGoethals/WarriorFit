@@ -1,10 +1,11 @@
 from __future__ import annotations
-from typing import Optional, Dict, Any
+
+from typing import Any, Dict, Optional
+
 import pandas as pd
 
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.model.db_model import CombatSwimmingTest, TestSession, ServiceMen
-
+from warriorfit.data.model.db_model import CombatSwimmingTest, ServiceMen, TestSession
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_test import ServiceTest
 
@@ -23,9 +24,7 @@ class SwimmingController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
 
     # ----- Validation -----
     @staticmethod
@@ -63,9 +62,7 @@ class SwimmingController:
         :return: A list of all test sessions of type `SWIMMING`.
         :rtype: list
         """
-        return await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.SWIMMING
-        )
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.SWIMMING)
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -91,9 +88,7 @@ class SwimmingController:
             - "Result": Indicates whether the test result was "PASSED" or "FAILED".
         """
         try:
-            swim_tests = await self._service.get_all_combat_swimming_test(
-                int(session_id)
-            )
+            swim_tests = await self._service.get_all_combat_swimming_test(int(session_id))
             rows = []
             for r in swim_tests or []:
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
@@ -104,9 +99,7 @@ class SwimmingController:
                         "ID": r.id,
                         "Serial": r.serial_number,
                         "Name": f"{sm.first_name} {sm.last_name}",
-                        "Result": (
-                            "PASSED" if getattr(r, "swim_paased", False) else "FAILED"
-                        ),
+                        "Result": ("PASSED" if getattr(r, "swim_paased", False) else "FAILED"),
                     }
                 )
             return pd.DataFrame(rows)

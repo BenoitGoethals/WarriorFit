@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import pandas as pd
+from dependency_injector.wiring import Provide, inject
 from pandas import DataFrame
 from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.combat_controller import CombatController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,9 +38,7 @@ class CombatPage(BaseTestPage):
     )
 
     @inject
-    def __init__(
-        self, controller: CombatController = Provide[Container.combat_controller]
-    ) -> None:
+    def __init__(self, controller: CombatController = Provide[Container.combat_controller]) -> None:
         super().__init__()
         self.controller = controller
 
@@ -91,14 +88,10 @@ class CombatPage(BaseTestPage):
                         ),
                         ui.output_text("combat_military"),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "combat_obstacle", "Obstacle course", value=False
-                            ),
+                            ui.input_checkbox("combat_obstacle", "Obstacle course", value=False),
                         ),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "combat_robe", "Robe Course", value=False
-                            ),
+                            ui.input_checkbox("combat_robe", "Robe Course", value=False),
                         ),
                         ui.layout_columns(
                             ui.input_text(
@@ -263,9 +256,7 @@ class CombatPage(BaseTestPage):
         # Session refresh handled by _init() defined above
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock form
@@ -320,9 +311,7 @@ class CombatPage(BaseTestPage):
                 return
 
             try:
-                speedmars_pass_fail.set(
-                    "Passes" if float(seconds) < 120 * 60 else "Fails"
-                )
+                speedmars_pass_fail.set("Passes" if float(seconds) < 120 * 60 else "Fails")
             except Exception:
                 speedmars_pass_fail.set("")
 
@@ -385,12 +374,8 @@ class CombatPage(BaseTestPage):
             serial = str(row.get("Serial", "") or "").strip()
             ui.update_text("combat_serialnr", value=serial)
 
-            obstacle_passed = (
-                str(row.get("ObstacleCourse", "") or "").strip().lower() == "passed"
-            )
-            robe_passed = (
-                str(row.get("RobeCourse", "") or "").strip().lower() == "passed"
-            )
+            obstacle_passed = str(row.get("ObstacleCourse", "") or "").strip().lower() == "passed"
+            robe_passed = str(row.get("RobeCourse", "") or "").strip().lower() == "passed"
 
             ui.update_checkbox("combat_obstacle", value=obstacle_passed)
             ui.update_checkbox("combat_robe", value=robe_passed)
@@ -411,9 +396,7 @@ class CombatPage(BaseTestPage):
 
             await _toggle_inputs(disabled=(self.selected_military is None))
             status.set(
-                f"Selected Combat record for: {serial}"
-                if serial
-                else "Selected Combat record."
+                f"Selected Combat record for: {serial}" if serial else "Selected Combat record."
             )
 
         # ----------------------------
@@ -467,9 +450,7 @@ class CombatPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Added Combat test for {form.serialnr} in session {form.session_id}."
-            )
+            status.set(f"Added Combat test for {form.serialnr} in session {form.session_id}.")
             ui.notification_show(
                 f"Combat test added for {form.serialnr}.", type="message", duration=3
             )
@@ -506,9 +487,7 @@ class CombatPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Updated Combat test for {form.serialnr} in session {form.session_id}."
-            )
+            status.set(f"Updated Combat test for {form.serialnr} in session {form.session_id}.")
             ui.notification_show(
                 f"Combat test updated for {form.serialnr}.", type="message", duration=3
             )
@@ -523,9 +502,7 @@ class CombatPage(BaseTestPage):
                 status.set("Select a row to delete.")
                 return
 
-            ok = await self.controller.delete_combat(
-                int(sess_id_raw), int(combat_id_raw)
-            )
+            ok = await self.controller.delete_combat(int(sess_id_raw), int(combat_id_raw))
             if not ok:
                 status.set("Failed to delete selected Combat record.")
                 return
@@ -565,9 +542,7 @@ class CombatPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -585,9 +560,7 @@ class CombatPage(BaseTestPage):
         @render.data_frame
         async def combat_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.combat_serial_search_grid_selected_rows)

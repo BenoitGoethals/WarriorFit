@@ -8,8 +8,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 
-from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.config.settings_data import SettingsData
+from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.logic.singleton import Singleton
 
 # ---------------------------------------------------------------------------
@@ -70,9 +70,7 @@ def app_config():
     with (
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
         patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
-        patch.object(
-            ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION
-        ),
+        patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
         patch(
             "warriorfit.config.appliccation_config.create_async_engine",
             return_value=MagicMock(),
@@ -210,9 +208,7 @@ def test_development_env_uses_dev_config():
     with (
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
         patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
-        patch.object(
-            ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION
-        ),
+        patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
         patch(
             "warriorfit.config.appliccation_config.create_async_engine",
             return_value=MagicMock(),

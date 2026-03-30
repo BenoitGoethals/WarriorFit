@@ -1,9 +1,11 @@
 import logging
+import os
 from pathlib import Path
 from typing import Any
+
 import yaml
 from sqlalchemy.ext.asyncio import create_async_engine
-import os
+
 from warriorfit.config.settings_data import SettingsData
 from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.logic.singleton import Singleton
@@ -136,9 +138,7 @@ class ApplicationConfig(metaclass=Singleton):
         config = self._load_yaml_file()
         version_config = self._load_version_yaml_file()
         if not config:
-            raise ValueError(
-                f"Configuration file is empty or not found: {self.config_path}"
-            )
+            raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
 
         self._settings_data = SettingsData(
             db_host=config["db"]["host"],

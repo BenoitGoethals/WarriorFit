@@ -1,8 +1,8 @@
 import logging
+
 import pandas as pd
 
 from warriorfit.data.model.db_model import Runner, ServiceMen
-
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_cross import ServiceCross
 from warriorfit.utils.formaters import Formatter
@@ -17,9 +17,7 @@ class CrossStaticsController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceCross()
-        self._mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self._mil_service = mil_service if mil_service is not None else MilitaryService()
         self._stats = None
 
     async def load(self):
@@ -79,10 +77,8 @@ class CrossStaticsController:
             for runner in value:
                 if runner.serial_number is None:
                     continue
-                service_men: ServiceMen = (
-                    await self._mil_service.get_servicemen_by_serial(
-                        runner.serial_number
-                    )
+                service_men: ServiceMen = await self._mil_service.get_servicemen_by_serial(
+                    runner.serial_number
                 )
                 if service_men:
                     data_p.append(

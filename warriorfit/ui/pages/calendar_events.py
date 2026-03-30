@@ -1,18 +1,19 @@
 import datetime
 from typing import Any, Optional
-from shiny import ui, reactive
+
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, ui
 from shiny_calendar import (
     render_shiny_calendar,
     shiny_calendar,
     shiny_calendar_call_js_func,
 )
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.calendar_events_controller import (
     CalendarEventsController,
 )
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 from warriorfit.ui.user_store import UserStore
 
 
@@ -23,9 +24,7 @@ class CalendarPage(Page):
     @inject
     def __init__(
         self,
-        controller: CalendarEventsController = Provide[
-            Container.calendar_events_controller
-        ],
+        controller: CalendarEventsController = Provide[Container.calendar_events_controller],
     ) -> None:
         super().__init__()
         self._refresh_counter = reactive.Value(0)
@@ -87,9 +86,7 @@ class CalendarPage(Page):
                     "editable": False,
                     "selectable": True,
                     "events": (
-                        await self._controller.events(
-                            str(UserStore.get_user().serial_number)
-                        )
+                        await self._controller.events(str(UserStore.get_user().serial_number))
                         if not self._all
                         else await self._controller.events()
                     ),
@@ -144,7 +141,6 @@ def _get_page() -> CalendarPage:
 
 def get_ui(all_test: bool = True):
     if all_test:
-
         return _get_page().get_ui_all_test()
     return _get_page().get_ui()
 

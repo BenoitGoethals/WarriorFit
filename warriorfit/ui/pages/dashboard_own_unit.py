@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Final, Mapping, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Final, Mapping
 
+from dependency_injector.wiring import Provide, inject
 from htmltools import HTML, Tag
-from shiny import ui, render, reactive
+from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.dashboard_own_unit_controller import (
     DashboardOwnUnitController,
 )
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class DashboardOwnUnitPage(Page):
@@ -21,9 +21,7 @@ class DashboardOwnUnitPage(Page):
     @inject
     def __init__(
         self,
-        controller: DashboardOwnUnitController = Provide[
-            Container.dashboard_own_unit_controller
-        ],
+        controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller],
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -74,9 +72,7 @@ class DashboardOwnUnitPage(Page):
             ui.br(),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header(
-                        "👥 Unit Personnel", class_="bg-secondary text-white"
-                    ),
+                    ui.card_header("👥 Unit Personnel", class_="bg-secondary text-white"),
                     ui.output_ui("own_unit_personnel_stats"),
                     class_="text-center",
                 ),

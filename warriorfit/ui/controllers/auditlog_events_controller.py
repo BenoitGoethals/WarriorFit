@@ -1,4 +1,5 @@
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 import pandas as pd
 
 from warriorfit.data.model.db_model import User
@@ -41,18 +42,18 @@ class AuditLogEventsController:
         if not logs:
             return pd.DataFrame(columns=["User", "Action", "Details", "IP", "Created"])
         rows: List[Dict[str, Any]] = []
-        for l in logs:
+        for log_entry in logs:
             user = next(
-                (user for user in users if user.id == getattr(l, "user_id", None)), None
+                (user for user in users if user.id == getattr(log_entry, "user_id", None)), None
             )
             if user is not None:
                 rows.append(
                     {
                         "User": user.username,
-                        "Action": getattr(l, "action", ""),
-                        "Details": getattr(l, "details", ""),
-                        "IP": getattr(l, "ip_address", ""),
-                        "Created": getattr(l, "created_at", ""),
+                        "Action": getattr(log_entry, "action", ""),
+                        "Details": getattr(log_entry, "details", ""),
+                        "IP": getattr(log_entry, "ip_address", ""),
+                        "Created": getattr(log_entry, "created_at", ""),
                     }
                 )
 

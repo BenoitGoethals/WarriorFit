@@ -1,8 +1,8 @@
 import pandas as pd
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import PhefTest
-
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
@@ -22,12 +22,8 @@ class DataCollector:
         military_service: MilitaryService = None,
     ) -> None:
         self._service = service_test if service_test is not None else ServiceTest()
-        self._service_mars = (
-            service_march if service_march is not None else ServiceMarch()
-        )
-        self.be_mil = (
-            military_service if military_service is not None else MilitaryService()
-        )
+        self._service_mars = service_march if service_march is not None else ServiceMarch()
+        self.be_mil = military_service if military_service is not None else MilitaryService()
 
     # -------------------------
     # Small helpers
@@ -61,10 +57,8 @@ class DataCollector:
 
         # PHEF (detailed)
         phef_rows: list[dict] = []
-        phef_sessions = (
-            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                serial, TypeFitnessTest.PHEF, this_year=current_year
-            )
+        phef_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.PHEF, this_year=current_year
         )
         for sess in phef_sessions or []:
             for t in sess.fitness_tests or []:
@@ -102,10 +96,8 @@ class DataCollector:
 
         # Functional (detailed)
         func_rows: list[dict] = []
-        func_sessions = (
-            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
-            )
+        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
         )
         for sess in func_sessions or []:
             for t in sess.fitness_tests or []:
@@ -167,10 +159,8 @@ class DataCollector:
 
         # Swimming (detailed)
         swim_rows: list[dict] = []
-        swim_sessions = (
-            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                serial, TypeFitnessTest.SWIMMING, this_year=current_year
-            )
+        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.SWIMMING, this_year=current_year
         )
         for sess in swim_sessions or []:
             for t in sess.fitness_tests or []:
@@ -237,10 +227,8 @@ class DataCollector:
 
         # PHEF (summary)
         phef_rows: list[dict] = []
-        phef_sessions = (
-            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                serial, TypeFitnessTest.PHEF, this_year=current_year
-            )
+        phef_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.PHEF, this_year=current_year
         )
         for sess in phef_sessions or []:
             for t in sess.fitness_tests or []:
@@ -275,10 +263,8 @@ class DataCollector:
 
         # Functional (summary)
         func_rows: list[dict] = []
-        func_sessions = (
-            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
-            )
+        func_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.FUNCTIONAL, this_year=current_year
         )
         for sess in func_sessions or []:
             for t in sess.fitness_tests or []:
@@ -331,10 +317,8 @@ class DataCollector:
 
         # Swimming (summary)
         swim_rows: list[dict] = []
-        swim_sessions = (
-            await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                serial, TypeFitnessTest.SWIMMING, this_year=current_year
-            )
+        swim_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.SWIMMING, this_year=current_year
         )
         for sess in swim_sessions or []:
             for t in sess.fitness_tests or []:
@@ -375,23 +359,17 @@ class DataCollector:
             frames.append(pd.DataFrame.from_records(mars_rows))
 
         if not frames:
-            return self._empty_df(
-                columns=["Date", "Type", "Details", "Scores", "Total", "Result"]
-            )
+            return self._empty_df(columns=["Date", "Type", "Details", "Scores", "Total", "Result"])
 
         df = pd.concat(frames, ignore_index=True, sort=False)
         df = df.sort_values(by=["Date"], kind="stable").reset_index(drop=True)
         return df
 
     async def collect_all_mil_from_own_unit_not_executed_phefs(self) -> pd.DataFrame:
-        mil_series = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
-        )
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
         rows: list[dict] = []
         for m in mil_series:
-            mils: list[PhefTest] = await self._service.get_all_phef_mil(
-                m.service_number
-            )
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
             if len(mils) == 0:
                 rows.append(
                     {
@@ -411,14 +389,10 @@ class DataCollector:
         )
 
     async def collect_all_mil_from_own_unit_failed_phefs(self) -> pd.DataFrame:
-        mil_series = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
-        )
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
         rows: list[dict] = []
         for m in mil_series:
-            mils: list[PhefTest] = await self._service.get_all_phef_mil(
-                m.service_number
-            )
+            mils: list[PhefTest] = await self._service.get_all_phef_mil(m.service_number)
 
             passed = any(
                 [
@@ -454,23 +428,27 @@ class DataCollector:
         )
 
     async def collect_tests_data_for_own_unit(self) -> pd.DataFrame:
-        own_unit = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
-        )
+        own_unit = await self.be_mil.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
         rows: list[dict] = []
 
         for m in own_unit:
             data_phef = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
                 m.service_number, TypeFitnessTest.PHEF
             )
-            data_functional = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                m.service_number, TypeFitnessTest.FUNCTIONAL
+            data_functional = (
+                await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                    m.service_number, TypeFitnessTest.FUNCTIONAL
+                )
             )
-            data_combat = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                m.service_number, TypeFitnessTest.COMBAT
+            data_combat = (
+                await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                    m.service_number, TypeFitnessTest.COMBAT
+                )
             )
-            data_swimming = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                m.service_number, TypeFitnessTest.SWIMMING
+            data_swimming = (
+                await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                    m.service_number, TypeFitnessTest.SWIMMING
+                )
             )
             data_mars = await self._service_mars.get_march_from_service_men(
                 serial_number=m.service_number, this_year=False
@@ -491,9 +469,7 @@ class DataCollector:
 
             if data_combat and data_combat[0].fitness_tests:
                 cmt = data_combat[0].fitness_tests[0]
-                combat_status = (
-                    "Passed" if cmt.rope_passed and cmt.obstacle_passed else "Failed"
-                )
+                combat_status = "Passed" if cmt.rope_passed and cmt.obstacle_passed else "Failed"
             else:
                 combat_status = "Not Done"
 

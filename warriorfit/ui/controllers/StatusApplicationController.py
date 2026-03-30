@@ -1,15 +1,14 @@
 import os
 
+import aiofiles
 import aiohttp
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.repositories.abc_repository import ABCRepository
 from warriorfit.utils.Os import Os
-import aiofiles
 
 
 class StatusApplicationController:
-
     def __init__(
         self,
         repo: ABCRepository = None,
@@ -64,9 +63,7 @@ class StatusApplicationController:
         async with aiofiles.open(log_path, "r") as f:
             lines = await f.readlines()
             last_100_lines = lines[-300:] if len(lines) > 300 else lines
-            last_100_lines_error = [
-                line for line in last_100_lines if not "info" in line.lower()
-            ]
+            last_100_lines_error = [line for line in last_100_lines if "info" not in line.lower()]
             return "".join(last_100_lines_error)
 
     def check_log_modified(self):

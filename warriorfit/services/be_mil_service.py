@@ -1,6 +1,7 @@
 import json
 import logging
-from datetime import datetime, date
+from datetime import date
+
 import httpx
 from pydantic import BaseModel, ConfigDict
 from pydantic.v1 import Field
@@ -29,7 +30,6 @@ class ServiceMenSchema(BaseModel):
 
 
 class BEMILService:
-
     def __init__(self, config: ApplicationConfig = None):
         self.__logger = logging.getLogger(__name__)
         if config is None:

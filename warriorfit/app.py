@@ -7,14 +7,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from warriorfit.security.rate_limiter import login_rate_limiter
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
-from shiny import App, ui, render
+
+from shiny import App, render, ui
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Role
 from warriorfit.mom.broker import Broker
+from warriorfit.security.rate_limiter import login_rate_limiter
 from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
 
@@ -24,29 +26,29 @@ _container = Container()
 
 # NOW import pages after wiring is complete
 from warriorfit.ui.pages import (
-    reports,
-    settings,
+    about,
+    auditlog_events,
+    calendar_events,
     combat_test,
-    own_unit,
-    dashboard_own_unit,
-    ind_test_show,
     cross,
     cross_planning,
-    calendar_events,
-    auditlog_events,
-    status_tests,
     cross_statics,
+    dashboard_own_unit,
+    functional_test,
+    ind_test_show,
     march,
-    status_login_user,
+    own_unit,
+    phef,
+    reports,
     reserve_fitness_room,
+    sessions,
+    settings,
     status_application,
+    status_login_user,
+    status_tests,
+    swim_test,
+    usermangement,
 )
-from warriorfit.ui.pages import usermangement
-from warriorfit.ui.pages import about
-from warriorfit.ui.pages import phef
-from warriorfit.ui.pages import sessions
-from warriorfit.ui.pages import functional_test
-from warriorfit.ui.pages import swim_test
 
 
 @dataclass(frozen=True)
@@ -91,8 +93,9 @@ class FitnessWarriorApp:
 
         :return: None
         """
-        import yaml
         import logging.config
+
+        import yaml
 
         project_root = Os.get_project_root()
         if not project_root:
@@ -101,9 +104,7 @@ class FitnessWarriorApp:
         log_dir = project_root / "logs"
         log_dir.mkdir(exist_ok=True)
 
-        config_path = (
-            project_root / "warriorfit" / "config" / "logging_configuration.yml"
-        )
+        config_path = project_root / "warriorfit" / "config" / "logging_configuration.yml"
 
         if config_path.exists():
             try:
@@ -506,9 +507,7 @@ class FitnessWarriorApp:
             return panel if panel is not None else None
 
         def _build_menu(group: str, pages_for_role: list[PageSpec]) -> Optional[ui.Tag]:
-            children = [
-                _safe_panel(p.ui_factory()) for p in pages_for_role if p.group == group
-            ]
+            children = [_safe_panel(p.ui_factory()) for p in pages_for_role if p.group == group]
             children = [c for c in children if c is not None]
             return ui.nav_menu(group, *children) if children else None
 
@@ -636,16 +635,10 @@ class FitnessWarriorApp:
                         "Physical Training Management System",
                         class_="wf-login-subtitle",
                     ),
-                    ui.tags.label(
-                        "Username", for_="username_login", class_="form-label"
-                    ),
+                    ui.tags.label("Username", for_="username_login", class_="form-label"),
                     ui.input_text("username_login", None, placeholder="Enter username"),
-                    ui.tags.label(
-                        "Password", for_="password_login", class_="form-label mt-2"
-                    ),
-                    ui.input_password(
-                        "password_login", None, placeholder="Enter password"
-                    ),
+                    ui.tags.label("Password", for_="password_login", class_="form-label mt-2"),
+                    ui.input_password("password_login", None, placeholder="Enter password"),
                     ui.input_action_button(
                         "handle_login", "Sign In", class_="btn btn-primary w-100 mt-3"
                     ),
@@ -665,9 +658,7 @@ class FitnessWarriorApp:
             locked, seconds_left = login_rate_limiter.is_locked(username_login)
             if locked:
                 minutes = (seconds_left + 59) // 60
-                status_text.set(
-                    f"Too many failed attempts. Try again in {minutes} minute(s)."
-                )
+                status_text.set(f"Too many failed attempts. Try again in {minutes} minute(s).")
                 return
 
             client = getattr(session.http_conn, "client", None)
@@ -760,9 +751,7 @@ class FitnessWarriorApp:
                 ui.notification_show("You have been logged out.", type="message")
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
         last_activity = reactive.Value(time.time())
@@ -855,9 +844,7 @@ class FitnessWarriorApp:
                 )
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
 

@@ -1,6 +1,5 @@
 # Python
 # logic/singleton.py
-import threading
 from abc import ABCMeta
 
 

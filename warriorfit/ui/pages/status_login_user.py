@@ -1,14 +1,14 @@
 import base64
 from pathlib import Path
 
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
 
 from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.core.container import Container
 from warriorfit.core.role import Role
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 from warriorfit.ui.user_store import UserStore
 
 
@@ -16,9 +16,7 @@ class StatusLoginUser(Page):
     @inject
     def __init__(
         self,
-        controller: StatusLogUserController = Provide[
-            Container.status_log_user_controller
-        ],
+        controller: StatusLogUserController = Provide[Container.status_log_user_controller],
     ):
         super().__init__()
         self.controller = controller
@@ -62,7 +60,6 @@ class StatusLoginUser(Page):
         )
 
     def server(self, input, output, session):
-
         @reactive.Effect
         @reactive.event(input.wl_refresh_btn)
         def _on_wl_refresh():
@@ -132,12 +129,8 @@ class StatusLoginUser(Page):
         @render.data_frame
         async def sessions_grid():
             self.refresh_tick.get()
-            df = await self.controller.get_upcoming_session(
-                UserStore.get_user().serial_number
-            )
-            return render.DataGrid(
-                df, width="100%", filters=True, selection_mode="none"
-            )
+            df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)
+            return render.DataGrid(df, width="100%", filters=True, selection_mode="none")
 
 
 _page = None
