@@ -6,18 +6,18 @@
 ---
 
 ## 📘 Inhoudstafel
-1. [Aanleiding / Probleemstelling](#-aanleiding--probleemstelling)
-2. [Doelstelling](#-doelstelling)
-3. [Overzicht PHEF](#-phef)
-4. [Andere Testen](#-andere-testen)
-5. [Scope & Use Cases](#-scope--use-cases)
-6. [Functionele Requirements](#-functionele-requirements)
-7. [Niet-Functionele Requirements](#-niet-functionele-requirements)
-8. [Definition of Done (DoD)](#-definition-of-done-dod)
-9. [Projectfasering](#-projectfasering)
-10. [Risico’s](#-risicos)
-11. [Frameworks & Packages](#-frameworks--packages)
-12. [Prototype Idee UX](#-prototype-idee-ux)
+1. [Aanleiding / Probleemstelling](#aanleiding-probleemstelling)
+2. [Doelstelling](#doelstelling)
+3. [Overzicht PHEF](#phef)
+4. [Andere Testen](#andere-testen)
+5. [Scope & Use Cases](#scope-use-cases)
+6. [Functionele Requirements](#functionele-requirements)
+7. [Niet-Functionele Requirements](#niet-functionele-requirements)
+8. [Definition of Done (DoD)](#definition-of-done-dod)
+9. [Projectfasering](#projectfasering)
+10. [Risico’s](#risicos)
+11. [Frameworks & Packages](#frameworks-packages)
+12. [Prototype Idee UX](#prototype-idee-ux)
 
 ---
 

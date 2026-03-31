@@ -8,7 +8,7 @@
 - [Navigation](#navigation)
 - [Guide by Role](#guide-by-role)
   - [All Users](#all-users)
-  - [PTI / APTI (Physical Training Instructor)](#pti--apti-physical-training-instructor)
+  - [PTI / APTI (Physical Training Instructor)](#pti-apti-physical-training-instructor)
   - [PLANNER](#planner)
   - [GUEST](#guest)
   - [ADMIN](#admin)
