@@ -37,7 +37,8 @@ COPY . .
 # APP_ENV: "production" or "test"
 # APP_PORT: 8000 (prod) or 8501 (test)
 ENV APP_ENV=production \
-    APP_PORT=8000
+    APP_PORT=8000 \
+    SHINY_DEV_MODE=false
 
 # Install the project itself (if configured as a package)
 RUN uv sync --frozen
