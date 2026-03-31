@@ -52,6 +52,7 @@ class ApplicationConfig(metaclass=Singleton):
 
         if env in ("production", "test"):
             secret_key = os.environ["WF_SECRET_KEY"]
+            os.environ["SHINY_DEV_MODE"] = "false"
             if secret_key is None or secret_key == "":
                 logging.error("WF_SECRET_KEY environment variable is not set")
                 raise ValueError("WF_SECRET_KEY environment variable is not set")
