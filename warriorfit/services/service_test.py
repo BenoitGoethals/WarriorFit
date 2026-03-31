@@ -125,7 +125,9 @@ class ServiceTest(Service):
             await FitnessWarriorApp.get_broker().send_message(test)
             if body:
                 notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
-                await notify.send_mail(body=body, subject="Result Test", to=str(military.mail if military else ""))
+                await notify.send_mail(
+                    body=body, subject="Result Test", to=str(military.mail if military else "")
+                )
             await self.add_audit_log(
                 details=f"Fitness test {test.serial_number} {test.type} added to test session {fitness_test}",
                 action="add",
@@ -290,6 +292,7 @@ class ServiceTest(Service):
     ) -> str:
         assert isinstance(test, FunctionalTest)
         test_date = str(session.datetime_start)[:10]
+
         def normalize_gender(g: Gender | str) -> Gender:
             if isinstance(g, str):
                 return Gender.M if g.lower().startswith("m") else Gender.F
