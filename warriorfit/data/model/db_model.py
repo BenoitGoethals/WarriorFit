@@ -377,7 +377,7 @@ class ServiceMen(Base):
         else:
             b = self.birthdate
         return (
-            date_session.year - b.year - ((date_session.month, date_session.day) < (b.month, b.day))
+            date_session.year - b.year - ((date_session.month, date_session.day) < (b.month, b.day))  # type: ignore[union-attr]
         )
 
     def __repr__(self) -> str:

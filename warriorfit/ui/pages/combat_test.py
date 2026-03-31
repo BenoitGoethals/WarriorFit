@@ -48,7 +48,7 @@ class CombatPage(BaseTestPage):
     def get_tab_name(self) -> str:
         return self.TAB_NAME
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE JS custom message handler (same pattern as PHEF)
@@ -440,8 +440,8 @@ class CombatPage(BaseTestPage):
             added = await self.controller.add_combat(
                 int(form.session_id),
                 payload,
-                session=self.selected_session,
-                military=self.selected_military,
+                session=self.selected_session,  # type: ignore[arg-type]
+                military=self.selected_military,  # type: ignore[arg-type]
             )
             if not added:
                 status.set(

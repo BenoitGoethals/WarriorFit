@@ -20,7 +20,7 @@ class ServicemenRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    service_men = await session.add(service_men)
+                    service_men = await session.add(service_men)  # type: ignore[func-returns-value]
                     await session.refresh(service_men)
                     return service_men
         except SQLAlchemyError:
@@ -98,7 +98,7 @@ class ServicemenRepository(ABCRepository):
                     service_men_to_update.first_name = service_men.first_name
                     service_men_to_update.service_number = service_men.service_number
                     service_men_to_update.rank = service_men.rank
-                    service_men_to_update.age = service_men.age
+                    service_men_to_update.age = service_men.age  # type: ignore[misc]
                     service_men_to_update.gender = service_men.gender
                     service_men_to_update.unit_id = service_men.unit_id
                     await session.commit()
@@ -172,7 +172,7 @@ class ServicemenRepository(ABCRepository):
                     await session.commit()
                     return True
         except SQLAlchemyError as e:
-            session.rollback()
+            session.rollback()  # type: ignore[unused-coroutine]
             self._logger.exception(e)
             return False
 

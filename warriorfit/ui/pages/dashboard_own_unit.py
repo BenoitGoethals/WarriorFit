@@ -58,7 +58,7 @@ class DashboardOwnUnitPage(Page):
             ),
         )
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         year = datetime.now().year
         unit = getattr(self.controller, "unit_name", "Unit")
         return ui.nav_panel(
@@ -218,7 +218,7 @@ class DashboardOwnUnitPage(Page):
         )
         _register_plotly_html_output(
             output_id="own_unit_phef_score_histogram",
-            fetcher=self.controller.phef_hist_html,
+            fetcher=self.controller.phef_hist_html,  # type: ignore[arg-type]
             empty_msg="No PHEF data available for your unit.",
             non_div_msg="No histogram HTML was generated.",
         )

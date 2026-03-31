@@ -11,7 +11,7 @@ class LoginRateLimiter:
     Blocks a username after MAX_ATTEMPTS failed attempts within WINDOW_SECONDS.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._failures: dict[str, list[float]] = defaultdict(list)
 
     def _prune(self, username: str) -> None:

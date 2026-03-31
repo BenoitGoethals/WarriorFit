@@ -51,7 +51,7 @@ class FunctionalPage(BaseTestPage):
     def get_tab_name(self) -> str:
         return self.TAB_NAME
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
@@ -525,16 +525,16 @@ class FunctionalPage(BaseTestPage):
             record = {
                 "id": form.session_id,
                 "serialnr": form.serialnr,
-                "push_ups": res["push_ups"],
-                "sit_ups": res["sit_ups"],
-                "pull_ups": res["pull_ups"],
+                "push_ups": res["push_ups"],  # type: ignore[index]
+                "sit_ups": res["sit_ups"],  # type: ignore[index]
+                "pull_ups": res["pull_ups"],  # type: ignore[index]
             }
 
             added = await self.controller.add_functional(
                 int(record["id"]),
                 record,
-                session=self.selected_session,
-                military=self.selected_military,
+                session=self.selected_session,  # type: ignore[arg-type]
+                military=self.selected_military,  # type: ignore[arg-type]
             )
             if not added:
                 status.set(
@@ -581,9 +581,9 @@ class FunctionalPage(BaseTestPage):
             payload = {
                 "session_id": form.session_id,
                 "serialnr": form.serialnr,
-                "push_ups": res["push_ups"],
-                "sit_ups": res["sit_ups"],
-                "pull_ups": res["pull_ups"],
+                "push_ups": res["push_ups"],  # type: ignore[index]
+                "sit_ups": res["sit_ups"],  # type: ignore[index]
+                "pull_ups": res["pull_ups"],  # type: ignore[index]
             }
 
             updated = await self.controller.update_functional(int(functional_id_raw), payload)

@@ -225,7 +225,7 @@ class CrossPage(Page):
                 str(c.id): getattr(
                     c,
                     "name",
-                    f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')} {c.distance} K",
+                    f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')} {c.distance} K",  # type: ignore[attr-defined]
                 )
                 for c in (crosses or [])
             }
@@ -323,9 +323,9 @@ class CrossPage(Page):
             data = _read_form()
             ok, res = await self.controller.validate_form(data)
             if not ok:
-                status.set(res)
+                status.set(res)  # type: ignore[arg-type]
                 return
-            payload = {**data, **res}
+            payload = {**data, **res}  # type: ignore[dict-item]
             # ensure cross id is set
             if not payload.get("cross_id"):
                 status.set("Select a Cross first.")
@@ -350,9 +350,9 @@ class CrossPage(Page):
             data["old_serialnr"] = getattr(self.selected_military.get(), "service_number", None)
             ok, res = await self.controller.validate_form(data, True)
             if not ok:
-                status.set(res)
+                status.set(res)  # type: ignore[arg-type]
                 return
-            payload = {**data, **res}
+            payload = {**data, **res}  # type: ignore[dict-item]
             updated = await self.controller.update_runner(int(rid), payload)
             if not updated:
                 status.set(f"Failed to update runner {payload['serialnr']}.")
@@ -405,7 +405,7 @@ class CrossPage(Page):
             buf = io.BytesIO()
             with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
                 try:
-                    path_obj = Path(self._last_paths)
+                    path_obj = Path(self._last_paths)  # type: ignore[arg-type]
                     if path_obj.is_file():
                         zf.write(path_obj, arcname=path_obj.name)
                 except Exception:

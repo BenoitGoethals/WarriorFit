@@ -44,7 +44,7 @@ class Rank(IntEnum):
     LIEUTENANT_GENERAL = 22
     GENERAL = 23
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name.replace("_", " ").title()
 
 

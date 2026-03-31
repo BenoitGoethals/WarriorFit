@@ -103,4 +103,4 @@ class ReserveFitnessRoomService(Service):
         return await self._repo.get_rooms()
 
     async def get_all_pti(self) -> list[User]:
-        return await self.user_repo.get_all_pti()
+        return await self.user_repo.get_all_pti()  # type: ignore[return-value]

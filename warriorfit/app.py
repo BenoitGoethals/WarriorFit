@@ -14,7 +14,7 @@ from shiny import App, render, ui
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.container import Container
-from warriorfit.data.model.db_model import Role
+from warriorfit.data.model.db_model import Role  # type: ignore[attr-defined]
 from warriorfit.mom.broker import Broker
 from warriorfit.security.rate_limiter import login_rate_limiter
 from warriorfit.ui.user_store import UserStore
@@ -380,7 +380,7 @@ class FitnessWarriorApp:
         # Calendar server mounted independently (modal lives outside navbar)
         servers_by_tab["CalendarEvents"] = calendar_events.server
 
-        mounted = reactive.Value(set())
+        mounted = reactive.Value(set())  # type: ignore[var-annotated]
 
         @reactive.Effect
         def _mount_on_nav_activation_register_only():
@@ -509,7 +509,7 @@ class FitnessWarriorApp:
         def _build_menu(group: str, pages_for_role: list[PageSpec]) -> Optional[ui.Tag]:
             children = [_safe_panel(p.ui_factory()) for p in pages_for_role if p.group == group]
             children = [c for c in children if c is not None]
-            return ui.nav_menu(group, *children) if children else None
+            return ui.nav_menu(group, *children) if children else None  # type: ignore[arg-type, return-value]
 
         def build_main_navbar():
             user = _get_session_user()

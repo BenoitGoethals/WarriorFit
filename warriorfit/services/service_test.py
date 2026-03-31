@@ -111,21 +111,21 @@ class ServiceTest(Service):
 
         add_test = await self._test_repo.add_fitness_test_to_TestSession(fitness_test, test)
         body = ""
-        if add_test or military.unit is None:
+        if add_test or military is None or military.unit is None:
             match test.type:
                 case "phef_test":
-                    body = self.build_email_body_phef(military, session, test)
+                    body = self.build_email_body_phef(military, session, test)  # type: ignore[arg-type]
 
                 case "combat_swimming_test":
-                    body = self.build_email_body_swim(military, session, test)
+                    body = self.build_email_body_swim(military, session, test)  # type: ignore[arg-type]
                 case "functional_test":
-                    body = self.build_email_body_functional(military, session, test)
+                    body = self.build_email_body_functional(military, session, test)  # type: ignore[arg-type]
                 case "combat_test":
                     body = self.build_email_body_combat(test)
             await FitnessWarriorApp.get_broker().send_message(test)
             if body:
                 notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
-                await notify.send_mail(body=body, subject="Result Test", to=str(military.mail))
+                await notify.send_mail(body=body, subject="Result Test", to=str(military.mail if military else ""))
             await self.add_audit_log(
                 details=f"Fitness test {test.serial_number} {test.type} added to test session {fitness_test}",
                 action="add",
@@ -158,7 +158,7 @@ class ServiceTest(Service):
         return await self._test_repo.get_test_session_by_id(param)
 
     async def add_test_session(self, ts):
-        added_test: TestSession = await self._test_repo.add_test_session(ts)
+        added_test: TestSession = await self._test_repo.add_test_session(ts)  # type: ignore[assignment]
         if added_test:
             await self.add_audit_log(
                 details=f"Test session {ts.id} {added_test.type_test.name} added",
@@ -192,6 +192,7 @@ class ServiceTest(Service):
     def build_email_body_phef(
         self, sm: ServiceMen, session: TestSession, payload: PhefTest | FitnessTest
     ) -> str:
+        assert isinstance(payload, PhefTest)
         age = (
             sm.age_from_birthdate()
             if session is None
@@ -201,6 +202,7 @@ class ServiceTest(Service):
         sbr = PhefCalculator.side_bridge_result(payload.sideBridge_r, age, sm.gender)
         sbl = PhefCalculator.side_bridge_result(payload.sideBridge_l, age, sm.gender)
         total = (run * (50 / 20.0)) + ((sbr + sbl) * (25 / 20.0))
+        test_date = str(session.datetime_start)[:10] if session else "-"
         return f"""
             <h2>PHEF Test Results</h2>
             <table style="border-collapse: collapse; width: 100%;">
@@ -217,7 +219,7 @@ class ServiceTest(Service):
                 </tr>
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 8px;"><strong>Test Date:</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime("%Y-%m-%d") if session else "-"}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{test_date}</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Test Results</th>
@@ -254,7 +256,9 @@ class ServiceTest(Service):
     def build_email_body_swim(
         sm: ServiceMen, session: TestSession, payload: CombatSwimmingTest | FitnessTest
     ) -> str:
+        assert isinstance(payload, CombatSwimmingTest)
         passed = payload.swim_paased
+        test_date = str(session.datetime_start)[:10]
         result = "PASSED" if passed else "FAILED"
         color = "green" if passed else "red"
         return f"""
@@ -269,7 +273,7 @@ class ServiceTest(Service):
                 </tr>
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 8px;"><strong>Test Date</strong></td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">{session.datetime_start.strftime("%Y-%m-%d")}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{test_date}</td>
                 </tr>
                 <tr>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;" colspan="2">Result</th>
@@ -284,6 +288,8 @@ class ServiceTest(Service):
     def build_email_body_functional(
         self, sm: ServiceMen, session: TestSession, test: FunctionalTest | FitnessTest
     ) -> str:
+        assert isinstance(test, FunctionalTest)
+        test_date = str(session.datetime_start)[:10]
         def normalize_gender(g: Gender | str) -> Gender:
             if isinstance(g, str):
                 return Gender.M if g.lower().startswith("m") else Gender.F
@@ -298,7 +304,7 @@ class ServiceTest(Service):
         return f"""
               Dear {sm.rank} {sm.first_name} {sm.last_name},
               <br><br>
-              Your functional test results from {session.datetime_start.strftime("%Y-%m-%d")} are:
+              Your functional test results from {test_date} are:
               <br><br>
               <table border="1" cellpadding="5" style="border-collapse: collapse;">
                   <tr>
@@ -332,6 +338,7 @@ class ServiceTest(Service):
               """
 
     def build_email_body_combat(self, test: CombatTestParatrooper | FitnessTest) -> str:
+        assert isinstance(test, CombatTestParatrooper)
         return f"""
            <table border="1" style="border-collapse: collapse; width: 100%;">
                <thead>

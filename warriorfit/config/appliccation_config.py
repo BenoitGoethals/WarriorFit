@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from warriorfit.config.settings_data import SettingsData
 from warriorfit.config.smtp_config import SmtpConfig
@@ -41,77 +41,83 @@ class ApplicationConfig(metaclass=Singleton):
     :type mail_server: SmtpConfig
     """
 
-    def __init__(self, config_path: str = "warriorfit/config/config.yml"):
+    def __init__(self, config_path: str = "warriorfit/config/config.yml") -> None:
         """
         Initialize the application configuration.
 
         :param config_path: Path to the configuration file.
         """
         env = os.getenv("APP_ENV", "development")
+        resolved_path: str | Path = config_path
 
         if env in ("production", "test"):
             secret_key = os.environ["WF_SECRET_KEY"]
-            if secret_key == "" or secret_key is None:
+            if secret_key is None or secret_key == "":
                 logging.error("WF_SECRET_KEY environment variable is not set")
                 raise ValueError("WF_SECRET_KEY environment variable is not set")
             # Allow explicit override (e.g. local scripts targeting a specific DB)
             config_override = os.getenv("APP_CONFIG_PATH")
             if config_override:
-                config_path = Path(config_override)
+                resolved_path = Path(config_override)
             else:
                 # Running in Docker container — config must be mounted at /etc/WarriorFit/config.yml
-                config_path = Path("/etc/WarriorFit/config.yml")
+                resolved_path = Path("/etc/WarriorFit/config.yml")
         elif env == "development":
-            config_path = "warriorfit/config/config_dev.yml"
+            resolved_path = "warriorfit/config/config_dev.yml"
 
-        self.config_path = self._get_project_root() / config_path
-        self.config_path_version = self._get_project_root() / "version.yaml"
-        self._settings_data = None
-        self.__config_db = None
+        self.config_path: Path = self._get_project_root() / resolved_path
+        self.config_path_version: Path = self._get_project_root() / "version.yaml"
+        self._settings_data: SettingsData | None = None
+        self.__config_db: AsyncEngine | None = None
 
-        self.__version = None
+        self.__version: tuple[str, str, str] | None = None
         self.load_config()
 
     @property
-    def config(self):
+    def config(self) -> AsyncEngine:
         if not self.__config_db:
             raise ValueError("Configuration not loaded. Call load_config() first.")
         return self.__config_db
 
     @property
-    def settings_data(self):
+    def settings_data(self) -> SettingsData | None:
         return self._settings_data
 
     @property
-    def version(self) -> tuple[str, str]:
+    def version(self) -> tuple[str, str, str] | None:
         return self.__version
 
     @property
-    def pdf_output_path(self):
+    def pdf_output_path(self) -> str:
+        assert self._settings_data is not None
         if not self._settings_data.pdf_path:
             raise ValueError("Configuration not loaded. Call load_config() first.")
         return self._settings_data.pdf_path
 
     @property
     def hr_url(self) -> str:
+        assert self._settings_data is not None
         if not self._settings_data.hr_url:
             raise ValueError("Configuration not loaded. Call load_config() first.")
         return self._settings_data.hr_url
 
     @property
     def hr_api_key(self) -> str:
+        assert self._settings_data is not None
         if not self._settings_data.hr_api_key:
             raise ValueError("Configuration not loaded. Call load_config() first.")
         return self._settings_data.hr_api_key
 
     @property
     def own_unit(self) -> str:
+        assert self._settings_data is not None
         if not self._settings_data.own_unit:
             raise ValueError("Configuration not loaded. Call load_config() first.")
         return self._settings_data.own_unit
 
     @property
     def mail_server(self) -> SmtpConfig:
+        assert self._settings_data is not None
         if not self._settings_data.mail_server:
             raise ValueError("Configuration not loaded. Call load_config() first.")
         return self._settings_data.mail_server
@@ -122,7 +128,7 @@ class ApplicationConfig(metaclass=Singleton):
         Get the project root directory by searching for marker files.
         """
         current_path = Path(__file__).resolve().parent
-        while current_path != current_path.root:
+        while current_path != Path(current_path.root):
             if any(
                 (current_path / marker).exists()
                 for marker in ["pyproject.toml", "requirements.txt", ".env"]
@@ -131,14 +137,16 @@ class ApplicationConfig(metaclass=Singleton):
             current_path = current_path.parent
         return Path(__file__).resolve().parent
 
-    def load_config(self):
+    def load_config(self) -> None:
         """
         Load the application configuration from the YAML file.
         """
         config = self._load_yaml_file()
         version_config = self._load_version_yaml_file()
         if not config:
-            raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
+            raise ValueError(
+                f"Configuration file is empty or not found: {self.config_path}"
+            )
 
         self._settings_data = SettingsData(
             db_host=config["db"]["host"],
@@ -195,10 +203,11 @@ class ApplicationConfig(metaclass=Singleton):
             directory.mkdir(parents=True, exist_ok=True)
         return str(directory)
 
-    def _setup_database_connection(self):
+    def _setup_database_connection(self) -> AsyncEngine:
         """
         Set up the database connection using SQLAlchemy.
         """
+        assert self._settings_data is not None
         return create_async_engine(
             url=f"postgresql+asyncpg://{self._settings_data.db_username}:{self._settings_data.db_password}@"
             f"{self._settings_data.db_host}:{self._settings_data.db_port}/{self._settings_data.db_database}",
@@ -211,10 +220,11 @@ class ApplicationConfig(metaclass=Singleton):
             pool_pre_ping=True,
         )
 
-    def save_config(self, config: SettingsData):
+    def save_config(self, config: SettingsData) -> None:
         """
         Save the updated configuration back to the YAML file.
         """
+        assert config.mail_server is not None
         config_dict = {
             "db": {
                 "database": config.db_database,
@@ -236,7 +246,7 @@ class ApplicationConfig(metaclass=Singleton):
             },
             "path": {"pdf_path": config.pdf_path},
             "unit": {"name": config.own_unit},
-            "version": {"number": self.version[0], "status": self.version[1]},
+            "version": {"number": self.__version[0], "status": self.__version[1]} if self.__version else {},
         }
         with open(self.config_path, "w", encoding="utf-8") as file:
             yaml.dump(config_dict, file, default_flow_style=False, sort_keys=False)

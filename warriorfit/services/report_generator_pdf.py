@@ -81,7 +81,7 @@ class ReportGeneratorPdf(GeneratorReport):
         sorted_rows = self._sort_and_rank_runners(rows)
 
         headers = ["order", "Serial Number", "Name", "Running Time", "Age", "Unit"]
-        title = f"Cross Report - {result.datetime_start.strftime('%Y-%m-%d %H:%M:%S')}  {len(sorted_rows)} runners"
+        title = f"Cross Report - {result.datetime_start.strftime('%Y-%m-%d %H:%M:%S')}  {len(sorted_rows)} runners"  # type: ignore[attr-defined]
 
         return self._build_pdf(
             sorted_rows,

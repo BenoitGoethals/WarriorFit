@@ -39,7 +39,7 @@ class SettingsController:
         :rtype: SettingsData
         """
         self._config.load_config()
-        return self._config.settings_data
+        return self._config.settings_data  # type: ignore[return-value]
 
     def save(self, data: SettingsData) -> Tuple[bool, str]:
         """

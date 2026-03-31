@@ -35,7 +35,7 @@ class MailService:
         bcc: Optional[Iterable[str] | str] = None,
     ) -> None:
         self._send_message(
-            to=self._ensure_list(to),
+            to=self._ensure_list(to),  # type: ignore[arg-type]
             subject=subject,
             from_email=from_email or self.config.sender_email or (self.config.username or ""),
             html_body=html_body,
@@ -71,14 +71,14 @@ class MailService:
             end=end,
             organizer_email=organizer_email,
             organizer_name=organizer_name,
-            attendees=self._ensure_list(to),
+            attendees=self._ensure_list(to),  # type: ignore[arg-type]
             location=location,
             description=description_text or self._strip_html(html_body),
             uid=uid,
             alarm_minutes_before=alarm_minutes_before,
         )
         self._send_message(
-            to=self._ensure_list(to),
+            to=self._ensure_list(to),  # type: ignore[arg-type]
             subject=subject,
             from_email=from_email or self.config.sender_email or (self.config.username or ""),
             html_body=html_body,

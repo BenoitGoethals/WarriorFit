@@ -156,7 +156,7 @@ class OwnUnitController:
 
     async def fetch_tests_for_serial_df(self, serial: str | None) -> pd.DataFrame:
         """Fetch test data for a given serial number and format it into a DataFrame."""
-        tests_df = await DataCollector().collect_tests_for_serial(serial, current_year=True)
+        tests_df = await DataCollector().collect_tests_for_serial(serial, current_year=True)  # type: ignore[arg-type]
         if tests_df is None or tests_df.empty:
             return pd.DataFrame(columns=["Test Type", "Session", "Status"])
 

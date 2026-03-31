@@ -46,7 +46,7 @@ class Broker:
         self._logger = logging.getLogger(__name__)
         self.running = False
         self._worker_task = None
-        self._msg_queue = asyncio.Queue()
+        self._msg_queue = asyncio.Queue()  # type: ignore[var-annotated]
         self._be_mil_service = be_mil_service if be_mil_service is not None else BEMILService()
         self._config = config if config is not None else ApplicationConfig()
 
@@ -186,13 +186,13 @@ class Broker:
             if isinstance(test, PhefTest):
                 dto = PhefTestDto(test)
             elif isinstance(test, CombatTestParatrooper):
-                dto = CombatTestDto(test)
+                dto = CombatTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, CombatSwimmingTest):
-                dto = CombatSwimTestDto(test)
+                dto = CombatSwimTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, March):
-                dto = MarchTestDto(test)
+                dto = MarchTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, FunctionalTest):
-                dto = FunctionalTestDto(test)
+                dto = FunctionalTestDto(test)  # type: ignore[assignment]
 
             if dto is None:
                 self._logger.warning(
@@ -350,7 +350,7 @@ class Broker:
         self._logger.debug("Checking for pending messages to send to HR")
         try:
             repo = MomRepository()
-            msg: HrMessage = await repo.get_last_added_hr_message_by_send_date()
+            msg: HrMessage = await repo.get_last_added_hr_message_by_send_date()  # type: ignore[assignment]
 
             if msg:
                 message_id = getattr(msg, "id", None)
@@ -398,7 +398,7 @@ class Broker:
             self.running = True
             try:
                 loop = asyncio.get_running_loop()
-                self._worker_task = loop.create_task(self.worker())
+                self._worker_task = loop.create_task(self.worker())  # type: ignore[assignment]
                 self._logger.info(
                     "Broker worker task created successfully",
                     extra={"task_id": id(self._worker_task)},
@@ -486,7 +486,7 @@ class MarchTestDto:
         self.distance = test.distance
         self.succeeded = test.succeeded
         self.datetime_executed = (
-            test.datetime_executed.isoformat() if test.datetime_executed else None
+            test.datetime_executed.isoformat() if test.datetime_executed else None  # type: ignore[attr-defined]
         )
 
     def to_dict(self) -> dict:

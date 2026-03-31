@@ -243,12 +243,12 @@ class PhefController:
                 sr = row.get("Sidebridge R Score")
                 st = row.get("Sidebridge L Score")
                 rtr = row.get("Running Score")
-                n = _num(s, 100.0)
-                r = _num(sr, 20.0)
-                t = _num(st, 20.0)
-                rs = _num(rtr, 20.0)
+                n = _num(s, 100.0)  # type: ignore[arg-type]
+                r = _num(sr, 20.0)  # type: ignore[arg-type]
+                t = _num(st, 20.0)  # type: ignore[arg-type]
+                rs = _num(rtr, 20.0)  # type: ignore[arg-type]
                 if n is None or r is None or t is None or rs is None:
-                    return s
+                    return s  # type: ignore[return-value]
                 return f"🟥 {s}" if rs < 10 or (r + t) < 20 else f"🟩 {s}"
 
             out["Totale Score"] = out.apply(_fmt_total_row, axis=1)
@@ -291,7 +291,7 @@ class PhefController:
         :return: An instance of `PhefTest` if the addition succeeds; otherwise, None.
         """
         p = PhefTest()
-        p.test_session_id = int(session_id)
+        p.test_session_id = int(session_id)  # type: ignore[attr-defined]
         p.serial_number = payload["serialnr"]
         p.running_time = payload["run2400_s"]
         p.sideBridge_r = payload["side_bridge_r_s"]
@@ -316,7 +316,7 @@ class PhefController:
         """
         p = PhefTest()
         p.id = int(phef_id)
-        p.test_session_id = int(payload["session_id"])
+        p.test_session_id = int(payload["session_id"])  # type: ignore[attr-defined]
         p.serial_number = payload["serialnr"]
         p.running_time = payload["run2400_s"]
         p.sideBridge_r = payload["side_bridge_r_s"]

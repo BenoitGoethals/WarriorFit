@@ -478,7 +478,7 @@ class FitnessTestRepository(ABCRepository):
             end, start = await self.running_year()
             query = (
                 select(FitnessTest)
-                .join(FitnessTest.test_sessions)
+                .join(FitnessTest.test_sessions)  # type: ignore[attr-defined]
                 .where(TestSession.datetime_start.between(start, end))
             )
         else:
@@ -511,7 +511,7 @@ class FitnessTestRepository(ABCRepository):
                                 CombatSwimmingTest,
                             ],
                         ),
-                        selectinload(FitnessTest.test_sessions),
+                        selectinload(FitnessTest.test_sessions),  # type: ignore[attr-defined]
                     )
                 )
                 result = await session.execute(query)
@@ -546,7 +546,7 @@ class FitnessTestRepository(ABCRepository):
                                 CombatSwimmingTest,
                             ],
                         ),
-                        selectinload(FitnessTest.test_sessions),
+                        selectinload(FitnessTest.test_sessions),  # type: ignore[attr-defined]
                     )
                 )
                 result = await session.execute(query)
@@ -732,7 +732,7 @@ class FitnessTestRepository(ABCRepository):
 
                     await session.flush()
                     await session.refresh(fitness_test)
-                    return fitness_test
+                    return fitness_test  # type: ignore[return-value]
         except IntegrityError as e:
             self._logger.error(
                 "Integrity error updating FitnessTest %d: %s", fitness_test_id, str(e)
@@ -876,7 +876,7 @@ class FitnessTestRepository(ABCRepository):
                         end, start = await self.running_year()
                         query = (
                             select(PhefTest)
-                            .join(PhefTest.test_sessions)
+                            .join(PhefTest.test_sessions)  # type: ignore[attr-defined]
                             .where(PhefTest.serial_number == serial)
                             .where(TestSession.datetime_start.between(start, end))
                         )
@@ -915,7 +915,7 @@ class FitnessTestRepository(ABCRepository):
                         end, start = await self.running_year()
                         query = (
                             select(CombatTestParatrooper)
-                            .join(CombatTestParatrooper.test_sessions)
+                            .join(CombatTestParatrooper.test_sessions)  # type: ignore[attr-defined]
                             .where(CombatTestParatrooper.serial_number == service_number)
                             .where(TestSession.datetime_start.between(start, end))
                         )
@@ -959,7 +959,7 @@ class FitnessTestRepository(ABCRepository):
                         end, start = await self.running_year()
                         query = (
                             select(CombatSwimmingTest)
-                            .join(CombatSwimmingTest.test_sessions)
+                            .join(CombatSwimmingTest.test_sessions)  # type: ignore[attr-defined]
                             .where(CombatSwimmingTest.serial_number == service_number)
                             .where(TestSession.datetime_start.between(start, end))
                         )

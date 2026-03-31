@@ -66,7 +66,7 @@ class CrossController:
                 else:
                     return False, "Time must be in hh:mm:ss, mm:ss or seconds."
             else:
-                total = float(txt)
+                total = float(txt)  # type: ignore[assignment]
             if total <= 0:
                 return False, "Time must be positive."
             return True, total
@@ -98,17 +98,17 @@ class CrossController:
         """
         if not (data.get("serialnr") or "").strip():
             return False, "Serial number is required."
-        if await self.search_military(data.get("serialnr")) is None:
+        if await self.search_military(data.get("serialnr")) is None:  # type: ignore[arg-type]
             return (
                 False,
                 "Serial number does not exist. Please enter a valid serial number.",
             )
         if update:
             if data.get("serialnr") != data.get("old_serialnr"):
-                if await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):
+                if await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):  # type: ignore[arg-type]
                     return False, "Serial number already exists."
 
-        elif await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):
+        elif await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):  # type: ignore[arg-type]
             return False, "Serial number already exists."
 
         ok_run, run = CrossController.parse_time_to_seconds(data.get("running_time") or "")
@@ -159,7 +159,7 @@ class CrossController:
             # Fetch all servicemen concurrently instead of sequentially
             servicemen = await asyncio.gather(
                 *[
-                    self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)
+                    self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)  # type: ignore[arg-type]
                     for r in cross
                 ]
             )

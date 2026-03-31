@@ -116,7 +116,7 @@ class OwnUnitPage(Page):
                 serial = str(row.get("Service", "") or "").strip()
                 if not serial:
                     return
-                self._selected_serial.set(serial)
+                self._selected_serial.set(serial)  # type: ignore[arg-type]
 
                 ui.modal_show(
                     ui.modal(

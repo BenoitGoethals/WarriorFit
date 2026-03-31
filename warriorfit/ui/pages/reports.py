@@ -25,7 +25,7 @@ class ReportsPage(Page):
         self._status_msg = reactive.Value(
             ("info", "Click 'Generate Report' to create your report.")
         )
-        self._last_paths = reactive.Value([])
+        self._last_paths = reactive.Value([])  # type: ignore[var-annotated]
         self.__logger = logging.getLogger(__name__)
 
     def refresh(self):

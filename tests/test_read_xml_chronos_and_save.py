@@ -80,7 +80,7 @@ def _build_service(
     mock_repo = MagicMock()
     mock_repo.add_runners_to_cross = add_runners
     svc = ServiceCross(cross_repository=mock_repo, user_repository=None)
-    svc.add_audit_log = audit_log
+    svc.add_audit_log = audit_log  # type: ignore[method-assign]
     return svc, add_runners, audit_log
 
 

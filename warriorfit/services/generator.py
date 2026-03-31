@@ -86,19 +86,19 @@ class GeneratorReport(ABC):
                     if test.serial_number not in [s.service_number for s in mils]:
                         continue
                 sm = await self.be_mil_service.get_servicemen_by_serial(
-                    test.serial_number, lazy=False
+                    test.serial_number, lazy=False  # type: ignore[arg-type]
                 )
                 self._logger.info(
-                    f"PHEF test: {test.serial_number} - {sm.first_name} {sm.last_name} - {sm.age_from_birthdate()} years old"
+                    f"PHEF test: {test.serial_number} - {sm.first_name} {sm.last_name} - {sm.age_from_birthdate()} years old"  # type: ignore[union-attr]
                 )
                 score_r = PhefCalculator.side_bridge_result(
-                    test.sideBridge_r, sm.age_from_birthdate(), sm.gender
+                    test.sideBridge_r, sm.age_from_birthdate(), sm.gender  # type: ignore[union-attr]
                 )
                 score_l = PhefCalculator.side_bridge_result(
-                    test.sideBridge_l, sm.age_from_birthdate(), sm.gender
+                    test.sideBridge_l, sm.age_from_birthdate(), sm.gender  # type: ignore[union-attr]
                 )
                 score_run = PhefCalculator.running_result(
-                    test.running_time, sm.age_from_birthdate(), sm.gender
+                    test.running_time, sm.age_from_birthdate(), sm.gender  # type: ignore[union-attr]
                 )
                 total = (score_run * (50 / 20.0)) + ((score_r + score_l) * (25 / 20.0))
                 phef_passed = (score_r + score_l) >= 20 and score_run >= 10

@@ -85,15 +85,15 @@ class AboutPage(Page):
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td("Version", class_="fw-bold pe-3 py-1"),
-                                        ui.tags.td(self._config.version[1]),
+                                        ui.tags.td(self._config.version[1]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td("Status", class_="fw-bold pe-3 py-1"),
-                                        ui.tags.td(self._config.version[0]),
+                                        ui.tags.td(self._config.version[0]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td("Release Date", class_="fw-bold pe-3 py-1"),
-                                        ui.tags.td(self._config.version[2]),
+                                        ui.tags.td(self._config.version[2]),  # type: ignore[index]
                                     ),
                                 ),
                                 class_="table table-sm table-borderless mb-0",

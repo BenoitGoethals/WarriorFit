@@ -46,7 +46,7 @@ class StatusApplicationController:
 
     async def status_server(self):
         project_root = Os.get_project_root()
-        log = project_root / "logs" / "application.log"
+        log = project_root / "logs" / "application.log"  # type: ignore[operator]
         error = 0
         if log.exists():
             # Use aiofiles for async file operations
@@ -59,7 +59,7 @@ class StatusApplicationController:
 
     async def load_log_application(self) -> str:
         project_root = Os.get_project_root()
-        log_path = project_root / "logs" / "application.log"
+        log_path = project_root / "logs" / "application.log"  # type: ignore[operator]
         async with aiofiles.open(log_path, "r") as f:
             lines = await f.readlines()
             last_100_lines = lines[-300:] if len(lines) > 300 else lines
@@ -70,7 +70,7 @@ class StatusApplicationController:
         from warriorfit.utils.Os import Os
 
         project_root = Os.get_project_root()
-        log_path = project_root / "logs" / "application.log"
+        log_path = project_root / "logs" / "application.log"  # type: ignore[operator]
         if log_path.exists():
             return os.path.getmtime(log_path)
         return None

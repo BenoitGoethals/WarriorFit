@@ -74,13 +74,13 @@ class CalendarEventsController:
         crosses = await self._service_cross.get_all_crosses()
         for cross in crosses:
             cross_date = cross.datetime_start
-            cross_date_end = cross_date + datetime.timedelta(hours=2)
+            cross_date_end = cross_date + datetime.timedelta(hours=2)  # type: ignore[operator]
             events_to_post.append(
                 {
                     "id": cross.id,
                     "title": "Cross",
-                    "start": cross_date.strftime("%Y-%m-%dT%H:%M:%S"),
-                    "end": cross_date_end.strftime("%Y-%m-%dT%H:%M:%S"),
+                    "start": cross_date.strftime("%Y-%m-%dT%H:%M:%S"),  # type: ignore[attr-defined]
+                    "end": cross_date_end.strftime("%Y-%m-%dT%H:%M:%S"),  # type: ignore[attr-defined]
                 }
             )
         return events_to_post

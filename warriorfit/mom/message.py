@@ -34,7 +34,7 @@ class Message:
             from dataclasses import asdict, is_dataclass
 
             if is_dataclass(content):
-                return asdict(content)
+                return asdict(content)  # type: ignore[arg-type]
         except Exception:
             pass
         # Shallow public attributes

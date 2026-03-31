@@ -43,7 +43,7 @@ class SwimTestPage(BaseTestPage):
     def get_tab_name(self) -> str:
         return self.TAB_NAME
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
             self.TAB_NAME,
             # One JS custom message handler to toggle input disabling (no repeated script injection).
@@ -351,14 +351,14 @@ class SwimTestPage(BaseTestPage):
             payload = {
                 "id": form.session_id,
                 "serialnr": form.serialnr,
-                "swim_passed": res["swim_passed"],
+                "swim_passed": res["swim_passed"],  # type: ignore[index]
             }
 
             added = await self.controller.add_swim(
                 int(payload["id"]),
                 payload,
-                session=self.selected_session,
-                military=self.selected_military,
+                session=self.selected_session,  # type: ignore[arg-type]
+                military=self.selected_military,  # type: ignore[arg-type]
             )
             if not added:
                 status.set(
@@ -401,7 +401,7 @@ class SwimTestPage(BaseTestPage):
             payload = {
                 "session_id": form.session_id,
                 "serialnr": form.serialnr,
-                "swim_passed": res["swim_passed"],
+                "swim_passed": res["swim_passed"],  # type: ignore[index]
             }
 
             updated = await self.controller.update_swim(int(swim_id_raw), payload)

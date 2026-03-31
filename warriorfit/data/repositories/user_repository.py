@@ -30,7 +30,7 @@ class UserRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    user.created_at = datetime.now()
+                    user.created_at = datetime.now()  # type: ignore[assignment]
                     session.add(user)
                 await session.refresh(user)
                 return user

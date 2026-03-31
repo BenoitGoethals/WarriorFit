@@ -343,7 +343,7 @@ class ReserveFitnessRoomPage(Page):
                                 day_reservations.append(r)
 
                         # Group by room
-                        room_counts = {}
+                        room_counts = {}  # type: ignore[var-annotated]
                         for res in day_reservations:
                             room_id = res.room_id
                             room_counts[room_id] = room_counts.get(room_id, 0) + 1
@@ -636,7 +636,7 @@ class ReserveFitnessRoomPage(Page):
                             return
 
             # Find room object
-            room_obj: Room = next((r for r in self.rooms if r.id == selected_room.get()), None)
+            room_obj: Room = next((r for r in self.rooms if r.id == selected_room.get()), None)  # type: ignore[assignment]
 
             # Convert date string to datetime object
             date_str = str(input.date())

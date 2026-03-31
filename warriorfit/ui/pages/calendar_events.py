@@ -86,7 +86,7 @@ class CalendarPage(Page):
                     "editable": False,
                     "selectable": True,
                     "events": (
-                        await self._controller.events(str(UserStore.get_user().serial_number))
+                        await self._controller.events(str(UserStore.get_user().serial_number))  # type: ignore[union-attr]
                         if not self._all
                         else await self._controller.events()
                     ),

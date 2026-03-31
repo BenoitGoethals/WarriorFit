@@ -64,7 +64,7 @@ class Service(ABC):
         """
         user_id = getattr(UserStore.get_user(), "id", None)
         return await self._user_repo.create_audit_log(
-            user_id=user_id,
+            user_id=user_id,  # type: ignore[arg-type]
             details=details,
             ip_address=ip_address,
             action=action,

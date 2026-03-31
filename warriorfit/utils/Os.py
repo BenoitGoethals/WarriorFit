@@ -1,30 +1,29 @@
 import socket
 from pathlib import Path
-from typing import Any
 
 from pythonping import ping
 
 
 class Os:
     @staticmethod
-    def get_project_root() -> Path | None | Any:
+    def get_project_root() -> Path | None:
         """
         Returns the project root as a Path object. The project root is determined
         by searching for markers like 'pyproject.toml', 'requirements.txt', or '.env'.
         If none of these markers are found, None is returned.
         """
-        current_dir = Path(__file__).resolve()
-        while current_dir != current_dir.root:  # Repeat until reaching the root directory
+        current_dir = Path(__file__).resolve().parent
+        while current_dir != current_dir.parent:
             if any(
                 (current_dir / marker).exists()
                 for marker in ["pyproject.toml", "requirements.txt", ".env"]
             ):
                 return current_dir
-            current_dir = current_dir.parent  # Move one directory up
+            current_dir = current_dir.parent
         return None
 
     @staticmethod
-    def is_alive(host) -> bool:
+    def is_alive(host: str) -> bool:
         """
         Checks the reachability of a given host by sending ICMP ping requests.
 
@@ -45,7 +44,7 @@ class Os:
         except (socket.gaierror, RuntimeError):
             return False
 
-        return response.success()
+        return bool(response.success())
 
     @staticmethod
     def what_is_my_ip() -> str:
@@ -55,7 +54,7 @@ class Os:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
-            ip = s.getsockname()[0]
+            ip: str = s.getsockname()[0]
             s.close()
             return ip
         except (OSError, socket.error) as e:

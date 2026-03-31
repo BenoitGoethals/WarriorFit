@@ -187,7 +187,7 @@ class DataCollector:
             ok = bool(mars.succeeded)
             mars_rows.append(
                 {
-                    "Date": mars.datetime_executed.strftime("%Y-%m-%d %H:%M"),
+                    "Date": mars.datetime_executed.strftime("%Y-%m-%d %H:%M"),  # type: ignore[attr-defined]
                     "Type": "Mars",
                     "Details": f"{mars.distance} Km",
                     "Result": "Passed" if ok else "Failed",
@@ -347,7 +347,7 @@ class DataCollector:
             ok = bool(mars.succeeded)
             mars_rows.append(
                 {
-                    "Date": mars.datetime_executed.strftime("%Y-%m-%d %H:%M"),
+                    "Date": mars.datetime_executed.strftime("%Y-%m-%d %H:%M"),  # type: ignore[attr-defined]
                     "Type": "Mars",
                     "Details": f"{mars.distance} Km",
                     "Scores": "-",

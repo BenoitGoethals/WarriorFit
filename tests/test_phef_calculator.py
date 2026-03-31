@@ -64,7 +64,7 @@ class TestPhefCalculator(unittest.TestCase):
         """
         Test the side_bridge_result method when the time is None.
         """
-        result = PhefCalculator.side_bridge_result(None, 30, Gender.F.to_literal())
+        result = PhefCalculator.side_bridge_result(None, 30, Gender.F.to_literal())  # type: ignore[arg-type]
         self.assertEqual(0, result)
 
     def test_side_bridge_result_boundary_case_age_30(self):

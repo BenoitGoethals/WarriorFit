@@ -88,7 +88,7 @@ class ABCRepository:
         self,
         user_id: int,
         action: str,
-        details: dict | str = None,
+        details: dict | str = None,  # type: ignore[assignment]
         ip_address: str = None,
     ):
         """

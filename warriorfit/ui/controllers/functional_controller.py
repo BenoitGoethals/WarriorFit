@@ -200,7 +200,7 @@ class FunctionalController:
         :rtype: Optional[FunctionalTest]
         """
         ft = FunctionalTest()
-        ft.test_session_id = int(session_id)
+        ft.test_session_id = int(session_id)  # type: ignore[attr-defined]
         ft.serial_number = payload["serialnr"]
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]
@@ -225,7 +225,7 @@ class FunctionalController:
         """
         ft = FunctionalTest()
         ft.id = int(functional_id)
-        ft.test_session_id = int(payload["session_id"])
+        ft.test_session_id = int(payload["session_id"])  # type: ignore[attr-defined]
         ft.serial_number = payload["serialnr"]
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]

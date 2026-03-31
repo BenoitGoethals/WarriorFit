@@ -3,7 +3,7 @@ import functools
 import logging
 import os
 import time
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +16,10 @@ IS_DEV = os.getenv("ENV", "development").lower() in (
     "Testing",
 )
 
+F = TypeVar("F", bound=Callable[..., Any])
 
-def benchmark(func: Callable) -> Callable:
+
+def benchmark(func: F) -> F:
     """
     Decorator that logs the execution time of a function.
     Only active in development mode.
@@ -31,7 +33,7 @@ def benchmark(func: Callable) -> Callable:
 
         if asyncio.iscoroutinefunction(func):
 
-            async def async_wrapper():
+            async def async_wrapper() -> Any:
                 try:
                     return await func(*args, **kwargs)
                 finally:
@@ -46,4 +48,4 @@ def benchmark(func: Callable) -> Callable:
                 duration = time.perf_counter() - start_time
                 logger.info(f"[BENCHMARK] '{func.__name__}': {duration:.4f}s")
 
-    return wrapper
+    return wrapper  # type: ignore[return-value]

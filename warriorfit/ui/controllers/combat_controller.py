@@ -210,7 +210,7 @@ class CombatController:
                  combat test, or `None`.
         """
         cp = CombatTestParatrooper()
-        cp.test_session_id = int(session_id)
+        cp.test_session_id = int(session_id)  # type: ignore[attr-defined]
         cp.serial_number = payload["serialnr"]
         cp.running_time = payload["combat_speedmars"]
         cp.rope_passed = payload["combat_robe"]
@@ -239,7 +239,7 @@ class CombatController:
         """
         cp = CombatTestParatrooper()
         cp.id = combat_id
-        cp.test_session_id = int(payload["session_id"])
+        cp.test_session_id = int(payload["session_id"])  # type: ignore[attr-defined]
         cp.serial_number = payload["serialnr"]
         cp.running_time = payload["combat_speedmars"]
         cp.obstacle_passed = payload["combat_obstacle"]

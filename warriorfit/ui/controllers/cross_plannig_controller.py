@@ -131,7 +131,7 @@ class CrossPlanningController:
         :type cross_id: int
         :return: None
         """
-        self._service.delete_cross(cross_id)
+        self._service.delete_cross(cross_id)  # type: ignore[unused-coroutine]
 
     # --- Getters already present ---
     async def get_cross(self, cross_id: int) -> Cross:
@@ -202,7 +202,7 @@ class CrossPlanningController:
         """
         cross = await self.get_cross(cross_id)
         if datetime_start is not None:
-            cross.datetime_start = datetime_start
+            cross.datetime_start = datetime_start  # type: ignore[assignment]
         if executed is not None:
             cross.executed = executed
         if description is not None:

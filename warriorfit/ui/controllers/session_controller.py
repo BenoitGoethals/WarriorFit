@@ -228,7 +228,7 @@ class SessionsController:
         :rtype: str
         """
         status_text = "Canceled" if ts.canceled else "Planned"
-        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")  # type: ignore[attr-defined]
         desc = ts.description or "No description provided"
         return f"""
             <h2>New Fitness Test Session Added</h2>
@@ -253,7 +253,7 @@ class SessionsController:
         :rtype: str
         """
         status_text = "Canceled" if ts.canceled else "Planned"
-        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")  # type: ignore[attr-defined]
         desc = ts.description or "No description provided"
         typ = ts.type_test.name if hasattr(ts.type_test, "name") else str(ts.type_test)
         return f"""
@@ -279,7 +279,7 @@ class SessionsController:
         :rtype: str
         """
         status_text = "Canceled" if ts.canceled else "Planned"
-        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")  # type: ignore[attr-defined]
         desc = ts.description or "No description provided"
         return f"""
             <h2>New Fitness Test Session Deleted</h2>
@@ -341,9 +341,9 @@ class SessionsController:
                 to=recipients,
                 subject="Fitness Assessment Invite",
                 html_body="Fitness Session scheduled",
-                start=start_dt,
-                end=end_dt,
-                organizer_email=ApplicationConfig().mail_server.sender_email,
+                start=start_dt,  # type: ignore[arg-type]
+                end=end_dt,  # type: ignore[arg-type]
+                organizer_email=ApplicationConfig().mail_server.sender_email,  # type: ignore[arg-type]
                 organizer_name=organizer_name,
                 location="Gym Hall",
             )

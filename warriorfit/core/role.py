@@ -21,5 +21,5 @@ class Role(Enum):
     PLANNER = "PLANNER"
     APTI = "APTI"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value

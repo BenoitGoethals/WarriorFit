@@ -162,7 +162,7 @@ class MarchPage(Page):
                     row = df.iloc[row_idx]
                     ui.update_action_button("add_march_bn", disabled=False)
                     ui.update_action_button("update_march_bn", disabled=False)
-                    selected_id.set(row["id"] or "")
+                    selected_id.set(row["id"] or "")  # type: ignore[arg-type]
                     ui.update_text("service_number_march", value=str(row["service_number"]))
                     ui.update_numeric("distance", value=float(row["distance"]))
                     ui.update_checkbox("succeeded", value=bool(row["succeeded"]))

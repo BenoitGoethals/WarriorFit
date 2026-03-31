@@ -70,8 +70,8 @@ class DashboardOwnUnitController:
         try:
             if self._mils is None:
                 people = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
-                self._mils = {p.service_number for p in (people or [])}
-            return self._mils
+                self._mils = {p.service_number for p in (people or [])}  # type: ignore[assignment]
+            return self._mils  # type: ignore[return-value]
         except (AttributeError, TypeError):
             return set()
 
@@ -93,8 +93,8 @@ class DashboardOwnUnitController:
         try:
             if self._all_military_own_unit is None:
                 data = await self.be_mil_service.get_all_be_mil_from_unit(self.unit_name)
-                self._all_military_own_unit = {s.service_number: s for s in data}
-            return self._all_military_own_unit
+                self._all_military_own_unit = {s.service_number: s for s in data}  # type: ignore[assignment]
+            return self._all_military_own_unit  # type: ignore[return-value]
         except (AttributeError, TypeError):
             return {}
 
@@ -113,7 +113,7 @@ class DashboardOwnUnitController:
         :rtype: float
         """
         mils: dict[str, ServiceMen] = await self._get_all_military_own_unit()
-        val: ServiceMen = mils.get(test.serial_number)
+        val: ServiceMen = mils.get(test.serial_number)  # type: ignore[arg-type, assignment]
         age = val.age_from_birthdate()
         gender = val.gender
         score_r = PhefCalculator.side_bridge_result(test.sideBridge_r, age, gender)
@@ -416,7 +416,7 @@ class DashboardOwnUnitController:
             total = 0
             passed = False
             try:
-                total, passed = await self.phef_total_score(t)
+                total, passed = await self.phef_total_score(t)  # type: ignore[assignment]
             except (AttributeError, TypeError, KeyError):
                 pass
             if passed:

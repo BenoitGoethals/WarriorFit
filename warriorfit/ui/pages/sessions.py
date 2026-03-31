@@ -83,7 +83,7 @@ class SessionsPage(Page):
         )
 
     def server(self, input, output, session):
-        sessions = reactive.Value([])
+        sessions = reactive.Value([])  # type: ignore[var-annotated]
         status = reactive.Value("Ready.")
         selected_session_id = reactive.Value("")
 

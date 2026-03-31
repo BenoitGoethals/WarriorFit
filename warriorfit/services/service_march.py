@@ -112,17 +112,17 @@ class ServiceMarch(Service):
         """
         from warriorfit.app import FitnessWarriorApp
 
-        march = await self.__repo.add_march(march)
+        march = await self.__repo.add_march(march)  # type: ignore[assignment]
         sm = await self.be_mil_service.get_servicemen_by_serial(str(march.service_number))
 
-        body = self.build_email_body_march(march, sm)
+        body = self.build_email_body_march(march, sm)  # type: ignore[arg-type]
 
         await FitnessWarriorApp.get_broker().send_message(march)
         if body:
             notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
-            await notify.send_mail(body=body, subject="Result Test", to=str(sm.mail))
+            await notify.send_mail(body=body, subject="Result Test", to=str(sm.mail))  # type: ignore[union-attr]
         await self.add_audit_log(
-            details=f"Fitness test {sm.service_number} added to March session {march.datetime_executed} {march.distance} ",
+            details=f"Fitness test {sm.service_number} added to March session {march.datetime_executed} {march.distance} ",  # type: ignore[union-attr]
             action="add",
         )
 

@@ -155,7 +155,7 @@ class SwimmingController:
             otherwise None.
         """
         st = CombatSwimmingTest()
-        st.test_session_id = int(session_id)
+        st.test_session_id = int(session_id)  # type: ignore[attr-defined]
         st.serial_number = payload["serialnr"]
         st.swim_paased = bool(payload["swim_passed"])
         return await self._service.add_fitness_test_to_testSession(
@@ -179,7 +179,7 @@ class SwimmingController:
         """
         st = CombatSwimmingTest()
         st.id = int(swim_id)
-        st.test_session_id = int(payload["session_id"])
+        st.test_session_id = int(payload["session_id"])  # type: ignore[attr-defined]
         st.serial_number = payload["serialnr"]
         st.swim_paased = bool(payload["swim_passed"])
         return await self._service.update_fitness_test(int(swim_id), st)

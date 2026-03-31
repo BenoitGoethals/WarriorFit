@@ -264,7 +264,7 @@ def test_production_env_with_secret_key_and_config_override(tmp_path):
     ):
         cfg = ApplicationConfig()
 
-    assert cfg.settings_data.db_host == "localhost"
+    assert cfg.settings_data.db_host == "localhost"  # type: ignore[union-attr]
 
 
 # ---------------------------------------------------------------------------

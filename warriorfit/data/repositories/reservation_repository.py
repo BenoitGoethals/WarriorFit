@@ -12,7 +12,7 @@ class ReservationRepository(ABCRepository):
     def __init__(self, config=None):
         super().__init__(config=config)
 
-    async def add_reservation(self, reservation: Reservation) -> Any | None:
+    async def add_reservation(self, reservation: Reservation) -> Any | None:  # type: ignore[return]
         async with self.SessionLocal() as session:
             try:
                 session.add(reservation)
@@ -90,7 +90,7 @@ class ReservationRepository(ABCRepository):
     async def delete_all_reservation(self):
         async with self.SessionLocal() as session:
             try:
-                await session.query(Reservation).delete()
+                await session.query(Reservation).delete()  # type: ignore[attr-defined]
                 await session.commit()
                 return True
             except SQLAlchemyError as e:

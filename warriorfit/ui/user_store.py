@@ -16,5 +16,5 @@ class UserStore(metaclass=Singleton):
         return cls.__user
 
     @classmethod
-    def logout(cls):
+    def logout(cls) -> None:
         cls.__user = None

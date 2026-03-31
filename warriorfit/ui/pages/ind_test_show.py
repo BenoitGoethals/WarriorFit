@@ -156,7 +156,7 @@ class IndTestShowPage(Page):
                 self.serial.set("")
                 self.mil_info.set("Not found.")
                 self.tests_df.set(pd.DataFrame())
-                status.set(e)
+                status.set(e)  # type: ignore[arg-type]
 
         @output
         @render.text

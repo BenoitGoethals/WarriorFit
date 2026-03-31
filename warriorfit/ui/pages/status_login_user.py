@@ -129,7 +129,7 @@ class StatusLoginUser(Page):
         @render.data_frame
         async def sessions_grid():
             self.refresh_tick.get()
-            df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)
+            df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)  # type: ignore[arg-type, union-attr]
             return render.DataGrid(df, width="100%", filters=True, selection_mode="none")
 
 

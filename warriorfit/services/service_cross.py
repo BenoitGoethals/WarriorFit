@@ -85,14 +85,14 @@ class ServiceCross(Service):
         return await self._cross_repo.get_runners_from_a_cross(id_nr)
 
     async def add_runner_to_cross(self, id_cross: int, r: Runner) -> Runner:
-        r.cross_id = id_cross
+        r.cross_id = id_cross  # type: ignore[attr-defined]
         added = await self._cross_repo.add_runner_to_cross(id_cross, r)
         if added:
             await self.add_audit_log(
                 details=f"Runner {r.serial_number} added to cross {id_cross}",
                 action="add",
             )
-        return added
+        return added  # type: ignore[return-value]
 
     async def update_runner(self, id: int, r: Runner) -> Runner:
         updated = await self._cross_repo.update_runner(id, r)
@@ -101,7 +101,7 @@ class ServiceCross(Service):
                 details=f"Runner {r.serial_number} updated in cross {id}",
                 action="update",
             )
-        return updated
+        return updated  # type: ignore[return-value]
 
     async def remove_runner_from_cross(self, id_nr: int) -> bool:
         removed = await self._cross_repo.remove_runner(id_nr)
@@ -212,8 +212,8 @@ class ServiceCross(Service):
                 sm_rows.append(
                     {
                         "serial_number": str(serial),
-                        "gender": sm.gender,
-                        "age_group": self._bucket_age(sm.age_from_birthdate()),
+                        "gender": sm.gender,  # type: ignore[union-attr]
+                        "age_group": self._bucket_age(sm.age_from_birthdate()),  # type: ignore[union-attr]
                     }
                 )
             except Exception:
@@ -400,7 +400,7 @@ class ServiceCross(Service):
         # keep return types compatible (numpy floating-ish)
         f_avg = float(pd.Series(all_runners_f).mean()) if all_runners_f else 0.0
         m_avg = float(pd.Series(all_runners_m).mean()) if all_runners_m else 0.0
-        return f_avg, m_avg
+        return f_avg, m_avg  # type: ignore[return-value]
 
     async def get_top_10_runners_based_on_running_time(
         self, all_cross: list[Cross]
@@ -462,9 +462,9 @@ class ServiceCross(Service):
                 return False
             _logger.info("Chronos XML validated successfully.")
             runners = []
-            for athlete in xml_doc.xpath("//athlete"):
-                bib = (athlete.findtext("bib") or "").strip()
-                net = (athlete.findtext("net") or "0:00:00").strip()
+            for athlete in xml_doc.xpath("//athlete"):  # type: ignore[union-attr]
+                bib = (athlete.findtext("bib") or "").strip()  # type: ignore[union-attr]
+                net = (athlete.findtext("net") or "0:00:00").strip()  # type: ignore[union-attr]
 
                 # Convert net time "hh:mm:ss" to total seconds (float)
                 parts = net.split(":")
