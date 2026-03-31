@@ -1,25 +1,28 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Final, Mapping, Awaitable, Callable
+from typing import Any, Awaitable, Callable, Final, Mapping
 
+from dependency_injector.wiring import Provide, inject
 from htmltools import HTML, Tag
-from shiny import ui, render, reactive
+from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.dashboard_own_unit_controller import (
     DashboardOwnUnitController,
 )
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class DashboardOwnUnitPage(Page):
     TAB_NAME: Final[str] = "Dashboard"
 
     @inject
-    def __init__(self, controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller]) -> None:
+    def __init__(
+        self,
+        controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller],
+    ) -> None:
         super().__init__()
         self.controller = controller
 
@@ -27,7 +30,6 @@ class DashboardOwnUnitPage(Page):
         # Dashboard is cache-heavy; refresh should clear controller caches.
         self.controller.reset_cache()
         reactive.invalidate_later(0.5)
-
 
     @staticmethod
     def _ui_stats_card(
@@ -56,19 +58,21 @@ class DashboardOwnUnitPage(Page):
             ),
         )
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         year = datetime.now().year
         unit = getattr(self.controller, "unit_name", "Unit")
         return ui.nav_panel(
             self.TAB_NAME,
             ui.h2(f"📊 {unit} Dashboard {year}"),
-            ui.input_action_button("dashboard_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "dashboard_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.br(),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header(
-                        "👥 Unit Personnel", class_="bg-secondary text-white"
-                    ),
+                    ui.card_header("👥 Unit Personnel", class_="bg-secondary text-white"),
                     ui.output_ui("own_unit_personnel_stats"),
                     class_="text-center",
                 ),
@@ -214,7 +218,7 @@ class DashboardOwnUnitPage(Page):
         )
         _register_plotly_html_output(
             output_id="own_unit_phef_score_histogram",
-            fetcher=self.controller.phef_hist_html,
+            fetcher=self.controller.phef_hist_html,  # type: ignore[arg-type]
             empty_msg="No PHEF data available for your unit.",
             non_div_msg="No histogram HTML was generated.",
         )

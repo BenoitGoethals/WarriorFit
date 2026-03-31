@@ -1,19 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import pandas as pd
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.core.container import Container
 from warriorfit.logic.phef_calculator import PhefCalculator
-from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.controllers.phef_controller import PhefController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,13 +48,15 @@ class PhefPage(BaseTestPage):
     def get_tab_name(self) -> str:
         return self.TAB_NAME
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE custom-message handler to toggle disabling inputs.
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 PHEF Tests"),
-            ui.input_action_button("ph_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "ph_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -79,8 +79,10 @@ class PhefPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "ph_search", "✅ Confirm Serial",
-                            class_="btn btn-primary btn-sm", width="200px",
+                            "ph_search",
+                            "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm",
+                            width="200px",
                         ),
                         ui.output_text("ph_military"),
                         ui.layout_columns(
@@ -268,9 +270,7 @@ class PhefPage(BaseTestPage):
             status.set("Ready.")
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock form
@@ -373,13 +373,9 @@ class PhefPage(BaseTestPage):
             if not sess_id:
                 return pd.DataFrame()
 
-            sess_date = (
-                self.selected_session.datetime_start if self.selected_session else None
-            )
+            sess_date = self.selected_session.datetime_start if self.selected_session else None
             try:
-                df = await self.controller.list_phef_df(
-                    int(sess_id), session_date=sess_date
-                )
+                df = await self.controller.list_phef_df(int(sess_id), session_date=sess_date)
             except Exception:
                 return pd.DataFrame()
 
@@ -400,9 +396,7 @@ class PhefPage(BaseTestPage):
         @render.data_frame
         async def ph_grid():
             df_view = await sessions_phef__data_view()
-            return render.DataGrid(
-                df_view, filters=False, selection_mode="rows", width="100%"
-            )
+            return render.DataGrid(df_view, filters=False, selection_mode="rows", width="100%")
 
         # ----------------------------
         # Row selection -> populate form
@@ -431,9 +425,7 @@ class PhefPage(BaseTestPage):
 
             serial = str(row.get("Serial", "") or "").strip()
             ui.update_text("ph_serialnr", value=serial)
-            ui.update_text(
-                "ph_side_bridge_l", value=str(row.get("Sidebridge L", "") or "")
-            )
+            ui.update_text("ph_side_bridge_l", value=str(row.get("Sidebridge L", "") or ""))
             ui.update_text(
                 "ph_side_bridge_r",
                 value=str(row.get("Sidebridge R", row.get("Sidebridge R ", "")) or ""),
@@ -454,11 +446,7 @@ class PhefPage(BaseTestPage):
             await self.toggle_inputs(
                 session, self._DISABLE_IDS, disabled=(self.selected_military is None)
             )
-            status.set(
-                f"Selected PHEF record for: {serial}"
-                if serial
-                else "Selected PHEF record."
-            )
+            status.set(f"Selected PHEF record for: {serial}" if serial else "Selected PHEF record.")
 
         # ----------------------------
         # CRUD
@@ -513,10 +501,10 @@ class PhefPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Added PHEF test for {form.serialnr} in session {form.session_id}."
+            status.set(f"Added PHEF test for {form.serialnr} in session {form.session_id}.")
+            ui.notification_show(
+                f"PHEF test added for {form.serialnr}.", type="message", duration=3
             )
-            ui.notification_show(f"PHEF test added for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -554,10 +542,10 @@ class PhefPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Updated PHEF test for {form.serialnr} in session {form.session_id}."
+            status.set(f"Updated PHEF test for {form.serialnr} in session {form.session_id}.")
+            ui.notification_show(
+                f"PHEF test updated for {form.serialnr}.", type="message", duration=3
             )
-            ui.notification_show(f"PHEF test updated for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -610,9 +598,7 @@ class PhefPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [

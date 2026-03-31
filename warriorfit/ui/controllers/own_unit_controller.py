@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import asyncio
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 import pandas as pd
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import (
-    PhefTest,
-    CombatTestParatrooper,
     CombatSwimmingTest,
-    ServiceMen,
+    CombatTestParatrooper,
     March,
+    PhefTest,
+    ServiceMen,
 )
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.data_collector import DataCollector
@@ -44,7 +45,9 @@ class OwnUnitController:
         self._data_collector = data_collector if data_collector is not None else DataCollector()
         self._service = test_service if test_service is not None else ServiceTest()
         self._service_mars = march_service if march_service is not None else ServiceMarch()
-        self._report_generator_pdf = report_generator_pdf if report_generator_pdf is not None else ReportGeneratorPdf()
+        self._report_generator_pdf = (
+            report_generator_pdf if report_generator_pdf is not None else ReportGeneratorPdf()
+        )
 
     @benchmark
     async def fetch_servicemen_df(self) -> pd.DataFrame:
@@ -54,9 +57,7 @@ class OwnUnitController:
         tests and attributes.
         """
         data = await self._mil_service.get_all_be_mil_from_unit(self.unit_name)
-        service_men_list = (
-            data if isinstance(data, list) else ([data] if data is not None else [])
-        )
+        service_men_list = data if isinstance(data, list) else ([data] if data is not None else [])
 
         if not service_men_list:
             return pd.DataFrame(
@@ -113,9 +114,7 @@ class OwnUnitController:
 
     async def _is_passed_phef(self, service_men: ServiceMen) -> Optional[bool]:
         """Determines if the service member has passed any PHEF test."""
-        mils: list[PhefTest] = await self._service.get_all_phef_mil(
-            service_men.service_number
-        )
+        mils: list[PhefTest] = await self._service.get_all_phef_mil(service_men.service_number)
         if not mils:
             return None
 
@@ -137,9 +136,7 @@ class OwnUnitController:
         )
         if not mils:
             return None
-        return any(
-            x.running_time <= 7200 and x.rope_passed and x.obstacle_passed for x in mils
-        )
+        return any(x.running_time <= 7200 and x.rope_passed and x.obstacle_passed for x in mils)
 
     async def _is_passed_swim(self, service_men: ServiceMen) -> Optional[bool]:
         """Determines whether a service member has passed the combat swimming test."""
@@ -152,18 +149,14 @@ class OwnUnitController:
 
     async def _is_passed_march(self, sm: ServiceMen) -> Optional[bool]:
         """Determines whether a given ServiceMen has passed at least one march."""
-        mars: List[March] = await self._service_mars.get_march_from_service_men(
-            sm.service_number
-        )
+        mars: List[March] = await self._service_mars.get_march_from_service_men(sm.service_number)
         if not mars:
             return None
         return any(x.succeeded for x in mars)
 
     async def fetch_tests_for_serial_df(self, serial: str | None) -> pd.DataFrame:
         """Fetch test data for a given serial number and format it into a DataFrame."""
-        tests_df = await DataCollector().collect_tests_for_serial(
-            serial, current_year=True
-        )
+        tests_df = await DataCollector().collect_tests_for_serial(serial, current_year=True)  # type: ignore[arg-type]
         if tests_df is None or tests_df.empty:
             return pd.DataFrame(columns=["Test Type", "Session", "Status"])
 
@@ -175,15 +168,9 @@ class OwnUnitController:
 
         out = pd.DataFrame(
             {
-                "Test Type": tests_df.get("Type", pd.Series(dtype=str)).apply(
-                    _first_non_empty
-                ),
-                "Session": tests_df.get("Date", pd.Series(dtype=str)).apply(
-                    _first_non_empty
-                ),
-                "Status": tests_df.get("Result", pd.Series(dtype=str)).apply(
-                    _first_non_empty
-                ),
+                "Test Type": tests_df.get("Type", pd.Series(dtype=str)).apply(_first_non_empty),
+                "Session": tests_df.get("Date", pd.Series(dtype=str)).apply(_first_non_empty),
+                "Status": tests_df.get("Result", pd.Series(dtype=str)).apply(_first_non_empty),
             }
         )
         return out[["Test Type", "Session", "Status"]].fillna("")

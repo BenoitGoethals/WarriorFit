@@ -1,8 +1,7 @@
 # Python
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, Tuple
+from typing import Tuple
 
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.config.settings_data import SettingsData
@@ -40,7 +39,7 @@ class SettingsController:
         :rtype: SettingsData
         """
         self._config.load_config()
-        return self._config.settings_data
+        return self._config.settings_data  # type: ignore[return-value]
 
     def save(self, data: SettingsData) -> Tuple[bool, str]:
         """

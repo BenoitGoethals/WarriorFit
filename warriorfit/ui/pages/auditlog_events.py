@@ -1,17 +1,20 @@
+import pandas as pd
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
+
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.auditlog_events_controller import (
     AuditLogEventsController,
 )
-import pandas as pd
-from shiny import ui, render, reactive
-
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class AuditLogEventsPage(Page):
     @inject
-    def __init__(self, controller: AuditLogEventsController = Provide[Container.auditlog_events_controller]) -> None:
+    def __init__(
+        self,
+        controller: AuditLogEventsController = Provide[Container.auditlog_events_controller],
+    ) -> None:
         super().__init__()
         self.ctrl = controller
 
@@ -24,7 +27,9 @@ class AuditLogEventsPage(Page):
             ui.h2("Audit Logs"),
             ui.card(
                 ui.card_header("Audit Logs"),
-                ui.input_action_button("au_refresh", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+                ui.input_action_button(
+                    "au_refresh", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+                ),
                 ui.output_data_frame("au_grid"),
                 full_screen=False,
             ),
@@ -48,9 +53,7 @@ class AuditLogEventsPage(Page):
         async def au_grid():
             # _ = _tick()
             df = await au_df()
-            return render.DataGrid(
-                df, filters=True, selection_mode="rows", width="100%"
-            )
+            return render.DataGrid(df, filters=True, selection_mode="rows", width="100%")
 
         @reactive.Effect
         @reactive.event(input.au_refresh)

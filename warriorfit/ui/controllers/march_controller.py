@@ -96,6 +96,4 @@ class MarchController:
         return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def get_march_is_unique(self, service_number, distance, datetime_executed):
-        return await self._service.get_march_is_unique(
-            service_number, distance, datetime_executed
-        )
+        return await self._service.get_march_is_unique(service_number, distance, datetime_executed)

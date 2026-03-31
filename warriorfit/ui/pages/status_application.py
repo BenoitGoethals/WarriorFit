@@ -2,22 +2,25 @@ import os
 import time
 
 import psutil
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
+
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.StatusApplicationController import (
     StatusApplicationController,
 )
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 _process = psutil.Process(os.getpid())
 _start_time = time.time()
 
 
 class StatusApplicationPage(Page):
-
     @inject
-    def __init__(self, controller: StatusApplicationController = Provide[Container.status_application_controller]):
+    def __init__(
+        self,
+        controller: StatusApplicationController = Provide[Container.status_application_controller],
+    ):
         super().__init__()
         self._controller = controller
 
@@ -38,7 +41,6 @@ class StatusApplicationPage(Page):
         return ui.nav_panel(
             "Status Application",
             ui.h2("Application Status Dashboard"),
-
             # ── Service connectivity ──────────────────────────────────
             ui.layout_columns(
                 ui.card(
@@ -58,7 +60,6 @@ class StatusApplicationPage(Page):
                     ui.output_text("server_status_display"),
                 ),
             ),
-
             # ── Runtime memory & process metrics ─────────────────────
             ui.div(
                 ui.div("Runtime Metrics", class_="wf-section-label mt-3 mb-2 px-1"),
@@ -70,7 +71,6 @@ class StatusApplicationPage(Page):
                     self._metric_card("Uptime", "mem_uptime", "⏱️"),
                 ),
             ),
-
             # ── Log file ─────────────────────────────────────────────
             ui.layout_columns(
                 ui.card(
@@ -112,10 +112,20 @@ class StatusApplicationPage(Page):
         def _big_metric(value: str, unit: str, sub: str = "") -> ui.Tag:
             return ui.div(
                 ui.div(
-                    ui.tags.span(value, style="font-size:2rem; font-weight:700; color:var(--wf-primary);"),
-                    ui.tags.span(f" {unit}", style="font-size:0.9rem; color:var(--wf-text-muted);"),
+                    ui.tags.span(
+                        value,
+                        style="font-size:2rem; font-weight:700; color:var(--wf-primary);",
+                    ),
+                    ui.tags.span(
+                        f" {unit}",
+                        style="font-size:0.9rem; color:var(--wf-text-muted);",
+                    ),
                 ),
-                ui.div(sub, style="font-size:0.78rem; color:var(--wf-text-muted);") if sub else ui.div(),
+                (
+                    ui.div(sub, style="font-size:0.78rem; color:var(--wf-text-muted);")
+                    if sub
+                    else ui.div()
+                ),
                 style="padding:0.5rem 0;",
             )
 

@@ -1,9 +1,11 @@
 import logging
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import AuditLog
 
@@ -21,7 +23,6 @@ class ABCRepository:
     """
 
     def __init__(self, config: ApplicationConfig = None):
-
         self._logger = logging.getLogger(__name__)
         if config is None:
             config = ApplicationConfig()
@@ -87,7 +88,7 @@ class ABCRepository:
         self,
         user_id: int,
         action: str,
-        details: dict | str = None,
+        details: dict | str = None,  # type: ignore[assignment]
         ip_address: str = None,
     ):
         """

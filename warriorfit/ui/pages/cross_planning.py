@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import pandas as pd
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class CrossPlanningPage(Page):
     @inject
-    def __init__(self, controller: CrossPlanningController = Provide[Container.cross_planning_controller]):
+    def __init__(
+        self,
+        controller: CrossPlanningController = Provide[Container.cross_planning_controller],
+    ):
         super().__init__()
         self._controller = controller
         self.selected_cross_id = reactive.Value("")
@@ -28,7 +31,9 @@ class CrossPlanningPage(Page):
         return ui.nav_panel(
             "Cross Planning",
             ui.h2("🏃 Cross Planning"),
-            ui.input_action_button("cr_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "cr_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+            ),
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Cross Form"),
@@ -125,9 +130,7 @@ class CrossPlanningPage(Page):
         session.send_input_message("cr_date", {"value": date_val})
         session.send_input_message("cr_time", {"value": time_val})
         session.send_input_message("cr_distance", {"value": rec.get("distance", 0)})
-        session.send_input_message(
-            "cr_executed", {"value": bool(rec.get("executed", False))}
-        )
+        session.send_input_message("cr_executed", {"value": bool(rec.get("executed", False))})
         session.send_input_message("cr_desc", {"value": rec.get("description", "")})
 
     def _clear_form(self, session) -> None:
@@ -173,9 +176,7 @@ class CrossPlanningPage(Page):
             df = (
                 pd.DataFrame(data)
                 if data
-                else pd.DataFrame(
-                    columns=["ID", "Start", "Executed", "Description", "Distance"]
-                )
+                else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", "Distance"])
             )
             df = df.sort_values(by=["Start"], kind="stable").reset_index(drop=True)
             return df

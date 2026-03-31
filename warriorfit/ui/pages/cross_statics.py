@@ -1,16 +1,18 @@
 import pandas as pd
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
-from warriorfit.utils.formaters import Formatter
 
 
 class CrossStaticsPage(Page):
     @inject
-    def __init__(self, controller: CrossStaticsController = Provide[Container.cross_statics_controller]):
+    def __init__(
+        self,
+        controller: CrossStaticsController = Provide[Container.cross_statics_controller],
+    ):
         super().__init__()
         self._controller = controller
 
@@ -21,7 +23,9 @@ class CrossStaticsPage(Page):
         return ui.nav_panel(
             "Cross Statics",
             ui.h2("Cross Statistics"),
-            ui.input_action_button("cs_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "cs_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+            ),
             ui.br(),
             ui.layout_columns(
                 ui.card(
@@ -43,9 +47,7 @@ class CrossStaticsPage(Page):
                 ),
                 ui.layout_columns(
                     ui.card(
-                        ui.card_header(
-                            "3. Best 10 all 10 km", class_="bg-success text-white"
-                        ),
+                        ui.card_header("3. Best 10 all 10 km", class_="bg-success text-white"),
                         ui.div(ui.output_data_frame("best_10_all_grid_10")),
                     ),
                 ),
@@ -102,7 +104,7 @@ class CrossStaticsPage(Page):
         @render.ui
         async def cross_age_group():
             ages: dict[int, int] = await self._controller.get_age_group()
-            uv_p = ui.p(f"Age Group")
+            uv_p = ui.p("Age Group")
             for key, value in ages.items():
                 uv_p.append(ui.p(f"Age {key} - Count {value}"))
             return uv_p

@@ -1,8 +1,8 @@
-from sqlalchemy.dialects.mssql import TIMESTAMP
-from sqlalchemy.orm import Mapped
+from __future__ import annotations
+
+import pandas as pd
 
 from warriorfit.core.Gender import Gender
-import pandas as pd
 
 
 class PhefCalculator:
@@ -587,7 +587,10 @@ class PhefCalculator:
 
     @classmethod
     def side_bridge_result(
-        cls, side_time: float | str, age: int, gender: Mapped[Gender]
+        cls,
+        side_time: float | str,
+        age: int,
+        gender: Gender | str,
     ) -> int:
         """
         Calculates the result of the side bridge test based on the provided time, age, and gender.
@@ -639,16 +642,16 @@ class PhefCalculator:
         for i, row in cls._side_bridge_data.iterrows():
             town_time = cls.convert_to_seconds(row[col])
             if side_time >= town_time:
-                return cls._side_bridge_data["Quotering"][i]
+                return cls._side_bridge_data["Quotering"][i]  # type: ignore[call-overload]
 
         return 0  # standaard: geen score
 
     @classmethod
     def running_result(
         cls,
-        running_time: float | str | TIMESTAMP,
+        running_time: float | str,
         age: int,
-        gender: Mapped[Gender] | str,
+        gender: Gender | str,
     ) -> int:
         """
         Determines the running score based on the provided running time, age, and gender. The method calculates the age
@@ -675,9 +678,7 @@ class PhefCalculator:
         elif isinstance(running_time, str):
             running_time = cls.convert_to_seconds(running_time)
         elif not isinstance(running_time, (int, float)):
-            raise TypeError(
-                f"Tijd moet een int of float zijn, niet {type(running_time)}"
-            )
+            raise TypeError(f"Tijd moet een int of float zijn, niet {type(running_time)}")
 
         # Leeftijdscategorie bepalen
         if age < 30:
@@ -707,7 +708,7 @@ class PhefCalculator:
         return 0  # trager dan laagste norm
 
     @staticmethod
-    def convert_to_seconds(tijd_str: str):
+    def convert_to_seconds(tijd_str: str) -> int:
         """Zet tijd in 'M:SS' formaat om naar seconden."""
         minuten, seconden = map(int, tijd_str.split(":"))
         return minuten * 60 + seconden
@@ -750,43 +751,21 @@ class PhefCalculator:
 
 
 assert PhefCalculator.running_result(571, 20, Gender.M) == 20
+assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 20, Gender.F) == 18
+assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 43, Gender.M) == 14
+
 assert (
-    PhefCalculator.running_result(
-        PhefCalculator.convert_to_seconds("11:15"), 20, Gender.F
-    )
-    == 18
+    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.M) == 14
 )
 assert (
-    PhefCalculator.running_result(
-        PhefCalculator.convert_to_seconds("11:15"), 43, Gender.M
-    )
-    == 14
+    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.F) == 16
 )
 
 assert (
-    PhefCalculator.side_bridge_result(
-        PhefCalculator.convert_to_seconds("1:20"), 44, Gender.M
-    )
-    == 14
+    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.M) == 10
 )
 assert (
-    PhefCalculator.side_bridge_result(
-        PhefCalculator.convert_to_seconds("1:20"), 44, Gender.F
-    )
-    == 16
-)
-
-assert (
-    PhefCalculator.side_bridge_result(
-        PhefCalculator.convert_to_seconds("1:05"), 35, Gender.M
-    )
-    == 10
-)
-assert (
-    PhefCalculator.side_bridge_result(
-        PhefCalculator.convert_to_seconds("1:05"), 35, Gender.F
-    )
-    == 12
+    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.F) == 12
 )
 
 assert PhefCalculator.running_result("11:15", 20, Gender.F) == 18

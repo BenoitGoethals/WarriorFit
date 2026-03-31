@@ -5,8 +5,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Any, Optional
 
-import pandas as pd
-from shiny import reactive, render, ui
+from shiny import reactive, ui
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
 from warriorfit.ui.pages.page import Page
@@ -71,9 +70,7 @@ class BaseTestPage(Page):
                 if hasattr(controller, "get_session_by_id"):
                     self.selected_session = await controller.get_session_by_id(int(val))
                 else:
-                    self.selected_session = await controller.get_test_session_by_id(
-                        int(val)
-                    )
+                    self.selected_session = await controller.get_test_session_by_id(int(val))
             except Exception:
                 self.selected_session = None
 
@@ -86,9 +83,7 @@ class BaseTestPage(Page):
             test_sessions = []
 
         items = {
-            str(
-                s.id
-            ): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
+            str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
             for s in (test_sessions or [])
         }
         current = (getattr(input, f"{prefix}_session_id")() or "").strip()

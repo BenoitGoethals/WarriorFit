@@ -2,17 +2,20 @@
 from __future__ import annotations
 
 import pandas as pd
-from shiny import ui, render, reactive
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
 
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
 from warriorfit.ui.pages.page import Page
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 class IndTestShowPage(Page):
     @inject
-    def __init__(self, controller: IndTestShowController = Provide[Container.ind_test_show_controller]):
+    def __init__(
+        self,
+        controller: IndTestShowController = Provide[Container.ind_test_show_controller],
+    ):
         super().__init__()
         self.controller = controller
         self.serial = reactive.Value("")
@@ -40,17 +43,20 @@ class IndTestShowPage(Page):
                         class_="btn btn-info btn-sm w-100 mt-1",
                     ),
                     ui.input_action_button(
-                        "ind_search", "✅ Confirm Serviceman",
+                        "ind_search",
+                        "✅ Confirm Serviceman",
                         class_="btn btn-primary btn-sm w-100 mt-2",
                     ),
                     ui.hr(),
                     ui.input_action_button(
-                        "full_report_cy", "📄 Generate Full Report",
+                        "full_report_cy",
+                        "📄 Generate Full Report",
                         class_="btn btn-secondary btn-sm w-100",
                     ),
                     ui.output_ui("download_btn_ui"),
                     ui.input_action_button(
-                        "ind_refresh_btn", "🔄 Refresh",
+                        "ind_refresh_btn",
+                        "🔄 Refresh",
                         class_="btn btn-secondary btn-sm w-100 mt-1",
                     ),
                     ui.hr(),
@@ -140,9 +146,7 @@ class IndTestShowPage(Page):
                     f"{mil.rank} {mil.first_name} {mil.last_name} — {mil.service_number} — {mil.unit}"
                 )
                 df = await self.controller.collect_tests_df(s)
-                self.tests_df.set(
-                    df if isinstance(df, pd.DataFrame) else pd.DataFrame()
-                )
+                self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
                 status.set(
                     f"Loaded {len(self.tests_df.get())} records."
                     if not self.tests_df.get().empty
@@ -152,7 +156,7 @@ class IndTestShowPage(Page):
                 self.serial.set("")
                 self.mil_info.set("Not found.")
                 self.tests_df.set(pd.DataFrame())
-                status.set(e)
+                status.set(e)  # type: ignore[arg-type]
 
         @output
         @render.text
@@ -213,9 +217,7 @@ class IndTestShowPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [

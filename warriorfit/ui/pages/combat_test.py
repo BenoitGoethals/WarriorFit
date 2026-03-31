@@ -1,18 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import pandas as pd
+from dependency_injector.wiring import Provide, inject
 from pandas import DataFrame
 from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.combat_controller import CombatController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,13 +48,17 @@ class CombatPage(BaseTestPage):
     def get_tab_name(self) -> str:
         return self.TAB_NAME
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
             self.TAB_NAME,
             # Register ONE JS custom message handler (same pattern as PHEF)
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🧪 Combat Tests"),
-            ui.input_action_button("combat_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "combat_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -78,19 +81,17 @@ class CombatPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "combat_search", "✅ Confirm Serial",
-                            class_="btn btn-primary btn-sm", width="200px",
+                            "combat_search",
+                            "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm",
+                            width="200px",
                         ),
                         ui.output_text("combat_military"),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "combat_obstacle", "Obstacle course", value=False
-                            ),
+                            ui.input_checkbox("combat_obstacle", "Obstacle course", value=False),
                         ),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "combat_robe", "Robe Course", value=False
-                            ),
+                            ui.input_checkbox("combat_robe", "Robe Course", value=False),
                         ),
                         ui.layout_columns(
                             ui.input_text(
@@ -255,9 +256,7 @@ class CombatPage(BaseTestPage):
         # Session refresh handled by _init() defined above
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock form
@@ -312,9 +311,7 @@ class CombatPage(BaseTestPage):
                 return
 
             try:
-                speedmars_pass_fail.set(
-                    "Passes" if float(seconds) < 120 * 60 else "Fails"
-                )
+                speedmars_pass_fail.set("Passes" if float(seconds) < 120 * 60 else "Fails")
             except Exception:
                 speedmars_pass_fail.set("")
 
@@ -377,12 +374,8 @@ class CombatPage(BaseTestPage):
             serial = str(row.get("Serial", "") or "").strip()
             ui.update_text("combat_serialnr", value=serial)
 
-            obstacle_passed = (
-                str(row.get("ObstacleCourse", "") or "").strip().lower() == "passed"
-            )
-            robe_passed = (
-                str(row.get("RobeCourse", "") or "").strip().lower() == "passed"
-            )
+            obstacle_passed = str(row.get("ObstacleCourse", "") or "").strip().lower() == "passed"
+            robe_passed = str(row.get("RobeCourse", "") or "").strip().lower() == "passed"
 
             ui.update_checkbox("combat_obstacle", value=obstacle_passed)
             ui.update_checkbox("combat_robe", value=robe_passed)
@@ -403,9 +396,7 @@ class CombatPage(BaseTestPage):
 
             await _toggle_inputs(disabled=(self.selected_military is None))
             status.set(
-                f"Selected Combat record for: {serial}"
-                if serial
-                else "Selected Combat record."
+                f"Selected Combat record for: {serial}" if serial else "Selected Combat record."
             )
 
         # ----------------------------
@@ -449,8 +440,8 @@ class CombatPage(BaseTestPage):
             added = await self.controller.add_combat(
                 int(form.session_id),
                 payload,
-                session=self.selected_session,
-                military=self.selected_military,
+                session=self.selected_session,  # type: ignore[arg-type]
+                military=self.selected_military,  # type: ignore[arg-type]
             )
             if not added:
                 status.set(
@@ -459,10 +450,10 @@ class CombatPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Added Combat test for {form.serialnr} in session {form.session_id}."
+            status.set(f"Added Combat test for {form.serialnr} in session {form.session_id}.")
+            ui.notification_show(
+                f"Combat test added for {form.serialnr}.", type="message", duration=3
             )
-            ui.notification_show(f"Combat test added for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -496,10 +487,10 @@ class CombatPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Updated Combat test for {form.serialnr} in session {form.session_id}."
+            status.set(f"Updated Combat test for {form.serialnr} in session {form.session_id}.")
+            ui.notification_show(
+                f"Combat test updated for {form.serialnr}.", type="message", duration=3
             )
-            ui.notification_show(f"Combat test updated for {form.serialnr}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -511,9 +502,7 @@ class CombatPage(BaseTestPage):
                 status.set("Select a row to delete.")
                 return
 
-            ok = await self.controller.delete_combat(
-                int(sess_id_raw), int(combat_id_raw)
-            )
+            ok = await self.controller.delete_combat(int(sess_id_raw), int(combat_id_raw))
             if not ok:
                 status.set("Failed to delete selected Combat record.")
                 return
@@ -553,9 +542,7 @@ class CombatPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [

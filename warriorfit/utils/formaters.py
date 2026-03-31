@@ -8,7 +8,7 @@ class Formatter:
     """
 
     @staticmethod
-    def format_time(seconds):
+    def format_time(seconds: float | None) -> str:
         if seconds is None:
             return "-"
         hours = int(seconds // 3600)

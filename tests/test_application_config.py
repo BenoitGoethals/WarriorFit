@@ -1,4 +1,5 @@
 """Unit tests for ApplicationConfig."""
+
 import io
 import os
 from pathlib import Path
@@ -7,8 +8,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 
-from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.config.settings_data import SettingsData
+from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.logic.singleton import Singleton
 
 # ---------------------------------------------------------------------------
@@ -46,10 +47,12 @@ MINIMAL_VERSION = {"version": "2.0.0", "date": "2026-03-23"}
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def clear_singleton():
     """Ensure every test starts with a fresh ApplicationConfig instance."""
     from warriorfit.config.appliccation_config import ApplicationConfig
+
     Singleton._instances.pop(ApplicationConfig, None)
     yield
     Singleton._instances.pop(ApplicationConfig, None)
@@ -68,7 +71,10 @@ def app_config():
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
         patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
         patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
-        patch("warriorfit.config.appliccation_config.create_async_engine", return_value=MagicMock()),
+        patch(
+            "warriorfit.config.appliccation_config.create_async_engine",
+            return_value=MagicMock(),
+        ),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
     ):
         yield ApplicationConfig()
@@ -78,8 +84,10 @@ def app_config():
 # Singleton behaviour
 # ---------------------------------------------------------------------------
 
+
 def test_singleton_returns_same_instance(app_config):
     from warriorfit.config.appliccation_config import ApplicationConfig
+
     second = ApplicationConfig()
     assert app_config is second
 
@@ -87,6 +95,7 @@ def test_singleton_returns_same_instance(app_config):
 # ---------------------------------------------------------------------------
 # settings_data is populated correctly
 # ---------------------------------------------------------------------------
+
 
 def test_settings_data_db_host(app_config):
     assert app_config.settings_data.db_host == "localhost"
@@ -133,6 +142,7 @@ def test_settings_data_mail_server_tls(app_config):
 # Properties delegate to settings_data
 # ---------------------------------------------------------------------------
 
+
 def test_property_hr_url(app_config):
     assert app_config.hr_url == "https://hr.example.com/api"
 
@@ -156,6 +166,7 @@ def test_property_pdf_output_path(app_config):
 # ---------------------------------------------------------------------------
 # Version tuple
 # ---------------------------------------------------------------------------
+
 
 def test_version_is_tuple_of_three(app_config):
     assert isinstance(app_config.version, tuple)
@@ -181,6 +192,7 @@ def test_version_date(app_config):
 # config property returns the DB engine
 # ---------------------------------------------------------------------------
 
+
 def test_config_property_returns_engine(app_config):
     assert app_config.config is not None
 
@@ -189,6 +201,7 @@ def test_config_property_returns_engine(app_config):
 # Environment-based config path selection
 # ---------------------------------------------------------------------------
 
+
 def test_development_env_uses_dev_config():
     from warriorfit.config.appliccation_config import ApplicationConfig
 
@@ -196,7 +209,10 @@ def test_development_env_uses_dev_config():
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
         patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
         patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
-        patch("warriorfit.config.appliccation_config.create_async_engine", return_value=MagicMock()),
+        patch(
+            "warriorfit.config.appliccation_config.create_async_engine",
+            return_value=MagicMock(),
+        ),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
     ):
         cfg = ApplicationConfig()
@@ -230,26 +246,35 @@ def test_production_env_with_secret_key_and_config_override(tmp_path):
         return _real_open(target, *args, **kwargs)
 
     with (
-        patch.dict(os.environ, {
-            "APP_ENV": "production",
-            "WF_SECRET_KEY": "supersecret",
-            "APP_CONFIG_PATH": str(config_file),
-        }, clear=False),
+        patch.dict(
+            os.environ,
+            {
+                "APP_ENV": "production",
+                "WF_SECRET_KEY": "supersecret",
+                "APP_CONFIG_PATH": str(config_file),
+            },
+            clear=False,
+        ),
         patch("builtins.open", side_effect=fake_open),
-        patch("warriorfit.config.appliccation_config.create_async_engine", return_value=MagicMock()),
+        patch(
+            "warriorfit.config.appliccation_config.create_async_engine",
+            return_value=MagicMock(),
+        ),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
     ):
         cfg = ApplicationConfig()
 
-    assert cfg.settings_data.db_host == "localhost"
+    assert cfg.settings_data.db_host == "localhost"  # type: ignore[union-attr]
 
 
 # ---------------------------------------------------------------------------
 # _ensure_directory
 # ---------------------------------------------------------------------------
 
+
 def test_ensure_directory_creates_missing_path(tmp_path):
     from warriorfit.config.appliccation_config import ApplicationConfig
+
     new_dir = tmp_path / "sub" / "dir"
     assert not new_dir.exists()
     result = ApplicationConfig._ensure_directory(str(new_dir))
@@ -258,6 +283,7 @@ def test_ensure_directory_creates_missing_path(tmp_path):
 
 def test_ensure_directory_is_idempotent_on_existing_path(tmp_path):
     from warriorfit.config.appliccation_config import ApplicationConfig
+
     result = ApplicationConfig._ensure_directory(str(tmp_path))
     assert Path(result).exists()
 
@@ -265,6 +291,7 @@ def test_ensure_directory_is_idempotent_on_existing_path(tmp_path):
 # ---------------------------------------------------------------------------
 # save_config writes correct YAML
 # ---------------------------------------------------------------------------
+
 
 def test_save_config_writes_yaml(app_config, tmp_path):
     output_file = tmp_path / "saved_config.yml"
@@ -307,23 +334,30 @@ def test_save_config_writes_yaml(app_config, tmp_path):
 # SettingsData helpers
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("host,db,user,pwd,expected", [
-    ("h", "d", "u", "p", True),
-    ("",  "d", "u", "p", False),
-    ("h", "",  "u", "p", False),
-    ("h", "d", "",  "p", False),
-    ("h", "d", "u", "",  False),
-])
+
+@pytest.mark.parametrize(
+    "host,db,user,pwd,expected",
+    [
+        ("h", "d", "u", "p", True),
+        ("", "d", "u", "p", False),
+        ("h", "", "u", "p", False),
+        ("h", "d", "", "p", False),
+        ("h", "d", "u", "", False),
+    ],
+)
 def test_settings_data_has_database_config(host, db, user, pwd, expected):
     sd = SettingsData(db_host=host, db_database=db, db_username=user, db_password=pwd)
     assert sd.has_database_config() is expected
 
 
-@pytest.mark.parametrize("url,api_key,expected", [
-    ("https://hr.example.com", "key", True),
-    ("",                       "key", False),
-    ("https://hr.example.com", "",    False),
-])
+@pytest.mark.parametrize(
+    "url,api_key,expected",
+    [
+        ("https://hr.example.com", "key", True),
+        ("", "key", False),
+        ("https://hr.example.com", "", False),
+    ],
+)
 def test_settings_data_has_hr_config(url, api_key, expected):
     sd = SettingsData(hr_url=url, hr_api_key=api_key)
     assert sd.has_hr_config() is expected

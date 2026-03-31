@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import pandas as pd
+from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
-from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.core.container import Container
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
-from dependency_injector.wiring import inject, Provide
-from warriorfit.core.container import Container
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,7 +31,9 @@ class SwimTestPage(BaseTestPage):
     )
 
     @inject
-    def __init__(self, controller: SwimmingController = Provide[Container.swimming_controller]) -> None:
+    def __init__(
+        self, controller: SwimmingController = Provide[Container.swimming_controller]
+    ) -> None:
         super().__init__()
         self.controller = controller
 
@@ -42,13 +43,15 @@ class SwimTestPage(BaseTestPage):
     def get_tab_name(self) -> str:
         return self.TAB_NAME
 
-    def get_ui(self) -> NavPanel:
+    def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
             self.TAB_NAME,
             # One JS custom message handler to toggle input disabling (no repeated script injection).
             ui.tags.script(self.toggle_disabled_registered_func),
             ui.h2("🏊 Swimming Tests"),
-            ui.input_action_button("swim_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "swim_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -71,14 +74,14 @@ class SwimTestPage(BaseTestPage):
                             ),
                         ),
                         ui.input_action_button(
-                            "swim_search", "✅ Confirm Serial",
-                            class_="btn btn-primary btn-sm", width="200px",
+                            "swim_search",
+                            "✅ Confirm Serial",
+                            class_="btn btn-primary btn-sm",
+                            width="200px",
                         ),
                         ui.output_text("swim_military"),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "swim_passed", "Swimming Test Passed", value=False
-                            ),
+                            ui.input_checkbox("swim_passed", "Swimming Test Passed", value=False),
                             ui.div("Status:", ui.output_ui("swim_status_display")),
                             col_widths=(8, 4),
                         ),
@@ -117,9 +120,7 @@ class SwimTestPage(BaseTestPage):
                     ),
                 ),
                 ui.card(
-                    ui.card_header(
-                        "Swimming Tests (includes members outside own unit)"
-                    ),
+                    ui.card_header("Swimming Tests (includes members outside own unit)"),
                     ui.output_data_frame("swim_grid"),
                     full_screen=False,
                 ),
@@ -212,9 +213,7 @@ class SwimTestPage(BaseTestPage):
             status.set("Ready.")
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -244,9 +243,7 @@ class SwimTestPage(BaseTestPage):
                 _set_buttons(can_add=False, can_update=False)
                 return
 
-            military_text.set(
-                f"{val.rank} {val.service_number} {val.first_name} {val.last_name}"
-            )
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             status.set("Serial confirmed. Set result and save.")
             await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
@@ -328,11 +325,7 @@ class SwimTestPage(BaseTestPage):
                 self.selected_military = None
 
             await _toggle_inputs(disabled=(self.selected_military is None))
-            status.set(
-                f"Selected Swimming Test: {serial}"
-                if serial
-                else "Selected Swimming Test."
-            )
+            status.set(f"Selected Swimming Test: {serial}" if serial else "Selected Swimming Test.")
 
         # ----------------------------
         # CRUD
@@ -358,14 +351,14 @@ class SwimTestPage(BaseTestPage):
             payload = {
                 "id": form.session_id,
                 "serialnr": form.serialnr,
-                "swim_passed": res["swim_passed"],
+                "swim_passed": res["swim_passed"],  # type: ignore[index]
             }
 
             added = await self.controller.add_swim(
                 int(payload["id"]),
                 payload,
-                session=self.selected_session,
-                military=self.selected_military,
+                session=self.selected_session,  # type: ignore[arg-type]
+                military=self.selected_military,  # type: ignore[arg-type]
             )
             if not added:
                 status.set(
@@ -374,10 +367,12 @@ class SwimTestPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                f"Added Swimming test for {payload['serialnr']} in session {payload['id']}."
+            status.set(f"Added Swimming test for {payload['serialnr']} in session {payload['id']}.")
+            ui.notification_show(
+                f"Swimming test added for {payload['serialnr']}.",
+                type="message",
+                duration=3,
             )
-            ui.notification_show(f"Swimming test added for {payload['serialnr']}.", type="message", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -406,7 +401,7 @@ class SwimTestPage(BaseTestPage):
             payload = {
                 "session_id": form.session_id,
                 "serialnr": form.serialnr,
-                "swim_passed": res["swim_passed"],
+                "swim_passed": res["swim_passed"],  # type: ignore[index]
             }
 
             updated = await self.controller.update_swim(int(swim_id_raw), payload)
@@ -416,7 +411,11 @@ class SwimTestPage(BaseTestPage):
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(f"Updated Swimming test for {payload['serialnr']}.")
-            ui.notification_show(f"Swimming test updated for {payload['serialnr']}.", type="message", duration=3)
+            ui.notification_show(
+                f"Swimming test updated for {payload['serialnr']}.",
+                type="message",
+                duration=3,
+            )
             await _clear_form()
 
         @reactive.Effect
@@ -468,9 +467,7 @@ class SwimTestPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [

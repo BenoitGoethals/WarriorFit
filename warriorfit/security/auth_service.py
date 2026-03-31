@@ -1,7 +1,7 @@
 import asyncio
 
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError, VerificationError, InvalidHashError
+from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 
 from warriorfit.services.service_user import UserService
 
@@ -31,9 +31,11 @@ class Auth:
     @staticmethod
     async def verify_password(plain_password: str, stored: str) -> bool:
         """Verify a plain password against a stored Argon2id hash (offloaded to thread pool)."""
+
         def _verify() -> bool:
             try:
                 return _ph.verify(stored, plain_password)
             except (VerifyMismatchError, VerificationError, InvalidHashError):
                 return False
+
         return await asyncio.to_thread(_verify)

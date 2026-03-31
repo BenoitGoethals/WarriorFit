@@ -1,8 +1,8 @@
 # Python
 from __future__ import annotations
 
-from typing import List, Dict, Tuple
 from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
 from warriorfit.services.report_generator_csv import ReportGeneratorCsv
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf

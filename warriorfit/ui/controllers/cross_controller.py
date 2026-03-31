@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import logging
-from typing import Optional, Dict, Any, Tuple, List
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
-from warriorfit.data.model.db_model import Runner, Cross  # Runner model given in prompt
+from warriorfit.data.model.db_model import Cross, Runner  # Runner model given in prompt
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.services.service_cross import (
@@ -67,7 +66,7 @@ class CrossController:
                 else:
                     return False, "Time must be in hh:mm:ss, mm:ss or seconds."
             else:
-                total = float(txt)
+                total = float(txt)  # type: ignore[assignment]
             if total <= 0:
                 return False, "Time must be positive."
             return True, total
@@ -99,26 +98,20 @@ class CrossController:
         """
         if not (data.get("serialnr") or "").strip():
             return False, "Serial number is required."
-        if await self.search_military(data.get("serialnr")) is None:
+        if await self.search_military(data.get("serialnr")) is None:  # type: ignore[arg-type]
             return (
                 False,
                 "Serial number does not exist. Please enter a valid serial number.",
             )
         if update:
             if data.get("serialnr") != data.get("old_serialnr"):
-                if await self._service.exist_in_cross(
-                    data.get("serialnr"), data.get("cross_id")
-                ):
+                if await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):  # type: ignore[arg-type]
                     return False, "Serial number already exists."
 
-        elif await self._service.exist_in_cross(
-            data.get("serialnr"), data.get("cross_id")
-        ):
+        elif await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):  # type: ignore[arg-type]
             return False, "Serial number already exists."
 
-        ok_run, run = CrossController.parse_time_to_seconds(
-            data.get("running_time") or ""
-        )
+        ok_run, run = CrossController.parse_time_to_seconds(data.get("running_time") or "")
         if not ok_run:
             return False, f"Running time: {run}"
         cross_id = (data.get("cross_id") or "").strip()
@@ -166,7 +159,7 @@ class CrossController:
             # Fetch all servicemen concurrently instead of sequentially
             servicemen = await asyncio.gather(
                 *[
-                    self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)
+                    self.be_mil_service.get_servicemen_by_serial(r.serial_number, lazy=False)  # type: ignore[arg-type]
                     for r in cross
                 ]
             )
@@ -177,9 +170,7 @@ class CrossController:
                     "ID": r.id,
                     "Serial": r.serial_number or "",
                     "Running Time": self.format_seconds(r.running_time),
-                    "Runner Name": (
-                        f"{sm.first_name} {sm.last_name}" if sm else ""
-                    ),
+                    "Runner Name": (f"{sm.first_name} {sm.last_name}" if sm else ""),
                     "Gender": sm.gender if sm else "",
                     "Age": sm.age_from_birthdate() if sm else "",
                     "Unit": sm.unit if sm else "",
@@ -200,9 +191,7 @@ class CrossController:
             return pd.DataFrame()
 
     # ----- Commands -----
-    async def add_runner(
-        self, cross_id: int, payload: Dict[str, Any]
-    ) -> Optional[Runner]:
+    async def add_runner(self, cross_id: int, payload: Dict[str, Any]) -> Optional[Runner]:
         """
         Asynchronously adds a runner to a cross with the given cross identifier and payload containing runner details.
 
@@ -219,9 +208,7 @@ class CrossController:
         # attach to cross
         return await self._service.add_runner_to_cross(int(cross_id), r)
 
-    async def update_runner(
-        self, runner_id: int, payload: Dict[str, Any]
-    ) -> Optional[Runner]:
+    async def update_runner(self, runner_id: int, payload: Dict[str, Any]) -> Optional[Runner]:
         """
         Updates the details of a specific runner using the provided runner ID
         and payload. The runner object is created and populated with the payload

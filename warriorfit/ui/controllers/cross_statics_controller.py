@@ -1,8 +1,8 @@
 import logging
+
 import pandas as pd
 
 from warriorfit.data.model.db_model import Runner, ServiceMen
-
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_cross import ServiceCross
 from warriorfit.utils.formaters import Formatter
@@ -26,27 +26,27 @@ class CrossStaticsController:
     async def get_average_time(self) -> float:
         if self._stats is None:
             await self.load()
-        return self._stats[0]
+        return self._stats[0]  # type: ignore[index]
 
     async def get_gap_time(self):
         if self._stats is None:
             await self.load()
-        return self._stats[1]
+        return self._stats[1]  # type: ignore[index]
 
     async def get_best_time(self):
         if self._stats is None:
             await self.load()
-        return self._stats[2]
+        return self._stats[2]  # type: ignore[index]
 
     async def get_age_group(self):
         if self._stats is None:
             await self.load()
-        return self._stats[3]
+        return self._stats[3]  # type: ignore[index]
 
     async def get_gender_time(self):
         if self._stats is None:
             await self.load()
-        return self._stats[4]
+        return self._stats[4]  # type: ignore[index]
 
     async def best_10_all_df(self) -> dict[int, pd.DataFrame]:
         """
@@ -68,7 +68,7 @@ class CrossStaticsController:
         if self._stats is None:
             await self.load()
 
-        data: dict[int, list[Runner]] = self._stats[5]
+        data: dict[int, list[Runner]] = self._stats[5]  # type: ignore[index]
         data_panda_dict = {}
         for key, value in data.items():  # Added .items()
             if not value:  # Skip keys with no data
@@ -77,10 +77,8 @@ class CrossStaticsController:
             for runner in value:
                 if runner.serial_number is None:
                     continue
-                service_men: ServiceMen = (
-                    await self._mil_service.get_servicemen_by_serial(
-                        runner.serial_number
-                    )
+                service_men: ServiceMen = await self._mil_service.get_servicemen_by_serial(  # type: ignore[assignment]
+                    runner.serial_number
                 )
                 if service_men:
                     data_p.append(

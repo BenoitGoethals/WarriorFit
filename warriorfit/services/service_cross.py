@@ -5,9 +5,8 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from lxml import etree
-
 import pandas as pd
+from lxml import etree
 from numpy import floating  # kept for return type compatibility
 
 from warriorfit.core.Gender import Gender
@@ -33,12 +32,22 @@ class ServiceCross(Service):
     :type be_mil_service: MilitaryService
     """
 
-    def __init__(self, cross_repository: CrossRepository = None,
-                 user_repository=None, military_service: MilitaryService = None,
-                 config=None) -> None:
-        super().__init__(user_repository=user_repository, military_service=military_service, config=config)
+    def __init__(
+        self,
+        cross_repository: CrossRepository = None,
+        user_repository=None,
+        military_service: MilitaryService = None,
+        config=None,
+    ) -> None:
+        super().__init__(
+            user_repository=user_repository,
+            military_service=military_service,
+            config=config,
+        )
         self._cross_repo = cross_repository if cross_repository is not None else CrossRepository()
-        self.be_mil_service = military_service if military_service is not None else MilitaryService()
+        self.be_mil_service = (
+            military_service if military_service is not None else MilitaryService()
+        )
 
     async def get_runner(self, runner_id: int) -> Runner | None:
         return await self._cross_repo.get_runner(runner_id)
@@ -76,14 +85,14 @@ class ServiceCross(Service):
         return await self._cross_repo.get_runners_from_a_cross(id_nr)
 
     async def add_runner_to_cross(self, id_cross: int, r: Runner) -> Runner:
-        r.cross_id = id_cross
+        r.cross_id = id_cross  # type: ignore[attr-defined]
         added = await self._cross_repo.add_runner_to_cross(id_cross, r)
         if added:
             await self.add_audit_log(
                 details=f"Runner {r.serial_number} added to cross {id_cross}",
                 action="add",
             )
-        return added
+        return added  # type: ignore[return-value]
 
     async def update_runner(self, id: int, r: Runner) -> Runner:
         updated = await self._cross_repo.update_runner(id, r)
@@ -92,14 +101,12 @@ class ServiceCross(Service):
                 details=f"Runner {r.serial_number} updated in cross {id}",
                 action="update",
             )
-        return updated
+        return updated  # type: ignore[return-value]
 
     async def remove_runner_from_cross(self, id_nr: int) -> bool:
         removed = await self._cross_repo.remove_runner(id_nr)
         if removed:
-            await self.add_audit_log(
-                details=f"Runner {id_nr} removed from cross", action="delete"
-            )
+            await self.add_audit_log(details=f"Runner {id_nr} removed from cross", action="delete")
         return removed
 
     async def update_cross(self, cross: Cross) -> Cross | None:
@@ -131,7 +138,6 @@ class ServiceCross(Service):
 
     @staticmethod
     def _runners_df(all_cross: list[Cross]) -> pd.DataFrame:
-
         rows: list[dict[str, Any]] = []
         for c in all_cross:
             # If relationship isn't loaded for some reason, this will raise; we fail-safe to empty.
@@ -194,11 +200,7 @@ class ServiceCross(Service):
         # Fetch servicemen once per unique serial, concurrently
         serials = df["serial_number"].dropna().astype(str).unique().tolist()
         servicemen_list = await asyncio.gather(
-            *(
-                self.be_mil_service.get_servicemen_by_serial(s)
-                for s in serials
-                if s is not None
-            ),
+            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials if s is not None),
             return_exceptions=True,
         )
 
@@ -210,8 +212,8 @@ class ServiceCross(Service):
                 sm_rows.append(
                     {
                         "serial_number": str(serial),
-                        "gender": sm.gender,
-                        "age_group": self._bucket_age(sm.age_from_birthdate()),
+                        "gender": sm.gender,  # type: ignore[union-attr]
+                        "age_group": self._bucket_age(sm.age_from_birthdate()),  # type: ignore[union-attr]
                     }
                 )
             except Exception:
@@ -246,9 +248,7 @@ class ServiceCross(Service):
 
         # Top 10 per distance, ascending running_time (best first), return Runner objects
         top_10_by_distance: dict[Any, list[Runner]] = {}
-        df_sorted = df2.sort_values(
-            ["distance", "running_time"], ascending=[True, True]
-        )
+        df_sorted = df2.sort_values(["distance", "running_time"], ascending=[True, True])
         for distance, group in df_sorted.groupby("distance", dropna=False, sort=False):
             top_10_by_distance[distance] = group["runner_obj"].head(10).tolist()
 
@@ -362,9 +362,7 @@ class ServiceCross(Service):
 
         return age_groups
 
-    async def get_gender_time(
-        self, all_cross: list[Cross]
-    ) -> tuple[floating[Any], floating[Any]]:
+    async def get_gender_time(self, all_cross: list[Cross]) -> tuple[floating[Any], floating[Any]]:
         """
         Calculate and return the average running times for female and male runners from
         the provided list of crosses. The function asynchronously processes the list of
@@ -389,10 +387,8 @@ class ServiceCross(Service):
             for runner in cross.runners:
                 if runner.serial_number is None:
                     continue
-                service_man: ServiceMen | None = (
-                    await self.be_mil_service.get_servicemen_by_serial(
-                        runner.serial_number
-                    )
+                service_man: ServiceMen | None = await self.be_mil_service.get_servicemen_by_serial(
+                    runner.serial_number
                 )
                 if service_man is None:
                     continue
@@ -404,7 +400,7 @@ class ServiceCross(Service):
         # keep return types compatible (numpy floating-ish)
         f_avg = float(pd.Series(all_runners_f).mean()) if all_runners_f else 0.0
         m_avg = float(pd.Series(all_runners_m).mean()) if all_runners_m else 0.0
-        return f_avg, m_avg
+        return f_avg, m_avg  # type: ignore[return-value]
 
     async def get_top_10_runners_based_on_running_time(
         self, all_cross: list[Cross]
@@ -433,7 +429,7 @@ class ServiceCross(Service):
 
         return top_runners_by_distance
 
-    async def  read_xml_chronos_and_save(self, xml_file, cross_id: int) -> bool:
+    async def read_xml_chronos_and_save(self, xml_file, cross_id: int) -> bool:
         """
         Reads and validates a Chronos XML file against a predefined XSD schema and processes the data to
         add runners to a specified cross event. This function ensures that the XML data conforms to the
@@ -466,9 +462,9 @@ class ServiceCross(Service):
                 return False
             _logger.info("Chronos XML validated successfully.")
             runners = []
-            for athlete in xml_doc.xpath("//athlete"):
-                bib = (athlete.findtext("bib") or "").strip()
-                net = (athlete.findtext("net") or "0:00:00").strip()
+            for athlete in xml_doc.xpath("//athlete"):  # type: ignore[union-attr]
+                bib = (athlete.findtext("bib") or "").strip()  # type: ignore[union-attr]
+                net = (athlete.findtext("net") or "0:00:00").strip()  # type: ignore[union-attr]
 
                 # Convert net time "hh:mm:ss" to total seconds (float)
                 parts = net.split(":")
@@ -487,13 +483,12 @@ class ServiceCross(Service):
                 _logger.error("Failed to save runners to cross %d", cross_id)
                 return False
             _logger.info("Added %d runners to cross %d", len(runners), cross_id)
-            await self.add_audit_log(details=f"Added {len(runners)} runners to cross {cross_id}", action="add")
+            await self.add_audit_log(
+                details=f"Added {len(runners)} runners to cross {cross_id}",
+                action="add",
+            )
             return True
 
         except Exception as exc:
             _logger.error("Failed to read/validate Chronos XML: %s", exc)
             return False
-
-
-
-

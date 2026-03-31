@@ -1,11 +1,10 @@
-from typing import Any, Coroutine, List
+from typing import List
 
 from warriorfit.data.model.db_model import Reservation, Room
 from warriorfit.services.reserve_fitness_room_service import ReserveFitnessRoomService
 
 
 class ReserveFitnessRoomController:
-
     def __init__(
         self,
         service: ReserveFitnessRoomService = None,

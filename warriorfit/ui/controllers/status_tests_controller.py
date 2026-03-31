@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
 import pandas as pd
 
 from warriorfit.config.appliccation_config import ApplicationConfig

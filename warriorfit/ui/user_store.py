@@ -1,4 +1,5 @@
 from typing import Optional
+
 from warriorfit.data.model.db_model import User
 from warriorfit.logic.singleton import Singleton
 
@@ -15,5 +16,5 @@ class UserStore(metaclass=Singleton):
         return cls.__user
 
     @classmethod
-    def logout(cls):
+    def logout(cls) -> None:
         cls.__user = None

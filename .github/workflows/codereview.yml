@@ -9,14 +9,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - uses: actions/ruff-check@v1
-      - uses: actions/ruff-format@v1
+        with:
+          python-version: '3.13'
+      - uses: astral-sh/ruff-action@v3
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
 
   typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.13'
       - run: uv sync
       - run: uv run mypy .
 
@@ -25,5 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: '3.13'
       - run: uv sync
-      - run: uv run pytest --cov=. --cov-report=term-missing
+      - run: uv run pytest

@@ -1,13 +1,12 @@
 from datetime import datetime
-from typing import Optional, List, Any
+from typing import Any, List, Optional
 
-from sqlalchemy import select, delete, func, or_
+from sqlalchemy import delete, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from warriorfit.core.role import Role
 from warriorfit.data.model.db_model import User
 from warriorfit.data.repositories.abc_repository import ABCRepository
-from sqlalchemy import or_
 
 
 class UserRepository(ABCRepository):
@@ -31,7 +30,7 @@ class UserRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    user.created_at = datetime.now()
+                    user.created_at = datetime.now()  # type: ignore[assignment]
                     session.add(user)
                 await session.refresh(user)
                 return user
@@ -155,6 +154,7 @@ class UserRepository(ABCRepository):
         :return: True if the username and password are valid; otherwise, False.
         """
         from warriorfit.security.auth_service import Auth
+
         try:
             async with self.SessionLocal() as session:
                 query = select(User).where(User.username == user_name)
@@ -246,14 +246,14 @@ class UserRepository(ABCRepository):
                     query = delete(User).where(User.serial_number == selected_serial)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self._logger.error(
-                            "No user found with serial %s.", selected_serial
-                        )
+                        self._logger.error("No user found with serial %s.", selected_serial)
                         return False
                     return True
         except SQLAlchemyError as e:
             self._logger.error(
-                "Database error deleting user with serial %s: %s", selected_serial, str(e)
+                "Database error deleting user with serial %s: %s",
+                selected_serial,
+                str(e),
             )
             return False
 

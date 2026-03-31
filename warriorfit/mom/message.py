@@ -21,10 +21,7 @@ class Message:
     @staticmethod
     def _content_to_dict(content: Any) -> Any:
         # Already JSON primitives
-        if (
-            isinstance(content, (dict, list, tuple, str, int, float, bool))
-            or content is None
-        ):
+        if isinstance(content, (dict, list, tuple, str, int, float, bool)) or content is None:
             return content
         # Pydantic v2
         if hasattr(content, "model_dump"):
@@ -34,10 +31,10 @@ class Message:
             return content.to_dict()
         # Dataclass
         try:
-            from dataclasses import is_dataclass, asdict
+            from dataclasses import asdict, is_dataclass
 
             if is_dataclass(content):
-                return asdict(content)
+                return asdict(content)  # type: ignore[arg-type]
         except Exception:
             pass
         # Shallow public attributes

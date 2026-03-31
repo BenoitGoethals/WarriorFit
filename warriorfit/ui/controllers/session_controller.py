@@ -1,10 +1,11 @@
-from typing import List, Optional, Dict, Any
-from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.data.model.db_model import TestSession
 import datetime
-import pandas as pd
-from warriorfit.core.type_fitness_test import TypeFitnessTest
+from typing import Any, Dict, List, Optional
 
+import pandas as pd
+
+from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.core.type_fitness_test import TypeFitnessTest
+from warriorfit.data.model.db_model import TestSession
 from warriorfit.services.mail_service import MailService
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_test import ServiceTest
@@ -81,9 +82,7 @@ class SessionsController:
         """Returns a dict mapping serial_number to 'serial - username' for display"""
         pts = await self._service.get_all_pti()
         return {
-            p.serial_number: f"{p.serial_number} - {p.username}"
-            for p in pts
-            if p.serial_number
+            p.serial_number: f"{p.serial_number} - {p.username}" for p in pts if p.serial_number
         }
 
     async def add_session(self, payload: Dict[str, Any]) -> Optional[TestSession]:
@@ -211,9 +210,7 @@ class SessionsController:
         return await self._service.get_test_session_by_id(sel_id)
 
     async def _recipients_for_unit(self) -> list[str]:
-        results = await self.be_mil_service.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
-        )
+        results = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
         if not results:
             return []
         return [r.mail for r in results if r.mail]
@@ -231,7 +228,7 @@ class SessionsController:
         :rtype: str
         """
         status_text = "Canceled" if ts.canceled else "Planned"
-        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")  # type: ignore[attr-defined]
         desc = ts.description or "No description provided"
         return f"""
             <h2>New Fitness Test Session Added</h2>
@@ -256,7 +253,7 @@ class SessionsController:
         :rtype: str
         """
         status_text = "Canceled" if ts.canceled else "Planned"
-        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")  # type: ignore[attr-defined]
         desc = ts.description or "No description provided"
         typ = ts.type_test.name if hasattr(ts.type_test, "name") else str(ts.type_test)
         return f"""
@@ -282,7 +279,7 @@ class SessionsController:
         :rtype: str
         """
         status_text = "Canceled" if ts.canceled else "Planned"
-        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")
+        dt_str = ts.datetime_start.strftime("%d/%m/%Y %H:%M")  # type: ignore[attr-defined]
         desc = ts.description or "No description provided"
         return f"""
             <h2>New Fitness Test Session Deleted</h2>
@@ -344,9 +341,9 @@ class SessionsController:
                 to=recipients,
                 subject="Fitness Assessment Invite",
                 html_body="Fitness Session scheduled",
-                start=start_dt,
-                end=end_dt,
-                organizer_email=ApplicationConfig().mail_server.sender_email,
+                start=start_dt,  # type: ignore[arg-type]
+                end=end_dt,  # type: ignore[arg-type]
+                organizer_email=ApplicationConfig().mail_server.sender_email,  # type: ignore[arg-type]
                 organizer_name=organizer_name,
                 location="Gym Hall",
             )

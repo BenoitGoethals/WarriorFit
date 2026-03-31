@@ -1,12 +1,12 @@
+from dependency_injector.wiring import Provide, inject
 from shiny import ui
-from dependency_injector.wiring import inject, Provide
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.container import Container
 from warriorfit.ui.pages.page import Page
 
 
 class AboutPage(Page):
-
     @inject
     def __init__(self, config: ApplicationConfig = Provide[Container.config]):
         super().__init__()
@@ -28,7 +28,6 @@ class AboutPage(Page):
                     ),
                     class_="mb-4",
                 ),
-
                 ui.layout_columns(
                     ui.card(
                         ui.card_header(
@@ -86,15 +85,15 @@ class AboutPage(Page):
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td("Version", class_="fw-bold pe-3 py-1"),
-                                        ui.tags.td(self._config.version[1]),
+                                        ui.tags.td(self._config.version[1]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td("Status", class_="fw-bold pe-3 py-1"),
-                                        ui.tags.td(self._config.version[0]),
+                                        ui.tags.td(self._config.version[0]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td("Release Date", class_="fw-bold pe-3 py-1"),
-                                        ui.tags.td(self._config.version[2]),
+                                        ui.tags.td(self._config.version[2]),  # type: ignore[index]
                                     ),
                                 ),
                                 class_="table table-sm table-borderless mb-0",

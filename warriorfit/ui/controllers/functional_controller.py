@@ -1,13 +1,14 @@
 from __future__ import annotations
-from typing import Optional, Dict, Any, Tuple
-import pandas as pd
-from warriorfit.core.Gender import Gender
 
+from typing import Any, Dict, Optional, Tuple
+
+import pandas as pd
+
+from warriorfit.core.Gender import Gender
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.model.db_model import FunctionalTest, TestSession, ServiceMen
+from warriorfit.data.model.db_model import FunctionalTest, ServiceMen, TestSession
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.services.military_service import MilitaryService
-
 from warriorfit.services.service_test import ServiceTest
 
 
@@ -101,15 +102,9 @@ class FunctionalController:
                     continue
                 gender = self.normalize_gender(sm.gender)
                 age = sm.age_from_birthdate()
-                pull = FunctionalCalculator.get_score_pullup(
-                    gender, age, int(r.pull_ups)
-                )
-                situp = FunctionalCalculator.get_score_situp(
-                    gender, age, int(r.sit_ups)
-                )
-                push = FunctionalCalculator.get_score_pushup(
-                    gender, age, int(r.push_ups)
-                )
+                pull = FunctionalCalculator.get_score_pullup(gender, age, int(r.pull_ups))
+                situp = FunctionalCalculator.get_score_situp(gender, age, int(r.sit_ups))
+                push = FunctionalCalculator.get_score_pushup(gender, age, int(r.push_ups))
                 total = ((pull + situp + push) / 60) * 100
                 data.append(
                     {
@@ -158,9 +153,7 @@ class FunctionalController:
                     sit_score = float(row.get("Sit-ups-score", 0))
                     pull_score = float(row.get("Pull-ups-score", 0))
 
-                    all_scores_valid = (
-                        push_score > 10 and sit_score > 10 and pull_score > 10
-                    )
+                    all_scores_valid = push_score > 10 and sit_score > 10 and pull_score > 10
                     passes = n >= 50 and all_scores_valid
 
                     return f"🟩 {n:.0f}" if passes else f"❌ {n:.0f}"
@@ -207,7 +200,7 @@ class FunctionalController:
         :rtype: Optional[FunctionalTest]
         """
         ft = FunctionalTest()
-        ft.test_session_id = int(session_id)
+        ft.test_session_id = int(session_id)  # type: ignore[attr-defined]
         ft.serial_number = payload["serialnr"]
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]
@@ -232,7 +225,7 @@ class FunctionalController:
         """
         ft = FunctionalTest()
         ft.id = int(functional_id)
-        ft.test_session_id = int(payload["session_id"])
+        ft.test_session_id = int(payload["session_id"])  # type: ignore[attr-defined]
         ft.serial_number = payload["serialnr"]
         ft.push_ups = payload["push_ups"]
         ft.sit_ups = payload["sit_ups"]

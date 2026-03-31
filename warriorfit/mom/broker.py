@@ -2,17 +2,16 @@ import asyncio
 import json
 import logging
 from datetime import datetime
-from sqlalchemy import TIMESTAMP, func
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import (
-    PhefTest,
-    HrMessage,
-    TestSession,
-    FitnessTest,
-    CombatTestParatrooper,
     CombatSwimmingTest,
-    March,
+    CombatTestParatrooper,
+    FitnessTest,
     FunctionalTest,
+    HrMessage,
+    March,
+    PhefTest,
 )
 from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.mom.message import Message
@@ -37,27 +36,29 @@ class Broker:
     :type _msg_queue: asyncio.Queue
     """
 
-    def __init__(self, mom_repository: MomRepository = None,
-                 be_mil_service: BEMILService = None,
-                 config: ApplicationConfig = None):
-
+    def __init__(
+        self,
+        mom_repository: MomRepository = None,
+        be_mil_service: BEMILService = None,
+        config: ApplicationConfig = None,
+    ):
         self._mom_repo = mom_repository if mom_repository is not None else MomRepository()
         self._logger = logging.getLogger(__name__)
         self.running = False
         self._worker_task = None
-        self._msg_queue = asyncio.Queue()
+        self._msg_queue = asyncio.Queue()  # type: ignore[var-annotated]
         self._be_mil_service = be_mil_service if be_mil_service is not None else BEMILService()
         self._config = config if config is not None else ApplicationConfig()
 
     async def worker(self):
         """Background task running on the main event loop"""
         hr_url = ApplicationConfig().hr_url
-        print(f"🚀 Message Queue Service started")
+        print("🚀 Message Queue Service started")
         print(f"📍 Target URL: {hr_url}")
-        print(f"⏱  Check interval: 5 seconds\n")
+        print("⏱  Check interval: 5 seconds\n")
         self._logger.info(
             "Message Queue Service started",
-            extra={"target_url": hr_url, "check_interval_seconds": 5}
+            extra={"target_url": hr_url, "check_interval_seconds": 5},
         )
 
         while self.running:
@@ -70,19 +71,19 @@ class Broker:
                 self._logger.error(
                     f"Network or I/O error in worker loop: {type(e).__name__}",
                     exc_info=True,
-                    extra={"error_type": type(e).__name__, "error_message": str(e)}
+                    extra={"error_type": type(e).__name__, "error_message": str(e)},
                 )
             except (AttributeError, TypeError, ValueError) as e:
                 self._logger.error(
                     f"Data processing error in worker loop: {type(e).__name__}",
                     exc_info=True,
-                    extra={"error_type": type(e).__name__, "error_message": str(e)}
+                    extra={"error_type": type(e).__name__, "error_message": str(e)},
                 )
             except asyncio.TimeoutError as e:
                 self._logger.error(
                     f"Timeout in worker loop: {type(e).__name__}",
                     exc_info=True,
-                    extra={"error_type": "TimeoutError", "error_message": str(e)}
+                    extra={"error_type": "TimeoutError", "error_message": str(e)},
                 )
 
             # Non-blocking sleep to let other tasks run
@@ -116,7 +117,7 @@ class Broker:
                     messages_processed += 1
                     self._logger.debug(
                         "Message saved to database",
-                        extra={"message_id": msg.id if hasattr(msg, 'id') else None}
+                        extra={"message_id": msg.id if hasattr(msg, "id") else None},
                     )
                 except asyncio.QueueEmpty:
                     self._logger.debug("Queue empty during drain operation")
@@ -128,8 +129,8 @@ class Broker:
                         extra={
                             "error_type": "AttributeError",
                             "error_message": str(e),
-                            "message_type": type(msg).__name__
-                        }
+                            "message_type": type(msg).__name__,
+                        },
                     )
                 except (OSError, IOError) as e:
                     self._logger.error(
@@ -138,8 +139,8 @@ class Broker:
                         extra={
                             "error_type": type(e).__name__,
                             "error_message": str(e),
-                            "queue_size": self._msg_queue.qsize()
-                        }
+                            "queue_size": self._msg_queue.qsize(),
+                        },
                     )
                 except (ValueError, TypeError) as e:
                     self._logger.error(
@@ -148,14 +149,14 @@ class Broker:
                         extra={
                             "error_type": type(e).__name__,
                             "error_message": str(e),
-                            "queue_size": self._msg_queue.qsize()
-                        }
+                            "queue_size": self._msg_queue.qsize(),
+                        },
                     )
 
             if messages_processed > 0:
                 self._logger.info(
                     f"Drained {messages_processed} message(s) from queue to database",
-                    extra={"messages_processed": messages_processed}
+                    extra={"messages_processed": messages_processed},
                 )
 
         # 2. Send pending messages
@@ -185,18 +186,21 @@ class Broker:
             if isinstance(test, PhefTest):
                 dto = PhefTestDto(test)
             elif isinstance(test, CombatTestParatrooper):
-                dto = CombatTestDto(test)
+                dto = CombatTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, CombatSwimmingTest):
-                dto = CombatSwimTestDto(test)
+                dto = CombatSwimTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, March):
-                dto = MarchTestDto(test)
+                dto = MarchTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, FunctionalTest):
-                dto = FunctionalTestDto(test)
+                dto = FunctionalTestDto(test)  # type: ignore[assignment]
 
             if dto is None:
                 self._logger.warning(
                     f"Unsupported test type received: {test_type}",
-                    extra={"test_type": test_type, "test_id": getattr(test, 'id', None)}
+                    extra={
+                        "test_type": test_type,
+                        "test_id": getattr(test, "id", None),
+                    },
                 )
                 return
 
@@ -206,9 +210,10 @@ class Broker:
                 f"Message queued for {test_type}",
                 extra={
                     "test_type": test_type,
-                    "serial_number": getattr(test, 'serial_number', None) or getattr(test, 'service_number', None),
-                    "queue_size": self._msg_queue.qsize()
-                }
+                    "serial_number": getattr(test, "serial_number", None)
+                    or getattr(test, "service_number", None),
+                    "queue_size": self._msg_queue.qsize(),
+                },
             )
         except AttributeError as e:
             self._logger.error(
@@ -217,8 +222,8 @@ class Broker:
                 extra={
                     "error_type": "AttributeError",
                     "error_message": str(e),
-                    "test_type": test_type
-                }
+                    "test_type": test_type,
+                },
             )
         except (TypeError, ValueError, json.JSONDecodeError) as e:
             self._logger.error(
@@ -227,8 +232,8 @@ class Broker:
                 extra={
                     "error_type": type(e).__name__,
                     "error_message": str(e),
-                    "test_type": test_type
-                }
+                    "test_type": test_type,
+                },
             )
         except (OSError, IOError) as e:
             self._logger.error(
@@ -237,8 +242,8 @@ class Broker:
                 extra={
                     "error_type": type(e).__name__,
                     "error_message": str(e),
-                    "test_type": test_type
-                }
+                    "test_type": test_type,
+                },
             )
 
     async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
@@ -257,20 +262,17 @@ class Broker:
             None if an error occurs.
         :rtype: dict | None
         """
-        message_id = getattr(message_hr, 'id', None)
+        message_id = getattr(message_hr, "id", None)
         try:
             message = Message(content=message_hr.message)
             self._logger.debug(
                 "Sending message to HR service",
-                extra={
-                    "message_id": message_id,
-                    "hr_url": ApplicationConfig().hr_url
-                }
+                extra={"message_id": message_id, "hr_url": ApplicationConfig().hr_url},
             )
             result = await self._be_mil_service.sent_hr_message_to_hr(message)
             self._logger.info(
                 "Message successfully sent to HR service",
-                extra={"message_id": message_id, "response": result}
+                extra={"message_id": message_id, "response": result},
             )
             return result
         except asyncio.TimeoutError as e:
@@ -281,8 +283,8 @@ class Broker:
                     "error_type": "TimeoutError",
                     "error_message": str(e),
                     "message_id": message_id,
-                    "hr_url": ApplicationConfig().hr_url
-                }
+                    "hr_url": ApplicationConfig().hr_url,
+                },
             )
             return None
         except ConnectionError as e:
@@ -293,8 +295,8 @@ class Broker:
                     "error_type": type(e).__name__,
                     "error_message": str(e),
                     "message_id": message_id,
-                    "hr_url": ApplicationConfig().hr_url
-                }
+                    "hr_url": ApplicationConfig().hr_url,
+                },
             )
             return None
         except (ValueError, json.JSONDecodeError) as e:
@@ -305,8 +307,10 @@ class Broker:
                     "error_type": type(e).__name__,
                     "error_message": str(e),
                     "message_id": message_id,
-                    "message_content": message_hr.message[:200] if hasattr(message_hr, 'message') else None
-                }
+                    "message_content": (
+                        message_hr.message[:200] if hasattr(message_hr, "message") else None
+                    ),
+                },
             )
             return None
         except (OSError, IOError) as e:
@@ -316,8 +320,8 @@ class Broker:
                 extra={
                     "error_type": type(e).__name__,
                     "error_message": str(e),
-                    "message_id": message_id
-                }
+                    "message_id": message_id,
+                },
             )
             return None
         except AttributeError as e:
@@ -327,8 +331,8 @@ class Broker:
                 extra={
                     "error_type": "AttributeError",
                     "error_message": str(e),
-                    "message_id": message_id
-                }
+                    "message_id": message_id,
+                },
             )
             return None
 
@@ -346,25 +350,25 @@ class Broker:
         self._logger.debug("Checking for pending messages to send to HR")
         try:
             repo = MomRepository()
-            msg: HrMessage = await repo.get_last_added_hr_message_by_send_date()
+            msg: HrMessage = await repo.get_last_added_hr_message_by_send_date()  # type: ignore[assignment]
 
             if msg:
-                message_id = getattr(msg, 'id', None)
+                message_id = getattr(msg, "id", None)
                 self._logger.info(
                     "Pending message found, attempting to send to HR",
-                    extra={"message_id": message_id}
+                    extra={"message_id": message_id},
                 )
                 ret = await self._send_message_to_hr(msg)
                 if ret:
                     await repo.delete_hr_message(msg.id)
                     self._logger.info(
                         "Message successfully sent and deleted from repository",
-                        extra={"message_id": message_id}
+                        extra={"message_id": message_id},
                     )
                 else:
                     self._logger.warning(
                         "Failed to send message, will retry in next cycle",
-                        extra={"message_id": message_id}
+                        extra={"message_id": message_id},
                     )
             else:
                 self._logger.debug("No pending messages to send")
@@ -372,28 +376,19 @@ class Broker:
             self._logger.error(
                 f"Repository attribute error: {type(e).__name__}",
                 exc_info=True,
-                extra={
-                    "error_type": "AttributeError",
-                    "error_message": str(e)
-                }
+                extra={"error_type": "AttributeError", "error_message": str(e)},
             )
         except (OSError, IOError) as e:
             self._logger.error(
                 f"Database I/O error in check_and_send_messages: {type(e).__name__}",
                 exc_info=True,
-                extra={
-                    "error_type": type(e).__name__,
-                    "error_message": str(e)
-                }
+                extra={"error_type": type(e).__name__, "error_message": str(e)},
             )
         except (ValueError, TypeError) as e:
             self._logger.error(
                 f"Data validation error in check_and_send_messages: {type(e).__name__}",
                 exc_info=True,
-                extra={
-                    "error_type": type(e).__name__,
-                    "error_message": str(e)
-                }
+                extra={"error_type": type(e).__name__, "error_message": str(e)},
             )
 
     def start(self):
@@ -403,10 +398,10 @@ class Broker:
             self.running = True
             try:
                 loop = asyncio.get_running_loop()
-                self._worker_task = loop.create_task(self.worker())
+                self._worker_task = loop.create_task(self.worker())  # type: ignore[assignment]
                 self._logger.info(
                     "Broker worker task created successfully",
-                    extra={"task_id": id(self._worker_task)}
+                    extra={"task_id": id(self._worker_task)},
                 )
             except RuntimeError as e:
                 error_msg = "Could not start Broker worker. No running event loop found."
@@ -414,10 +409,7 @@ class Broker:
                 self._logger.error(
                     error_msg,
                     exc_info=True,
-                    extra={
-                        "error_type": "RuntimeError",
-                        "error_message": str(e)
-                    }
+                    extra={"error_type": "RuntimeError", "error_message": str(e)},
                 )
         else:
             self._logger.warning("Broker start() called but worker is already running")
@@ -437,10 +429,7 @@ class Broker:
             self._worker_task.cancel()
             self._logger.info(
                 "Worker task cancelled",
-                extra={
-                    "task_id": task_id,
-                    "queue_size": self._msg_queue.qsize()
-                }
+                extra={"task_id": task_id, "queue_size": self._msg_queue.qsize()},
             )
 
         print("✓ Service stopped")
@@ -497,7 +486,7 @@ class MarchTestDto:
         self.distance = test.distance
         self.succeeded = test.succeeded
         self.datetime_executed = (
-            test.datetime_executed.isoformat() if test.datetime_executed else None
+            test.datetime_executed.isoformat() if test.datetime_executed else None  # type: ignore[attr-defined]
         )
 
     def to_dict(self) -> dict:

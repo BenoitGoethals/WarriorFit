@@ -1,7 +1,7 @@
 from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError, DatabaseError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 from warriorfit.data.model.db_model import Reservation, Room
@@ -9,11 +9,10 @@ from warriorfit.data.repositories.abc_repository import ABCRepository
 
 
 class ReservationRepository(ABCRepository):
-
     def __init__(self, config=None):
         super().__init__(config=config)
 
-    async def add_reservation(self, reservation: Reservation) -> Any | None:
+    async def add_reservation(self, reservation: Reservation) -> Any | None:  # type: ignore[return]
         async with self.SessionLocal() as session:
             try:
                 session.add(reservation)
@@ -33,9 +32,7 @@ class ReservationRepository(ABCRepository):
                 return reservation
             except IntegrityError as e:
                 await session.rollback()
-                self._logger.error(
-                    "Integrity error while creating reservation: %s", str(e)
-                )
+                self._logger.error("Integrity error while creating reservation: %s", str(e))
 
     async def get_reservation(self, id_r: int) -> Reservation | None:
         try:
@@ -58,9 +55,7 @@ class ReservationRepository(ABCRepository):
                 reservations = result.all()
                 return reservations
         except SQLAlchemyError as e:
-            self._logger.error(
-                "Database error while fetching all reservations: %s", str(e)
-            )
+            self._logger.error("Database error while fetching all reservations: %s", str(e))
             return None
 
     async def delete_reservation(self, id_r: int):
@@ -74,9 +69,7 @@ class ReservationRepository(ABCRepository):
                 return False
             except SQLAlchemyError as e:
                 await session.rollback()
-                self._logger.error(
-                    "Database error while deleting reservation: %s", str(e)
-                )
+                self._logger.error("Database error while deleting reservation: %s", str(e))
                 return False
 
     async def update_reservation(self, reservation):
@@ -87,28 +80,22 @@ class ReservationRepository(ABCRepository):
                 return True
             except IntegrityError as e:
                 await session.rollback()
-                self._logger.error(
-                    "Integrity error while updating reservation: %s", str(e)
-                )
+                self._logger.error("Integrity error while updating reservation: %s", str(e))
                 return False
             except SQLAlchemyError as e:
                 await session.rollback()
-                self._logger.error(
-                    "Database error while updating reservation: %s", str(e)
-                )
+                self._logger.error("Database error while updating reservation: %s", str(e))
                 return False
 
     async def delete_all_reservation(self):
         async with self.SessionLocal() as session:
             try:
-                await session.query(Reservation).delete()
+                await session.query(Reservation).delete()  # type: ignore[attr-defined]
                 await session.commit()
                 return True
             except SQLAlchemyError as e:
                 await session.rollback()
-                self._logger.error(
-                    "Database error while deleting all reservations: %s", str(e)
-                )
+                self._logger.error("Database error while deleting all reservations: %s", str(e))
                 return False
 
     async def get_rooms(self) -> list[Room]:

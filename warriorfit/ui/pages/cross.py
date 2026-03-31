@@ -2,19 +2,20 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pandas as pd
-from shiny import ui, render, reactive
+from shiny import reactive, render, ui
 
 from warriorfit.ui.pages.page import Page
 
 # UI:
 ui.output_ui("runner_card")
 
-from warriorfit.ui.controllers.cross_controller import CrossController
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import Provide, inject
+
 from warriorfit.core.container import Container
+from warriorfit.ui.controllers.cross_controller import CrossController
 
 
 class CrossPage(Page):
@@ -38,7 +39,11 @@ class CrossPage(Page):
         return ui.nav_panel(
             "Cross",
             ui.h2("🏃 Cross Runners"),
-            ui.input_action_button("cross_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"),
+            ui.input_action_button(
+                "cross_refresh_btn",
+                "🔄 Refresh",
+                class_="btn btn-secondary btn-sm my-2",
+            ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
@@ -121,8 +126,10 @@ class CrossPage(Page):
                 ui.card_header("Runner"),
                 ui.input_text("runner_serialnr", "Serial Number"),
                 ui.input_action_button(
-                    "runner_search", "✅ Confirm Serial",
-                    class_="btn btn-primary btn-sm", width="200px",
+                    "runner_search",
+                    "✅ Confirm Serial",
+                    class_="btn btn-primary btn-sm",
+                    width="200px",
                 ),
                 ui.output_text("runner_military"),
                 ui.input_text(
@@ -168,7 +175,6 @@ class CrossPage(Page):
             val = (input.cross_select() or "").strip()
             self.selected_cross_id.set(val)
 
-
         @reactive.Effect
         @reactive.event(input.cross_locker)
         def on_cross_locker():
@@ -200,8 +206,6 @@ class CrossPage(Page):
             else:
                 ui.notification_show("Failed to upload file.", type="error", duration=3)
 
-
-
         def _read_form() -> Dict[str, Any]:
             return {
                 "serialnr": (input.runner_serialnr() or "").strip(),
@@ -219,7 +223,9 @@ class CrossPage(Page):
             crosses = await self.controller.load_crosses()
             items = {
                 str(c.id): getattr(
-                    c, "name", f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')} {c.distance} K"
+                    c,
+                    "name",
+                    f"Cross  {c.datetime_start.strftime('%d-%m-%y %H:%M')} {c.distance} K",  # type: ignore[attr-defined]
                 )
                 for c in (crosses or [])
             }
@@ -285,9 +291,7 @@ class CrossPage(Page):
             if sm is None:
                 status.set("Not found.")
             else:
-                status.set(
-                    f"Service {sm.rank} {sm.last_name} {sm.service_number} member found."
-                )
+                status.set(f"Service {sm.rank} {sm.last_name} {sm.service_number} member found.")
 
         @reactive.Effect
         @reactive.event(input.runners_grid_selected_rows)
@@ -304,9 +308,7 @@ class CrossPage(Page):
                     return
                 row = df.iloc[row_idx]
                 self.selected_runner_id.set(str(row["ID"]))
-                self.selected_military.set(
-                    await self.controller.search_military(row["Serial"])
-                )
+                self.selected_military.set(await self.controller.search_military(row["Serial"]))
                 serial = str(row.get("Serial", "") or "")
                 run_t = str(row.get("Running Time", "") or "")
                 ui.update_text("runner_serialnr", value=serial)
@@ -321,9 +323,9 @@ class CrossPage(Page):
             data = _read_form()
             ok, res = await self.controller.validate_form(data)
             if not ok:
-                status.set(res)
+                status.set(res)  # type: ignore[arg-type]
                 return
-            payload = {**data, **res}
+            payload = {**data, **res}  # type: ignore[dict-item]
             # ensure cross id is set
             if not payload.get("cross_id"):
                 status.set("Select a Cross first.")
@@ -345,14 +347,12 @@ class CrossPage(Page):
                 status.set("Select a row first.")
                 return
             data = _read_form()
-            data["old_serialnr"] = getattr(
-                self.selected_military.get(), "service_number", None
-            )
+            data["old_serialnr"] = getattr(self.selected_military.get(), "service_number", None)
             ok, res = await self.controller.validate_form(data, True)
             if not ok:
-                status.set(res)
+                status.set(res)  # type: ignore[arg-type]
                 return
-            payload = {**data, **res}
+            payload = {**data, **res}  # type: ignore[dict-item]
             updated = await self.controller.update_runner(int(rid), payload)
             if not updated:
                 status.set(f"Failed to update runner {payload['serialnr']}.")
@@ -360,7 +360,9 @@ class CrossPage(Page):
             self.selected_runner_id.set("")
             self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Updated runner {payload['serialnr']}.")
-            ui.notification_show(f"Runner {payload['serialnr']} updated.", type="message", duration=3)
+            ui.notification_show(
+                f"Runner {payload['serialnr']} updated.", type="message", duration=3
+            )
 
             _clear_form()
 
@@ -390,9 +392,7 @@ class CrossPage(Page):
         @reactive.effect
         @reactive.event(input.report_lst_run)
         async def _on_generate():
-            self._last_paths = await self.controller.generate_report_cross(
-                cross_selected_id.get()
-            )
+            self._last_paths = await self.controller.generate_report_cross(cross_selected_id.get())
             if not self._last_paths:
                 status.set("No report generated.")
                 return
@@ -404,9 +404,8 @@ class CrossPage(Page):
 
             buf = io.BytesIO()
             with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-
                 try:
-                    path_obj = Path(self._last_paths)
+                    path_obj = Path(self._last_paths)  # type: ignore[arg-type]
                     if path_obj.is_file():
                         zf.write(path_obj, arcname=path_obj.name)
                 except Exception:

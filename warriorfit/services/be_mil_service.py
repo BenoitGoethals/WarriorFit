@@ -1,6 +1,7 @@
 import json
 import logging
-from datetime import datetime, date
+from datetime import date
+
 import httpx
 from pydantic import BaseModel, ConfigDict
 from pydantic.v1 import Field
@@ -9,6 +10,7 @@ from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.Gender import Gender
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.mom.message import Message
+
 
 class ServiceMenSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -26,8 +28,8 @@ class ServiceMenSchema(BaseModel):
     para: bool = False
     ops_test: bool = False
 
-class BEMILService:
 
+class BEMILService:
     def __init__(self, config: ApplicationConfig = None):
         self.__logger = logging.getLogger(__name__)
         if config is None:

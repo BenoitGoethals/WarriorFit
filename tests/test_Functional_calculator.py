@@ -1,8 +1,10 @@
 # tests/test_Functional_calculator.py
 
 import pytest
+
 from warriorfit.core.Gender import Gender
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
+
 
 # Test for the `get_age_cat` method of FunctionalCalculator
 @pytest.mark.parametrize(
@@ -26,6 +28,7 @@ def test_get_age_cat(age, expected_category):
     """
     assert FunctionalCalculator.get_age_cat(age) == expected_category
 
+
 # Test for the `get_score_pullup` method of FunctionalCalculator
 @pytest.mark.parametrize(
     "gender,age,count,expected_score",
@@ -46,6 +49,7 @@ def test_get_score_pullup(gender, age, count, expected_score):
     based on gender, age, and count.
     """
     assert FunctionalCalculator.get_score_pullup(gender, age, count) == expected_score
+
 
 # Test for the `get_score_pushup` method of FunctionalCalculator
 @pytest.mark.parametrize(
@@ -68,6 +72,7 @@ def test_get_score_pushup(gender, age, count, expected_score):
     """
     assert FunctionalCalculator.get_score_pushup(gender, age, count) == expected_score
 
+
 # Test for the `get_score_situp` method of FunctionalCalculator
 @pytest.mark.parametrize(
     "gender,age,count,expected_score",
@@ -89,22 +94,41 @@ def test_get_score_situp(gender, age, count, expected_score):
     """
     assert FunctionalCalculator.get_score_situp(gender, age, count) == expected_score
 
+
 # Test for the `get_scores` method of FunctionalCalculator
 @pytest.mark.parametrize(
     "gender,age,count,expected_pullup_score,expected_situp_score,expected_pushup_score",
     [
         (Gender.M, 25, 20, 20.0, 4.0, 6.0),  # Max scores for all exercises
         (Gender.F, 25, 12, 20.0, 4.0, 6.0),  # Max scores for women
-        (Gender.M, 30, 50, 20.0, 16.0, 16.0),  # Exceeding max reps still yields max score
+        (
+            Gender.M,
+            30,
+            50,
+            20.0,
+            16.0,
+            16.0,
+        ),  # Exceeding max reps still yields max score
         (Gender.F, 48, 5, 18.0, 4.0, 6.0),  # Exact scores for low reps
         (Gender.M, 25, 0, 0.0, 0.0, 0.0),  # No reps for any exercise
         (Gender.F, 25, -1, 0.0, 0.0, 0.0),  # Invalid negative reps
     ],
 )
-def test_get_scores(gender, age, count, expected_pullup_score, expected_situp_score, expected_pushup_score):
+def test_get_scores(
+    gender,
+    age,
+    count,
+    expected_pullup_score,
+    expected_situp_score,
+    expected_pushup_score,
+):
     """
     Test the `get_scores` method to ensure it calculates scores for pull-ups,
     sit-ups, and push-ups based on gender, age, and count.
     """
     scores = FunctionalCalculator.get_scores(gender, age, count)
-    assert scores == (expected_pullup_score, expected_situp_score, expected_pushup_score)
+    assert scores == (
+        expected_pullup_score,
+        expected_situp_score,
+        expected_pushup_score,
+    )

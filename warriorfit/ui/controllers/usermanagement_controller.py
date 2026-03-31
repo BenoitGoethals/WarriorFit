@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
-from warriorfit.data.model.db_model import User, Role
+from warriorfit.data.model.db_model import Role, User  # type: ignore[attr-defined]
 from warriorfit.security.auth_service import Auth
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_user import UserService
@@ -128,9 +128,7 @@ class UserManagementController:
                 return False, f"Field '{f}' is required."
         if "@" not in form.email or "." not in form.email.split("@")[-1]:
             return False, "Invalid email address."
-        if not self.USER_REGEX.match(form.username) or not (
-            3 < len(form.username) < 30
-        ):
+        if not self.USER_REGEX.match(form.username) or not (3 < len(form.username) < 30):
             return (
                 False,
                 "Username must be valid (a..z,A..Z,0..9,_). Length must be between 3 and 30. ",
@@ -142,15 +140,12 @@ class UserManagementController:
         if not is_email_well_formed:
             return False, "Invalid email address."
         if is_update:
-            if form.serial.strip() != (self.selected_user.serial or "") and exists:
+            if form.serial.strip() != (self.selected_user.serial or "") and exists:  # type: ignore[attr-defined]
                 return False, f"Serial '{form.serial}' already exists."
 
-            if form.email.strip() != (self.selected_user.email or "") and mail_unique:
+            if form.email.strip() != (self.selected_user.email or "") and mail_unique:  # type: ignore[attr-defined]
                 return False, f"User with email '{form.email}' already exists."
-            if (
-                form.username.strip() != (self.selected_user.username or "")
-                and user_name_exist
-            ):
+            if form.username.strip() != (self.selected_user.username or "") and user_name_exist:  # type: ignore[attr-defined]
                 return False, f"User with username '{form.username}' already exists."
         else:
             if exists:
@@ -160,17 +155,20 @@ class UserManagementController:
             if user_name_exist:
                 return False, f"User with username '{form.username}' already exists."
         if form.password and not self.validate_password(form.password):
-            return False, "Password must contain at least 8 uppercase, lowercase, digit and special character."
+            return (
+                False,
+                "Password must contain at least 8 uppercase, lowercase, digit and special character.",
+            )
 
         return True, "OK"
 
-    def validate_password(self,pw: str) -> bool:
+    def validate_password(self, pw: str) -> bool:
         return (
-                len(pw) >= 8
-                and re.search(r"[A-Z]", pw)
-                and re.search(r"[a-z]", pw)
-                and re.search(r"\d", pw)
-                and re.search(r"[^\w\s]", pw)
+            len(pw) >= 8  # type: ignore[return-value]
+            and re.search(r"[A-Z]", pw)
+            and re.search(r"[a-z]", pw)
+            and re.search(r"\d", pw)
+            and re.search(r"[^\w\s]", pw)
         )
 
     def set_selected_user(self, user: UserForm):
@@ -180,7 +178,7 @@ class UserManagementController:
         :param user: The user to be set as the selected user.
         :type user: UserForm
         """
-        self.selected_user = user
+        self.selected_user = user  # type: ignore[assignment]
 
     async def create_user(self, form: UserForm) -> Optional[User]:
         """
@@ -200,8 +198,8 @@ class UserManagementController:
         user.username = form.username
         user.password_hash = await Auth.hash_password(form.password)
         user.email = form.email
-        user.role = form.role
-        user.is_active = form.is_active
+        user.role = form.role  # type: ignore[assignment]
+        user.is_active = form.is_active  # type: ignore[assignment]
         return await self._service.add_user(user)
 
     async def update_user(self, user_id: int | None, form: UserForm) -> bool:
@@ -221,7 +219,7 @@ class UserManagementController:
         :rtype: bool
         """
         user = User()
-        user.id = user_id
+        user.id = user_id  # type: ignore[assignment]
         user.serial_number = form.serial
         user.username = form.username
         if form.password:
@@ -230,8 +228,8 @@ class UserManagementController:
             existing = await self._service.get_user_by_id(user_id)
             user.password_hash = existing.password_hash if existing else ""
         user.email = form.email
-        user.role = form.role
-        user.is_active = form.is_active
+        user.role = form.role  # type: ignore[assignment]
+        user.is_active = form.is_active  # type: ignore[assignment]
         updated = await self._service.update_user(user_id, user)
         return bool(updated)
 

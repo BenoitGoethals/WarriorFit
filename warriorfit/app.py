@@ -4,16 +4,19 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from warriorfit.security.rate_limiter import login_rate_limiter
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
-from shiny import App, ui, render
+
+from shiny import App, render, ui
+
 from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.core.container import Container
-from warriorfit.data.model.db_model import Role
+from warriorfit.data.model.db_model import Role  # type: ignore[attr-defined]
 from warriorfit.mom.broker import Broker
+from warriorfit.security.rate_limiter import login_rate_limiter
 from warriorfit.ui.user_store import UserStore
 from warriorfit.utils.Os import Os
 
@@ -23,29 +26,29 @@ _container = Container()
 
 # NOW import pages after wiring is complete
 from warriorfit.ui.pages import (
-    reports,
-    settings,
+    about,
+    auditlog_events,
+    calendar_events,
     combat_test,
-    own_unit,
-    dashboard_own_unit,
-    ind_test_show,
     cross,
     cross_planning,
-    calendar_events,
-    auditlog_events,
-    status_tests,
     cross_statics,
+    dashboard_own_unit,
+    functional_test,
+    ind_test_show,
     march,
-    status_login_user,
+    own_unit,
+    phef,
+    reports,
     reserve_fitness_room,
+    sessions,
+    settings,
     status_application,
+    status_login_user,
+    status_tests,
+    swim_test,
+    usermangement,
 )
-from warriorfit.ui.pages import usermangement
-from warriorfit.ui.pages import about
-from warriorfit.ui.pages import phef
-from warriorfit.ui.pages import sessions
-from warriorfit.ui.pages import functional_test
-from warriorfit.ui.pages import swim_test
 
 
 @dataclass(frozen=True)
@@ -90,8 +93,9 @@ class FitnessWarriorApp:
 
         :return: None
         """
-        import yaml
         import logging.config
+
+        import yaml
 
         project_root = Os.get_project_root()
         if not project_root:
@@ -100,9 +104,7 @@ class FitnessWarriorApp:
         log_dir = project_root / "logs"
         log_dir.mkdir(exist_ok=True)
 
-        config_path = (
-            project_root / "warriorfit" / "config" / "logging_configuration.yml"
-        )
+        config_path = project_root / "warriorfit" / "config" / "logging_configuration.yml"
 
         if config_path.exists():
             try:
@@ -295,7 +297,13 @@ class FitnessWarriorApp:
                 group="root",
                 ui_factory=about.get_ui,
                 server_factory=about.server,
-                allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST, Role.PLANNER},
+                allowed_roles={
+                    Role.ADMIN,
+                    Role.PTI,
+                    Role.APTI,
+                    Role.GUEST,
+                    Role.PLANNER,
+                },
             ),
         ]
 
@@ -372,7 +380,7 @@ class FitnessWarriorApp:
         # Calendar server mounted independently (modal lives outside navbar)
         servers_by_tab["CalendarEvents"] = calendar_events.server
 
-        mounted = reactive.Value(set())
+        mounted = reactive.Value(set())  # type: ignore[var-annotated]
 
         @reactive.Effect
         def _mount_on_nav_activation_register_only():
@@ -455,7 +463,9 @@ class FitnessWarriorApp:
                     ui.div(
                         ui.h3("📅 Calendar"),
                         ui.input_action_button(
-                            "close_calendar", "✕ Close", class_="btn btn-outline-secondary btn-sm"
+                            "close_calendar",
+                            "✕ Close",
+                            class_="btn btn-outline-secondary btn-sm",
                         ),
                         class_="wf-calendar-panel-header",
                     ),
@@ -474,7 +484,8 @@ class FitnessWarriorApp:
                         class_="wf-calendar-panel-header",
                     ),
                     ui.div(
-                        calendar_events.get_ui(all_test=False), class_="wf-calendar-panel-body"
+                        calendar_events.get_ui(all_test=False),
+                        class_="wf-calendar-panel-body",
                     ),
                     class_="wf-calendar-panel",
                 )
@@ -496,11 +507,9 @@ class FitnessWarriorApp:
             return panel if panel is not None else None
 
         def _build_menu(group: str, pages_for_role: list[PageSpec]) -> Optional[ui.Tag]:
-            children = [
-                _safe_panel(p.ui_factory()) for p in pages_for_role if p.group == group
-            ]
+            children = [_safe_panel(p.ui_factory()) for p in pages_for_role if p.group == group]
             children = [c for c in children if c is not None]
-            return ui.nav_menu(group, *children) if children else None
+            return ui.nav_menu(group, *children) if children else None  # type: ignore[arg-type, return-value]
 
         def build_main_navbar():
             user = _get_session_user()
@@ -557,7 +566,8 @@ class FitnessWarriorApp:
             nav_items.append(
                 ui.nav_control(
                     ui.input_action_button(
-                        "logout_btn", "Sign Out",
+                        "logout_btn",
+                        "Sign Out",
                         class_="btn btn-sm",
                         style="background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.25);",
                     )
@@ -600,6 +610,7 @@ class FitnessWarriorApp:
             if app_env == "development":
                 if _get_session_user() is None:
                     from warriorfit.data.model.db_model import User as UserModel
+
                     dev_user = UserModel(
                         id=0,
                         username="admin",
@@ -620,7 +631,10 @@ class FitnessWarriorApp:
             login = ui.div(
                 ui.div(
                     ui.div("⚔️ WarriorFit", class_="wf-login-logo"),
-                    ui.div("Physical Training Management System", class_="wf-login-subtitle"),
+                    ui.div(
+                        "Physical Training Management System",
+                        class_="wf-login-subtitle",
+                    ),
                     ui.tags.label("Username", for_="username_login", class_="form-label"),
                     ui.input_text("username_login", None, placeholder="Enter username"),
                     ui.tags.label("Password", for_="password_login", class_="form-label mt-2"),
@@ -644,15 +658,16 @@ class FitnessWarriorApp:
             locked, seconds_left = login_rate_limiter.is_locked(username_login)
             if locked:
                 minutes = (seconds_left + 59) // 60
-                status_text.set(
-                    f"Too many failed attempts. Try again in {minutes} minute(s)."
-                )
+                status_text.set(f"Too many failed attempts. Try again in {minutes} minute(s).")
                 return
 
             client = getattr(session.http_conn, "client", None)
             x_forwarded = session.http_conn.headers.get("x-forwarded-for", "")
-            client_ip = (x_forwarded.split(",")[0].strip() if x_forwarded
-                         else (client.host if client else None))
+            client_ip = (
+                x_forwarded.split(",")[0].strip()
+                if x_forwarded
+                else (client.host if client else None)
+            )
 
             try:
                 if await user_service.check_user(username_login, password_login):
@@ -665,7 +680,9 @@ class FitnessWarriorApp:
                     login_rate_limiter.reset(username_login)
                     UserStore.set_user(user)
                     await user_service.add_audit_log(
-                        f"User {username_login} logged in", "login", ip_address=client_ip
+                        f"User {username_login} logged in",
+                        "login",
+                        ip_address=client_ip,
                     )
                     _set_session_user(user)
                     login_user_text.set(
@@ -734,9 +751,7 @@ class FitnessWarriorApp:
                 ui.notification_show("You have been logged out.", type="message")
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
         last_activity = reactive.Value(time.time())
@@ -829,12 +844,14 @@ class FitnessWarriorApp:
                 )
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
 
 FitnessWarriorApp.setup_logger()
 FitnessWarriorApp.get_broker().start()
-app = App(ui=FitnessWarriorApp.build_app_ui(), server=FitnessWarriorApp.server, static_assets=Path(__file__).parent / "www")
+app = App(
+    ui=FitnessWarriorApp.build_app_ui(),
+    server=FitnessWarriorApp.server,
+    static_assets=Path(__file__).parent / "www",
+)

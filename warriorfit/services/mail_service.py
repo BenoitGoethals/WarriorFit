@@ -2,12 +2,12 @@ import logging
 import os
 import smtplib
 import ssl
-from datetime import datetime, timedelta
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Iterable, Optional
+
 from warriorfit.config.appliccation_config import ApplicationConfig
-from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.utils.Os import Os
 
 
@@ -35,11 +35,9 @@ class MailService:
         bcc: Optional[Iterable[str] | str] = None,
     ) -> None:
         self._send_message(
-            to=self._ensure_list(to),
+            to=self._ensure_list(to),  # type: ignore[arg-type]
             subject=subject,
-            from_email=from_email
-            or self.config.sender_email
-            or (self.config.username or ""),
+            from_email=from_email or self.config.sender_email or (self.config.username or ""),
             html_body=html_body,
             ics_text=None,
             cc=self._ensure_list(cc),
@@ -73,18 +71,16 @@ class MailService:
             end=end,
             organizer_email=organizer_email,
             organizer_name=organizer_name,
-            attendees=self._ensure_list(to),
+            attendees=self._ensure_list(to),  # type: ignore[arg-type]
             location=location,
             description=description_text or self._strip_html(html_body),
             uid=uid,
             alarm_minutes_before=alarm_minutes_before,
         )
         self._send_message(
-            to=self._ensure_list(to),
+            to=self._ensure_list(to),  # type: ignore[arg-type]
             subject=subject,
-            from_email=from_email
-            or self.config.sender_email
-            or (self.config.username or ""),
+            from_email=from_email or self.config.sender_email or (self.config.username or ""),
             html_body=html_body,
             ics_text=ics,
             cc=self._ensure_list(cc),
@@ -120,9 +116,7 @@ class MailService:
             cal_part = MIMEText(ics_text, "calendar", "utf-8")
             cal_part.add_header("Content-Class", "urn:content-classes:calendarmessage")
             cal_part.add_header("Content-ID", "<calendar_invite>")
-            cal_part.replace_header(
-                "Content-Type", "text/calendar; method=REQUEST; charset=UTF-8"
-            )
+            cal_part.replace_header("Content-Type", "text/calendar; method=REQUEST; charset=UTF-8")
             alt.attach(cal_part)
 
         msg.attach(alt)
@@ -130,9 +124,7 @@ class MailService:
         recipients = list({*to, *(cc or []), *(bcc or [])})
         self._deliver(from_email, recipients, msg)
 
-    def _deliver(
-        self, from_email: str, recipients: list[str], msg: MIMEMultipart
-    ) -> None:
+    def _deliver(self, from_email: str, recipients: list[str], msg: MIMEMultipart) -> None:
         if os.getenv("APP_ENV", "development") == "development":
             self._logger.debug("Mail suppressed in development mode")
             return
@@ -162,9 +154,7 @@ class MailService:
             if server.has_extn("AUTH"):
                 server.login(self.config.username, self.config.password)
             else:
-                self._logger.warning(
-                    "SMTP server does not support authentication, skipping login"
-                )
+                self._logger.warning("SMTP server does not support authentication, skipping login")
 
     @staticmethod
     def _ensure_list(val: Optional[Iterable[str] | str]) -> Optional[list[str]]:
@@ -244,9 +234,7 @@ class MailService:
             )
 
         loc_line = f"LOCATION:{self._escape_ics(location)}\r\n" if location else ""
-        desc_line = (
-            f"DESCRIPTION:{self._escape_ics(description)}\r\n" if description else ""
-        )
+        desc_line = f"DESCRIPTION:{self._escape_ics(description)}\r\n" if description else ""
 
         ics = (
             "BEGIN:VCALENDAR\r\n"
