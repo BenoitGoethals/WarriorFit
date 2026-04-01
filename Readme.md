@@ -112,6 +112,7 @@ The project documentation is structured in different documents:
 17. * [Changelog](CHANGELOG.md)
 18. * [Security](SECURITY.md) (Done)
 19. * [User Manual](documentation/USER_MANUAL.md) (Done)
+20. * [MkDocs] (https://warriorfit.readthedocs.io/en/latest/) (In Development)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
