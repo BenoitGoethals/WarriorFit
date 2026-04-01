@@ -87,7 +87,7 @@ class StatusLoginUser(Page):
 
         @render.text
         def version_header():
-            return f"Version : {ApplicationConfig().version[0]}  Date :{ApplicationConfig().version[2]}"
+            return f"Version : {ApplicationConfig().version[1]}  Date :{ApplicationConfig().version[2]}"
 
         @render.text
         def welcome_subheader():
