@@ -1,0 +1,203 @@
+site_name: WarriorFit
+site_description: Digitization of Physical Military Tests at SOR-Unit Level
+site_author: Benoit Goethals
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - toc.follow
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: sphinx
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            show_signature: true
+            show_docstring_description: true
+            show_docstring_parameters: true
+            show_docstring_returns: true
+            show_docstring_raises: true
+            members_order: source
+            heading_level: 2
+            filters:
+              - "!^_"
+              - "^__init__"
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Overview: getting-started/overview.md
+      - Installation & Deployment: getting-started/install.md
+      - User Manual: getting-started/user-manual.md
+  - Architecture:
+      - Overview: architecture/architecture.md
+      - Module Structure: architecture/module-structure.md
+      - Design Document: architecture/design.md
+      - Server: architecture/server.md
+  - Guides:
+      - Dependency Injection: architecture/di-guide.md
+      - Cross / Running Events: architecture/crossapp.md
+      - MOM Broker: architecture/broker.md
+      - Data Model: architecture/datamodel.md
+  - Business:
+      - Scoring & Business Logic: business/business-logic.md
+      - Room Reservation: business/reservations.md
+  - Security: security.md
+  - Development:
+      - Changelog: project/changelog.md
+      - User Stories: project/stories.md
+      - Test Cases: project/testcases.md
+      - Retrospective: project/retrospective.md
+      - Project Proposal: project/proposal.md
+  - API Reference:
+      - Application: api/app.md
+      - Configuration:
+          - Application Config: api/config/application_config.md
+          - Settings Data: api/config/settings_data.md
+          - SMTP Config: api/config/smtp_config.md
+      - Core / Domain:
+          - Container: api/core/container.md
+          - Gender: api/core/gender.md
+          - Rank: api/core/rank.md
+          - Role: api/core/role.md
+          - Fitness Test Types: api/core/type_fitness_test.md
+      - Data Models:
+          - DB Model: api/models/db_model.md
+          - Enum Mapped User Model: api/models/enum_mapped_user_model.md
+      - Repositories:
+          - Base Repository: api/repositories/abc_repository.md
+          - Cross Repository: api/repositories/cross_repository.md
+          - Fitness Test Repository: api/repositories/fitness_test_repository.md
+          - March Repository: api/repositories/march_repository.md
+          - MOM Repository: api/repositories/mom_repository.md
+          - Reservation Repository: api/repositories/reservation_repository.md
+          - Servicemen Repository: api/repositories/servicemen_repository.md
+          - User Repository: api/repositories/user_repository.md
+      - Services:
+          - Base Service: api/services/service.md
+          - BeMil Service: api/services/be_mil_service.md
+          - Data Collector: api/services/data_collector.md
+          - Generator: api/services/generator.md
+          - Mail Service: api/services/mail_service.md
+          - Military Service: api/services/military_service.md
+          - Report CSV: api/services/report_generator_csv.md
+          - Report PDF: api/services/report_generator_pdf.md
+          - Report Type: api/services/report_type.md
+          - Room Reservation Service: api/services/reserve_fitness_room_service.md
+          - Cross Service: api/services/service_cross.md
+          - March Service: api/services/service_march.md
+          - Test Service: api/services/service_test.md
+          - User Service: api/services/service_user.md
+      - MOM / Broker:
+          - Broker: api/mom/broker.md
+          - HR API Dummy: api/mom/hr_fatapi_dummy.md
+          - Message: api/mom/message.md
+      - Calculators:
+          - PHEF Calculator: api/logic/phef_calculator.md
+          - Functional Calculator: api/logic/functional_calculator.md
+          - Singleton: api/logic/singleton.md
+      - Security:
+          - Auth Service: api/security/auth_service.md
+          - Rate Limiter: api/security/rate_limiter.md
+      - UI Pages:
+          - Base Page: api/pages/page.md
+          - Base Test Page: api/pages/base_test_page.md
+          - About: api/pages/about.md
+          - Audit Log Events: api/pages/auditlog_events.md
+          - Calendar Events: api/pages/calendar_events.md
+          - Combat Test: api/pages/combat_test.md
+          - Cross: api/pages/cross.md
+          - Cross Planning: api/pages/cross_planning.md
+          - Cross Statistics: api/pages/cross_statics.md
+          - Dashboard Own Unit: api/pages/dashboard_own_unit.md
+          - Functional Test: api/pages/functional_test.md
+          - Individual Test: api/pages/ind_test_show.md
+          - March: api/pages/march.md
+          - Notify Mail: api/pages/notify_mail.md
+          - Own Unit: api/pages/own_unit.md
+          - PHEF: api/pages/phef.md
+          - Reports: api/pages/reports.md
+          - Room Reservation: api/pages/reserve_fitness_room.md
+          - Sessions: api/pages/sessions.md
+          - Settings: api/pages/settings.md
+          - Status Application: api/pages/status_application.md
+          - Status Login User: api/pages/status_login_user.md
+          - Status Tests: api/pages/status_tests.md
+          - Swimming Test: api/pages/swim_test.md
+          - User Store: api/pages/user_store.md
+          - User Management: api/pages/usermanagement.md
+      - UI Controllers:
+          - Audit Log Events: api/controllers/auditlog_events_controller.md
+          - Calendar Events: api/controllers/calendar_events_controller.md
+          - Combat: api/controllers/combat_controller.md
+          - Cross: api/controllers/cross_controller.md
+          - Cross Planning: api/controllers/cross_planning_controller.md
+          - Cross Statistics: api/controllers/cross_statistics_controller.md
+          - Dashboard Own Unit: api/controllers/dashboard_own_unit_controller.md
+          - Functional: api/controllers/functional_controller.md
+          - Individual Test: api/controllers/ind_test_show_controller.md
+          - March: api/controllers/march_controller.md
+          - Own Unit: api/controllers/own_unit_controller.md
+          - PHEF: api/controllers/phef_controller.md
+          - Reports: api/controllers/reports_controller.md
+          - Room Reservation: api/controllers/reserve_fitness_room_controller.md
+          - Sessions: api/controllers/session_controller.md
+          - Settings: api/controllers/setting_controller.md
+          - Status Application: api/controllers/status_application_controller.md
+          - Status Log User: api/controllers/status_log_user_controller.md
+          - Status Tests: api/controllers/status_tests_controller.md
+          - Swimming: api/controllers/swimming_controller.md
+          - User Management: api/controllers/usermanagement_controller.md
+      - Utilities:
+          - Benchmark: api/utils/benchmark.md
+          - Formatters: api/utils/formaters.md
+          - OS Utilities: api/utils/os.md
+  - About: about.md
+  - Author: authors.md
