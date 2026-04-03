@@ -82,9 +82,9 @@ The system includes user management, test input, calculations, PDF reporting, an
 ### Timeline
 
 ```
-Sep 2025                                                          Apr 2026
- │                                                                    │
- ├──── Phase 1 ───┼────── Phase 2 ─────┼────── Phase 3 ─────┼─Phase 4─┤
+Sep 2025                                                              Apr 2026
+ │                                                                        │
+ ├──── Phase 1  ───┼────── Phase 2  ─────┼────── Phase 3  ─────┼─Phase 4─ ┤
  │   Prototype     │  Feature growth     │  Architectural      │Hardening │
  │   ~50 commits   │  ~250 commits       │  refactor           │& DevOps  │
  │                 │                     │  ~300 commits       │~346 com. │ 
