@@ -85,11 +85,11 @@ The system includes user management, test input, calculations, PDF reporting, an
 Sep 2025                                                          Apr 2026
  │                                                                    │
  ├──── Phase 1 ───┼────── Phase 2 ─────┼────── Phase 3 ─────┼─Phase 4─┤
- │   Prototype     │  Feature growth     │  Architectural      │Hardening│
- │   ~50 commits   │  ~250 commits       │  refactor           │& DevOps │
- │                 │                     │  ~300 commits        │~346 com.│
- │                 │                     │                     │         │
- Sep          Oct  │              Dec    │              Feb    │    Apr  │
+ │   Prototype     │  Feature growth     │  Architectural      │Hardening │
+ │   ~50 commits   │  ~250 commits       │  refactor           │& DevOps  │
+ │                 │                     │  ~300 commits       │~346 com. │ 
+ │                 │                     │                     │          │
+ Sep          Oct  │              Dec    │              Feb    │    Apr   │
                    ▼                     ▼                     ▼
              First business        DI container          CI/CD &
              logic extraction      & layering            Docker prod
@@ -139,7 +139,7 @@ Complexity
  └────┬─────┘              └────┬─────┘                     │
       │                         │                    ┌──────▼───────┐
  ┌────▼─────┐              ┌────▼─────┐              │ Repositories │
- │PostgreSQL │             │PostgreSQL │              │ (async)      │
+ │PostgreSQL│              │PostgreSQL│              │ (async)      │
  └──────────┘              └──────────┘              └──────┬───────┘
                                                            │
                                                     ┌──────▼───────┐
