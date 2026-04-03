@@ -75,6 +75,154 @@ Currently, much of this process is manual, leading to inefficiency, errors, and 
 
 The system includes user management, test input, calculations, PDF reporting, and email distribution. It is designed for local server deployment within Defense.
 
+## Code Evolution
+
+**946 commits** over ~7 months (Sep 2025 – Apr 2026) — currently ~21,800 lines of Python.
+
+### Timeline
+
+```
+Sep 2025                                                              Apr 2026
+ │                                                                        │
+ ├──── Phase 1  ───┼────── Phase 2  ─────┼────── Phase 3  ─────┼─Phase 4─ ┤
+ │   Prototype     │  Feature growth     │  Architectural      │Hardening │
+ │   ~50 commits   │  ~250 commits       │  refactor           │& DevOps  │
+ │                 │                     │  ~300 commits       │~346 com. │ 
+ │                 │                     │                     │          │
+ Sep          Oct  │              Dec    │              Feb    │    Apr   │
+                   ▼                     ▼                     ▼
+             First business        DI container          CI/CD &
+             logic extraction      & layering            Docker prod
+```
+
+### Complexity Growth
+
+```
+Complexity
+     ▲
+     │                                              ┌─────────────┐
+ high│                              ┌───────────────┤  Phase 4    │
+     │                              │   Phase 3     │  Hardening  │
+     │                              │   Layered DI  │  CI/CD      │
+     │              ┌───────────────┘               └─────────────┘
+  mid│              │   Phase 2
+     │              │   Features &
+     │              │   Calculators
+     │──────────────┘
+  low│  Phase 1
+     │  Prototype
+     │  Monolith
+     └──────────────────────────────────────────────────────────▶ Time
+      Sep 2025    Oct       Dec       Feb 2026      Apr
+```
+
+### Architecture Evolution
+
+```
+ PHASE 1                   PHASE 2                   PHASE 3 & 4
+ ───────                   ───────                   ───────────
+
+ ┌──────────┐              ┌──────────┐              ┌──────────────┐
+ │  Shiny   │              │  Shiny   │              │  Shiny Pages │
+ │  Pages   │              │  Pages   │              │  (RBAC)      │
+ └────┬─────┘              └────┬─────┘              └──────┬───────┘
+      │                         │                           │
+      │ direct                  │                    ┌──────▼───────┐
+      │                    ┌────▼─────┐              │ Controllers  │
+      │                    │PhefCalc  │              └──────┬───────┘
+      │                    │ExtService│                     │
+      │                    └────┬─────┘              ┌──────▼───────┐
+      │                         │                    │  Services    │
+ ┌────▼─────┐              ┌────▼─────┐              │  + Broker    │
+ │DBService │              │DBService │              │  + Mail      │
+ │(god-class)│             │(extended)│              └──────┬───────┘
+ └────┬─────┘              └────┬─────┘                     │
+      │                         │                    ┌──────▼───────┐
+ ┌────▼─────┐              ┌────▼─────┐              │ Repositories │
+ │PostgreSQL│              │PostgreSQL│              │ (async)      │
+ └──────────┘              └──────────┘              └──────┬───────┘
+                                                           │
+                                                    ┌──────▼───────┐
+                                                    │  ORM Models  │
+                                                    │ (polymorphic)│
+                                                    └──────┬───────┘
+                                                           │
+                                                    ┌──────▼───────┐
+                                                    │  PostgreSQL  │
+                                                    └──────────────┘
+
+                                                    + DI Container
+                                                    + CI/CD pipeline
+                                                    + Docker
+                                                    + MkDocs
+```
+
+### Phase 1: Prototype (Sep–Oct 2025) — commits 1–~50
+
+**Complexity: low | Architecture: monolithic**
+
+- Single Shiny app with a few pages, flat file structure
+- `DBService` as a god-class handling all database operations
+- Direct database calls from UI pages
+- No DI, no layering — pages talk directly to the service
+- Rudimentary login/auth (Argon2 password hashing introduced early)
+- Heavy iterative refactoring on the same pages (PhefPage had dozens of commits)
+- First Alembic migration, base models with polymorphic `FitnessTest`
+
+### Phase 2: Feature Growth (Oct–Dec 2025) — commits ~50–300
+
+**Complexity: medium | Architecture: emerging layers**
+
+- New pages: CombatPage, DashboardPage (with Plotly), SessionsPage
+- `PhefCalculator` introduced — first business logic extracted from UI
+- `DefenseExternalService` (singleton) for external HR integration
+- Role-based access control (6 roles: ADMIN, PTI, APTI, PLANNER, GUEST, USER)
+- Config via YAML with `Singleton` metaclass pattern
+- Still a lot of logic residing in page classes
+
+### Phase 3: Architectural Refactor (Dec 2025–Feb 2026) — commits ~300–600
+
+**Complexity: high | Architecture: layered DI architecture**
+
+- **Major turning point**: introduction of `dependency-injector` (`DeclarativeContainer`)
+- Clear separation into layers: **UI → Controllers → Services → Repositories → Models**
+- Repositories using `async_sessionmaker` with `AsyncSession`
+- Message broker (`mom/broker.py`) for async background processing (HR integration)
+- Mail service with SMTP health checks
+- Audit logging system
+- Cross-run reports and PDF generation
+- Reservation system added
+- Unit tests (pytest) with singleton isolation
+
+### Phase 4: Hardening & DevOps (Feb–Apr 2026) — commits ~600–946
+
+**Complexity: high | Architecture: production-ready**
+
+- CI/CD: GitHub Actions with Ruff, mypy strict mode, formatting checks
+- Docker production configuration (`SHINY_DEV_MODE=false`, secret management)
+- MkDocs documentation
+- OWASP security review and fixes
+- Code quality: `ruff check`, `mypy strict`, `black` formatting
+- Type annotations across the entire codebase
+- PR workflow via GitHub (merge requests, code review)
+
+### Evolution Summary
+
+| Aspect | Start | Now |
+|---|---|---|
+| **Structure** | Flat files | 7+ packages, layered |
+| **DI** | None | `DeclarativeContainer` |
+| **DB access** | God-class `DBService` | Repository pattern, async |
+| **Business logic** | Inside UI pages | Calculators, Services, Controllers |
+| **Auth** | Simple login | RBAC with 6 roles |
+| **Testing** | None | Pytest with DB isolation |
+| **CI/CD** | None | GitHub Actions, Docker |
+| **Docs** | None | MkDocs site |
+
+The pattern is classic and healthy: **working prototype → add features → architectural restructuring → harden for production**. The biggest leap in maturity was the introduction of dependency injection and the layered architecture pattern — transforming it from a "script that works" into a maintainable application.
+
+---
+
 ## Project Goals
 The main goals of this project are:
 * To develop a comprehensive fitness military management application
