@@ -5,6 +5,7 @@ Dependency Injection Container for WarriorFit application.
 from dependency_injector import containers, providers
 
 from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.data.repositories.consent_repository import ConsentRepository
 from warriorfit.data.repositories.cross_repository import CrossRepository
 from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
 from warriorfit.data.repositories.march_repository import MarchRepository
@@ -20,8 +21,11 @@ from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.report_generator_csv import ReportGeneratorCsv
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.services.reserve_fitness_room_service import ReserveFitnessRoomService
+from warriorfit.services.service_consent import ConsentService
 from warriorfit.services.service_cross import ServiceCross
+from warriorfit.services.service_gdpr import GdprService
 from warriorfit.services.service_march import ServiceMarch
+from warriorfit.services.service_retention import RetentionService
 from warriorfit.services.service_test import ServiceTest
 from warriorfit.services.service_user import UserService
 from warriorfit.ui.controllers.auditlog_events_controller import (
@@ -40,8 +44,10 @@ from warriorfit.ui.controllers.dashboard_own_unit_controller import (
 from warriorfit.ui.controllers.functional_controller import FunctionalController
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
 from warriorfit.ui.controllers.march_controller import MarchController
+from warriorfit.ui.controllers.my_progress_controller import MyProgressController
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.controllers.phef_controller import PhefController
+from warriorfit.ui.controllers.privacy_controller import PrivacyController
 from warriorfit.ui.controllers.reports_controller import ReportsController
 from warriorfit.ui.controllers.reserve_fitness_room_controller import (
     ReserveFitnessRoomController,
@@ -92,6 +98,8 @@ class Container(containers.DeclarativeContainer):
             "warriorfit.ui.pages.ind_test_show",
             "warriorfit.ui.pages.own_unit",
             "warriorfit.ui.pages.settings",
+            "warriorfit.ui.pages.privacy",
+            "warriorfit.ui.pages.my_progress",
         ]
     )
 
@@ -131,6 +139,11 @@ class Container(containers.DeclarativeContainer):
 
     mom_repository = providers.Singleton(
         MomRepository,
+        config=config,
+    )
+
+    consent_repository = providers.Singleton(
+        ConsentRepository,
         config=config,
     )
 
@@ -206,6 +219,30 @@ class Container(containers.DeclarativeContainer):
         user_repository=user_repository,
         config=config,
         notify_mail=notify_mail,
+    )
+
+    # GDPR services
+    consent_service = providers.Singleton(
+        ConsentService,
+        consent_repository=consent_repository,
+        user_repository=user_repository,
+        config=config,
+    )
+
+    gdpr_service = providers.Singleton(
+        GdprService,
+        user_repository=user_repository,
+        servicemen_repository=servicemen_repository,
+        fitness_test_repository=fitness_test_repository,
+        march_repository=march_repository,
+        consent_repository=consent_repository,
+        config=config,
+    )
+
+    retention_service = providers.Singleton(
+        RetentionService,
+        user_repository=user_repository,
+        config=config,
     )
 
     # Data Collector
@@ -309,3 +346,12 @@ class Container(containers.DeclarativeContainer):
         report_generator_pdf=report_generator_pdf,
     )
     settings_controller = providers.Singleton(SettingsController, config=config)
+    privacy_controller = providers.Singleton(
+        PrivacyController,
+        gdpr_service=gdpr_service,
+        consent_service=consent_service,
+    )
+    my_progress_controller = providers.Singleton(
+        MyProgressController,
+        data_collector=data_collector,
+    )

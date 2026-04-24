@@ -37,8 +37,10 @@ from warriorfit.ui.pages import (
     functional_test,
     ind_test_show,
     march,
+    my_progress,
     own_unit,
     phef,
+    privacy,
     reports,
     reserve_fitness_room,
     sessions,
@@ -49,6 +51,20 @@ from warriorfit.ui.pages import (
     swim_test,
     usermangement,
 )
+
+
+class _ServicemanSessionUser:
+    """Lightweight user-like shim for serviceman-mode sessions. Mirrors the
+    subset of `User` attributes that the rest of the app reads from
+    UserStore / session.user."""
+
+    def __init__(self, mil: Any) -> None:
+        self.id = None
+        self.username = mil.last_name + " " + mil.first_name
+        self.email = getattr(mil, "mail", "")
+        self.role = Role.USER
+        self.is_active = True
+        self.serial_number = mil.service_number
 
 
 @dataclass(frozen=True)
@@ -148,6 +164,13 @@ class FitnessWarriorApp:
                 ui_factory=status_login_user.get_ui,
                 server_factory=status_login_user.server,
                 allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+            ),
+            PageSpec(
+                tab="My Progress",
+                group="root",
+                ui_factory=my_progress.get_ui,
+                server_factory=my_progress.server,
+                allowed_roles={Role.USER},
             ),
             PageSpec(
                 tab="Dashboard",
@@ -294,7 +317,7 @@ class FitnessWarriorApp:
             ),
             PageSpec(
                 tab="About",
-                group="root",
+                group="About",
                 ui_factory=about.get_ui,
                 server_factory=about.server,
                 allowed_roles={
@@ -303,6 +326,20 @@ class FitnessWarriorApp:
                     Role.APTI,
                     Role.GUEST,
                     Role.PLANNER,
+                },
+            ),
+            PageSpec(
+                tab="Privacy",
+                group="About",
+                ui_factory=privacy.get_ui,
+                server_factory=privacy.server,
+                allowed_roles={
+                    Role.ADMIN,
+                    Role.PTI,
+                    Role.APTI,
+                    Role.GUEST,
+                    Role.PLANNER,
+                    Role.USER,
                 },
             ),
         ]
@@ -418,6 +455,7 @@ class FitnessWarriorApp:
         from shiny import reactive
 
         user_service = FitnessWarriorApp._container.user_service()
+        servicemen_repository = FitnessWarriorApp._container.servicemen_repository()
         FitnessWarriorApp.register_pages_server(input, output, session)
 
         status_text = reactive.Value("")
@@ -502,6 +540,8 @@ class FitnessWarriorApp:
         def _clear_session_user():
             if hasattr(session, "user"):
                 delattr(session, "user")
+            if hasattr(session, "login_mode"):
+                delattr(session, "login_mode")
 
         def _safe_panel(panel: Optional[Any]) -> Optional[ui.Tag]:
             return panel if panel is not None else None
@@ -514,24 +554,36 @@ class FitnessWarriorApp:
         def build_main_navbar():
             user = _get_session_user()
             role = getattr(user, "role", None)
+            mode = getattr(session, "login_mode", "application")
             pages_for_role = FitnessWarriorApp._pages_for_role(role)
 
             nav_items: list[Any] = []
 
-            # Root pages first (flat), except About
-            for p in pages_for_role:
-                if p.group == "root" and p.tab != "About":
-                    nav_items.append(_safe_panel(p.ui_factory()))
+            if mode == "serviceman":
+                # Restricted view: personal progress + About/Privacy + logout only.
+                allowed_tabs = {"My Progress", "About", "Privacy"}
+                restricted = [p for p in pages_for_role if p.tab in allowed_tabs]
+                for p in restricted:
+                    if p.group == "root":
+                        nav_items.append(_safe_panel(p.ui_factory()))
+                about_menu = _build_menu("About", restricted)
+                if about_menu is not None:
+                    nav_items.append(about_menu)
+            else:
+                # Root pages first (flat), except About
+                for p in pages_for_role:
+                    if p.group == "root" and p.tab != "About":
+                        nav_items.append(_safe_panel(p.ui_factory()))
 
-            # Grouped menus
-            nav_items.append(_build_menu("Psychical Tests", pages_for_role))
-            nav_items.append(_build_menu("Cross/Runs", pages_for_role))
-            nav_items.append(_build_menu("Admin", pages_for_role))
+                # Grouped menus
+                nav_items.append(_build_menu("Psychical Tests", pages_for_role))
+                nav_items.append(_build_menu("Cross/Runs", pages_for_role))
+                nav_items.append(_build_menu("Admin", pages_for_role))
 
-            # About always last
-            for p in pages_for_role:
-                if p.tab == "About":
-                    nav_items.append(_safe_panel(p.ui_factory()))
+                # About menu (About + Privacy) always last
+                about_menu = _build_menu("About", pages_for_role)
+                if about_menu is not None:
+                    nav_items.append(about_menu)
 
             # Global controls
             nav_items.append(ui.nav_spacer())
@@ -543,26 +595,27 @@ class FitnessWarriorApp:
                     )
                 )
             )
-            nav_items.append(
-                ui.nav_control(
-                    ui.input_action_button(
-                        "open_personal_calendar_modal_global",
-                        "📅 My Calendar",
-                        class_="btn btn-outline-secondary btn-sm",
-                        style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
+            if mode != "serviceman":
+                nav_items.append(
+                    ui.nav_control(
+                        ui.input_action_button(
+                            "open_personal_calendar_modal_global",
+                            "📅 My Calendar",
+                            class_="btn btn-outline-secondary btn-sm",
+                            style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
+                        )
                     )
                 )
-            )
-            nav_items.append(
-                ui.nav_control(
-                    ui.input_action_button(
-                        "open_calendar_modal_global",
-                        "📅 Unit Calendar",
-                        class_="btn btn-outline-secondary btn-sm",
-                        style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
+                nav_items.append(
+                    ui.nav_control(
+                        ui.input_action_button(
+                            "open_calendar_modal_global",
+                            "📅 Unit Calendar",
+                            class_="btn btn-outline-secondary btn-sm",
+                            style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
+                        )
                     )
                 )
-            )
             nav_items.append(
                 ui.nav_control(
                     ui.input_action_button(
@@ -635,6 +688,16 @@ class FitnessWarriorApp:
                         "Physical Training Management System",
                         class_="wf-login-subtitle",
                     ),
+                    ui.input_radio_buttons(
+                        "login_mode",
+                        "Login as",
+                        choices={
+                            "application": "Application user (admin, PTI, ...)",
+                            "serviceman": "Serviceman (view my own results only)",
+                        },
+                        selected="application",
+                        inline=False,
+                    ),
                     ui.tags.label("Username", for_="username_login", class_="form-label"),
                     ui.input_text("username_login", None, placeholder="Enter username"),
                     ui.tags.label("Password", for_="password_login", class_="form-label mt-2"),
@@ -670,6 +733,40 @@ class FitnessWarriorApp:
             )
 
             try:
+                mode = (input.login_mode() or "application").strip()
+
+                # TODO: serviceman mode currently skips password verification.
+                # Proper serviceman auth (e.g. dedicated credentials or SSO)
+                # to be implemented. Tracked as GDPR/security follow-up.
+                if mode == "serviceman":
+                    service_number = (input.username_login() or "").strip()
+                    mil = await servicemen_repository.get_by_service_number(
+                        service_number, lazy=False
+                    )
+                    if mil is None:
+                        status_text.set("Unknown service number.")
+                        return
+                    shim_user = _ServicemanSessionUser(mil)
+                    login_rate_limiter.reset(service_number)
+                    setattr(session, "login_mode", mode)
+                    UserStore.set_user(shim_user)  # type: ignore[arg-type]
+                    await user_service.add_audit_log(
+                        f"Serviceman {service_number} logged in (password skipped — TODO)",
+                        "login_serviceman",
+                        ip_address=client_ip,
+                    )
+                    _set_session_user(shim_user)
+                    login_user_text.set(
+                        f"Serviceman: {mil.first_name} {mil.last_name}  Serial: {service_number}"
+                    )
+                    status_text.set("")
+                    ui.modal_remove()
+                    nav_version.set(nav_version.get() + 1)
+                    logger.info(
+                        "Serviceman %s logged in (password skipped)", service_number
+                    )
+                    return
+
                 if await user_service.check_user(username_login, password_login):
                     user = await user_service.get_user_by_username(username_login)
                     if user.is_active is False:
@@ -677,6 +774,7 @@ class FitnessWarriorApp:
                             "Your account is disabled. Please contact your administrator."
                         )
                         return
+                    setattr(session, "login_mode", mode)
                     login_rate_limiter.reset(username_login)
                     UserStore.set_user(user)
                     await user_service.add_audit_log(
@@ -730,22 +828,25 @@ class FitnessWarriorApp:
                 return
 
         @reactive.Effect
-        def _on_logout_button_click():
+        async def _on_logout_button_click():
             """
-            Handles the effects triggered by the logout button click event. This effect is
-            responsible for clearing the session user, updating the navigation state,
-            showing a notification to the user, and initiating a page reload after a
-            slight delay.
-
-            :param clicks: The number of times the logout button was clicked.
-            :type clicks: Optional[int]
-            :return: None
+            Handles the effects triggered by the logout button click event. Clears the
+            session user, writes a GDPR audit entry, updates navigation, and reloads.
             """
             try:
                 clicks = input.logout_btn()
             except (AttributeError, KeyError):
                 return
             if clicks and clicks > 0:
+                current_user = _get_session_user()
+                if current_user is not None:
+                    try:
+                        await user_service.add_audit_log(
+                            f"User {current_user.username} logged out",
+                            "logout",
+                        )
+                    except Exception:
+                        pass
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show("You have been logged out.", type="message")
@@ -817,18 +918,11 @@ class FitnessWarriorApp:
             last_activity.set(time.time())
 
         @reactive.Effect
-        def _auto_logout_timer():
+        async def _auto_logout_timer():
             """
-            This reactive effect function monitors user activity and automatically logs out
-            users after 10 minutes of inactivity. It is triggered every 5 seconds and
-            ensures that the user session is cleared if the inactivity timeout occurs.
-
-            During the logout process, it also updates the navigation menu, shows a
-            notification to the user, and reloads the page for security purposes.
-
-            :raises KeyError: If session details or user data are not properly managed.
-
-            :return: None
+            Monitors user activity and automatically logs out users after 10 minutes of
+            inactivity. Fires every 5 seconds. Writes a GDPR audit entry on forced
+            logout.
             """
             reactive.invalidate_later(5)
             user = _get_session_user()
@@ -836,6 +930,13 @@ class FitnessWarriorApp:
                 return
             ts = last_activity.get() or time.time()
             if time.time() - ts >= 600:
+                try:
+                    await user_service.add_audit_log(
+                        f"User {user.username} auto-logged out after 10min inactivity",
+                        "logout_inactivity",
+                    )
+                except Exception:
+                    pass
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show(

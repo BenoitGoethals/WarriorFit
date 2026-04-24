@@ -23,3 +23,10 @@ unit:
 version:
   number: RC 1.0
   status: development
+gdpr:
+  # Retention for fitness/march/reservation records (days). 5 years default.
+  fitness_retention_days: 1825
+  # Retention for audit logs (days). 1 year default.
+  audit_retention_days: 365
+  # Retention for HR broker messages (days).
+  hr_message_retention_days: 90

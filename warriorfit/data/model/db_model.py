@@ -68,6 +68,38 @@ class User(Base):
         uselist=False,
     )
 
+    consents: Mapped[List["UserConsent"]] = relationship(
+        "UserConsent",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+
+class UserConsent(Base):
+    """GDPR Art. 7 consent record. Append-only: a withdrawal sets `withdrawn_at`
+    on the existing grant; a re-grant creates a new row with a new version."""
+
+    __tablename__ = "user_consents"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "consent_type", "version", name="uq_user_consent_type_version"
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    consent_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[str] = mapped_column(String(16), nullable=False)
+    consent_given_at: Mapped[TIMESTAMP] = mapped_column(
+        TIMESTAMP, server_default=func.current_timestamp(), nullable=False
+    )
+    withdrawn_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP, nullable=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+
+    user: Mapped["User"] = relationship("User", back_populates="consents")
+
 
 # ----------------------------
 # Tests (polymorphic)
@@ -323,9 +355,9 @@ class ServiceMen(Base):
     para: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     ops_test: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    # Link to users.id (optional 1:1)
+    # Link to users.id (optional 1:1). CASCADE: GDPR Art. 17.
     user_id: Mapped[Optional[int]] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=True,
         unique=True,
         index=True,
