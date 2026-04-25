@@ -6,9 +6,9 @@ The point estimates below reflect implementation effort.
 
 ### Total Overview
 
-* **Total epics:** 19
-* **Total stories:** 72
-* **Total story points:** 201
+* **Total epics:** 20
+* **Total stories:** 79
+* **Total story points:** 226
 
 ### Story Point Legend
 
@@ -25,6 +25,8 @@ The point estimates below reflect implementation effort.
 * **APTI** – Assistant PTI; same permissions as PTI but for a sub-unit
 * **PLANNER** – Limited role; can only access the Sessions planning page
 * **GUEST** – Read-only access to unit status and individual test history
+* **USER** – Self-service for an individual serviceman: My Progress (own test history + chart) and Privacy (consent management + data export)
+* **Serviceman login mode** – Login by `service_number` only (no password yet — TODO); sees only My Progress, Privacy, About, Logout
 
 ---
 
@@ -1547,3 +1549,162 @@ The point estimates below reflect implementation effort.
 
 * Per-page role whitelist
 * Navigation built from role-filtered page list
+
+---
+
+## Epic 20: GDPR / Privacy & Self-Service (25 points)
+
+**Epic total:** 25 points
+**Estimated:** 4–5 sprints
+
+| #    | Story                                              | Points | Priority    |
+| ---- | -------------------------------------------------- | ------ | ----------- |
+| 20.1 | Serviceman login mode                              | 3      | Must Have   |
+| 20.2 | My Progress page (USER role)                       | 5      | Must Have   |
+| 20.3 | Consent grant / withdraw (Art. 7)                  | 5      | Must Have   |
+| 20.4 | Personal-data JSON export (Art. 15 / 20)           | 5      | Must Have   |
+| 20.5 | Erasure notice (Art. 17 — restricted by retention) | 1      | Must Have   |
+| 20.6 | Data-retention purge service                       | 3      | Should Have |
+| 20.7 | Admin Servicemen Overview with consent status      | 3      | Should Have |
+
+### Story 20.1: Serviceman login mode [3 points]
+
+**As** a serviceman
+**I want** to log in by service number (without an application account)
+**So that** I can manage my own privacy settings and see my test progress
+
+**Acceptance criteria:**
+
+* Login modal exposes a "Login mode" radio: "Application user" / "Serviceman"
+* In Serviceman mode the password field is **not** verified (TODO: real serviceman auth — SSO/dedicated creds — tracked as a follow-up)
+* Lookup uses `ServicemenRepository.get_by_service_number()` (NOT the `users` table)
+* Successful serviceman login: only **My Progress**, **About**, **Privacy**, **Logout** are visible (Calendar, Tests, Admin menus hidden)
+* Audit log records `login_serviceman` with the service number and IP
+* Unknown service number: "Unknown service number." inline error
+
+**Tasks:**
+
+* Login mode radio + branch in `handle_login`
+* `_ServicemanSessionUser` shim (`id=None`, `serial_number=service_number`, `role=USER`)
+* Navbar built per `session.login_mode`
+
+### Story 20.2: My Progress page (USER role) [5 points]
+
+**As** a logged-in serviceman
+**I want** to see my current-year tests, full test history, and a PHEF progress chart
+**So that** I can follow my own physical evolution
+
+**Acceptance criteria:**
+
+* Page accessible to USER role only (Serviceman login mode)
+* Two grids: "This year" and "All history" (Date, Type, Total, Result)
+* Plotly line chart **filtered to PHEF only**, x = Date, y = Score
+* Empty state: "No PHEF data yet"
+* "🔄 Refresh" button reloads from DB
+* Header line shows `username · service_number`
+
+**Tasks:**
+
+* `MyProgressPage` + `MyProgressController` using `DataCollector.collect_tests_for_serial`
+* `progress_series` static helper extracts numeric Score from `Total` string
+* Wire into DI container and PageSpec
+
+### Story 20.3: Consent grant / withdraw (Art. 7) [5 points]
+
+**As** a serviceman
+**I want** to grant or withdraw my consent for each processing purpose
+**So that** I can exercise GDPR Art. 7 rights
+
+**Acceptance criteria:**
+
+* Consent types: `terms_of_service`, `privacy_policy`, `health_data_processing`
+* Consent records stored in `user_consents`, **keyed by `service_number`** (not `users.id`)
+* Each record has `version`, `consent_given_at`, optional `withdrawn_at`, optional `ip_address`
+* Withdrawal sets `withdrawn_at`; a re-grant inserts a new active row
+* Unique constraint on (`service_number`, `consent_type`, `version`)
+* Status text reports success/failure of each click
+* Audit log records `consent_grant` / `consent_withdraw` with serial + version
+
+**Tasks:**
+
+* `UserConsent` ORM model + Alembic `b2c3d4e5f6a7` and `d4e5f6a7b8c9`
+* `ConsentRepository` (`record_consent`, `withdraw_consent`, `get_active_consent`, `list_for_serviceman`, `list_all_active`)
+* `ConsentService` with `CURRENT_CONSENT_VERSIONS`
+* Privacy page consent block (dynamic Grant/Withdraw buttons per type)
+
+### Story 20.4: Personal-data JSON export (Art. 15 / 20) [5 points]
+
+**As** a serviceman
+**I want** to download all personal data WarriorFit holds about me as JSON
+**So that** I can verify what is processed (Art. 15) and port it elsewhere (Art. 20)
+
+**Acceptance criteria:**
+
+* "Prepare export" button generates a JSON payload server-side
+* When ready: a "Download JSON" button appears (`warriorfit-export.json`)
+* Payload includes: `serviceman` fields, `fitness_tests` (each with **date** from `TestSession.datetime_start`), `marches`, `reservations`, full `consents` history
+* Datetime values are ISO-formatted
+* Audit log records `gdpr_export` with the service number
+* Errors surface in the page status text (no silent failures)
+
+**Tasks:**
+
+* `GdprService.export_serviceman_data(service_number)`
+* `_export_fitness` joins `SessionFitnessTests` → `TestSession` to attach `date`
+* Shiny `@session.download` for the prepared payload
+
+### Story 20.5: Erasure notice (Art. 17 — restricted by retention) [1 point]
+
+**As** a serviceman
+**I want** to clearly understand why self-service erasure is unavailable
+**So that** I know how to escalate restriction/rectification requests
+
+**Acceptance criteria:**
+
+* Privacy page shows a Bootstrap warning alert under "Erase your account (Art. 17)"
+* Text explains organisational/regulatory retention obligations and points to the unit admin / Defence DPO
+* No erase button is rendered (and no dead reactive handler)
+
+**Tasks:**
+
+* Replace erase button + handler with a static notice block
+
+### Story 20.6: Data-retention purge service [3 points]
+
+**As** the data controller
+**I want** time-bound automatic purges of fitness tests, marches, reservations, audit logs and HR messages
+**So that** WarriorFit complies with GDPR Art. 5 (storage limitation)
+
+**Acceptance criteria:**
+
+* `RetentionService.purge_all()` deletes data older than configured cutoffs
+* Cutoffs come from `ApplicationConfig.gdpr_retention` (`fitness_retention_days`, `audit_retention_days`, `hr_message_retention_days`)
+* Defaults: 1825 / 365 / 90 days
+* Configurable via `config_dev.yml` `gdpr:` block
+
+**Tasks:**
+
+* `RetentionService` + per-domain `_purge_*` helpers
+* Add `gdpr` config dict + property on `ApplicationConfig`
+* Wire singleton into DI container
+
+### Story 20.7: Admin Servicemen Overview with consent status [3 points]
+
+**As** admin
+**I want** to see all servicemen with their fields and current consent grant status
+**So that** I can audit who has granted/withdrawn each consent
+
+**Acceptance criteria:**
+
+* Admin → "Servicemen Overview" page (ADMIN-only)
+* DataGrid with columns: Service #, Last Name, First Name, Mail, Rank, Gender, Birthdate, Unit, Para, Ops
+* One additional column per consent type, showing the grant timestamp or `—`
+* Filterable; refresh button + refresh-on-nav
+* No internal `ID` column shown
+
+**Tasks:**
+
+* `ServicemenRepository.list_all_with_unit` (eager-loads Unit)
+* `ConsentRepository.list_all_active`
+* `ServicemenOverviewController.overview_df`
+* `ServicemenOverviewPage` + DI wiring + PageSpec

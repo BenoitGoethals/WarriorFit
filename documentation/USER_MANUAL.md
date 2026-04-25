@@ -12,6 +12,7 @@
   - [PLANNER](#planner)
   - [GUEST](#guest)
   - [ADMIN](#admin)
+  - [USER (Serviceman self-service)](#user-serviceman-self-service)
 - [Page Reference](#page-reference)
   - [Welcome](#welcome)
   - [Dashboard](#dashboard)
@@ -33,6 +34,9 @@
   - [Audit Logs](#audit-logs)
   - [Settings](#settings)
   - [Status Application](#status-application)
+  - [Servicemen Overview](#servicemen-overview)
+  - [My Progress](#my-progress)
+  - [Privacy](#privacy)
   - [About](#about)
 
 ---
@@ -52,18 +56,22 @@ WarriorFit is a military physical fitness test digitization platform. It allows 
 | **APTI** | Assistant PTI | Same access as PTI |
 | **PLANNER** | Training session planner | Create and manage test sessions |
 | **GUEST** | Read-only viewer | View unit status and individual test records |
-| **USER** | Basic user | Limited access |
+| **USER** | Serviceman self-service | View own test history (My Progress), manage GDPR consents and export own personal data (Privacy) |
 
 ---
 
 ## Logging In
 
 1. Open WarriorFit in your browser.
-2. Enter your **username** and **password**.
-3. Click **Sign In**.
-4. You will be redirected to the Welcome page.
+2. Choose your **Login mode**:
+   - **Application user** — admin / PTI / APTI / PLANNER / GUEST account.
+   - **Serviceman** — log in by your `service_number` to access your own test history and privacy settings (USER role).
+3. Enter your credentials and click **Sign In**.
+4. You will be redirected to the Welcome page (or My Progress for serviceman mode).
 
-Your role determines which pages and actions are available to you.
+> **Serviceman mode (current state):** the password field is not yet verified — real serviceman authentication (SSO / dedicated credentials) is planned. Logging in only requires a known `service_number`.
+
+Your role and login mode determine which pages and actions are available to you. In Serviceman mode you only see *My Progress*, *Privacy*, *About*, and *Logout* — Calendar and other operational menus are hidden.
 
 ---
 
@@ -273,6 +281,32 @@ As an Admin, you have full access to all PTI/APTI features plus system administr
 3. Review runtime metrics: memory usage, CPU, threads, uptime.
 4. Check the live log viewer for recent application logs.
 
+#### Reviewing Servicemen Privacy Status
+
+1. Go to **Admin > Servicemen Overview**.
+2. Each row shows a serviceman's identity fields plus one column per consent type (Terms Of Service, Privacy Policy, Health Data Processing).
+3. A timestamp in a consent column means the consent is currently granted; `—` means not granted.
+4. Use the column filters to find pending consents.
+
+---
+
+### USER (Serviceman self-service)
+
+When you log in via **Serviceman mode**, you have access to two pages plus About/Logout.
+
+#### Viewing Your Test Progress
+
+1. Go to **My Progress**.
+2. You see two grids — *This year* and *All history* — and a PHEF score chart over time.
+3. Click **🔄 Refresh** to reload after a new test has been recorded.
+
+#### Managing Your Privacy (GDPR)
+
+1. Go to **About > Privacy**.
+2. **Your consents (Art. 7):** click **Grant** or **Withdraw** next to each consent type. Each action is timestamped and audit-logged.
+3. **Export your data (Art. 15 / 20):** click **Prepare export**, then **Download JSON** to download `warriorfit-export.json` containing your serviceman record, all test results (with date), marches, reservations, and full consent history.
+4. **Erase your account (Art. 17):** *not available* — fitness records and the service file must be retained per organisational rules. For restriction or rectification requests, contact your unit admin or the Defence DPO.
+
 ---
 
 ## Page Reference
@@ -356,6 +390,21 @@ Admin-only. Configure unit name, database, HR integration, mail server, and file
 ### Status Application
 
 Admin-only. System health dashboard: service connectivity, runtime metrics (memory, CPU, threads, uptime), and live log viewer.
+
+### Servicemen Overview
+
+Admin-only. Lists every serviceman with their personal fields (Service #, Last Name, First Name, Mail, Rank, Gender, Birthdate, Unit, Para, Ops) plus one column per consent type showing the grant timestamp or `—`. Filterable; refresh button refreshes the grid.
+
+### My Progress
+
+USER-only (Serviceman login). Two grids — current-year tests and full history — and a Plotly line chart of PHEF score over time. Use **🔄 Refresh** to reload.
+
+### Privacy
+
+GDPR self-service for the logged-in serviceman:
+- **Consents (Art. 7):** grant or withdraw each consent type; each action is timestamped and audit-logged.
+- **Export (Art. 15 / 20):** prepare and download a JSON file containing your serviceman record, every fitness test (with date), marches, reservations, and full consent history.
+- **Erasure (Art. 17):** unavailable — retention rules require the service file to be kept; contact your unit admin or Defence DPO for restriction/rectification.
 
 ### About
 

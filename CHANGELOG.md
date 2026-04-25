@@ -5,6 +5,35 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-04-25] - GDPR Compliance & Servicemen Overview
+
+### Added
+- **GDPR / Privacy self-service** page (`warriorfit/ui/pages/privacy.py`) — Art. 7 grant/withdraw of consents, Art. 15/20 personal-data JSON export, Art. 13 link to the privacy notice
+- **Serviceman-scoped consent storage**: new `user_consents` table keyed by `service_number` (instead of `users.id`) so consent records survive application-user lifecycle and follow the data subject (the serviceman)
+- **Consent types** (with current versions): `terms_of_service`, `privacy_policy`, `health_data_processing`
+- **Serviceman login mode** on the login modal — choose between "Application user" and "Serviceman"; serviceman view is restricted to *My Progress* + *About* + *Logout* and hides Calendar nav
+- **My Progress** page (`warriorfit/ui/pages/my_progress.py`, USER role) — current-year tests grid, full history grid, PHEF progress chart (Plotly)
+- **GDPR JSON export** (`GdprService.export_serviceman_data`) — serviceman fields, fitness tests with date (`TestSession.datetime_start` joined via `SessionFitnessTests`), marches, reservations, full consent history
+- **Data-retention service** (`RetentionService`) — config-driven purge of fitness tests, marches, reservations, audit logs, HR messages
+- **Admin → Servicemen Overview** page (`warriorfit/ui/pages/servicemen_overview.py`, ADMIN-only) — DataGrid of all servicemen with personal fields and one column per consent type showing grant timestamp or `—`
+- **Compliance docs**: `documentation/compliance/PRIVACY_POLICY.md`, `documentation/compliance/DPIA.md`
+- New repository helpers: `ServicemenRepository.list_all_with_unit`, `ConsentRepository.list_all_active`, `list_for_serviceman`
+- Alembic migrations: `b2c3d4e5f6a7` (add `user_consents`), `c3d4e5f6a7b8` (cascade `service_men.user_id`), `d4e5f6a7b8c9` (rekey `user_consents` by `service_number`)
+- README links to compliance docs in the Project Structure section
+
+### Changed
+- "Erase your account (Art. 17)" replaced by an alert: erasure is unavailable because organisational/regulatory rules require fitness records and the service file to be retained — restriction or rectification requests must go via the unit admin or Defence DPO
+- Privacy page UI moved into the **About** menu group (with About)
+- `PrivacyController` is serviceman-scoped: `serviceman_serial(session_user)`, `consents/grant/withdraw/export_json` all take `service_number`
+- `ConsentService` / `ConsentRepository` API now use `service_number` everywhere
+- `GdprService.erase_user` cleans `user_consents` by `service_number`
+
+### Removed
+- `User.consents` ORM relationship (no longer applicable now that consents are serviceman-scoped)
+- "Erase your account" action button from the Privacy page (and its dead reactive handler)
+
+---
+
 ## [2026-03-29] - User Manual & Documentation
 
 ### Added

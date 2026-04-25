@@ -64,6 +64,11 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-03-21 : clarify reactive refresh strategy — `refresh_tick` for DataGrids (event-driven), `reactive.invalidate_later` for live metrics only
 * 2026-03-22 : Chronos XML import for cross results — upload race XML, validate against XSD, bulk-save runner times, auto-set `Cross.executed = True`; `lxml` added as dependency
 * 2026-03-29 : add [User Manual](documentation/USER_MANUAL.md) — step-by-step guide for all user roles (Admin, PTI, APTI, Planner, Guest)
+* 2026-04-25 : GDPR compliance pass — serviceman-scoped consent table (`user_consents` keyed by `service_number`),
+  Privacy self-service page (Art. 7 grant/withdraw, Art. 15/20 JSON export incl. test dates),
+  serviceman login mode, "My Progress" page (USER role) with PHEF chart,
+  data-retention service, and GDPR docs ([Privacy Policy](documentation/compliance/PRIVACY_POLICY.md), [DPIA](documentation/compliance/DPIA.md))
+* 2026-04-25 : new Admin → "Servicemen Overview" page — all servicemen with fields and per-consent grant status
 
 
 
@@ -261,6 +266,9 @@ The project documentation is structured in different documents:
 18. * [Security](SECURITY.md) (Done)
 19. * [User Manual](documentation/USER_MANUAL.md) (Done)
 20. * [MkDocs] (https://warriorfit.readthedocs.io/en/latest/) (In Development)
+21. * **Compliance / GDPR**:
+    * [Privacy Policy](documentation/compliance/PRIVACY_POLICY.md) (Done)
+    * [Data Protection Impact Assessment (DPIA)](documentation/compliance/DPIA.md) (Done)
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
