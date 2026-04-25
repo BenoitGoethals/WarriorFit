@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,35 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from warriorfit.config.settings_data import SettingsData
 from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.logic.singleton import Singleton
+
+_ENV_PATTERN = re.compile(r"\$\{([A-Z_][A-Z0-9_]*)(?::-([^}]*))?\}")
+
+
+def _resolve_env(value: Any) -> Any:
+    """Recursively replace ``${VAR}`` / ``${VAR:-default}`` placeholders in
+    YAML-loaded data with values from the process environment.
+
+    Raises ``KeyError`` when a referenced variable is unset and no default is
+    provided — this is intentional so missing prod secrets fail loudly instead
+    of silently degrading to empty strings.
+    """
+    if isinstance(value, dict):
+        return {k: _resolve_env(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_resolve_env(v) for v in value]
+    if isinstance(value, str):
+
+        def _sub(match: re.Match[str]) -> str:
+            var, default = match.group(1), match.group(2)
+            env_val = os.environ.get(var)
+            if env_val is not None:
+                return env_val
+            if default is not None:
+                return default
+            raise KeyError(f"Required environment variable '{var}' is not set")
+
+        return _ENV_PATTERN.sub(_sub, value)
+    return value
 
 
 class ApplicationConfig(metaclass=Singleton):
@@ -188,7 +218,8 @@ class ApplicationConfig(metaclass=Singleton):
         """
         try:
             with open(self.config_path, "r", encoding="utf-8") as file:
-                return yaml.safe_load(file)
+                raw = yaml.safe_load(file)
+            return _resolve_env(raw)
         except FileNotFoundError:
             raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
         except yaml.YAMLError as error:

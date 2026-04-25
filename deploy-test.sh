@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Docker container deployment script for WarriorFit API - TEST
-# Usage: WF_SECRET_KEY=<secret> ./deploy-test.sh
+# Usage:
+#   WF_SECRET_KEY=<...> WF_DB_PASSWORD=<...> WF_HR_API_KEY=<...> \
+#   WF_MAIL_PASSWORD=<...> ./deploy-test.sh
 
 set -e  # Exit on error
 
@@ -14,12 +16,16 @@ APP_PORT="8501"
 echo "=== WarriorFit Test Deployment ==="
 echo ""
 
-# Require secret key to be set in the environment
-if [ -z "${WF_SECRET_KEY}" ]; then
-    echo "ERROR: WF_SECRET_KEY environment variable is not set."
-    echo "Usage: WF_SECRET_KEY=<secret> ./deploy-test.sh"
-    exit 1
-fi
+# Require runtime secrets in the environment.
+# These replace plaintext values that previously lived in config_test.yml.
+required_vars=(WF_SECRET_KEY WF_DB_PASSWORD WF_HR_API_KEY WF_MAIL_PASSWORD)
+for v in "${required_vars[@]}"; do
+    if [ -z "${!v}" ]; then
+        echo "ERROR: ${v} environment variable is not set."
+        echo "Required: ${required_vars[*]}"
+        exit 1
+    fi
+done
 
 # 1. List all containers
 echo "Step 1: Listing all containers..."
@@ -59,6 +65,9 @@ sudo docker run -d \
     --name "${CONTAINER_NAME}" \
     -p "${PORT_MAPPING}" \
     -e WF_SECRET_KEY="${WF_SECRET_KEY}" \
+    -e WF_DB_PASSWORD="${WF_DB_PASSWORD}" \
+    -e WF_HR_API_KEY="${WF_HR_API_KEY}" \
+    -e WF_MAIL_PASSWORD="${WF_MAIL_PASSWORD}" \
     -e APP_ENV="${APP_ENV}" \
     -e APP_PORT="${APP_PORT}" \
     -v /etc/WarriorFit/config_test.yml:/etc/WarriorFit/config.yml \

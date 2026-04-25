@@ -1,8 +1,15 @@
 #!/bin/bash
 set -e  # Exit immediately if a command fails
 
-# Store token in a separate file, not hardcoded in the script
-export GH_TOKEN="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"
+# GH_TOKEN must be supplied by the calling environment (e.g. a systemd
+# EnvironmentFile=/etc/WarriorFit/deploy.env, mode 0600, root-owned).
+# It is intentionally NOT stored in this script so it is never committed.
+if [ -z "${GH_TOKEN}" ]; then
+  echo "ERROR: GH_TOKEN environment variable is not set." >&2
+  exit 1
+fi
+export GH_TOKEN
+
 LOG_FILE="/home/benoit/log/deploy.log"
 cd /home/benoit/projects/WarriorFit || exit 1
 
@@ -18,4 +25,4 @@ if [ "$BEFORE" != "$AFTER" ]; then
   sudo sh deploy.sh >> "$LOG_FILE" 2>&1
 else
   echo "[$(date)] No update." >> "$LOG_FILE"
-fi  # <-- This was missing!i
+fi

@@ -1,15 +1,15 @@
 db:
   database: warriorfit_test
   host: 192.168.0.30
-  password: ranger14
+  password: ${WF_DB_PASSWORD}
   port: 5432
   username: benoi
 hr:
-  url: http://192.168.0.30:8400
-  api_key: "warrior_secret"
+  url: ${WF_HR_URL:-http://192.168.0.30:8400}
+  api_key: ${WF_HR_API_KEY}
 mail:
   host: 192.168.0.30
-  password: R@nger&1401!
+  password: ${WF_MAIL_PASSWORD}
   port: 1025
   sender: noreplay.benoit@albatros.be
   sender_email: benoit@albatros.be
