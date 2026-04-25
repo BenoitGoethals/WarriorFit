@@ -24,7 +24,6 @@ class PrivacyPage(Page):
     ):
         super().__init__()
         self.controller = controller
-        self._export_payload: reactive.Value[str] = reactive.Value("")
 
     def refresh(self):
         self.refresh_tick.set(self.refresh_tick.get() + 1)
@@ -57,16 +56,13 @@ class PrivacyPage(Page):
                 ui.output_ui("privacy_export_download"),
                 ui.hr(),
                 ui.h4("Erase your account (Art. 17)"),
-                ui.p(
-                    ui.tags.strong("Warning:"),
-                    " this permanently deletes your user account, serviceman "
-                    "profile, fitness results, marches and reservations.",
-                    class_="text-danger",
-                ),
-                ui.input_action_button(
-                    "privacy_erase_btn",
-                    "Permanently delete my data",
-                    class_="btn btn-danger",
+                ui.div(
+                    ui.tags.strong("Not available. "),
+                    "By organisational regulations, your fitness records and "
+                    "service file must be retained for the statutory period and "
+                    "cannot be erased on request. Contact your unit admin or "
+                    "the Defence DPO for restriction or rectification requests.",
+                    class_="alert alert-warning",
                 ),
                 ui.output_text("privacy_status"),
                 class_="container-fluid p-4",
@@ -75,6 +71,7 @@ class PrivacyPage(Page):
 
     def server(self, input, output, session):
         status = reactive.Value("")
+        export_payload: reactive.Value[str] = reactive.Value("")
 
         @output
         @render.ui
@@ -83,7 +80,14 @@ class PrivacyPage(Page):
             user = UserStore.get_user()
             if user is None:
                 return ui.p("Log in to manage consents.")
-            consents = await self.controller.consents(user.id)
+            serial = PrivacyController.serviceman_serial(user)
+            if serial is None:
+                return ui.div(
+                    "Privacy actions are only available when logged in as a "
+                    "serviceman. Please log out and log in using Serviceman mode.",
+                    class_="alert alert-info",
+                )
+            consents = await self.controller.consents(serial)
             rows = []
             for ct in PrivacyController.available_consent_types():
                 active = next(
@@ -117,80 +121,78 @@ class PrivacyPage(Page):
                     )
             return ui.div(*rows)
 
-        def _register_consent_buttons():
-            for ct in PrivacyController.available_consent_types():
+        for ct in PrivacyController.available_consent_types():
+            grant_id = f"grant_{ct}"
+            withdraw_id = f"withdraw_{ct}"
 
-                def _make_grant(ct=ct):
-                    @reactive.Effect
-                    @reactive.event(getattr(input, f"grant_{ct}"))
-                    async def _grant():
-                        user = UserStore.get_user()
-                        if user is None:
-                            return
-                        ok = await self.controller.grant(user.id, ct)
-                        status.set(f"Consent '{ct}' granted." if ok else "Grant failed.")
+            def _bind_grant(ct=ct, grant_id=grant_id):
+                @reactive.effect
+                @reactive.event(input[grant_id])
+                async def _():
+                    serial = PrivacyController.serviceman_serial(UserStore.get_user())
+                    if serial is None:
+                        status.set("Log in as a serviceman to manage consents.")
+                        return
+                    try:
+                        ok = await self.controller.grant(serial, ct)
+                    except Exception as e:
+                        status.set(f"Grant '{ct}' error: {e}")
                         self.refresh()
+                        return
+                    status.set(f"Consent '{ct}' granted." if ok else f"Grant '{ct}' failed.")
+                    self.refresh()
 
-                    return _grant
-
-                def _make_withdraw(ct=ct):
-                    @reactive.Effect
-                    @reactive.event(getattr(input, f"withdraw_{ct}"))
-                    async def _withdraw():
-                        user = UserStore.get_user()
-                        if user is None:
-                            return
-                        ok = await self.controller.withdraw(user.id, ct)
-                        status.set(
-                            f"Consent '{ct}' withdrawn." if ok else "Withdraw failed."
-                        )
+            def _bind_withdraw(ct=ct, withdraw_id=withdraw_id):
+                @reactive.effect
+                @reactive.event(input[withdraw_id])
+                async def _():
+                    serial = PrivacyController.serviceman_serial(UserStore.get_user())
+                    if serial is None:
+                        status.set("Log in as a serviceman to manage consents.")
+                        return
+                    try:
+                        ok = await self.controller.withdraw(serial, ct)
+                    except Exception as e:
+                        status.set(f"Withdraw '{ct}' error: {e}")
                         self.refresh()
+                        return
+                    status.set(
+                        f"Consent '{ct}' withdrawn." if ok else f"Withdraw '{ct}' failed."
+                    )
+                    self.refresh()
 
-                    return _withdraw
+            _bind_grant()
+            _bind_withdraw()
 
-                _make_grant()
-                _make_withdraw()
-
-        _register_consent_buttons()
-
-        @reactive.Effect
+        @reactive.effect
         @reactive.event(input.privacy_export_btn)
         async def _on_export():
-            user = UserStore.get_user()
-            if user is None:
-                status.set("Not logged in.")
+            serial = PrivacyController.serviceman_serial(UserStore.get_user())
+            if serial is None:
+                status.set("Log in as a serviceman to export your data.")
                 return
-            payload = await self.controller.export_json(user.id)
+            try:
+                payload = await self.controller.export_json(serial)
+            except Exception as e:
+                status.set(f"Export error: {e}")
+                return
             if payload is None:
-                status.set("Export failed.")
+                status.set("Export failed (serviceman not found).")
                 return
-            self._export_payload.set(payload)
+            export_payload.set(payload)
             status.set("Export ready — click Download.")
 
         @output
         @render.ui
         def privacy_export_download():
-            payload = self._export_payload.get()
+            payload = export_payload.get()
             if not payload:
                 return ui.div()
             return ui.download_button("privacy_export_dl", "Download JSON")
 
         @session.download(filename="warriorfit-export.json")
         def privacy_export_dl():
-            yield self._export_payload.get()
-
-        @reactive.Effect
-        @reactive.event(input.privacy_erase_btn)
-        async def _on_erase():
-            user = UserStore.get_user()
-            if user is None:
-                status.set("Not logged in.")
-                return
-            ok = await self.controller.erase(user.id)
-            if ok:
-                status.set("Your data has been erased. Please log out.")
-            else:
-                status.set("Erasure failed.")
+            yield export_payload.get()
 
         @output
         @render.text

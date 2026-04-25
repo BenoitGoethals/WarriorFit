@@ -111,21 +111,21 @@ class MyProgressPage(Page):
         def mp_progress_chart():
             df = self.history_df_val.get()
             series = MyProgressController.progress_series(df)
+            series = series[series["Type"] == "PHEF"] if not series.empty else series
             if series.empty:
-                fig = px.line(title="No test data yet")
+                fig = px.line(title="No PHEF data yet")
                 fig.update_layout(
-                    xaxis_title="Date", yaxis_title="Score",
+                    xaxis_title="Date", yaxis_title="PHEF score",
                     margin=dict(l=20, r=20, t=40, b=20),
                 )
                 return fig
             fig = px.line(
-                series, x="Date", y="Score", color="Type", markers=True,
-                title="Your test scores over time",
+                series, x="Date", y="Score", markers=True,
+                title="PHEF score over time",
             )
             fig.update_layout(
-                xaxis_title="Date", yaxis_title="Score",
+                xaxis_title="Date", yaxis_title="PHEF score",
                 margin=dict(l=20, r=20, t=40, b=20),
-                legend_title_text="Test type",
             )
             return fig
 

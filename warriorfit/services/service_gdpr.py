@@ -15,6 +15,8 @@ from warriorfit.data.model.db_model import (
     PhefTest,
     Reservation,
     ServiceMen,
+    SessionFitnessTests,
+    TestSession,
     User,
     UserConsent,
 )
@@ -55,104 +57,99 @@ class GdprService(Service):
         self._march_repo = march_repository or MarchRepository()
         self._consent_repo = consent_repository or ConsentRepository()
 
-    async def export_user_data(self, user_id: int) -> Optional[Dict[str, Any]]:
-        user = await self._user_repo.get_user_by_id(user_id)
-        if user is None:
+    async def export_serviceman_data(self, service_number: str) -> Optional[Dict[str, Any]]:
+        if not service_number:
+            return None
+
+        serviceman = None
+        try:
+            async with self.SessionLocal() as session:
+                stmt = select(ServiceMen).where(ServiceMen.service_number == service_number)
+                serviceman = (await session.execute(stmt)).scalar_one_or_none()
+        except SQLAlchemyError as e:
+            self._logger.error("export: serviceman fetch failed: %s", e)
+            return None
+
+        if serviceman is None:
             return None
 
         out: Dict[str, Any] = {
             "export_generated_at": datetime.now().isoformat(),
-            "user": _row_to_dict(
-                user,
-                ["id", "username", "email", "role", "is_active", "serial_number", "created_at"],
-            ),
-            "serviceman": None,
-            "fitness_tests": [],
-            "marches": [],
-            "reservations": [],
-            "consents": [],
-        }
-
-        serviceman = None
-        if user.serial_number:
-            try:
-                async with self.SessionLocal() as session:
-                    stmt = select(ServiceMen).where(ServiceMen.user_id == user.id)
-                    serviceman = (await session.execute(stmt)).scalar_one_or_none()
-            except SQLAlchemyError as e:
-                self._logger.error("export: serviceman fetch failed: %s", e)
-
-        if serviceman:
-            out["serviceman"] = _row_to_dict(
+            "serviceman": _row_to_dict(
                 serviceman,
                 [
                     "id", "first_name", "last_name", "mail", "rank",
                     "service_number", "birthdate", "gender", "unit_id",
                     "para", "ops_test",
                 ],
-            )
-
-            out["fitness_tests"] = await self._export_fitness(serviceman.service_number)
-            out["marches"] = await self._export_marches(serviceman.service_number)
-            out["reservations"] = await self._export_reservations(serviceman.service_number)
-
-        consents = await self._consent_repo.list_for_user(user.id)
-        out["consents"] = [
-            _row_to_dict(
-                c,
-                ["id", "consent_type", "version", "consent_given_at", "withdrawn_at", "ip_address"],
-            )
-            for c in consents
-        ]
+            ),
+            "fitness_tests": await self._export_fitness(service_number),
+            "marches": await self._export_marches(service_number),
+            "reservations": await self._export_reservations(service_number),
+            "consents": [
+                _row_to_dict(
+                    c,
+                    [
+                        "id", "consent_type", "version",
+                        "consent_given_at", "withdrawn_at", "ip_address",
+                    ],
+                )
+                for c in await self._consent_repo.list_for_serviceman(service_number)
+            ],
+        }
 
         await self.add_audit_log(
             action="gdpr_export",
-            details=f"user_id={user_id}",
+            details=f"service_number={service_number}",
         )
         return out
 
     async def _export_fitness(self, service_number: str) -> List[Dict[str, Any]]:
         tests: List[Dict[str, Any]] = []
+
+        def _join(model):
+            return (
+                select(model, TestSession.datetime_start)
+                .outerjoin(
+                    SessionFitnessTests,
+                    SessionFitnessTests.fitness_test_id == model.id,
+                )
+                .outerjoin(
+                    TestSession,
+                    TestSession.id == SessionFitnessTests.session_id,
+                )
+                .where(model.serial_number == service_number)
+            )
+
         try:
             async with self.SessionLocal() as session:
-                phef = (
-                    await session.execute(
-                        select(PhefTest).where(PhefTest.serial_number == service_number)
-                    )
-                ).scalars().all()
-                combat = (
-                    await session.execute(
-                        select(CombatTestParatrooper).where(
-                            CombatTestParatrooper.serial_number == service_number
-                        )
-                    )
-                ).scalars().all()
-                swim = (
-                    await session.execute(
-                        select(CombatSwimmingTest).where(
-                            CombatSwimmingTest.serial_number == service_number
-                        )
-                    )
-                ).scalars().all()
-                func = (
-                    await session.execute(
-                        select(FunctionalTest).where(
-                            FunctionalTest.serial_number == service_number
-                        )
-                    )
-                ).scalars().all()
+                phef = (await session.execute(_join(PhefTest))).all()
+                combat = (await session.execute(_join(CombatTestParatrooper))).all()
+                swim = (await session.execute(_join(CombatSwimmingTest))).all()
+                func = (await session.execute(_join(FunctionalTest))).all()
 
-            for t in phef:
-                tests.append({"type": "phef", "id": t.id, "running_time": t.running_time,
-                              "sideBridge_r": t.sideBridge_r, "sideBridge_l": t.sideBridge_l})
-            for t in combat:
-                tests.append({"type": "combat", "id": t.id, "running_time": t.running_time,
-                              "obstacle_passed": t.obstacle_passed, "rope_passed": t.rope_passed})
-            for t in swim:
-                tests.append({"type": "swim", "id": t.id, "swim_passed": t.swim_paased})
-            for t in func:
-                tests.append({"type": "functional", "id": t.id, "push_ups": t.push_ups,
-                              "sit_ups": t.sit_ups, "pull_ups": t.pull_ups})
+            for t, dt in phef:
+                tests.append({
+                    "type": "phef", "id": t.id, "date": _to_jsonable(dt),
+                    "running_time": t.running_time,
+                    "sideBridge_r": t.sideBridge_r, "sideBridge_l": t.sideBridge_l,
+                })
+            for t, dt in combat:
+                tests.append({
+                    "type": "combat", "id": t.id, "date": _to_jsonable(dt),
+                    "running_time": t.running_time,
+                    "obstacle_passed": t.obstacle_passed, "rope_passed": t.rope_passed,
+                })
+            for t, dt in swim:
+                tests.append({
+                    "type": "swim", "id": t.id, "date": _to_jsonable(dt),
+                    "swim_passed": t.swim_paased,
+                })
+            for t, dt in func:
+                tests.append({
+                    "type": "functional", "id": t.id, "date": _to_jsonable(dt),
+                    "push_ups": t.push_ups, "sit_ups": t.sit_ups, "pull_ups": t.pull_ups,
+                })
         except SQLAlchemyError as e:
             self._logger.error("export: fitness fetch failed: %s", e)
         return tests
@@ -226,9 +223,12 @@ class GdprService(Service):
                                 ServiceMen.service_number == service_number
                             )
                         )
-                    await session.execute(
-                        delete(UserConsent).where(UserConsent.user_id == user.id)
-                    )
+                    if service_number:
+                        await session.execute(
+                            delete(UserConsent).where(
+                                UserConsent.service_number == service_number
+                            )
+                        )
                     await session.execute(delete(User).where(User.id == user.id))
         except SQLAlchemyError as e:
             self._logger.error("erase_user failed for %d: %s", user_id, e)

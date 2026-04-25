@@ -34,13 +34,13 @@ class ConsentService(Service):
 
     async def grant(
         self,
-        user_id: int,
+        service_number: str,
         consent_type: str,
         ip_address: Optional[str] = None,
     ) -> Optional[UserConsent]:
         version = CURRENT_CONSENT_VERSIONS[consent_type]
         record = await self._consent_repo.record_consent(
-            user_id=user_id,
+            service_number=service_number,
             consent_type=consent_type,
             version=version,
             ip_address=ip_address,
@@ -48,32 +48,32 @@ class ConsentService(Service):
         if record:
             await self.add_audit_log(
                 action="consent_grant",
-                details=f"{consent_type} v{version}",
+                details=f"{consent_type} v{version} serial={service_number}",
                 ip_address=ip_address,
             )
         return record
 
     async def withdraw(
-        self, user_id: int, consent_type: str, ip_address: Optional[str] = None
+        self, service_number: str, consent_type: str, ip_address: Optional[str] = None
     ) -> bool:
         version = CURRENT_CONSENT_VERSIONS[consent_type]
         ok = await self._consent_repo.withdraw_consent(
-            user_id=user_id, consent_type=consent_type, version=version
+            service_number=service_number, consent_type=consent_type, version=version
         )
         if ok:
             await self.add_audit_log(
                 action="consent_withdraw",
-                details=f"{consent_type} v{version}",
+                details=f"{consent_type} v{version} serial={service_number}",
                 ip_address=ip_address,
             )
         return ok
 
-    async def has_valid_consent(self, user_id: int, consent_type: str) -> bool:
+    async def has_valid_consent(self, service_number: str, consent_type: str) -> bool:
         version = CURRENT_CONSENT_VERSIONS[consent_type]
         record = await self._consent_repo.get_active_consent(
-            user_id=user_id, consent_type=consent_type, version=version
+            service_number=service_number, consent_type=consent_type, version=version
         )
         return record is not None
 
-    async def list_for_user(self, user_id: int) -> List[UserConsent]:
-        return await self._consent_repo.list_for_user(user_id)
+    async def list_for_serviceman(self, service_number: str) -> List[UserConsent]:
+        return await self._consent_repo.list_for_serviceman(service_number)

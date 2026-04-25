@@ -43,6 +43,7 @@ from warriorfit.ui.pages import (
     privacy,
     reports,
     reserve_fitness_room,
+    servicemen_overview,
     sessions,
     settings,
     status_application,
@@ -313,6 +314,13 @@ class FitnessWarriorApp:
                 group="Admin",
                 ui_factory=status_application.get_ui,
                 server_factory=status_application.server,
+                allowed_roles={Role.ADMIN},
+            ),
+            PageSpec(
+                tab="Servicemen Overview",
+                group="Admin",
+                ui_factory=servicemen_overview.get_ui,
+                server_factory=servicemen_overview.server,
                 allowed_roles={Role.ADMIN},
             ),
             PageSpec(

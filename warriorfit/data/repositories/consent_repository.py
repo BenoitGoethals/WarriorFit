@@ -16,13 +16,13 @@ class ConsentRepository(ABCRepository):
 
     async def record_consent(
         self,
-        user_id: int,
+        service_number: str,
         consent_type: str,
         version: str,
         ip_address: Optional[str] = None,
     ) -> Optional[UserConsent]:
         consent = UserConsent(
-            user_id=user_id,
+            service_number=service_number,
             consent_type=consent_type,
             version=version,
             ip_address=ip_address,
@@ -34,20 +34,22 @@ class ConsentRepository(ABCRepository):
                 await session.refresh(consent)
                 return consent
         except IntegrityError:
-            existing = await self.get_active_consent(user_id, consent_type, version)
+            existing = await self.get_active_consent(service_number, consent_type, version)
             return existing
         except SQLAlchemyError as e:
-            self._logger.error("record_consent failed for user %d: %s", user_id, e)
+            self._logger.error(
+                "record_consent failed for serviceman %s: %s", service_number, e
+            )
             return None
 
     async def withdraw_consent(
-        self, user_id: int, consent_type: str, version: str
+        self, service_number: str, consent_type: str, version: str
     ) -> bool:
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
                     stmt = select(UserConsent).where(
-                        UserConsent.user_id == user_id,
+                        UserConsent.service_number == service_number,
                         UserConsent.consent_type == consent_type,
                         UserConsent.version == version,
                         UserConsent.withdrawn_at.is_(None),
@@ -58,14 +60,16 @@ class ConsentRepository(ABCRepository):
                     row.withdrawn_at = datetime.now()  # type: ignore[assignment]
                     return True
         except SQLAlchemyError as e:
-            self._logger.error("withdraw_consent failed for user %d: %s", user_id, e)
+            self._logger.error(
+                "withdraw_consent failed for serviceman %s: %s", service_number, e
+            )
             return False
 
     async def get_active_consent(
-        self, user_id: int, consent_type: str, version: str
+        self, service_number: str, consent_type: str, version: str
     ) -> Optional[UserConsent]:
         stmt = select(UserConsent).where(
-            UserConsent.user_id == user_id,
+            UserConsent.service_number == service_number,
             UserConsent.consent_type == consent_type,
             UserConsent.version == version,
             UserConsent.withdrawn_at.is_(None),
@@ -73,7 +77,12 @@ class ConsentRepository(ABCRepository):
         results = await self.fetch_and_log(stmt, "user_consent")
         return results[0] if results else None
 
-    async def list_for_user(self, user_id: int) -> List[UserConsent]:
-        stmt = select(UserConsent).where(UserConsent.user_id == user_id)
+    async def list_for_serviceman(self, service_number: str) -> List[UserConsent]:
+        stmt = select(UserConsent).where(UserConsent.service_number == service_number)
+        results = await self.fetch_and_log(stmt, "user_consents")
+        return list(results) if results else []
+
+    async def list_all_active(self) -> List[UserConsent]:
+        stmt = select(UserConsent).where(UserConsent.withdrawn_at.is_(None))
         results = await self.fetch_and_log(stmt, "user_consents")
         return list(results) if results else []

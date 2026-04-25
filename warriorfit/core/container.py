@@ -52,6 +52,9 @@ from warriorfit.ui.controllers.reports_controller import ReportsController
 from warriorfit.ui.controllers.reserve_fitness_room_controller import (
     ReserveFitnessRoomController,
 )
+from warriorfit.ui.controllers.servicemen_overview_controller import (
+    ServicemenOverviewController,
+)
 from warriorfit.ui.controllers.session_controller import SessionsController
 from warriorfit.ui.controllers.setting_controller import SettingsController
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
@@ -100,6 +103,7 @@ class Container(containers.DeclarativeContainer):
             "warriorfit.ui.pages.settings",
             "warriorfit.ui.pages.privacy",
             "warriorfit.ui.pages.my_progress",
+            "warriorfit.ui.pages.servicemen_overview",
         ]
     )
 
@@ -354,4 +358,9 @@ class Container(containers.DeclarativeContainer):
     my_progress_controller = providers.Singleton(
         MyProgressController,
         data_collector=data_collector,
+    )
+    servicemen_overview_controller = providers.Singleton(
+        ServicemenOverviewController,
+        servicemen_repository=servicemen_repository,
+        consent_repository=consent_repository,
     )
