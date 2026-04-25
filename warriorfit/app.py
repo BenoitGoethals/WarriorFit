@@ -710,6 +710,28 @@ class FitnessWarriorApp:
                     ui.input_text("username_login", None, placeholder="Enter username"),
                     ui.tags.label("Password", for_="password_login", class_="form-label mt-2"),
                     ui.input_password("password_login", None, placeholder="Enter password"),
+                    ui.tags.script(
+                        """
+                        (function() {
+                            function updateLoginLabels() {
+                                const mode = $('input[name="login_mode"]:checked').val();
+                                const usernameLabel = $('label[for="username_login"]');
+                                const usernameInput = $('#username_login');
+
+                                if (mode === 'serviceman') {
+                                    usernameLabel.text('Service number');
+                                    usernameInput.attr('placeholder', 'Enter service number');
+                                } else {
+                                    usernameLabel.text('Username');
+                                    usernameInput.attr('placeholder', 'Enter username');
+                                }
+                            }
+
+                            $(document).on('change', 'input[name="login_mode"]', updateLoginLabels);
+                            setTimeout(updateLoginLabels, 0);
+                        })();
+                        """
+                    ),
                     ui.input_action_button(
                         "handle_login", "Sign In", class_="btn btn-primary w-100 mt-3"
                     ),
