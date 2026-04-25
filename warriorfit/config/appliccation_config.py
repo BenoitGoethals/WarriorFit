@@ -72,6 +72,11 @@ class ApplicationConfig(metaclass=Singleton):
         self.__config_db: AsyncEngine | None = None
 
         self.__version: tuple[str, str, str] | None = None
+        self.__gdpr: dict[str, int] = {
+            "fitness_retention_days": 1825,
+            "audit_retention_days": 365,
+            "hr_message_retention_days": 90,
+        }
         self.load_config()
 
     @property
@@ -115,6 +120,10 @@ class ApplicationConfig(metaclass=Singleton):
         if not self._settings_data.own_unit:
             raise ValueError("Configuration not loaded. Call load_config() first.")
         return self._settings_data.own_unit
+
+    @property
+    def gdpr_retention(self) -> dict[str, int]:
+        return dict(self.__gdpr)
 
     @property
     def mail_server(self) -> SmtpConfig:
@@ -165,6 +174,11 @@ class ApplicationConfig(metaclass=Singleton):
             version_config["version"],
             version_config["date"],
         )
+
+        gdpr_cfg = config.get("gdpr") or {}
+        for key in self.__gdpr:
+            if key in gdpr_cfg:
+                self.__gdpr[key] = int(gdpr_cfg[key])
 
         self.__config_db = self._setup_database_connection()
 

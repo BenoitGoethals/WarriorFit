@@ -63,6 +63,10 @@ class ServicemenRepository(ABCRepository):
         query = select(ServiceMen)
         return await self.fetch_and_log(query, "ServiceMen")
 
+    async def list_all_with_unit(self) -> list[ServiceMen]:
+        query = select(ServiceMen).options(selectinload(ServiceMen.unit))
+        return await self.fetch_and_log(query, "ServiceMen")
+
     async def list_by_unit_name(
         self, unit_name: str, limit: int = 100, offset: int = 0
     ) -> list[ServiceMen]:

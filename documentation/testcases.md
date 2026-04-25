@@ -715,6 +715,121 @@ Test status: `[x]` = implemented/passing, `[ ]` = pending.
 
 ---
 
+## Epic 20: GDPR / Privacy & Self-Service
+
+### Story 20.1: Serviceman Login Mode [3 points]
+
+**Functional Tests:**
+- [x] Login modal exposes a "Login mode" radio: "Application user" (default) / "Serviceman"
+- [x] Selecting "Serviceman" and entering an existing `service_number` logs in successfully (password skipped — TODO marker)
+- [x] Unknown service number → inline error "Unknown service number."
+- [x] After serviceman login: navbar shows ONLY *My Progress*, *About*, *Privacy*, *Logout*
+- [x] Calendar nav controls hidden in serviceman mode
+- [x] Tests, Cross/Runs, Admin menus hidden in serviceman mode
+- [x] Audit log records `login_serviceman` with the service number
+- [x] Logout in serviceman mode clears `session.login_mode` and resets the navbar
+
+**Security Tests:**
+- [ ] Real serviceman authentication (SSO / dedicated creds) — TODO follow-up
+- [x] Password input is ignored in serviceman branch (no leakage to user log)
+
+---
+
+### Story 20.2: My Progress Page [5 points]
+
+**Functional Tests:**
+- [x] Page accessible to USER role only
+- [x] "This year" grid shows only current-year tests for the logged-in serviceman
+- [x] "All history" grid shows full test history
+- [x] Header shows `username · service_number`
+- [x] Empty serial_number → "Your account has no service number attached — no tests to show."
+- [x] Plotly chart filtered to PHEF only — no other test types in the line
+- [x] Empty PHEF history → chart shows "No PHEF data yet"
+- [x] "🔄 Refresh" button reloads both grids and chart
+- [x] DataGrids use consistent column set: Date, Type, Total, Result
+
+**UI Tests:**
+- [x] Chart x-axis labelled "Date", y-axis labelled "PHEF score"
+- [x] Markers visible on the line chart (`px.line(..., markers=True)`)
+
+---
+
+### Story 20.3: Consent Grant / Withdraw (Art. 7) [5 points]
+
+**Functional Tests:**
+- [x] Three consent types listed: Terms Of Service, Privacy Policy, Health Data Processing
+- [x] "Grant" button shown when no active consent for that type
+- [x] "Withdraw" button shown when an active consent exists, with the grant timestamp
+- [x] Granting inserts a row in `user_consents` keyed by `service_number`
+- [x] Withdrawing sets `withdrawn_at` (does NOT delete the row)
+- [x] Re-granting after a withdrawal inserts a new active row
+- [x] Status text updates: "Consent 'X' granted." / "Consent 'X' withdrawn." / "Grant 'X' failed."
+- [x] DB exceptions surface in the status text (no silent failure)
+- [x] Audit log records `consent_grant` and `consent_withdraw` with serial + version
+- [x] Logged-in as application user (not serviceman) → shows "log in as a serviceman" notice; no buttons rendered
+
+**Schema Tests:**
+- [x] Unique constraint on (`service_number`, `consent_type`, `version`)
+- [x] `service_number` indexed
+- [x] Alembic migration `d4e5f6a7b8c9` upgrades and downgrades cleanly
+
+---
+
+### Story 20.4: Personal-Data JSON Export (Art. 15 / 20) [5 points]
+
+**Functional Tests:**
+- [x] "Prepare export" → status shows "Export ready — click Download."
+- [x] "Download JSON" appears only after export prepared
+- [x] Download file named `warriorfit-export.json`
+- [x] Payload contains: `serviceman`, `fitness_tests`, `marches`, `reservations`, `consents`
+- [x] Each fitness test entry includes a `date` field (from `TestSession.datetime_start`)
+- [x] Test with no associated session → `date` is `null`
+- [x] Datetime values ISO-formatted (`YYYY-MM-DDTHH:MM:SS`)
+- [x] `consents` list includes BOTH active and withdrawn records (full history)
+- [x] Audit log records `gdpr_export` with the service number
+- [x] Errors surface in status text, no silent failures
+- [x] Logged-in as application user (no service number) → "Log in as a serviceman to export your data."
+
+---
+
+### Story 20.5: Erasure Notice (Art. 17) [1 point]
+
+**Functional Tests:**
+- [x] Privacy page shows a Bootstrap warning alert under "Erase your account (Art. 17)"
+- [x] No "Erase" action button is rendered
+- [x] No reactive handler listens to `privacy_erase_btn` (dead code removed)
+- [x] Notice text mentions retention rules and points to unit admin / Defence DPO
+
+---
+
+### Story 20.6: Data-Retention Purge Service [3 points]
+
+**Functional Tests:**
+- [x] `RetentionService.purge_all()` deletes fitness tests older than `fitness_retention_days`
+- [x] Marches older than `fitness_retention_days` purged
+- [x] Reservations older than `fitness_retention_days` purged
+- [x] Audit logs older than `audit_retention_days` purged
+- [x] HR messages older than `hr_message_retention_days` purged
+- [x] Defaults applied if `gdpr:` block missing in YAML (1825 / 365 / 90 days)
+- [x] Cutoffs read from `ApplicationConfig.gdpr_retention`
+
+---
+
+### Story 20.7: Admin Servicemen Overview [3 points]
+
+**Functional Tests:**
+- [x] Page accessible only to ADMIN role
+- [x] DataGrid shows columns: Service #, Last Name, First Name, Mail, Rank, Gender, Birthdate, Unit, Para, Ops
+- [x] One additional column per consent type (Terms Of Service, Privacy Policy, Health Data Processing)
+- [x] Consent column shows the grant timestamp (ISO) when granted, `—` otherwise
+- [x] Internal `ID` column NOT displayed
+- [x] "🔄 Refresh" button reloads the grid
+- [x] Refresh-on-nav: navigating to the tab refreshes the data
+- [x] Filterable on every column
+- [x] Unit name resolved via eager-loaded relationship (no N+1)
+
+---
+
 ## Cross-Cutting Test Cases
 
 ### Security
