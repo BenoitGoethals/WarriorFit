@@ -9,6 +9,28 @@ from warriorfit.core.container import Container
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.pages.page import Page
 
+_FAILED_STYLE = {"color": "orange", "font-weight": "bold"}
+
+
+def _failed_styles(df: pd.DataFrame, columns: list[str]) -> list[dict]:
+    """Return DataGrid `styles` entries that color any cell containing
+    'failed' (case-insensitive) in the given columns orange."""
+    styles: list[dict] = []
+    if df is None or df.empty:
+        return styles
+    for col in columns:
+        if col not in df.columns:
+            continue
+        col_idx = df.columns.get_loc(col)
+        failed_rows = [
+            i for i, v in enumerate(df[col]) if "failed" in str(v).lower()
+        ]
+        if failed_rows:
+            styles.append(
+                {"rows": failed_rows, "cols": [col_idx], "style": _FAILED_STYLE}
+            )
+    return styles
+
 
 class OwnUnitPage(Page):
     @inject
@@ -93,6 +115,10 @@ class OwnUnitPage(Page):
                 filters=True,
                 selection_mode="rows",
                 width="100%",
+                styles=_failed_styles(
+                    df,
+                    ["Phef status", "Combat status", "Swim status", "March status"],
+                ),
             )
 
         @reactive.Effect
@@ -152,6 +178,7 @@ class OwnUnitPage(Page):
                 filters=False,
                 selection_mode="none",
                 width="100%",
+                styles=_failed_styles(df, ["Status"]),
             )
 
         @reactive.Effect
