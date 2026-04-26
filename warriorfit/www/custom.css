@@ -763,7 +763,13 @@ hr { border-color: var(--wf-border) !important; margin: 1rem 0 !important; }
 }
 
 /* Serial Number — highlighted lookup field */
+.wf-serial-input,
+.wf-serial-input .shiny-input-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
 .wf-serial-input .form-control {
+  width: 100% !important;
   border: 2px solid var(--wf-primary-light) !important;
   background: #eef4ff !important;
   font-weight: 600 !important;
