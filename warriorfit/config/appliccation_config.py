@@ -77,6 +77,14 @@ class ApplicationConfig(metaclass=Singleton):
             "audit_retention_days": 365,
             "hr_message_retention_days": 90,
         }
+        # Broker outbox tunables; values can be overridden in the YAML's `broker:` block.
+        self.__broker: dict[str, int] = {
+            "poll_interval_s": 5,
+            "batch_size": 5,
+            "max_attempts": 10,
+            "base_backoff_s": 5,
+            "max_backoff_s": 600,
+        }
         self.load_config()
 
     @property
@@ -124,6 +132,27 @@ class ApplicationConfig(metaclass=Singleton):
     @property
     def gdpr_retention(self) -> dict[str, int]:
         return dict(self.__gdpr)
+
+    # ---- Broker tunables (read by warriorfit/mom/broker.py) ----
+    @property
+    def broker_poll_interval_s(self) -> int:
+        return int(self.__broker["poll_interval_s"])
+
+    @property
+    def broker_batch_size(self) -> int:
+        return int(self.__broker["batch_size"])
+
+    @property
+    def broker_max_attempts(self) -> int:
+        return int(self.__broker["max_attempts"])
+
+    @property
+    def broker_base_backoff_s(self) -> int:
+        return int(self.__broker["base_backoff_s"])
+
+    @property
+    def broker_max_backoff_s(self) -> int:
+        return int(self.__broker["max_backoff_s"])
 
     @property
     def mail_server(self) -> SmtpConfig:
@@ -181,6 +210,11 @@ class ApplicationConfig(metaclass=Singleton):
         for key in self.__gdpr:
             if key in gdpr_cfg:
                 self.__gdpr[key] = int(gdpr_cfg[key])
+
+        broker_cfg = config.get("broker") or {}
+        for key in self.__broker:
+            if key in broker_cfg:
+                self.__broker[key] = int(broker_cfg[key])
 
         self.__config_db = self._setup_database_connection()
 
