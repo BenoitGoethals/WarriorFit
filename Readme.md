@@ -40,7 +40,7 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-01-18: Testing completed, release to 1.0 RC
 * 2026-01-19: added search in tests sessions
 * 2026-01-27: update retrospective
-* 2026-01-27: demo video uploaded https://youtu.be/bblCsxhbMEg
+* 2026-01-27: demo video uploaded https://youtu.be/wZveSgpKTf8
 * 2026-01-28: make HRM simulator API secure with key:
 * 2026-02-01: setup nginx reverse proxy
 * 2026-02-02: Cross app and api SSL/HTTPS Support**: Encrypted communication with SSL certificates
@@ -84,6 +84,9 @@ Annually, every soldier must complete the **PHEF** (Physical Fitness Evaluation 
 Currently, much of this process is manual, leading to inefficiency, errors, and administrative delays.
 
 The system includes user management, test input, calculations, PDF reporting, and email distribution. It is designed for local server deployment within Defense.
+
+## Project Demo
+https://youtu.be/wZveSgpKTf8
 
 ## Code Evolution
 
