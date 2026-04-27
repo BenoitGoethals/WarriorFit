@@ -582,13 +582,28 @@ class FitnessWarriorApp:
                 if about_menu is not None:
                     nav_items.append(about_menu)
             else:
-                # Root pages first (flat), except About
+                # Root pages first (flat), except About.
+                # Special case: insert the "Psychical Tests" menu immediately
+                # after the Dashboard tab so it sits next to it in the navbar.
+                psychical_menu = _build_menu("Psychical Tests", pages_for_role)
+                psychical_inserted = False
                 for p in pages_for_role:
                     if p.group == "root" and p.tab != "About":
                         nav_items.append(_safe_panel(p.ui_factory()))
+                        if (
+                            p.tab == "Dashboard"
+                            and psychical_menu is not None
+                            and not psychical_inserted
+                        ):
+                            nav_items.append(psychical_menu)
+                            psychical_inserted = True
 
-                # Grouped menus
-                nav_items.append(_build_menu("Psychical Tests", pages_for_role))
+                # Fallback: if Dashboard wasn't visible to this role, append the
+                # Psychical Tests menu in its old position so it isn't dropped.
+                if psychical_menu is not None and not psychical_inserted:
+                    nav_items.append(psychical_menu)
+
+                # Remaining grouped menus
                 nav_items.append(_build_menu("Cross/Runs", pages_for_role))
                 nav_items.append(_build_menu("Admin", pages_for_role))
 
