@@ -1,0 +1,375 @@
+/* ============================================================
+   WarriorFit — Military Theme (overrides custom.css)
+   ============================================================
+   Palette: olive drab (OD-7), khaki, sand, OD green, charcoal.
+   Typography: Black Ops One / Stardos Stencil for headings,
+   Roboto Mono for tactical codes (serials, IDs, JSON), system
+   sans for body text.
+   This file is loaded *after* custom.css so it can override
+   design tokens and component rules without editing the base.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Stardos+Stencil:wght@400;700&family=Roboto+Mono:wght@400;500;700&display=swap');
+
+/* ---- Re-define design tokens with military palette ---- */
+:root {
+  --wf-primary:       #4a5d23;   /* olive drab OD-7 */
+  --wf-primary-mid:   #5b6e2c;
+  --wf-primary-light: #6b8044;
+  --wf-accent:        #c2b280;   /* khaki / sand */
+  --wf-accent-dark:   #8c7d52;
+  --wf-success:       #556b2f;   /* dark olive green */
+  --wf-success-light: #6b8e23;
+  --wf-danger:        #7a2929;   /* brick / signal red */
+  --wf-danger-light:  #a13a3a;
+  --wf-warning:       #b08a2e;   /* desert amber */
+  --wf-info:          #3d5a80;   /* steel blue (low-vis) */
+  --wf-bg:            #ece6d3;   /* canvas / map paper */
+  --wf-card-bg:       #f5f0df;   /* lighter canvas */
+  --wf-text:          #1f2125;   /* charcoal */
+  --wf-text-muted:    #5a5648;
+  --wf-border:        #b9a98a;   /* webbing tan */
+  --wf-shadow:        0 1px 2px rgba(0,0,0,0.20), 0 2px 4px rgba(0,0,0,0.12);
+  --wf-shadow-md:     0 3px 8px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.14);
+  --wf-shadow-lg:     0 8px 22px rgba(0,0,0,0.30), 0 4px 8px rgba(0,0,0,0.16);
+  --wf-radius:        2px;       /* blocky / military, not rounded */
+  --wf-radius-sm:     0px;
+  --wf-radius-lg:     3px;
+
+  /* Military-only tokens */
+  --mil-stencil:      "Stardos Stencil", "Black Ops One", "Impact", sans-serif;
+  --mil-tactical:     "Roboto Mono", "Menlo", "Consolas", monospace;
+  --mil-od-dark:      #2f3a17;
+  --mil-od-mid:       #3a4a1a;
+  --mil-canvas-line:  rgba(74, 93, 35, 0.18);
+}
+
+/* ============================================================
+   Body — canvas background with subtle topo-map grid
+   ============================================================ */
+body {
+  background-color: var(--wf-bg) !important;
+  background-image:
+    linear-gradient(var(--mil-canvas-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mil-canvas-line) 1px, transparent 1px) !important;
+  background-size: 32px 32px, 32px 32px !important;
+  color: var(--wf-text) !important;
+}
+
+/* ============================================================
+   Headings — stencil
+   ============================================================ */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--mil-stencil) !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--mil-od-dark) !important;
+}
+
+/* ============================================================
+   Navbar — OD green with sand accent stripe
+   ============================================================ */
+.navbar,
+.bslib-page-navbar > .navbar {
+  background:
+    linear-gradient(180deg, var(--mil-od-dark) 0%, var(--wf-primary) 100%) !important;
+  border-bottom: 3px solid var(--wf-accent) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.45) !important;
+}
+
+.navbar-brand {
+  font-family: var(--mil-stencil) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.10em !important;
+  text-transform: uppercase !important;
+  color: var(--wf-accent) !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+}
+
+.navbar .nav-link,
+.bslib-page-navbar .nav-link {
+  font-family: var(--mil-stencil) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  color: rgba(245, 240, 223, 0.85) !important;
+}
+.navbar .nav-link:hover,
+.navbar .nav-link.active,
+.bslib-page-navbar .nav-link:hover,
+.bslib-page-navbar .nav-link.active {
+  color: var(--wf-accent) !important;
+  background: rgba(194, 178, 128, 0.18) !important;
+}
+
+.navbar .dropdown-menu,
+.bslib-page-navbar .dropdown-menu {
+  background: var(--mil-od-dark) !important;
+  border: 1px solid var(--wf-accent-dark) !important;
+  border-radius: var(--wf-radius) !important;
+}
+.navbar .dropdown-item,
+.bslib-page-navbar .dropdown-item {
+  color: rgba(245, 240, 223, 0.85) !important;
+  font-family: var(--mil-stencil) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+.navbar .dropdown-item:hover {
+  background: var(--wf-primary) !important;
+  color: var(--wf-accent) !important;
+}
+
+/* ============================================================
+   Cards — ammo-box style, no rounded corners
+   ============================================================ */
+.card {
+  background-color: var(--wf-card-bg) !important;
+  border: 1px solid var(--wf-border) !important;
+  border-left: 4px solid var(--wf-primary) !important;
+  border-radius: var(--wf-radius) !important;
+  box-shadow: var(--wf-shadow) !important;
+}
+
+.card-header {
+  font-family: var(--mil-stencil) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  border-bottom: 2px solid var(--wf-primary) !important;
+  border-radius: 0 !important;
+  background-color: var(--wf-primary) !important;
+  color: var(--wf-accent) !important;
+}
+
+/* Bootstrap colour-coded card headers re-tinted to military palette */
+.card-header.bg-primary    { background-color: var(--wf-primary)    !important; color: var(--wf-accent) !important; border-bottom-color: var(--mil-od-dark) !important; }
+.card-header.bg-secondary  { background-color: #4b4a3e             !important; color: var(--wf-accent) !important; border-bottom-color: #2d2c25 !important; }
+.card-header.bg-success    { background-color: var(--wf-success)    !important; color: #f5f0df !important; border-bottom-color: var(--mil-od-dark) !important; }
+.card-header.bg-info       { background-color: var(--wf-info)       !important; color: #f5f0df !important; border-bottom-color: #243a55 !important; }
+.card-header.bg-warning    { background-color: var(--wf-warning)    !important; color: var(--mil-od-dark) !important; border-bottom-color: #6b5519 !important; }
+.card-header.bg-danger     { background-color: var(--wf-danger)     !important; color: #f5f0df !important; border-bottom-color: #4a1818 !important; }
+.card-header.bg-dark       { background-color: var(--mil-od-dark)   !important; color: var(--wf-accent) !important; border-bottom-color: #1a1f0e !important; }
+
+/* Coloured left-border accent that follows the header colour */
+.card:has(> .card-header.bg-success)   { border-left-color: var(--wf-success) !important; }
+.card:has(> .card-header.bg-info)      { border-left-color: var(--wf-info) !important; }
+.card:has(> .card-header.bg-warning)   { border-left-color: var(--wf-warning) !important; }
+.card:has(> .card-header.bg-danger)    { border-left-color: var(--wf-danger) !important; }
+.card:has(> .card-header.bg-secondary) { border-left-color: #4b4a3e !important; }
+
+/* ============================================================
+   Buttons — flat OD with sand text, blocky corners
+   ============================================================ */
+.btn {
+  border-radius: var(--wf-radius) !important;
+  font-family: var(--mil-stencil) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-weight: 400 !important;
+  transition: background var(--wf-ease), border-color var(--wf-ease), color var(--wf-ease) !important;
+}
+
+.btn-primary {
+  background-color: var(--wf-primary) !important;
+  border-color: var(--mil-od-dark) !important;
+  color: var(--wf-accent) !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--mil-od-mid) !important;
+  border-color: var(--mil-od-dark) !important;
+  color: #fff8df !important;
+}
+
+.btn-secondary {
+  background-color: #4b4a3e !important;
+  border-color: #2d2c25 !important;
+  color: var(--wf-accent) !important;
+}
+.btn-secondary:hover, .btn-secondary:focus {
+  background-color: #5c5a4a !important;
+  color: #fff8df !important;
+}
+
+.btn-success {
+  background-color: var(--wf-success) !important;
+  border-color: var(--mil-od-dark) !important;
+  color: #f5f0df !important;
+}
+.btn-success:hover { background-color: var(--wf-success-light) !important; }
+
+.btn-info {
+  background-color: var(--wf-info) !important;
+  border-color: #1f3457 !important;
+  color: #f5f0df !important;
+}
+
+.btn-warning {
+  background-color: var(--wf-warning) !important;
+  border-color: #7a5b14 !important;
+  color: var(--mil-od-dark) !important;
+}
+
+.btn-danger {
+  background-color: var(--wf-danger) !important;
+  border-color: #4a1818 !important;
+  color: #f5f0df !important;
+}
+
+.btn-outline-secondary {
+  background-color: transparent !important;
+  border: 1px solid var(--wf-accent-dark) !important;
+  color: var(--wf-accent-dark) !important;
+}
+.btn-outline-secondary:hover {
+  background-color: var(--wf-accent-dark) !important;
+  color: var(--mil-od-dark) !important;
+}
+
+/* ============================================================
+   Inputs / selects — recessed, sand-coloured
+   ============================================================ */
+.form-control, .form-select, input[type="text"], input[type="number"],
+input[type="email"], input[type="password"], input[type="date"],
+input[type="time"], textarea, select {
+  background-color: #faf6e6 !important;
+  border: 1px solid var(--wf-border) !important;
+  border-radius: var(--wf-radius) !important;
+  color: var(--wf-text) !important;
+  font-family: var(--mil-tactical) !important;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--wf-primary) !important;
+  box-shadow: 0 0 0 0.18rem rgba(74, 93, 35, 0.25) !important;
+}
+
+label, .form-label {
+  font-family: var(--mil-stencil) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--mil-od-dark) !important;
+  font-weight: 400 !important;
+}
+
+/* Highlight serial-number input as a tactical field */
+.wf-serial-input input {
+  background-color: #fff7df !important;
+  border-color: var(--wf-accent-dark) !important;
+  font-family: var(--mil-tactical) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.10em !important;
+  color: var(--mil-od-dark) !important;
+}
+
+/* ============================================================
+   Badges — dog-tag style
+   ============================================================ */
+.badge {
+  font-family: var(--mil-tactical) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  border-radius: var(--wf-radius) !important;
+  font-weight: 500 !important;
+  border: 1px solid rgba(0,0,0,0.25);
+}
+.badge.bg-primary    { background-color: var(--wf-primary)    !important; color: var(--wf-accent) !important; }
+.badge.bg-secondary  { background-color: #4b4a3e             !important; color: var(--wf-accent) !important; }
+.badge.bg-success    { background-color: var(--wf-success)    !important; color: #f5f0df !important; }
+.badge.bg-info       { background-color: var(--wf-info)       !important; color: #f5f0df !important; }
+.badge.bg-warning    { background-color: var(--wf-warning)    !important; color: var(--mil-od-dark) !important; }
+.badge.bg-danger     { background-color: var(--wf-danger)     !important; color: #f5f0df !important; }
+.badge.bg-dark       { background-color: var(--mil-od-dark)   !important; color: var(--wf-accent) !important; }
+
+/* ============================================================
+   Tables / DataGrid — striped olive rows
+   ============================================================ */
+.table, .shiny-data-frame table {
+  background-color: var(--wf-card-bg) !important;
+  border-color: var(--wf-border) !important;
+}
+.table thead, .shiny-data-frame thead {
+  background-color: var(--wf-primary) !important;
+  color: var(--wf-accent) !important;
+}
+.table thead th, .shiny-data-frame thead th {
+  font-family: var(--mil-stencil) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 2px solid var(--mil-od-dark) !important;
+  background-color: var(--wf-primary) !important;
+  color: var(--wf-accent) !important;
+}
+.table tbody tr:nth-of-type(odd) {
+  background-color: rgba(74, 93, 35, 0.04);
+}
+.table tbody tr:hover {
+  background-color: rgba(194, 178, 128, 0.22) !important;
+}
+.shiny-data-frame td, .table td {
+  font-family: var(--mil-tactical) !important;
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+   Value boxes
+   ============================================================ */
+.bslib-value-box {
+  border-left: 4px solid var(--wf-primary) !important;
+  border-radius: var(--wf-radius) !important;
+  background-color: var(--wf-card-bg) !important;
+}
+.bslib-value-box .value-box-title {
+  font-family: var(--mil-stencil) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+.bslib-value-box .value-box-value {
+  font-family: var(--mil-stencil) !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* ============================================================
+   Stat-card big numbers (Dashboard)
+   ============================================================ */
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  font-family: var(--mil-stencil) !important;
+  letter-spacing: 0.04em !important;
+  color: var(--mil-od-dark) !important;
+}
+
+/* ============================================================
+   Alerts / notifications
+   ============================================================ */
+.alert {
+  border-radius: var(--wf-radius) !important;
+  border-left-width: 4px !important;
+  font-family: var(--mil-tactical) !important;
+}
+.alert-success { background-color: #e6ebd2 !important; border-color: var(--wf-success) !important; color: var(--mil-od-dark) !important; }
+.alert-warning { background-color: #f3e3b8 !important; border-color: var(--wf-warning) !important; color: var(--mil-od-dark) !important; }
+.alert-danger  { background-color: #efd7d7 !important; border-color: var(--wf-danger)  !important; color: #4a1818 !important; }
+.alert-info    { background-color: #d8e0eb !important; border-color: var(--wf-info)    !important; color: #1a2a44 !important; }
+
+/* ============================================================
+   Tactical / monospace usage for codes & JSON
+   ============================================================ */
+code, pre, kbd, samp {
+  font-family: var(--mil-tactical) !important;
+  background-color: #1f2125 !important;
+  color: #c2b280 !important;
+  border: 1px solid #3a3b34 !important;
+  padding: 1px 6px;
+  border-radius: var(--wf-radius);
+}
+pre code { padding: 0; border: none; background: transparent; }
+
+/* ============================================================
+   Scrollbar — discreet OD/sand
+   ============================================================ */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--wf-bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--wf-accent-dark);
+  border: 2px solid var(--wf-bg);
+  border-radius: var(--wf-radius);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--wf-primary); }

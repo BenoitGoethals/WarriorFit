@@ -379,6 +379,9 @@ class FitnessWarriorApp:
         return ui.page_fillable(
             ui.tags.head(
                 ui.tags.link(rel="stylesheet", href="custom.css"),
+                # Military theme overrides (loaded second so it wins). Remove this
+                # line to revert to the navy/amber base theme.
+                ui.tags.link(rel="stylesheet", href="military.css"),
             ),
             ui.output_ui("main_content_container"),
             ui.tags.script(
