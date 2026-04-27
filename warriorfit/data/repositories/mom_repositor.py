@@ -218,6 +218,67 @@ class MomRepository(ABCRepository):
             )
             return []
 
+    async def outbox_health_summary(self) -> dict:
+        """
+        Snapshot of the HR outbox for the dashboard health card.
+
+        Returned keys:
+            pending          int  — rows still waiting to be sent (dead_letter=False)
+            dead_letter      int  — rows that exhausted retries
+            oldest_pending   datetime | None — datetime_created of the oldest pending row
+            last_error       str | None      — most recent `last_error` text seen
+            db_ok            bool — False if the query itself failed (DB unreachable)
+        """
+        from sqlalchemy import func as sa_func
+
+        try:
+            async with self.SessionLocal() as session:
+                pending = (
+                    await session.execute(
+                        select(sa_func.count(HrMessage.id)).where(
+                            HrMessage.dead_letter.is_(False)
+                        )
+                    )
+                ).scalar_one()
+                dead = (
+                    await session.execute(
+                        select(sa_func.count(HrMessage.id)).where(
+                            HrMessage.dead_letter.is_(True)
+                        )
+                    )
+                ).scalar_one()
+                oldest = (
+                    await session.execute(
+                        select(sa_func.min(HrMessage.datetime_created)).where(
+                            HrMessage.dead_letter.is_(False)
+                        )
+                    )
+                ).scalar_one()
+                last_err = (
+                    await session.execute(
+                        select(HrMessage.last_error)
+                        .where(HrMessage.last_error.is_not(None))
+                        .order_by(HrMessage.id.desc())
+                        .limit(1)
+                    )
+                ).scalar_one_or_none()
+            return {
+                "pending": int(pending or 0),
+                "dead_letter": int(dead or 0),
+                "oldest_pending": oldest,
+                "last_error": last_err,
+                "db_ok": True,
+            }
+        except SQLAlchemyError as e:
+            self._logger.error("Database error reading outbox health: %s", str(e))
+            return {
+                "pending": 0,
+                "dead_letter": 0,
+                "oldest_pending": None,
+                "last_error": str(e)[:200],
+                "db_ok": False,
+            }
+
 
 async def _smoke():
     repo = MomRepository()

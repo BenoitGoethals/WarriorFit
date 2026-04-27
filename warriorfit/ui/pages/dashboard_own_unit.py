@@ -72,6 +72,7 @@ class DashboardOwnUnitPage(Page):
                 class_="btn btn-secondary btn-sm my-2",
             ),
             ui.br(),
+            # ----- Stats cards row -----
             ui.layout_columns(
                 ui.card(
                     ui.card_header(
@@ -102,20 +103,30 @@ class DashboardOwnUnitPage(Page):
                 ),
             ),
             ui.br(),
+            # ----- Broker / HR System health row -----
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header(
+                        "🔌 Broker / HR System", class_="bg-dark text-white"
+                    ),
+                    ui.output_ui("broker_health_card"),
+                    full_screen=False,
+                ),
+            ),
+            ui.br(),
+            # ----- Charts row: side-by-side -----
             ui.layout_columns(
                 ui.card(
                     ui.card_header("Pass/Fail Rates by Test Type (Own Unit)"),
                     ui.output_ui("own_unit_pass_fail_chart"),
                     full_screen=True,
                 ),
-            ),
-            ui.br(),
-            ui.layout_columns(
                 ui.card(
                     ui.card_header("PHEF Score Distribution (Own Unit)"),
                     ui.output_ui("own_unit_phef_score_histogram"),
                     full_screen=True,
                 ),
+                col_widths=[6, 6],
             ),
             ui.br(),
         )
@@ -226,6 +237,94 @@ class DashboardOwnUnitPage(Page):
             empty_msg="No PHEF data available for your unit.",
             non_div_msg="No histogram HTML was generated.",
         )
+
+        # Broker / HR System health card.
+        # Refreshes on the same tick as the rest of the dashboard so manual refresh works,
+        # plus a slow auto-refresh so a fresh outage shows up without a click.
+        @output(id="broker_health_card")
+        @render.ui
+        async def _broker_health() -> ui.Tag:
+            _ = refresh_tick.get()
+            reactive.invalidate_later(15)
+            try:
+                h = await self.controller.broker_health()
+            except (KeyError, TypeError, ValueError, AttributeError) as e:
+                return self._no_data(f"Broker status unavailable: {e}")
+
+            badge = ui.span(
+                h.get("badge_label", "Unknown"),
+                class_=f"badge {h.get('badge_class', 'bg-secondary')} fs-6",
+            )
+
+            details_left = ui.div(
+                ui.p(
+                    ui.strong("HR endpoint: "),
+                    ui.tags.code(h.get("hr_url", "—")),
+                    class_="mb-1",
+                ),
+                ui.p(
+                    ui.strong("Database: "),
+                    "✅ reachable" if h.get("db_ok") else "❌ unreachable",
+                    class_="mb-1",
+                ),
+            )
+
+            pending = int(h.get("pending", 0))
+            dead = int(h.get("dead_letter", 0))
+            details_middle = ui.div(
+                ui.p(
+                    ui.strong("Pending messages: "),
+                    ui.span(
+                        str(pending),
+                        class_=(
+                            "fw-bold "
+                            + ("text-warning" if pending > 0 else "text-success")
+                        ),
+                    ),
+                    class_="mb-1",
+                ),
+                ui.p(
+                    ui.strong("Dead-letter: "),
+                    ui.span(
+                        str(dead),
+                        class_=(
+                            "fw-bold " + ("text-danger" if dead > 0 else "text-success")
+                        ),
+                    ),
+                    class_="mb-1",
+                ),
+                ui.p(
+                    ui.strong("Oldest pending: "),
+                    h.get("oldest_pending_age_human", "—"),
+                    class_="mb-1",
+                ),
+            )
+
+            last_err = h.get("last_error")
+            details_right = ui.div(
+                ui.p(ui.strong("Last error: "), class_="mb-1"),
+                (
+                    ui.tags.code(
+                        str(last_err)[:300],
+                        class_="text-danger d-block",
+                        style="white-space:pre-wrap; word-break:break-word;",
+                    )
+                    if last_err
+                    else ui.p("None — no recent send failures.", class_="text-muted")
+                ),
+            )
+
+            return ui.div(
+                ui.div(
+                    ui.h5("Status: ", class_="d-inline me-2 mb-0"),
+                    badge,
+                    class_="mb-3",
+                ),
+                ui.layout_columns(
+                    details_left, details_middle, details_right, col_widths=[3, 4, 5]
+                ),
+                class_="p-3",
+            )
 
         @reactive.Effect
         @reactive.event(input.dashboard_refresh_btn)

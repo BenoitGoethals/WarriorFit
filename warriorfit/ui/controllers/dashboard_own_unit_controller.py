@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Dict, List
 
 import pandas as pd
@@ -16,6 +17,7 @@ from warriorfit.data.model.db_model import (
     PhefTest,
     ServiceMen,
 )
+from warriorfit.data.repositories.mom_repositor import MomRepository
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
@@ -43,6 +45,7 @@ class DashboardOwnUnitController:
         test_service: ServiceTest = None,
         mil_service: MilitaryService = None,
         march_service: ServiceMarch = None,
+        mom_repository: MomRepository | None = None,
         config: ApplicationConfig = None,
     ) -> None:
         _config = config if config is not None else ApplicationConfig()
@@ -57,6 +60,10 @@ class DashboardOwnUnitController:
         self._march_service = (
             march_service if march_service is not None else ServiceMarch()
         )
+        self._mom_repo = (
+            mom_repository if mom_repository is not None else MomRepository()
+        )
+        self._hr_url = getattr(_config, "hr_url", None)
 
     # ---------- helpers ----------
     async def own_unit_serials(self) -> set[str]:
@@ -295,6 +302,93 @@ class DashboardOwnUnitController:
             "sub_value": f"{pass_rate:.1f}%",
             "sub_label": "Pass Rate",
             "sub_class": "text-info",
+        }
+
+    # ---------- broker / HR health ----------
+    async def broker_health(self) -> Dict[str, Any]:
+        """
+        Snapshot for the dashboard "Broker / HR System" card.
+
+        Interprets the raw outbox state into a status that is easy to render:
+
+            status == "ok"      → no pending, no dead-letter, DB reachable
+            status == "warning" → pending messages exist (HR may be slow / temporarily down)
+                                  OR a recent send produced a non-empty `last_error`
+            status == "error"   → there are dead-letter rows OR the DB itself was unreachable
+            status == "unknown" → could not determine (used as a safe fallback)
+
+        The returned dict is structured so the page only has to render strings:
+            status, badge_label, badge_class, pending, dead_letter,
+            oldest_pending_age_human, last_error, hr_url, db_ok
+        """
+        try:
+            snap = await self._mom_repo.outbox_health_summary()
+        except Exception as e:  # noqa: BLE001 — defensive; dashboard must never crash
+            return {
+                "status": "unknown",
+                "badge_label": "Unknown",
+                "badge_class": "bg-secondary",
+                "pending": 0,
+                "dead_letter": 0,
+                "oldest_pending_age_human": "—",
+                "last_error": f"health check failed: {e}",
+                "hr_url": self._hr_url or "—",
+                "db_ok": False,
+            }
+
+        pending = int(snap.get("pending", 0))
+        dead = int(snap.get("dead_letter", 0))
+        oldest = snap.get("oldest_pending")
+        last_err = snap.get("last_error")
+        db_ok = bool(snap.get("db_ok", True))
+
+        if not db_ok:
+            status, badge_label, badge_class = (
+                "error",
+                "DB unreachable",
+                "bg-danger",
+            )
+        elif dead > 0:
+            status, badge_label, badge_class = (
+                "error",
+                f"{dead} dead-letter",
+                "bg-danger",
+            )
+        elif pending > 0 or last_err:
+            status, badge_label, badge_class = (
+                "warning",
+                "Issues detected",
+                "bg-warning text-dark",
+            )
+        else:
+            status, badge_label, badge_class = (
+                "ok",
+                "Healthy",
+                "bg-success",
+            )
+
+        # Human-friendly age of the oldest pending row.
+        if isinstance(oldest, datetime):
+            secs = int((datetime.now() - oldest).total_seconds())
+            if secs < 60:
+                age = f"{secs}s"
+            elif secs < 3600:
+                age = f"{secs // 60}m {secs % 60}s"
+            else:
+                age = f"{secs // 3600}h {(secs % 3600) // 60}m"
+        else:
+            age = "—"
+
+        return {
+            "status": status,
+            "badge_label": badge_label,
+            "badge_class": badge_class,
+            "pending": pending,
+            "dead_letter": dead,
+            "oldest_pending_age_human": age,
+            "last_error": last_err,
+            "hr_url": self._hr_url or "—",
+            "db_ok": db_ok,
         }
 
     # ---------- charts ----------
