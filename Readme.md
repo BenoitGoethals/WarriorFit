@@ -69,6 +69,11 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   serviceman login mode, "My Progress" page (USER role) with PHEF chart,
   data-retention service, and GDPR docs ([Privacy Policy](documentation/compliance/PRIVACY_POLICY.md), [DPIA](documentation/compliance/DPIA.md))
 * 2026-04-25 : new Admin → "Servicemen Overview" page — all servicemen with fields and per-consent grant status
+* 2026-04-27 : Cross Statistics redesign — KPI strip + 8-tab layout (Overview, Per cross, Best 10, Demographics, Runners, Trends, Podium, Data quality);
+  new metrics: per-cross median/std/pace/turnout, per-runner PB/race count/improvement, age-group × distance best & avg,
+  gender split per distance, chronological trends, podium frequency, data-quality flags (unmatched serials, never-raced);
+  best/avg/median now broken down per distance (no more meaningless 5K+10K aggregation), top-N deduplicated by serial,
+  full mypy clean across the codebase
 
 
 

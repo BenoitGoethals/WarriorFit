@@ -7,8 +7,8 @@ The point estimates below reflect implementation effort.
 ### Total Overview
 
 * **Total epics:** 19
-* **Total stories:** 72
-* **Total story points:** 201
+* **Total stories:** 73
+* **Total story points:** 206
 
 ### Story Point Legend
 
@@ -704,19 +704,20 @@ The point estimates below reflect implementation effort.
 
 ---
 
-## Epic 8: Cross Session & Runner Management (23 points)
+## Epic 8: Cross Session & Runner Management (28 points)
 
-**Epic total:** 23 points
-**Estimated:** 4 sprints
+**Epic total:** 28 points
+**Estimated:** 5 sprints
 
-| #   | Story                          | Points | Priority    |
-| --- | ------------------------------ | ------ | ----------- |
-| 8.1 | Create/edit/delete cross       | 5      | Must Have   |
-| 8.2 | Enter cross runner results     | 5      | Must Have   |
-| 8.3 | Update/delete cross runner     | 3      | Should Have |
-| 8.4 | Cross planning list view       | 2      | Should Have |
-| 8.5 | Cross statistics               | 3      | Could Have  |
-| 8.6 | Import Chronos XML race result | 5      | Should Have |
+| #   | Story                                  | Points | Priority    |
+| --- | -------------------------------------- | ------ | ----------- |
+| 8.1 | Create/edit/delete cross               | 5      | Must Have   |
+| 8.2 | Enter cross runner results             | 5      | Must Have   |
+| 8.3 | Update/delete cross runner             | 3      | Should Have |
+| 8.4 | Cross planning list view               | 2      | Should Have |
+| 8.5 | Cross statistics                       | 3      | Could Have  |
+| 8.6 | Import Chronos XML race result         | 5      | Should Have |
+| 8.7 | Extended Cross statistics & redesigned UX | 5   | Should Have |
 
 ### Story 8.1: Create/edit/delete cross session [5 points]
 
@@ -803,12 +804,13 @@ The point estimates below reflect implementation effort.
 **Acceptance criteria:**
 
 * Two grids: Top 10 all-time (5km), Top 10 all-time (10km)
-* Rankings based on fastest times
+* Rankings based on fastest times — each serviceman appears at most once per distance (best time kept)
+* Age-group counts count each unique person once
 * Refresh button to reload
 
 **Tasks:**
 
-* Top 10 rankings query per distance
+* Top 10 rankings query per distance with dedup by `serial_number`
 
 ### Story 8.6: Import Chronos XML race result [5 points]
 
@@ -833,6 +835,36 @@ The point estimates below reflect implementation effort.
 * `CrossRepository.add_runners_to_cross`: persist runners + set `executed = True` in one transaction
 * `upload_btn_ui`: conditional visibility via `runners_df`
 * `_handle_file_upload`: async reactive effect with dedup guard and dedicated `_upload_tick`
+
+### Story 8.7: Extended Cross statistics & redesigned UX [5 points]
+
+**As** PTI, APTI or admin
+**I want** a richer Cross Statistics page with breakdowns by distance, runner, demographics, time and data-quality
+**So that** I can analyse unit running performance beyond a single global "best time"
+
+**Acceptance criteria:**
+
+* KPI strip shows three counts that are meaningful across distances: total crosses, total finishers, unique runners
+* Time KPIs (best/avg/median/std/gap) are **never** aggregated across different distances — they are shown per distance in a dedicated grid
+* Page uses a tabbed layout (`navset_card_tab`) with: Overview, Per cross, Best 10, Demographics, Runners, Trends, Podium, Data quality
+* **Per cross** tab: one row per cross event (date, distance, finishers, avg, median, std, best, worst, gap, pace s/km), most-recent first, filterable
+* **Best 10** tab: Top-10 grids per distance, each runner appears at most once, with rank column
+* **Demographics** tab: best-time and avg-time grids per (age group × distance) and a gender × distance grid (avg + finisher count)
+* **Runners** tab: per-serviceman aggregates — races, personal best, avg time, avg pace, average improvement vs. previous race
+* **Trends** tab: chronological average running time per cross / distance
+* **Podium** tab: per-serviceman gold/silver/bronze counts across all crosses
+* **Data quality** tab: count + list of unmatched serials, registered-but-never-raced servicemen, rows with missing time
+* Refresh button reloads all metrics in one pass
+* `Gender` enum is normalised to string before pandas groupby (no `TypeError: '<' not supported between instances of 'Gender'`)
+
+**Tasks:**
+
+* `ServiceCross.get_extended_stats` — single async pass returning a structured dict
+* `_runners_df` enriched with `cross_datetime` / `cross_description`
+* `CrossStaticsController` exposes formatted DataFrame accessors per section
+* Page rebuilt with `value_box` KPIs and `navset_card_tab` for the 8 sections
+* Dedup top-N by `serial_number`; dedup age-group counts by person
+* Full mypy clean across the codebase as a side-effect
 
 ---
 

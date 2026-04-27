@@ -453,6 +453,8 @@ Test status: `[x]` = implemented/passing, `[ ]` = pending.
 - [x] Two DataGrids displayed: Top 10 (5km) and Top 10 (10km)
 - [x] Rankings show fastest times
 - [x] Refresh button reloads both grids
+- [x] Same serviceman never appears twice in a Top-10 grid (best time kept across multiple crosses of same distance)
+- [x] Age-group counts each person once even if they ran multiple crosses
 
 ---
 
@@ -475,6 +477,33 @@ Test status: `[x]` = implemented/passing, `[ ]` = pending.
 - [ ] Download/Generate Report buttons visible after runners registered
 - [ ] Runners grid auto-refreshes after import without page reload
 - [ ] Upload input accepts only `.xml` files
+
+---
+
+### Story 8.7: Extended Cross Statistics & Redesigned UX [5 points]
+
+**Functional Tests — KPI strip & Overview:**
+- [ ] KPI strip shows three value boxes: Crosses, Finishers, Unique runners
+- [ ] No global Best/Avg/Median value box (those are per-distance only)
+- [ ] Overview "Best / Avg / Median per distance" grid: one row per distance with Finishers, Runners, Best, Avg, Median, Std (s), Gap
+- [ ] Gender averages card shows female-avg + male-avg formatted as `HH:MM:SS`
+- [ ] Age groups card lists each age bucket with unique-person count
+
+**Functional Tests — Per cross / Best 10 / Demographics / Runners / Trends / Podium / Data quality tabs:**
+- [ ] Per cross: one row per cross event with avg/median/std/best/worst/gap/pace; sorted most-recent first; filterable
+- [ ] Best 10: separate 5 km and 10 km grids; rank column; each serviceman appears at most once per distance
+- [ ] Demographics: best & avg per (age-group × distance), gender × distance grid (avg + finisher count); gender column displayed as readable string
+- [ ] Runners: per-serviceman aggregates (Races, PB, Avg, Pace, Δ avg); filterable
+- [ ] Trends: chronological rows of (date, distance, avg)
+- [ ] Podium: per-serviceman gold/silver/bronze counts; sorted by gold/silver/bronze desc
+- [ ] Data quality: counts + lists for unmatched serials, never-raced, rows missing time; ✅ shown when empty
+
+**Edge Cases & Robustness:**
+- [ ] Empty database (no crosses) → all KPIs show `0`, all grids empty, no exception
+- [ ] Crosses without runners → handled gracefully
+- [ ] Runner with `running_time = NULL` → counted in "Rows missing time", excluded from averages
+- [ ] Cross with `datetime_start = NULL` → excluded from Trends only
+- [ ] Refresh button reloads all metrics in one pass
 
 ---
 

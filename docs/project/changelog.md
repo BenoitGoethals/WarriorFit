@@ -5,6 +5,24 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-04-27] - Cross Statistics Redesign
+
+### Added
+- **Extended Cross statistics** (`ServiceCross.get_extended_stats`): per-cross median/std/pace/turnout/gap, per-runner PB/race count/avg pace/improvement, age-group × distance best & avg, gender × distance, chronological trends, podium frequency (gold/silver/bronze), and data-quality flags (unmatched serials, registered-but-never-raced, missing times)
+- **Per-distance overview** that replaces the previous global best/avg/median (mixing 5K and 10K times was meaningless)
+- **Redesigned Cross Statistics page** with a 3-card KPI strip and `navset_card_tab` containing 8 tabs: Overview, Per cross, Best 10, Demographics, Runners, Trends, Podium, Data quality
+
+### Changed
+- Top-N runner lists deduplicate by `serial_number` per distance (each person appears at most once)
+- Age-group counts now count each unique person once
+- `_runners_df` carries `cross_datetime` / `cross_description` for trend analysis
+- Convert `Gender` enum to string before pandas groupby to avoid factorize/sort failure
+
+### Fixed
+- mypy clean (13 errors → 0): proper `T | None` typing throughout, `UserConsent` timestamps typed as `datetime`, `ApplicationConfig.version` None-checked, `_failed_styles` returns `list[StyleInfoBody]`
+
+---
+
 ## [2026-03-29] - User Manual & Documentation
 
 ### Added
