@@ -453,6 +453,8 @@ Test status: `[x]` = implemented/passing, `[ ]` = pending.
 - [x] Two DataGrids displayed: Top 10 (5km) and Top 10 (10km)
 - [x] Rankings show fastest times
 - [x] Refresh button reloads both grids
+- [x] Same serviceman never appears twice in a Top-10 grid (best time kept across multiple crosses of same distance)
+- [x] Age-group counts each person once even if they ran multiple crosses
 
 ---
 
@@ -475,6 +477,65 @@ Test status: `[x]` = implemented/passing, `[ ]` = pending.
 - [ ] Download/Generate Report buttons visible after runners registered
 - [ ] Runners grid auto-refreshes after import without page reload
 - [ ] Upload input accepts only `.xml` files
+
+---
+
+### Story 8.7: Extended Cross Statistics & Redesigned UX [5 points]
+
+**Functional Tests — KPI strip & Overview:**
+- [ ] KPI strip shows three value boxes: Crosses, Finishers, Unique runners
+- [ ] No global Best/Avg/Median value box (those are per-distance only)
+- [ ] Overview tab "Best / Avg / Median per distance" grid: one row per distance with Finishers, Runners, Best, Avg, Median, Std (s), Gap
+- [ ] Gender averages card shows female-avg + male-avg formatted as `HH:MM:SS`
+- [ ] Age groups card lists each age bucket with unique-person count
+
+**Functional Tests — Per cross tab:**
+- [ ] One row per cross event (Cross id, Date, Dist (km), Finishers, Avg, Median, Std (s), Best, Worst, Gap, Pace)
+- [ ] Sorted most-recent first
+- [ ] Filterable
+
+**Functional Tests — Best 10 tab:**
+- [ ] Two grids side-by-side: Best 10 — 5 km and Best 10 — 10 km
+- [ ] Rank column shown (1..10)
+- [ ] Each serviceman appears at most once per distance (best time kept)
+
+**Functional Tests — Demographics tab:**
+- [ ] Best per (age group × distance) grid
+- [ ] Avg per (age group × distance) grid
+- [ ] Gender × distance grid with avg time and finisher count
+- [ ] Gender column displays as readable string (`F`, `M`), not enum repr
+
+**Functional Tests — Runners tab:**
+- [ ] Per-serviceman grid: Serial, Name, Races, PB, Avg, Pace, Δ avg
+- [ ] PB is the runner's lowest `running_time` across all races
+- [ ] Δ avg shows average improvement vs. previous race (formatted with `+`/`-` prefix)
+- [ ] Filterable
+
+**Functional Tests — Trends tab:**
+- [ ] One row per (cross_datetime, distance) with avg time, sorted ascending by date
+
+**Functional Tests — Podium tab:**
+- [ ] Per-serviceman grid: Serial, Name, Podiums, 🥇, 🥈, 🥉
+- [ ] Sorted by gold desc, then silver desc, then bronze desc
+- [ ] Filterable
+
+**Functional Tests — Data quality tab:**
+- [ ] Three value boxes: Rows missing time, Unmatched serials, Never raced
+- [ ] Unmatched-serials list shows serials present in race data but not in `service_men` registry
+- [ ] Never-raced list shows registered servicemen with no runner row
+- [ ] Empty cases show ✅ confirmation messages
+
+**Edge Cases & Robustness:**
+- [ ] Empty database (no crosses) → all KPIs show `0`, all grids empty, no exception
+- [ ] Crosses without runners → handled gracefully, no division by zero
+- [ ] Runner with `running_time = NULL` → counted in "Rows missing time", not in averages
+- [ ] Cross with `datetime_start = NULL` → excluded from Trends tab only
+- [ ] Single refresh button reloads all metrics in one pass (one call to `get_extended_stats`)
+
+**Regression — Original behaviour preserved:**
+- [ ] Best 10 grids still render correctly after redesign
+- [ ] Refresh button on the page works
+- [ ] Page accessible to PTI/APTI/admin per `allowed_roles` config
 
 ---
 

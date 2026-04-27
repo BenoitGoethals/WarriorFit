@@ -5,6 +5,37 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-04-27] - Cross Statistics Redesign
+
+### Added
+- **Extended Cross statistics** (`ServiceCross.get_extended_stats`) bundling:
+  - **Per-cross**: median, std-dev, pace (s/km), turnout, gap (worst − best)
+  - **Per-runner**: personal best, race count, average pace, average improvement vs. previous race
+  - **Demographics**: best & avg time per (age group × distance), gender split per distance
+  - **Trends**: chronological average running time per cross / distance
+  - **Podium**: gold/silver/bronze counts per serviceman across all crosses
+  - **Data quality**: unmatched serials (in race data but not in registry), registered-but-never-raced servicemen, rows with missing time
+  - **Per-distance overview**: best/avg/median/std/gap/finishers/unique runners broken down by distance — replaces the previous global aggregates which mixed 5K and 10K times
+- **Redesigned Cross Statistics page** (`warriorfit/ui/pages/cross_statics.py`):
+  - KPI strip with three `value_box` cards (Crosses, Finishers, Unique runners)
+  - `navset_card_tab` with 8 tabs: **Overview**, **Per cross**, **Best 10**, **Demographics**, **Runners**, **Trends**, **Podium**, **Data quality**
+  - Filterable DataGrids on the larger tabs (Per cross, Runners, Podium)
+
+### Changed
+- **Top-N runner lists** (`get_cross_stats`, `get_top_10_runners_based_on_running_time`) now deduplicate by `serial_number` per distance — each person appears at most once, with their best time kept
+- **Age-group counts** (`get_cross_stats`) now count each unique person once instead of once per race
+- `_runners_df` now carries `cross_datetime` and `cross_description` so chronological analyses are possible
+- `Gender` enum values are converted to string before pandas groupby (the enum has no `__lt__`, which broke factorize)
+- `CrossStaticsController` exposes new accessors (`overview_per_distance_df`, `per_cross_df`, `per_runner_df`, `age_distance_best_df`, `age_distance_avg_df`, `gender_distance_df`, `trends_df`, `podium_df`, `data_quality`, `distances`) and keeps legacy ones for backward compatibility
+
+### Fixed
+- mypy errors across the codebase (13 → 0): replaced `T = None  # type: ignore[assignment]` patterns with proper `T | None = None` typing in `service_gdpr.py`, `service_consent.py`, `servicemen_overview_controller.py`, `privacy_controller.py`, `my_progress_controller.py`
+- `UserConsent.consent_given_at` / `withdrawn_at` corrected from `Mapped[TIMESTAMP]` (SQL column type) to `Mapped[datetime]` (the actual Python runtime type) — `.isoformat()` callers no longer fall over mypy
+- `ApplicationConfig().version` is now `None`-checked before subscripting in `status_login_user.py`
+- `_failed_styles` in `own_unit.py` returns properly-typed `list[StyleInfoBody]` for Shiny DataGrid
+
+---
+
 ## [2026-04-25] - GDPR Compliance & Servicemen Overview
 
 ### Added
