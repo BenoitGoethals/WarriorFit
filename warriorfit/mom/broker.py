@@ -53,16 +53,36 @@ class Broker:
             be_mil_service if be_mil_service is not None else BEMILService()
         )
         self._config = config if config is not None else ApplicationConfig()
+        # Outbox tunables — read from config, fall back to safe defaults.
+        # poll_interval: how often the worker wakes up (seconds).
+        # batch_size:    how many due messages we attempt to send per cycle.
+        # max_attempts:  after this many failures a message becomes dead-letter.
+        # base_backoff / max_backoff (seconds): exponential back-off bounds.
+        self._poll_interval_s: int = getattr(self._config, "broker_poll_interval_s", 5)
+        self._batch_size: int = getattr(self._config, "broker_batch_size", 5)
+        self._max_attempts: int = getattr(self._config, "broker_max_attempts", 10)
+        self._base_backoff_s: int = getattr(self._config, "broker_base_backoff_s", 5)
+        self._max_backoff_s: int = getattr(self._config, "broker_max_backoff_s", 600)
 
     async def worker(self):
         """Background task running on the main event loop"""
         hr_url = ApplicationConfig().hr_url
         print("🚀 Message Queue Service started")
         print(f"📍 Target URL: {hr_url}")
-        print("⏱  Check interval: 5 seconds\n")
+        print(
+            f"⏱  Poll interval: {self._poll_interval_s}s | batch: {self._batch_size} | "
+            f"max attempts: {self._max_attempts} | back-off: {self._base_backoff_s}s..{self._max_backoff_s}s\n"
+        )
         self._logger.info(
             "Message Queue Service started",
-            extra={"target_url": hr_url, "check_interval_seconds": 5},
+            extra={
+                "target_url": hr_url,
+                "poll_interval_seconds": self._poll_interval_s,
+                "batch_size": self._batch_size,
+                "max_attempts": self._max_attempts,
+                "base_backoff_s": self._base_backoff_s,
+                "max_backoff_s": self._max_backoff_s,
+            },
         )
 
         while self.running:
@@ -91,7 +111,7 @@ class Broker:
                 )
 
             # Non-blocking sleep to let other tasks run
-            await asyncio.sleep(5)
+            await asyncio.sleep(self._poll_interval_s)
 
     async def _process_cycle(self):
         """
@@ -252,6 +272,39 @@ class Broker:
                 },
             )
 
+    async def _try_send_to_hr(
+        self, message_hr: HrMessage
+    ) -> tuple[dict | None, str | None]:
+        """
+        Internal wrapper around `_send_message_to_hr` that returns a structured
+        (result, error_reason) tuple so the caller can record the failure
+        cause on the outbox row.
+
+        result is the HR response dict on success, or None on failure.
+        error_reason is None on success, or a short string describing why it
+        failed (used for `last_error` in the dead-letter table).
+        """
+        try:
+            result = await self._send_message_to_hr(message_hr)
+            if result is None:
+                return None, "send returned None (see broker logs for cause)"
+            return result, None
+        except asyncio.CancelledError:
+            raise
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 — last-resort guard, broker must never die
+            self._logger.error(
+                "Unexpected exception during HR send",
+                exc_info=True,
+                extra={
+                    "message_id": getattr(message_hr, "id", None),
+                    "error_type": type(e).__name__,
+                    "error_message": str(e),
+                },
+            )
+            return None, f"{type(e).__name__}: {e}"
+
     async def _send_message_to_hr(self, message_hr: HrMessage) -> dict | None:
         """
         Sends a message to the HR service asynchronously.
@@ -346,40 +399,70 @@ class Broker:
 
     async def check_and_send_messages(self):
         """
-        Checks for messages to send to HR, sends the message if available, and deletes it
-        from the repository if sending is successful.
+        Send a batch of due HR messages. For each message:
 
-        This asynchronous method retrieves the last HR message from the repository,
-        sends it to HR, and subsequently removes the message from the repository if the
-        sending operation is successful.
+            - If HR returns a dict → delete the row from `hr_messages`.
+            - If HR fails → record the failure on the row (increments
+              `attempt_count`, schedules `next_retry_at` with exponential
+              back-off, or flips to `dead_letter` once `max_attempts` is hit).
 
-        :return: None
+        Messages already in the dead-letter state are NOT picked up. Per cycle,
+        at most `_batch_size` messages are processed; the next batch will be
+        picked up on the next worker tick.
         """
-        self._logger.debug("Checking for pending messages to send to HR")
+        self._logger.debug("Checking for due HR messages to send")
         try:
             repo = MomRepository()
-            msg: HrMessage = await repo.get_last_added_hr_message_by_send_date()  # type: ignore[assignment]
+            due = await repo.get_due_pending_messages(limit=self._batch_size)
+            if not due:
+                self._logger.debug("No due HR messages")
+                return
 
-            if msg:
+            self._logger.info(
+                "Processing %d due HR message(s)",
+                len(due),
+                extra={"batch_size": len(due)},
+            )
+            for msg in due:
                 message_id = getattr(msg, "id", None)
-                self._logger.info(
-                    "Pending message found, attempting to send to HR",
-                    extra={"message_id": message_id},
-                )
-                ret = await self._send_message_to_hr(msg)
-                if ret:
+                attempt_before = getattr(msg, "attempt_count", 0)
+                ret, err = await self._try_send_to_hr(msg)
+                if ret is not None:
                     await repo.delete_hr_message(msg.id)
                     self._logger.info(
-                        "Message successfully sent and deleted from repository",
-                        extra={"message_id": message_id},
+                        "HR message sent and deleted",
+                        extra={
+                            "message_id": message_id,
+                            "attempts": attempt_before + 1,
+                        },
                     )
                 else:
-                    self._logger.warning(
-                        "Failed to send message, will retry in next cycle",
-                        extra={"message_id": message_id},
+                    updated = await repo.mark_failure(
+                        msg.id,
+                        err or "unknown error",
+                        max_attempts=self._max_attempts,
+                        base_backoff_seconds=self._base_backoff_s,
+                        max_backoff_seconds=self._max_backoff_s,
                     )
-            else:
-                self._logger.debug("No pending messages to send")
+                    if updated and attempt_before + 1 >= self._max_attempts:
+                        self._logger.error(
+                            "HR message moved to dead-letter (max attempts reached)",
+                            extra={
+                                "message_id": message_id,
+                                "attempts": attempt_before + 1,
+                                "max_attempts": self._max_attempts,
+                                "last_error": err,
+                            },
+                        )
+                    else:
+                        self._logger.warning(
+                            "HR message send failed, scheduled for retry",
+                            extra={
+                                "message_id": message_id,
+                                "attempts": attempt_before + 1,
+                                "last_error": err,
+                            },
+                        )
         except AttributeError as e:
             self._logger.error(
                 f"Repository attribute error: {type(e).__name__}",

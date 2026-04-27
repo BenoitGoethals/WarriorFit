@@ -486,7 +486,16 @@ class HrMessage(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     message: Mapped[str] = mapped_column(String(255), nullable=False)
-    datetime_created: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
+    datetime_created: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False)
+    # Broker outbox bookkeeping (see warriorfit/mom/broker.py).
+    # attempt_count = how many times we've tried to POST this row to HR.
+    # next_retry_at = earliest moment the worker may retry; NULL = ready immediately.
+    # dead_letter   = True once attempt_count >= max_attempts; broker stops retrying.
+    # last_error    = short string of the last failure reason (for ops triage).
+    attempt_count: Mapped[int] = mapped_column(default=0, nullable=False)
+    next_retry_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
+    dead_letter: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    last_error: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
 
 class Room(Base):

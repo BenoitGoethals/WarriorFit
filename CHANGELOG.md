@@ -5,6 +5,46 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-04-27] - Broker outbox: exponential back-off, batch send, dead-letter
+
+### Added
+- **Exponential back-off** in the HR outbox. After a failed POST the row's
+  `next_retry_at` is set to `now + min(base_backoff_s × 2^(attempt-1), max_backoff_s)`,
+  so HR is no longer hammered every 5 s during outages.
+- **Dead-letter state** for poison messages. After `max_attempts` failures (default 10)
+  the row is flipped to `dead_letter = TRUE`; the broker stops retrying it but keeps the
+  row for ops triage. Operators can list parked rows via `MomRepository.list_dead_letter()`.
+- **Batched sending**. Each worker cycle now drains up to `batch_size` due rows
+  (default 5) instead of exactly one — drastically faster recovery after an outage.
+- **Failure bookkeeping** on `hr_messages`: `attempt_count`, `next_retry_at`,
+  `dead_letter`, `last_error` (truncated to 500 chars).
+- **Tunable broker config** under `broker:` in `config_dev.yml` (and production YAML):
+  `poll_interval_s`, `batch_size`, `max_attempts`, `base_backoff_s`, `max_backoff_s`.
+  Exposed via `ApplicationConfig.broker_*` properties.
+- Alembic migration `e5f6a7b8c9d0` adds the four new columns + a composite index
+  `ix_hr_messages_due` on `(dead_letter, next_retry_at)` for the new "due now" query.
+
+### Changed
+- `Broker.check_and_send_messages` rewritten to use `MomRepository.get_due_pending_messages`
+  (oldest-first, dead-letter-aware) instead of `get_last_added_hr_message_by_send_date`
+  (which was newest-first and could starve older rows behind a permanently-failing newer one).
+- `Broker.worker` poll interval is now read from config (default still 5 s).
+- New internal helper `Broker._try_send_to_hr` returns `(result, error_reason)` so the
+  failure cause can be persisted in `last_error`.
+
+### Removed
+- `MomRepository.get_last_added_hr_message_by_send_date` (replaced by `get_due_pending_messages`).
+
+### Docs
+- `documentation/PHEF_DATA_FLOW.md` updated: the "Caveats — what the broker does NOT do"
+  block is gone; replaced with a "What if HR can never accept the message?" section and a
+  focused "Limitations still in place" list (one process, no admin UI for dead-letter, no
+  metrics endpoint).
+- Diagram `documentation/diagrams/test_flow_ui_db_broker.svg/png` updated to show the new
+  back-off + DLQ flow and the new `hr_messages` columns.
+
+---
+
 ## [2026-04-27] - Cross Statistics Redesign
 
 ### Added

@@ -5,6 +5,28 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-04-27] - Broker outbox: exponential back-off, batch send, dead-letter
+
+### Added
+- Exponential back-off + dead-letter in the HR outbox (`Broker.check_and_send_messages` /
+  `MomRepository.mark_failure`). After `max_attempts` failures the row is parked in
+  `dead_letter = TRUE` instead of being retried forever.
+- Batched send (up to `batch_size` due rows per cycle) — much faster recovery after
+  outages; oldest-first scheduling avoids head-of-line blocking.
+- New columns on `hr_messages`: `attempt_count`, `next_retry_at`, `dead_letter`,
+  `last_error`. Migration `e5f6a7b8c9d0` adds them with a `(dead_letter, next_retry_at)`
+  composite index.
+- Tunables under `broker:` in YAML (`poll_interval_s`, `batch_size`, `max_attempts`,
+  `base_backoff_s`, `max_backoff_s`) exposed via `ApplicationConfig.broker_*`.
+
+### Changed / Removed
+- `MomRepository.get_last_added_hr_message_by_send_date` removed; replaced by
+  `get_due_pending_messages(limit, now)` which is dead-letter aware and oldest-first.
+- `documentation/PHEF_DATA_FLOW.md` and `documentation/diagrams/test_flow_ui_db_broker.*`
+  updated to reflect the new flow.
+
+---
+
 ## [2026-04-27] - Cross Statistics Redesign
 
 ### Added

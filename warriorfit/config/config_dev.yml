@@ -30,3 +30,14 @@ gdpr:
   audit_retention_days: 365
   # Retention for HR broker messages (days).
   hr_message_retention_days: 90
+broker:
+  # How often the worker wakes up to drain the queue and send messages.
+  poll_interval_s: 5
+  # How many due messages we attempt to send per worker cycle.
+  batch_size: 5
+  # After this many failed attempts, a message is moved to dead-letter
+  # (broker stops retrying it; it stays in hr_messages with dead_letter=True).
+  max_attempts: 10
+  # Exponential back-off bounds (seconds): delay = min(base * 2**(attempt-1), max).
+  base_backoff_s: 5
+  max_backoff_s: 600
