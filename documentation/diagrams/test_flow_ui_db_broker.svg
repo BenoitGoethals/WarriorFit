@@ -95,7 +95,7 @@
 
     <!-- worker loop lane -->
     <rect x="580" y="335" width="320" height="200" rx="10" fill="#fff5e8" stroke="#b8860b" stroke-width="1.5"/>
-    <text x="740" y="358" text-anchor="middle" font-weight="bold">worker() — every 5 s</text>
+    <text x="740" y="358" text-anchor="middle" font-weight="bold">worker() — every poll_interval_s (default 5 s)</text>
     <text x="595" y="380" font-size="12" font-weight="bold">_process_cycle():</text>
     <text x="595" y="398" font-size="12">1) Drain in-memory queue:</text>
     <text x="610" y="414" font-size="12">while not queue.empty():</text>
