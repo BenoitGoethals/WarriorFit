@@ -58,6 +58,29 @@ class CrossStaticsController:
         await self._ensure()
         return self._ext["overview"]  # type: ignore[index]
 
+    async def overview_per_distance_df(self) -> pd.DataFrame:
+        await self._ensure()
+        df = self._ext["overview_per_distance"].copy()  # type: ignore[index]
+        if df.empty:
+            return df
+        df["best_time"] = df["best_time"].apply(Formatter.format_time)
+        df["avg_time"] = df["avg_time"].apply(Formatter.format_time)
+        df["median_time"] = df["median_time"].apply(Formatter.format_time)
+        df["gap_time"] = df["gap_time"].apply(Formatter.format_time)
+        df["std_time"] = df["std_time"].round(1)
+        return df.rename(
+            columns={
+                "distance": "Dist (km)",
+                "finishers": "Finishers",
+                "unique_runners": "Runners",
+                "best_time": "Best",
+                "avg_time": "Avg",
+                "median_time": "Median",
+                "std_time": "Std (s)",
+                "gap_time": "Gap",
+            }
+        )
+
     async def per_cross_df(self) -> pd.DataFrame:
         await self._ensure()
         df = self._ext["per_cross"].copy()  # type: ignore[index]

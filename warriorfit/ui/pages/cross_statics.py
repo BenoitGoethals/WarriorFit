@@ -39,35 +39,38 @@ class CrossStaticsPage(Page):
                 ),
                 class_="d-flex align-items-center mb-3",
             ),
-            # KPI strip
+            # KPI strip — only distance-agnostic counts here.
+            # Time KPIs (best/avg/median) live in the per-distance grid below.
             ui.layout_columns(
                 ui.value_box("Crosses", ui.output_text("kpi_crosses"), theme="primary"),
                 ui.value_box("Finishers", ui.output_text("kpi_finishers"), theme="primary"),
                 ui.value_box("Unique runners", ui.output_text("kpi_unique"), theme="primary"),
-                ui.value_box("Best time", ui.output_text("kpi_best"), theme="success"),
-                ui.value_box("Avg time", ui.output_text("kpi_avg"), theme="info"),
-                ui.value_box("Median", ui.output_text("kpi_median"), theme="info"),
-                col_widths=[2, 2, 2, 2, 2, 2],
+                col_widths=[4, 4, 4],
             ),
             ui.br(),
             ui.navset_card_tab(
                 # ----- Overview -----
                 ui.nav_panel(
                     "Overview",
-                    ui.layout_columns(
-                        ui.card(
-                            ui.card_header("Spread", class_="bg-primary text-white"),
-                            ui.output_ui("overview_spread"),
+                    ui.card(
+                        ui.card_header(
+                            "Best / Avg / Median per distance",
+                            class_="bg-primary text-white",
                         ),
+                        ui.output_data_frame("overview_per_distance_grid"),
+                    ),
+                    ui.layout_columns(
                         ui.card(
                             ui.card_header("Gender averages", class_="bg-primary text-white"),
                             ui.output_ui("overview_gender"),
                         ),
                         ui.card(
-                            ui.card_header("Age groups (unique persons)", class_="bg-primary text-white"),
+                            ui.card_header(
+                                "Age groups (unique persons)", class_="bg-primary text-white"
+                            ),
                             ui.output_ui("overview_age_group"),
                         ),
-                        col_widths=[4, 4, 4],
+                        col_widths=[6, 6],
                     ),
                 ),
                 # ----- Per cross -----
@@ -237,39 +240,27 @@ class CrossStaticsPage(Page):
             ov = await self._controller.overview()
             return str(ov.get("unique_runners", 0))
 
-        @output
-        @render.text
-        async def kpi_best():
-            _ = self.refresh_tick.get()
-            ov = await self._controller.overview()
-            return Formatter.format_time(ov.get("best_time", 0))
-
-        @output
-        @render.text
-        async def kpi_avg():
-            _ = self.refresh_tick.get()
-            ov = await self._controller.overview()
-            return Formatter.format_time(ov.get("avg_time", 0))
-
-        @output
-        @render.text
-        async def kpi_median():
-            _ = self.refresh_tick.get()
-            ov = await self._controller.overview()
-            return Formatter.format_time(ov.get("median_time", 0))
-
         # ----- Overview cards -----
 
         @output
-        @render.ui
-        async def overview_spread():
+        @render.data_frame
+        async def overview_per_distance_grid():
             _ = self.refresh_tick.get()
-            ov = await self._controller.overview()
-            return ui.tags.ul(
-                ui.tags.li(f"Std dev: {ov.get('std_time', 0):.1f} s"),
-                ui.tags.li(f"Gap (worst − best): {Formatter.format_time(ov.get('gap_time', 0))}"),
-                ui.tags.li(f"Median: {Formatter.format_time(ov.get('median_time', 0))}"),
-            )
+            df = await self._controller.overview_per_distance_df()
+            if df.empty:
+                df = pd.DataFrame(
+                    columns=[
+                        "Dist (km)",
+                        "Finishers",
+                        "Runners",
+                        "Best",
+                        "Avg",
+                        "Median",
+                        "Std (s)",
+                        "Gap",
+                    ]
+                )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         @output
         @render.ui

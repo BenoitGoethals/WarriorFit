@@ -277,16 +277,20 @@ class ServiceCross(Service):
         Compute a rich bundle of statistics for the cross-statistics page.
 
         Returned keys:
-            overview            Headline KPIs across all crosses.
-            per_cross           Per-event aggregates (count, avg, median, std, gap, pace).
-            per_runner          Personal best, race count, average pace per serial.
-            age_distance_best   Best time per (age_group, distance).
-            age_distance_avg    Average time per (age_group, distance).
-            gender_distance     Avg time and count per (gender, distance).
-            trends              Average running_time per cross_date (chronological).
-            podium              Podium frequency per serial across distances.
-            data_quality        Unmatched serials, registered-but-never-raced, missing times.
-            distances           Sorted list of distances actually present in the data.
+            overview              Distance-agnostic headline counts only
+                                  (total_crosses, total_finishers, unique_runners).
+            overview_per_distance Best/avg/median/std/gap per distance — these
+                                  metrics are meaningless when aggregated across
+                                  different race lengths.
+            per_cross             Per-event aggregates (count, avg, median, std, gap, pace).
+            per_runner            Personal best, race count, average pace per serial.
+            age_distance_best     Best time per (age_group, distance).
+            age_distance_avg      Average time per (age_group, distance).
+            gender_distance       Avg time and count per (gender, distance).
+            trends                Average running_time per cross_date (chronological).
+            podium                Podium frequency per serial across distances.
+            data_quality          Unmatched serials, registered-but-never-raced, missing times.
+            distances             Sorted list of distances actually present in the data.
         """
         all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
         empty: dict[str, Any] = {
@@ -294,12 +298,19 @@ class ServiceCross(Service):
                 "total_crosses": 0,
                 "total_finishers": 0,
                 "unique_runners": 0,
-                "avg_time": 0.0,
-                "median_time": 0.0,
-                "std_time": 0.0,
-                "best_time": 0.0,
-                "gap_time": 0.0,
             },
+            "overview_per_distance": pd.DataFrame(
+                columns=[
+                    "distance",
+                    "finishers",
+                    "unique_runners",
+                    "best_time",
+                    "avg_time",
+                    "median_time",
+                    "std_time",
+                    "gap_time",
+                ]
+            ),
             "per_cross": pd.DataFrame(),
             "per_runner": pd.DataFrame(),
             "age_distance_best": pd.DataFrame(),
@@ -372,19 +383,34 @@ class ServiceCross(Service):
 
         distances = sorted(df2["distance"].dropna().unique().tolist())
 
-        # ----- Overview -----
+        # ----- Overview (distance-agnostic counts only) -----
         overview = {
             "total_crosses": int(df2["cross_id"].nunique()),
             "total_finishers": int(len(df2)),
             "unique_runners": int(df2["serial_number"].dropna().nunique()),
-            "avg_time": float(df2["running_time"].mean()),
-            "median_time": float(df2["running_time"].median()),
-            "std_time": float(df2["running_time"].std(ddof=0))
-            if len(df2) > 1
-            else 0.0,
-            "best_time": float(df2["running_time"].min()),
-            "gap_time": float(df2["running_time"].max() - df2["running_time"].min()),
         }
+
+        # ----- Overview per distance -----
+        # Time KPIs MUST be grouped by distance — comparing 5K and 10K times
+        # in a single average/best/median is meaningless.
+        overview_per_distance = (
+            df2.groupby("distance", dropna=False)
+            .agg(
+                finishers=("running_time", "count"),
+                unique_runners=("serial_number", lambda s: int(s.dropna().nunique())),
+                best_time=("running_time", "min"),
+                avg_time=("running_time", "mean"),
+                median_time=("running_time", "median"),
+                std_time=("running_time", lambda s: float(s.std(ddof=0)) if len(s) > 1 else 0.0),
+                worst_time=("running_time", "max"),
+            )
+            .reset_index()
+            .sort_values("distance")
+        )
+        overview_per_distance["gap_time"] = (
+            overview_per_distance["worst_time"] - overview_per_distance["best_time"]
+        )
+        overview_per_distance = overview_per_distance.drop(columns=["worst_time"])
 
         # ----- Per cross -----
         per_cross = (
@@ -454,19 +480,24 @@ class ServiceCross(Service):
         )
 
         # ----- Gender × distance -----
-        g_df = df2.dropna(subset=["gender"])
-        gender_distance = (
-            g_df.groupby(["gender", "distance"], dropna=False)
-            .agg(
-                avg_time=("running_time", "mean"),
-                count=("running_time", "count"),
+        # Convert Gender enum -> str BEFORE groupby (enums aren't orderable for pandas factorize).
+        g_df = df2.dropna(subset=["gender"]).copy()
+        if not g_df.empty:
+            g_df["gender"] = g_df["gender"].apply(
+                lambda g: getattr(g, "name", None) or getattr(g, "value", None) or str(g)
             )
-            .reset_index()
-            if not g_df.empty
-            else pd.DataFrame(columns=["gender", "distance", "avg_time", "count"])
-        )
-        if not gender_distance.empty:
-            gender_distance["gender"] = gender_distance["gender"].astype(str)
+            gender_distance = (
+                g_df.groupby(["gender", "distance"], dropna=False)
+                .agg(
+                    avg_time=("running_time", "mean"),
+                    count=("running_time", "count"),
+                )
+                .reset_index()
+            )
+        else:
+            gender_distance = pd.DataFrame(
+                columns=["gender", "distance", "avg_time", "count"]
+            )
 
         # ----- Trends (chronological average per cross) -----
         if "cross_datetime" in df2.columns and df2["cross_datetime"].notna().any():
@@ -535,6 +566,7 @@ class ServiceCross(Service):
 
         return {
             "overview": overview,
+            "overview_per_distance": overview_per_distance,
             "per_cross": per_cross,
             "per_runner": per_runner,
             "age_distance_best": age_distance_best,
