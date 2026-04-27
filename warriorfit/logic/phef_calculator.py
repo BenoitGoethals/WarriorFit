@@ -678,7 +678,9 @@ class PhefCalculator:
         elif isinstance(running_time, str):
             running_time = cls.convert_to_seconds(running_time)
         elif not isinstance(running_time, (int, float)):
-            raise TypeError(f"Tijd moet een int of float zijn, niet {type(running_time)}")
+            raise TypeError(
+                f"Tijd moet een int of float zijn, niet {type(running_time)}"
+            )
 
         # Leeftijdscategorie bepalen
         if age < 30:
@@ -751,21 +753,43 @@ class PhefCalculator:
 
 
 assert PhefCalculator.running_result(571, 20, Gender.M) == 20
-assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 20, Gender.F) == 18
-assert PhefCalculator.running_result(PhefCalculator.convert_to_seconds("11:15"), 43, Gender.M) == 14
+assert (
+    PhefCalculator.running_result(
+        PhefCalculator.convert_to_seconds("11:15"), 20, Gender.F
+    )
+    == 18
+)
+assert (
+    PhefCalculator.running_result(
+        PhefCalculator.convert_to_seconds("11:15"), 43, Gender.M
+    )
+    == 14
+)
 
 assert (
-    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.M) == 14
+    PhefCalculator.side_bridge_result(
+        PhefCalculator.convert_to_seconds("1:20"), 44, Gender.M
+    )
+    == 14
 )
 assert (
-    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:20"), 44, Gender.F) == 16
+    PhefCalculator.side_bridge_result(
+        PhefCalculator.convert_to_seconds("1:20"), 44, Gender.F
+    )
+    == 16
 )
 
 assert (
-    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.M) == 10
+    PhefCalculator.side_bridge_result(
+        PhefCalculator.convert_to_seconds("1:05"), 35, Gender.M
+    )
+    == 10
 )
 assert (
-    PhefCalculator.side_bridge_result(PhefCalculator.convert_to_seconds("1:05"), 35, Gender.F) == 12
+    PhefCalculator.side_bridge_result(
+        PhefCalculator.convert_to_seconds("1:05"), 35, Gender.F
+    )
+    == 12
 )
 
 assert PhefCalculator.running_result("11:15", 20, Gender.F) == 18

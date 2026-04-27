@@ -25,7 +25,9 @@ class PhefController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
 
     # ----- Helpers -----
     @staticmethod
@@ -103,11 +105,15 @@ class PhefController:
         if not (data.get("serialnr") or "").strip():
             return False, "Serial number is required."
 
-        ok_sbr, sbr = PhefController.parse_time_to_seconds(data.get("side_bridge_r") or "")
+        ok_sbr, sbr = PhefController.parse_time_to_seconds(
+            data.get("side_bridge_r") or ""
+        )
         if not ok_sbr:
             return False, f"Side-bridge Right: {sbr}"
 
-        ok_sbl, sbl = PhefController.parse_time_to_seconds(data.get("side_bridge_l") or "")
+        ok_sbl, sbl = PhefController.parse_time_to_seconds(
+            data.get("side_bridge_l") or ""
+        )
         if not ok_sbl:
             return False, f"Side-bridge Left: {sbl}"
 
@@ -132,7 +138,9 @@ class PhefController:
         :return: A coroutine that resolves to the list of all retrieved test sessions.
         :rtype: list
         """
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.PHEF)
+        return await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.PHEF
+        )
 
     async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
         return await self._service.get_test_session_by_id(int(session_id))
@@ -300,7 +308,9 @@ class PhefController:
             int(session_id), p, military, session
         )
 
-    async def update_phef(self, phef_id: int, payload: Dict[str, Any]) -> Optional[PhefTest]:
+    async def update_phef(
+        self, phef_id: int, payload: Dict[str, Any]
+    ) -> Optional[PhefTest]:
         """
         Updates an existing PhefTest instance with new data and persists the updates
         using the service layer. The method processes the provided payload, assigns

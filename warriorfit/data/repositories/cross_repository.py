@@ -129,7 +129,9 @@ class CrossRepository(ABCRepository):
                     cross = await session.get(Cross, id)
                     if not cross:
                         return False
-                    await session.delete(cross)  # delete supports await with AsyncSession in SA 2.x
+                    await session.delete(
+                        cross
+                    )  # delete supports await with AsyncSession in SA 2.x
                     return True
         except IntegrityError as e:
             self._logger.error("Integrity error removing cross %d: %s", id, str(e))
@@ -191,7 +193,9 @@ class CrossRepository(ABCRepository):
                     )
                     if exists.scalar() is None:
                         await session.execute(
-                            insert(CrossRunners).values(cross_id=cross_id, runner_id=runner.id)
+                            insert(CrossRunners).values(
+                                cross_id=cross_id, runner_id=runner.id
+                            )
                         )
 
                     # If you need current state, refresh here while session is active
@@ -324,7 +328,9 @@ class CrossRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    existing_cross = await session.get(Cross, cross.id)  # use class, not instance
+                    existing_cross = await session.get(
+                        Cross, cross.id
+                    )  # use class, not instance
                     if not existing_cross:
                         self._logger.error("Cross with ID %d not found.", cross.id)
                         return None
@@ -365,7 +371,9 @@ class CrossRepository(ABCRepository):
         try:
             cross_id_int = int(cross_id)
         except (TypeError, ValueError):
-            self._logger.warning(f"exist_in_cross called with non-integer cross_id={cross_id!r}")
+            self._logger.warning(
+                f"exist_in_cross called with non-integer cross_id={cross_id!r}"
+            )
             return False
 
         stmt = select(
@@ -419,7 +427,9 @@ class CrossRepository(ABCRepository):
                         )
                         if exists.scalar() is None:
                             await session.execute(
-                                insert(CrossRunners).values(cross_id=cross_id, runner_id=runner.id)
+                                insert(CrossRunners).values(
+                                    cross_id=cross_id, runner_id=runner.id
+                                )
                             )
 
                     # Mark cross as executed after all runners are saved

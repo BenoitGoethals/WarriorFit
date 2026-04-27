@@ -16,7 +16,9 @@ class StatusLoginUser(Page):
     @inject
     def __init__(
         self,
-        controller: StatusLogUserController = Provide[Container.status_log_user_controller],
+        controller: StatusLogUserController = Provide[
+            Container.status_log_user_controller
+        ],
     ):
         super().__init__()
         self.controller = controller
@@ -87,7 +89,10 @@ class StatusLoginUser(Page):
 
         @render.text
         def version_header():
-            return f"Version : {ApplicationConfig().version[0]}  Date :{ApplicationConfig().version[2]}"
+            v = ApplicationConfig().version
+            if v is None:
+                return "Version : -  Date : -"
+            return f"Version : {v[0]}  Date :{v[2]}"
 
         @render.text
         def welcome_subheader():
@@ -130,7 +135,9 @@ class StatusLoginUser(Page):
         async def sessions_grid():
             self.refresh_tick.get()
             df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)  # type: ignore[arg-type, union-attr]
-            return render.DataGrid(df, width="100%", filters=True, selection_mode="none")
+            return render.DataGrid(
+                df, width="100%", filters=True, selection_mode="none"
+            )
 
 
 _page = None

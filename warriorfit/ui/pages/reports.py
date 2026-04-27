@@ -37,7 +37,9 @@ class ReportsPage(Page):
             ui.h2("Reports"),
             ui.layout_sidebar(
                 ui.sidebar(
-                    ui.input_text("report_title", "Report Title:", "Fitness Test Report"),
+                    ui.input_text(
+                        "report_title", "Report Title:", "Fitness Test Report"
+                    ),
                     ui.input_checkbox("own_Unit", "Own Unit", value=True),
                     ui.input_checkbox("this_year", "This Year", value=True),
                     ui.input_select(
@@ -63,7 +65,9 @@ class ReportsPage(Page):
                     ui.input_action_button(
                         "generate_report", "Generate Report", class_="btn-primary"
                     ),
-                    ui.download_button("download_report", "Download", class_="btn-primary"),
+                    ui.download_button(
+                        "download_report", "Download", class_="btn-primary"
+                    ),
                     width=300,
                 ),
                 ui.card(

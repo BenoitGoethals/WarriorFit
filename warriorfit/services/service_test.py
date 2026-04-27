@@ -70,7 +70,9 @@ class ServiceTest(Service):
         return await self._test_repo.get_all_combat_swimming_test(id)
 
     async def get_all_test_sessions_type_fitness_test(self, type_test, this_year=True):
-        return await self._test_repo.get_all_test_sessions_type_fitness_test(type_test, this_year)
+        return await self._test_repo.get_all_test_sessions_type_fitness_test(
+            type_test, this_year
+        )
 
     async def get_all_test_sessions_type_fitness_test_for_service_men(
         self, serial: str, type_test, this_year=True
@@ -109,7 +111,9 @@ class ServiceTest(Service):
         """
         from warriorfit.app import FitnessWarriorApp
 
-        add_test = await self._test_repo.add_fitness_test_to_TestSession(fitness_test, test)
+        add_test = await self._test_repo.add_fitness_test_to_TestSession(
+            fitness_test, test
+        )
         body = ""
         if add_test or military is None or military.unit is None:
             match test.type:
@@ -124,9 +128,13 @@ class ServiceTest(Service):
                     body = self.build_email_body_combat(test)
             await FitnessWarriorApp.get_broker().send_message(test)
             if body:
-                notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
+                notify = (
+                    self._notify_mail if self._notify_mail is not None else NotifyMail()
+                )
                 await notify.send_mail(
-                    body=body, subject="Result Test", to=str(military.mail if military else "")
+                    body=body,
+                    subject="Result Test",
+                    to=str(military.mail if military else ""),
                 )
             await self.add_audit_log(
                 details=f"Fitness test {test.serial_number} {test.type} added to test session {fitness_test}",
@@ -136,7 +144,9 @@ class ServiceTest(Service):
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
-        deleted = await self._test_repo.delete_fitness_test_from_test_session(param, param1)
+        deleted = await self._test_repo.delete_fitness_test_from_test_session(
+            param, param1
+        )
         if deleted:
             await self.add_audit_log(
                 details=f"Fitness test {param1} deleted from test session {param}",
@@ -179,7 +189,9 @@ class ServiceTest(Service):
     async def delete_test_session(self, sel_id):
         deleted = await self._test_repo.delete_test_session(sel_id)
         if deleted:
-            await self.add_audit_log(details=f"Test session {sel_id} deleted", action="delete")
+            await self.add_audit_log(
+                details=f"Test session {sel_id} deleted", action="delete"
+            )
         return deleted
 
     async def get_all_pti(self):

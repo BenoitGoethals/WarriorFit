@@ -106,7 +106,9 @@ class MomRepository(ABCRepository):
                     result = await session.execute(query)
 
                     if result.rowcount == 0:
-                        self._logger.error("No HR message found with ID %s to delete.", id_msg)
+                        self._logger.error(
+                            "No HR message found with ID %s to delete.", id_msg
+                        )
                         return False
                     return True
         except SQLAlchemyError as e:

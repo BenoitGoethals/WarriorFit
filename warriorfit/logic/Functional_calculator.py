@@ -321,7 +321,9 @@ class FunctionalCalculator:
                  provided inputs.
         :rtype: float
         """
-        return cls._calculate_score(gender, age, count, cls.PULLUPS_MEN, cls.PULLUPS_WOMEN)
+        return cls._calculate_score(
+            gender, age, count, cls.PULLUPS_MEN, cls.PULLUPS_WOMEN
+        )
 
     @classmethod
     def get_score_situp(cls, gender: Gender, age: int, count: int) -> float:
@@ -341,7 +343,9 @@ class FunctionalCalculator:
         :return: The sit-up performance score calculated based on the inputs.
         :rtype: float
         """
-        return cls._calculate_score(gender, age, count, cls.SIT_UP_MEN, cls.SIT_UP_WOMEN)
+        return cls._calculate_score(
+            gender, age, count, cls.SIT_UP_MEN, cls.SIT_UP_WOMEN
+        )
 
     @classmethod
     def get_score_pushup(cls, gender: Gender, age: int, count: int) -> float:
@@ -359,10 +363,14 @@ class FunctionalCalculator:
         :return: A float value representing the calculated score for push-ups.
         :rtype: float
         """
-        return cls._calculate_score(gender, age, count, cls.PUSH_UPS_MEN, cls.PUSH_UPS_WOMEN)
+        return cls._calculate_score(
+            gender, age, count, cls.PUSH_UPS_MEN, cls.PUSH_UPS_WOMEN
+        )
 
     @classmethod
-    def get_scores(cls, gender: Gender, age: int, count: int) -> Tuple[float, float, float]:
+    def get_scores(
+        cls, gender: Gender, age: int, count: int
+    ) -> Tuple[float, float, float]:
         """
         Computes the performance scores for pullups, situps, and pushups based on the input
         parameters such as gender, age, and count. This method uses the corresponding class

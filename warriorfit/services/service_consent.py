@@ -23,13 +23,15 @@ CURRENT_CONSENT_VERSIONS = {
 class ConsentService(Service):
     def __init__(
         self,
-        consent_repository: ConsentRepository = None,  # type: ignore[assignment]
+        consent_repository: ConsentRepository | None = None,
         user_repository=None,
         config=None,
     ):
         super().__init__(user_repository=user_repository, config=config)
         self._consent_repo = (
-            consent_repository if consent_repository is not None else ConsentRepository()
+            consent_repository
+            if consent_repository is not None
+            else ConsentRepository()
         )
 
     async def grant(

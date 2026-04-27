@@ -24,7 +24,9 @@ class CalendarPage(Page):
     @inject
     def __init__(
         self,
-        controller: CalendarEventsController = Provide[Container.calendar_events_controller],
+        controller: CalendarEventsController = Provide[
+            Container.calendar_events_controller
+        ],
     ) -> None:
         super().__init__()
         self._refresh_counter = reactive.Value(0)

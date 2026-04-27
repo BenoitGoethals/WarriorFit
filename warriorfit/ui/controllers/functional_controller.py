@@ -26,7 +26,9 @@ class FunctionalController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
 
     # ----- Helpers -----
     @staticmethod
@@ -102,9 +104,15 @@ class FunctionalController:
                     continue
                 gender = self.normalize_gender(sm.gender)
                 age = sm.age_from_birthdate()
-                pull = FunctionalCalculator.get_score_pullup(gender, age, int(r.pull_ups))
-                situp = FunctionalCalculator.get_score_situp(gender, age, int(r.sit_ups))
-                push = FunctionalCalculator.get_score_pushup(gender, age, int(r.push_ups))
+                pull = FunctionalCalculator.get_score_pullup(
+                    gender, age, int(r.pull_ups)
+                )
+                situp = FunctionalCalculator.get_score_situp(
+                    gender, age, int(r.sit_ups)
+                )
+                push = FunctionalCalculator.get_score_pushup(
+                    gender, age, int(r.push_ups)
+                )
                 total = ((pull + situp + push) / 60) * 100
                 data.append(
                     {
@@ -153,7 +161,9 @@ class FunctionalController:
                     sit_score = float(row.get("Sit-ups-score", 0))
                     pull_score = float(row.get("Pull-ups-score", 0))
 
-                    all_scores_valid = push_score > 10 and sit_score > 10 and pull_score > 10
+                    all_scores_valid = (
+                        push_score > 10 and sit_score > 10 and pull_score > 10
+                    )
                     passes = n >= 50 and all_scores_valid
 
                     return f"🟩 {n:.0f}" if passes else f"❌ {n:.0f}"

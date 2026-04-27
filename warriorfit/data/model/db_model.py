@@ -37,8 +37,12 @@ class AuditLog(Base):
 
     __tablename__ = "audit_logs"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
+    user_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
     action: Mapped[str] = mapped_column(String(50), nullable=False)
     details: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
@@ -50,7 +54,9 @@ class AuditLog(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -59,7 +65,9 @@ class User(Base):
     )
     role: Mapped[Role] = mapped_column(SAEnum(Role), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    serial_number: Mapped[Optional[str]] = mapped_column(String(50), unique=True, nullable=True)
+    serial_number: Mapped[Optional[str]] = mapped_column(
+        String(50), unique=True, nullable=True
+    )
 
     # Optional 1:1 link User <-> ServiceMen (via ServiceMen.user_id)
     serviceman: Mapped[Optional["ServiceMen"]] = relationship(
@@ -67,6 +75,7 @@ class User(Base):
         back_populates="user",
         uselist=False,
     )
+
 
 class UserConsent(Base):
     """GDPR Art. 7 consent record. Append-only: a withdrawal sets `withdrawn_at`
@@ -82,14 +91,16 @@ class UserConsent(Base):
         ),
     )
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     service_number: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     consent_type: Mapped[str] = mapped_column(String(64), nullable=False)
     version: Mapped[str] = mapped_column(String(16), nullable=False)
-    consent_given_at: Mapped[TIMESTAMP] = mapped_column(
+    consent_given_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, server_default=func.current_timestamp(), nullable=False
     )
-    withdrawn_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP, nullable=True)
+    withdrawn_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
 
 
@@ -101,7 +112,9 @@ class UserConsent(Base):
 class FitnessTest(Base):
     __tablename__ = "fitness_tests"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
 
     # Link FitnessTest -> ServiceMen via service_number (enforced by FK)
     serial_number: Mapped[Optional[str]] = mapped_column(
@@ -183,7 +196,9 @@ class CombatTestParatrooper(FitnessTest):
 
     id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
     running_time: Mapped[float] = mapped_column(Float, nullable=False)
-    obstacle_passed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    obstacle_passed: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
     rope_passed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": "combat_test"}
@@ -219,7 +234,9 @@ class CombatSwimmingTest(FitnessTest):
 class TestSession(Base):
     __tablename__ = "test_sessions"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     serial_number_pti: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     datetime_start: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
     canceled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -252,8 +269,12 @@ class TestSession(Base):
 class SessionFitnessTests(Base):
     __tablename__ = "session_fitness_tests"
 
-    session_id: Mapped[int] = mapped_column(ForeignKey("test_sessions.id"), primary_key=True)
-    fitness_test_id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
+    session_id: Mapped[int] = mapped_column(
+        ForeignKey("test_sessions.id"), primary_key=True
+    )
+    fitness_test_id: Mapped[int] = mapped_column(
+        ForeignKey("fitness_tests.id"), primary_key=True
+    )
 
 
 # ----------------------------
@@ -264,7 +285,9 @@ class SessionFitnessTests(Base):
 class Cross(Base):
     __tablename__ = "cross"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     datetime_start: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
     distance: Mapped[float] = mapped_column(Float, nullable=False)
     executed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -292,7 +315,9 @@ class Cross(Base):
 class Runner(Base):
     __tablename__ = "runners"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     serial_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     running_time: Mapped[float] = mapped_column(Float, nullable=False)
 
@@ -319,7 +344,9 @@ class Unit(Base):
     __tablename__ = "units"
     __table_args__ = (UniqueConstraint("name", name="uq_units_name"),)
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     base_location: Mapped[str] = mapped_column(String(150), nullable=False)
 
@@ -332,9 +359,13 @@ class Unit(Base):
 
 class ServiceMen(Base):
     __tablename__ = "service_men"
-    __table_args__ = (UniqueConstraint("service_number", name="uq_service_men_service_number"),)
+    __table_args__ = (
+        UniqueConstraint("service_number", name="uq_service_men_service_number"),
+    )
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     first_name: Mapped[str] = mapped_column(String(80), nullable=False)
     last_name: Mapped[str] = mapped_column(String(80), nullable=False)
     mail: Mapped[str] = mapped_column(String(120), nullable=False)
@@ -342,7 +373,9 @@ class ServiceMen(Base):
     service_number: Mapped[str] = mapped_column(String(50), nullable=False)
     birthdate: Mapped[date] = mapped_column(Date, nullable=False)
     gender: Mapped[Gender] = mapped_column(Enum(Gender), nullable=False)
-    unit_id: Mapped[int] = mapped_column(ForeignKey("units.id"), nullable=False, index=True)
+    unit_id: Mapped[int] = mapped_column(
+        ForeignKey("units.id"), nullable=False, index=True
+    )
     unit: Mapped["Unit"] = relationship("Unit", backref="servicemen")
     para: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     ops_test: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -393,7 +426,9 @@ class ServiceMen(Base):
         today = date.today()
         return today.year - d.year - ((today.month, today.day) < (d.month, d.day))
 
-    def age_from_birthdate_and_session_date(self, date_session: date | TIMESTAMP) -> int:
+    def age_from_birthdate_and_session_date(
+        self, date_session: date | TIMESTAMP
+    ) -> int:
         if isinstance(self.birthdate, str):
             b = datetime.strptime(self.birthdate, "%Y-%m-%d").date()
         elif isinstance(self.birthdate, datetime):
@@ -422,7 +457,9 @@ class ServiceMen(Base):
 class March(Base):
     __tablename__ = "march"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
 
     # Link March -> ServiceMen via service_number (enforced by FK)
     service_number: Mapped[Optional[str]] = mapped_column(
@@ -445,7 +482,9 @@ class March(Base):
 class HrMessage(Base):
     __tablename__ = "hr_messages"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     message: Mapped[str] = mapped_column(String(255), nullable=False)
     datetime_created: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False)
 
@@ -453,7 +492,9 @@ class HrMessage(Base):
 class Room(Base):
     __tablename__ = "rooms"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     capacity: Mapped[int] = mapped_column(nullable=False)
     location: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -467,14 +508,20 @@ class Room(Base):
 class Reservation(Base):
     __tablename__ = "reservations"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
     room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), nullable=False)
     date: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
-    start_time: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
+    start_time: Mapped[datetime] = mapped_column(
+        server_default=func.current_timestamp()
+    )
     end_time: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
     serial_number: Mapped[str] = mapped_column(String(50), nullable=False)
     activity: Mapped[str] = mapped_column(String(100), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=func.current_timestamp()
+    )
 
     room: Mapped["Room"] = relationship(
         "Room",

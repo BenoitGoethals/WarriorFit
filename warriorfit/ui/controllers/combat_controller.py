@@ -26,7 +26,9 @@ class CombatController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
         self._logger = logging.getLogger(__name__)
 
     # ----- Helpers -----
@@ -83,7 +85,9 @@ class CombatController:
         return f"{int(m)}:{int(s):02d}"
 
     @staticmethod
-    def overall_passed(obstacle_passed: bool, rope_passed: bool, running_time_s: int) -> bool:
+    def overall_passed(
+        obstacle_passed: bool, rope_passed: bool, running_time_s: int
+    ) -> bool:
         return obstacle_passed and rope_passed and running_time_s <= 7200
 
     async def load_sessions(self):
@@ -97,7 +101,9 @@ class CombatController:
         :return: A coroutine that resolves to the list of test sessions.
         :rtype: listfTime must be <=
         """
-        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.COMBAT)
+        return await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.COMBAT
+        )
 
     async def search_military(self, serial_nr: str) -> Optional[ServiceMen]:
         """
@@ -139,7 +145,9 @@ class CombatController:
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
                 if sm is None:
                     continue
-                total = self.overall_passed(r.obstacle_passed, r.rope_passed, r.running_time)
+                total = self.overall_passed(
+                    r.obstacle_passed, r.rope_passed, r.running_time
+                )
                 data.append(
                     {
                         "ID": r.id,

@@ -14,12 +14,16 @@ class MilitaryService:
     unit data.
     """
 
-    def __init__(self, repo: ServicemenRepository = None, be_mil_service: BEMILService = None):
+    def __init__(
+        self, repo: ServicemenRepository = None, be_mil_service: BEMILService = None
+    ):
         """
         Initializes the MilitaryService with a ServicemenRepository.
         """
         self._repo = repo if repo is not None else ServicemenRepository()
-        self._be_mil_service = be_mil_service if be_mil_service is not None else BEMILService()
+        self._be_mil_service = (
+            be_mil_service if be_mil_service is not None else BEMILService()
+        )
 
     async def add_service_men(self, service_men):
         """
@@ -66,7 +70,9 @@ class MilitaryService:
         """
         return await self._repo.get_servicemen_by_id(ind_id)
 
-    async def get_servicemen_by_serial(self, serial: str, lazy=True) -> ServiceMen | None:
+    async def get_servicemen_by_serial(
+        self, serial: str, lazy=True
+    ) -> ServiceMen | None:
         sm = await self._repo.get_by_service_number(serial, lazy=lazy)
         if not sm:
             sm = await self._be_mil_service.get_be_mil_by_id(serial)

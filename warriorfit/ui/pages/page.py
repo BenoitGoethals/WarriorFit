@@ -67,7 +67,9 @@ class Page(ABC):
         )
         children: list = [input_group]
         if label:
-            children = [ui.tags.label(label, for_=input_id, class_="form-label")] + children
+            children = [
+                ui.tags.label(label, for_=input_id, class_="form-label")
+            ] + children
         return ui.div(*children, class_="form-group shiny-input-container")
 
     def refresh_on_nav(self, input, tab_name: str, refresh_tick=None):

@@ -10,11 +10,13 @@ from warriorfit.services.service_gdpr import GdprService
 class PrivacyController:
     def __init__(
         self,
-        gdpr_service: GdprService = None,  # type: ignore[assignment]
-        consent_service: ConsentService = None,  # type: ignore[assignment]
+        gdpr_service: GdprService | None = None,
+        consent_service: ConsentService | None = None,
     ):
         self._gdpr = gdpr_service if gdpr_service is not None else GdprService()
-        self._consent = consent_service if consent_service is not None else ConsentService()
+        self._consent = (
+            consent_service if consent_service is not None else ConsentService()
+        )
 
     @staticmethod
     def serviceman_serial(session_user) -> Optional[str]:
@@ -45,7 +47,9 @@ class PrivacyController:
     async def grant(
         self, service_number: str, consent_type: str, ip_address: Optional[str] = None
     ) -> bool:
-        result = await self._consent.grant(service_number, consent_type, ip_address=ip_address)
+        result = await self._consent.grant(
+            service_number, consent_type, ip_address=ip_address
+        )
         return result is not None
 
     async def withdraw(

@@ -44,12 +44,16 @@ class ServicemenRepository(ABCRepository):
             self._logger.exception(e)
             return None
 
-    async def get_by_service_number(self, service_number: str, lazy=True) -> ServiceMen | None:
+    async def get_by_service_number(
+        self, service_number: str, lazy=True
+    ) -> ServiceMen | None:
         """
         Get a single serviceman by unique service number.
         """
         if lazy:
-            query = select(ServiceMen).where(ServiceMen.service_number == service_number)
+            query = select(ServiceMen).where(
+                ServiceMen.service_number == service_number
+            )
         else:
             query = (
                 select(ServiceMen)

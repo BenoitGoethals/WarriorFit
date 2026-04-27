@@ -45,7 +45,9 @@ class ConsentRepository(ABCRepository):
                 await session.refresh(consent)
                 return consent
         except IntegrityError:
-            existing = await self.get_active_consent(service_number, consent_type, version)
+            existing = await self.get_active_consent(
+                service_number, consent_type, version
+            )
             return existing
         except SQLAlchemyError as e:
             self._logger.error(
@@ -83,7 +85,7 @@ class ConsentRepository(ABCRepository):
                     row = (await session.execute(stmt)).scalar_one_or_none()
                     if row is None:
                         return False
-                    row.withdrawn_at = datetime.now()  # type: ignore[assignment]
+                    row.withdrawn_at = datetime.now()
                     return True
         except SQLAlchemyError as e:
             self._logger.error(

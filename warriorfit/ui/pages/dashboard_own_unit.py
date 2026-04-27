@@ -21,7 +21,9 @@ class DashboardOwnUnitPage(Page):
     @inject
     def __init__(
         self,
-        controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller],
+        controller: DashboardOwnUnitController = Provide[
+            Container.dashboard_own_unit_controller
+        ],
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -72,7 +74,9 @@ class DashboardOwnUnitPage(Page):
             ui.br(),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("👥 Unit Personnel", class_="bg-secondary text-white"),
+                    ui.card_header(
+                        "👥 Unit Personnel", class_="bg-secondary text-white"
+                    ),
                     ui.output_ui("own_unit_personnel_stats"),
                     class_="text-center",
                 ),
