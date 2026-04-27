@@ -107,7 +107,13 @@ class DashboardOwnUnitPage(Page):
             ui.layout_columns(
                 ui.card(
                     ui.card_header(
-                        "🔌 Broker / HR System", class_="bg-dark text-white"
+                        "🔌 Broker / HR System",
+                        class_="text-dark fw-bold",
+                        style=(
+                            "background-color:#ffc107;"
+                            " border-bottom:2px solid #b88600;"
+                            " font-size:1.05rem;"
+                        ),
                     ),
                     ui.output_ui("broker_health_card"),
                     full_screen=False,
