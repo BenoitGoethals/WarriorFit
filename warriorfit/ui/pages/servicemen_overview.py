@@ -64,7 +64,9 @@ class ServicemenOverviewPage(Page):
         @render.data_frame
         async def so_grid():
             df = await df_val()
-            return render.DataGrid(df, filters=True, selection_mode="none", width="100%")
+            return render.DataGrid(
+                df, filters=True, selection_mode="none", width="100%"
+            )
 
         @reactive.effect
         @reactive.event(input.so_refresh)

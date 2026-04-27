@@ -91,7 +91,11 @@ class PrivacyPage(Page):
             rows = []
             for ct in PrivacyController.available_consent_types():
                 active = next(
-                    (c for c in consents if c["type"] == ct and c["withdrawn_at"] is None),
+                    (
+                        c
+                        for c in consents
+                        if c["type"] == ct and c["withdrawn_at"] is None
+                    ),
                     None,
                 )
                 label = ct.replace("_", " ").title()
@@ -139,7 +143,9 @@ class PrivacyPage(Page):
                         status.set(f"Grant '{ct}' error: {e}")
                         self.refresh()
                         return
-                    status.set(f"Consent '{ct}' granted." if ok else f"Grant '{ct}' failed.")
+                    status.set(
+                        f"Consent '{ct}' granted." if ok else f"Grant '{ct}' failed."
+                    )
                     self.refresh()
 
             def _bind_withdraw(ct=ct, withdraw_id=withdraw_id):
@@ -157,7 +163,9 @@ class PrivacyPage(Page):
                         self.refresh()
                         return
                     status.set(
-                        f"Consent '{ct}' withdrawn." if ok else f"Withdraw '{ct}' failed."
+                        f"Consent '{ct}' withdrawn."
+                        if ok
+                        else f"Withdraw '{ct}' failed."
                     )
                     self.refresh()
 

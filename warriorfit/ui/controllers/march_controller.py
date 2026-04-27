@@ -26,7 +26,9 @@ class MarchController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceMarch()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
         self._logger = logging.getLogger(__name__)
 
     async def get_all_march(self):
@@ -96,4 +98,6 @@ class MarchController:
         return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def get_march_is_unique(self, service_number, distance, datetime_executed):
-        return await self._service.get_march_is_unique(service_number, distance, datetime_executed)
+        return await self._service.get_march_is_unique(
+            service_number, distance, datetime_executed
+        )

@@ -13,7 +13,9 @@ from warriorfit.ui.pages.page import Page
 
 class SettingsPage(Page):
     @inject
-    def __init__(self, controller: SettingsController = Provide[Container.settings_controller]):
+    def __init__(
+        self, controller: SettingsController = Provide[Container.settings_controller]
+    ):
         super().__init__()
         self.controller = controller
         self._status = reactive.Value("")
@@ -22,7 +24,9 @@ class SettingsPage(Page):
     def refresh(self):
         pass
 
-    def _inline_label_input(self, *, label: str, input_tag: ui.Tag, label_for: str) -> ui.Tag:
+    def _inline_label_input(
+        self, *, label: str, input_tag: ui.Tag, label_for: str
+    ) -> ui.Tag:
         """Render label + input on the same line."""
         return ui.div(
             ui.tags.label(
@@ -55,12 +59,16 @@ class SettingsPage(Page):
                     self._inline_label_input(
                         label="Host",
                         label_for="db_host",
-                        input_tag=ui.input_text("db_host", None, placeholder="e.g., 78.21.255.25"),
+                        input_tag=ui.input_text(
+                            "db_host", None, placeholder="e.g., 78.21.255.25"
+                        ),
                     ),
                     self._inline_label_input(
                         label="Port",
                         label_for="db_port",
-                        input_tag=ui.input_numeric("db_port", None, value=5432, min=1, max=65535),
+                        input_tag=ui.input_numeric(
+                            "db_port", None, value=5432, min=1, max=65535
+                        ),
                     ),
                     self._inline_label_input(
                         label="Database",
@@ -72,7 +80,9 @@ class SettingsPage(Page):
                     self._inline_label_input(
                         label="Username",
                         label_for="db_username",
-                        input_tag=ui.input_text("db_username", None, placeholder="e.g., mike"),
+                        input_tag=ui.input_text(
+                            "db_username", None, placeholder="e.g., mike"
+                        ),
                     ),
                     self._inline_label_input(
                         label="Password",
@@ -90,7 +100,9 @@ class SettingsPage(Page):
                     self._inline_label_input(
                         label="Key",
                         label_for="hr_key",
-                        input_tag=ui.input_text("hr_key", None, placeholder="e.g., 1234567890"),
+                        input_tag=ui.input_text(
+                            "hr_key", None, placeholder="e.g., 1234567890"
+                        ),
                     ),
                 ),
                 ui.card(
@@ -106,7 +118,9 @@ class SettingsPage(Page):
                     self._inline_label_input(
                         label="SMTP Port",
                         label_for="mail_port",
-                        input_tag=ui.input_numeric("mail_port", None, value=587, min=1, max=65535),
+                        input_tag=ui.input_numeric(
+                            "mail_port", None, value=587, min=1, max=65535
+                        ),
                     ),
                     self._inline_label_input(
                         label="Mail Username",
@@ -137,7 +151,9 @@ class SettingsPage(Page):
                     self._inline_label_input(
                         label="PDF Path",
                         label_for="pdf_path",
-                        input_tag=ui.input_text("pdf_path", None, placeholder="e.g., c:/temp"),
+                        input_tag=ui.input_text(
+                            "pdf_path", None, placeholder="e.g., c:/temp"
+                        ),
                     ),
                     ui.br(),
                     ui.input_action_button(
@@ -172,11 +188,15 @@ class SettingsPage(Page):
                 ui.update_numeric("mail_port", value=data.mail_server.port)
                 ui.update_text("mail_username", value=data.mail_server.username or "")
                 ui.update_text("mail_password", value=data.mail_server.password or "")
-                ui.update_text("sender_email", value=data.mail_server.sender_email or "")
+                ui.update_text(
+                    "sender_email", value=data.mail_server.sender_email or ""
+                )
                 ui.update_checkbox("mail_use_ssl", value=data.mail_server.use_ssl)
                 ui.update_checkbox("mail_use_tls", value=data.mail_server.use_tls)
 
-            self._unit_status.set(f"✓ Unit set to: {data.own_unit}" if data.own_unit else "")
+            self._unit_status.set(
+                f"✓ Unit set to: {data.own_unit}" if data.own_unit else ""
+            )
 
         @reactive.Effect
         @reactive.event(input.own_unit)
@@ -214,7 +234,9 @@ class SettingsPage(Page):
             if ok:
                 ui.notification_show("Settings saved.", type="message", duration=3)
             else:
-                ui.notification_show(f"Failed to save settings: {msg}", type="error", duration=3)
+                ui.notification_show(
+                    f"Failed to save settings: {msg}", type="error", duration=3
+                )
 
         @output
         @render.text

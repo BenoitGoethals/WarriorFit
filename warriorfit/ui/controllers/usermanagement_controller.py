@@ -128,7 +128,9 @@ class UserManagementController:
                 return False, f"Field '{f}' is required."
         if "@" not in form.email or "." not in form.email.split("@")[-1]:
             return False, "Invalid email address."
-        if not self.USER_REGEX.match(form.username) or not (3 < len(form.username) < 30):
+        if not self.USER_REGEX.match(form.username) or not (
+            3 < len(form.username) < 30
+        ):
             return (
                 False,
                 "Username must be valid (a..z,A..Z,0..9,_). Length must be between 3 and 30. ",

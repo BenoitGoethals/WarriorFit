@@ -39,15 +39,22 @@ class MyProgressController:
     :ivar _data_collector: Instance of `DataCollector` used for data collection.
     :type _data_collector: DataCollector
     """
-    def __init__(self, data_collector: DataCollector = None):  # type: ignore[assignment]
-        self._data_collector = data_collector if data_collector is not None else DataCollector()
+
+    def __init__(self, data_collector: DataCollector | None = None):
+        self._data_collector = (
+            data_collector if data_collector is not None else DataCollector()
+        )
 
     async def history_df(self, serial: str) -> pd.DataFrame:
-        df = await self._data_collector.collect_tests_for_serial(serial, current_year=False)
+        df = await self._data_collector.collect_tests_for_serial(
+            serial, current_year=False
+        )
         return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
     async def current_year_df(self, serial: str) -> pd.DataFrame:
-        df = await self._data_collector.collect_tests_for_serial(serial, current_year=True)
+        df = await self._data_collector.collect_tests_for_serial(
+            serial, current_year=True
+        )
         return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
     @staticmethod

@@ -42,7 +42,9 @@ class ReportGeneratorPdf(GeneratorReport):
         service_test=None,
     ):
         super().__init__(military_service=military_service, service_test=service_test)
-        self._cross_service = cross_service if cross_service is not None else ServiceCross()
+        self._cross_service = (
+            cross_service if cross_service is not None else ServiceCross()
+        )
         self._report_generators = {
             ReportType.PHEF: self.generate_phef_report,
             ReportType.FUNCTIONAL: self.generate_functional_report,
@@ -291,7 +293,9 @@ class ReportGeneratorPdf(GeneratorReport):
         """Helper to build report rows that start with a date field."""
         return [self._fmt_date(r["session_date"])] + list(fields)
 
-    async def generate_phef_report(self, report_name: str, own_unit: bool, this_year: bool):
+    async def generate_phef_report(
+        self, report_name: str, own_unit: bool, this_year: bool
+    ):
         """
         Generates a PHEF (Performance Health Evaluation Framework) report containing the
         details of passed and failed tests as two separate PDF files.
@@ -320,7 +324,9 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "PHEF", passed, failed, headers, row_builder
         )
 
-    async def generate_functional_report(self, report_name: str, own_unit: bool, this_year: bool):
+    async def generate_functional_report(
+        self, report_name: str, own_unit: bool, this_year: bool
+    ):
         """
         Generates a functional report based on passed and failed test data.
 
@@ -329,7 +335,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :param this_year: Flag indicating whether to filter data for the current year.
         :return: A dictionary containing file paths to the generated failed and passed reports.
         """
-        failed, headers, passed = await self.calculate_functional_score(own_unit, this_year)
+        failed, headers, passed = await self.calculate_functional_score(
+            own_unit, this_year
+        )
 
         def row_builder(r: dict) -> List[Any]:
             return [
@@ -345,7 +353,9 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "Functional", passed, failed, headers, row_builder
         )
 
-    async def generate_combat_report(self, report_name: str, own_unit: bool, this_year: bool):
+    async def generate_combat_report(
+        self, report_name: str, own_unit: bool, this_year: bool
+    ):
         """
         Generates a combat report by calculating combat scores, segregating data into
         failed and passed records, and exporting the results to PDF files.
@@ -380,7 +390,9 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "Combat", passed, failed, headers, row_builder
         )
 
-    async def generate_swimming_report(self, report_name: str, own_unit: bool, this_year: bool):
+    async def generate_swimming_report(
+        self, report_name: str, own_unit: bool, this_year: bool
+    ):
         """
         Generates a swimming test report in PDF format for failed and passed tests.
 
@@ -448,7 +460,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :param serial_number: A string representing the serviceman's serial number.
         :return: The file path to the generated PDF report as a string.
         """
-        return await self._generate_individual_report(serial_number, current_year_only=False)
+        return await self._generate_individual_report(
+            serial_number, current_year_only=False
+        )
 
     async def generate_ind_report_current_year(self, serial_number: str):
         """
@@ -458,9 +472,13 @@ class ReportGeneratorPdf(GeneratorReport):
         :param serial_number: A string representing the serviceman's serial number.
         :return: The file path to the generated PDF report as a string.
         """
-        return await self._generate_individual_report(serial_number, current_year_only=True)
+        return await self._generate_individual_report(
+            serial_number, current_year_only=True
+        )
 
-    async def _generate_individual_report(self, serial_number: str, current_year_only: bool):
+    async def _generate_individual_report(
+        self, serial_number: str, current_year_only: bool
+    ):
         """
         Core method to generate individual reports with or without year filtering.
 
@@ -469,7 +487,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :return: Path to generated PDF file.
         """
         current_year = datetime.now().year
-        serviceman = await self.be_mil_service.get_servicemen_by_serial(serial_number, lazy=False)
+        serviceman = await self.be_mil_service.get_servicemen_by_serial(
+            serial_number, lazy=False
+        )
 
         deps = self._ensure_pdf_deps()
         year_suffix = f"_{current_year}" if current_year_only else ""
@@ -515,7 +535,9 @@ class ReportGeneratorPdf(GeneratorReport):
             )
         ]
 
-    def _add_test_tables_to_story(self, story: List, data_df: pd.DataFrame, deps: Dict, styles):
+    def _add_test_tables_to_story(
+        self, story: List, data_df: pd.DataFrame, deps: Dict, styles
+    ):
         """Adds all test type tables to the PDF story."""
         test_configs = [
             (

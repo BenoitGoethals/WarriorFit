@@ -48,13 +48,19 @@ class SessionsPage(Page):
                     ui.card_header("Create / Edit Session"),
                     ui.input_select("se_serial", "Serial Number PTI", choices=[]),
                     ui.input_date("se_date", "Date"),
-                    ui.input_text("se_time", "Time (HH:MM)", placeholder="HH:MM", value="09:00"),
+                    ui.input_text(
+                        "se_time", "Time (HH:MM)", placeholder="HH:MM", value="09:00"
+                    ),
                     ui.input_select("se_type", "Type", choices=self.SESSION_TYPES),
                     ui.input_checkbox("se_canceled", "Canceled", value=False),
-                    ui.input_text_area("se_description", "Description", rows=3, width="400px"),
+                    ui.input_text_area(
+                        "se_description", "Description", rows=3, width="400px"
+                    ),
                     ui.br(),
                     ui.layout_columns(
-                        ui.input_action_button("se_add_btn", "Add", class_="btn-primary w-100"),
+                        ui.input_action_button(
+                            "se_add_btn", "Add", class_="btn-primary w-100"
+                        ),
                         ui.input_action_button(
                             "se_update_btn", "Update", class_="btn-warning w-100"
                         ),
@@ -128,14 +134,20 @@ class SessionsPage(Page):
         def _write_form(rec: Dict[str, Any]):
             dt = rec.get("datetime_start", None)
             dt_date = dt.date() if isinstance(dt, datetime.datetime) else None
-            dt_time = dt.time().strftime("%H:%M:%S") if isinstance(dt, datetime.datetime) else None
+            dt_time = (
+                dt.time().strftime("%H:%M:%S")
+                if isinstance(dt, datetime.datetime)
+                else None
+            )
             session.send_input_message(
                 "se_serial", {"value": rec.get("serial_number_pti", "") or ""}
             )
             session.send_input_message("se_date", {"value": dt_date})
             session.send_input_message("se_time", {"value": dt_time})
             session.send_input_message("se_type", {"value": rec.get("type_test", "")})
-            session.send_input_message("se_canceled", {"value": bool(rec.get("canceled", False))})
+            session.send_input_message(
+                "se_canceled", {"value": bool(rec.get("canceled", False))}
+            )
             session.send_input_message(
                 "se_description", {"value": rec.get("description", "") or ""}
             )
@@ -152,11 +164,15 @@ class SessionsPage(Page):
         async def _refresh_select():
             items = sessions.get() or []
             choices = {
-                str(r["id"]): f"{r['id']}: {r.get('type_test', '')} ({r.get('datetime_start', '')})"
+                str(
+                    r["id"]
+                ): f"{r['id']}: {r.get('type_test', '')} ({r.get('datetime_start', '')})"
                 for r in items
                 if r.get("id") is not None
             }
-            session.send_input_message("se_select_id", {"choices": choices, "selected": None})
+            session.send_input_message(
+                "se_select_id", {"choices": choices, "selected": None}
+            )
 
         @output
         @render.text
@@ -210,12 +226,16 @@ class SessionsPage(Page):
             ui.update_text(
                 "se_time",
                 value=(
-                    start_dt.strftime("%H:%M") if getattr(start_dt, "strftime", None) else "09:00"
+                    start_dt.strftime("%H:%M")
+                    if getattr(start_dt, "strftime", None)
+                    else "09:00"
                 ),
             )
             type_raw = str(row["Type"]).strip()
             ui.update_select("se_type", choices=self.SESSION_TYPES, selected=type_raw)
-            ui.update_checkbox("se_canceled", value=(str(row["Canceled"]).strip().lower() == "yes"))
+            ui.update_checkbox(
+                "se_canceled", value=(str(row["Canceled"]).strip().lower() == "yes")
+            )
             ui.update_text_area("se_description", value=str(row["Description"]))
             return f"Selected session ID: {row['ID']}"
 
@@ -252,7 +272,9 @@ class SessionsPage(Page):
                 status.set("Select a session to load.")
                 return
             sel_id = int(sel)
-            rec = next((r for r in (sessions.get() or []) if r.get("id") == sel_id), None)
+            rec = next(
+                (r for r in (sessions.get() or []) if r.get("id") == sel_id), None
+            )
             if not rec:
                 status.set("Selected session not found.")
                 return

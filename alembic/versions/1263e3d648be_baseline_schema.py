@@ -32,7 +32,9 @@ def upgrade() -> None:
         sa.Column("datetime_executed", postgresql.TIMESTAMP(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_march_service_number"), "march", ["service_number"], unique=False)
+    op.create_index(
+        op.f("ix_march_service_number"), "march", ["service_number"], unique=False
+    )
     op.create_table(
         "rooms",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
@@ -46,11 +48,17 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("room_id", sa.Integer(), nullable=False),
         sa.Column("date", sa.String(length=10), nullable=False),
-        sa.Column("start_time", sa.DateTime(), server_default=sa.text("now()"), nullable=False),
-        sa.Column("end_time", sa.DateTime(), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "start_time", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+        ),
+        sa.Column(
+            "end_time", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+        ),
         sa.Column("serial_number", sa.String(length=50), nullable=False),
         sa.Column("activity", sa.String(length=100), nullable=False),
-        sa.Column("created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(), server_default=sa.text("now()"), nullable=False
+        ),
         sa.ForeignKeyConstraint(
             ["room_id"],
             ["rooms.id"],

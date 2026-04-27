@@ -21,7 +21,10 @@ class Message:
     @staticmethod
     def _content_to_dict(content: Any) -> Any:
         # Already JSON primitives
-        if isinstance(content, (dict, list, tuple, str, int, float, bool)) or content is None:
+        if (
+            isinstance(content, (dict, list, tuple, str, int, float, bool))
+            or content is None
+        ):
             return content
         # Pydantic v2
         if hasattr(content, "model_dump"):

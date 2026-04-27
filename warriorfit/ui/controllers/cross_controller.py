@@ -22,7 +22,9 @@ class CrossController:
         pdf_gen: ReportGeneratorPdf = None,
     ) -> None:
         self._service = service if service is not None else ServiceCross()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
         self._pdf_gen = pdf_gen if pdf_gen is not None else ReportGeneratorPdf()
         self._logger = logging.getLogger(__name__)
 
@@ -111,7 +113,9 @@ class CrossController:
         elif await self._service.exist_in_cross(data.get("serialnr"), data.get("cross_id")):  # type: ignore[arg-type]
             return False, "Serial number already exists."
 
-        ok_run, run = CrossController.parse_time_to_seconds(data.get("running_time") or "")
+        ok_run, run = CrossController.parse_time_to_seconds(
+            data.get("running_time") or ""
+        )
         if not ok_run:
             return False, f"Running time: {run}"
         cross_id = (data.get("cross_id") or "").strip()
@@ -191,7 +195,9 @@ class CrossController:
             return pd.DataFrame()
 
     # ----- Commands -----
-    async def add_runner(self, cross_id: int, payload: Dict[str, Any]) -> Optional[Runner]:
+    async def add_runner(
+        self, cross_id: int, payload: Dict[str, Any]
+    ) -> Optional[Runner]:
         """
         Asynchronously adds a runner to a cross with the given cross identifier and payload containing runner details.
 
@@ -208,7 +214,9 @@ class CrossController:
         # attach to cross
         return await self._service.add_runner_to_cross(int(cross_id), r)
 
-    async def update_runner(self, runner_id: int, payload: Dict[str, Any]) -> Optional[Runner]:
+    async def update_runner(
+        self, runner_id: int, payload: Dict[str, Any]
+    ) -> Optional[Runner]:
         """
         Updates the details of a specific runner using the provided runner ID
         and payload. The runner object is created and populated with the payload

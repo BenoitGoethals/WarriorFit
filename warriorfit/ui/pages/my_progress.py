@@ -23,7 +23,9 @@ class MyProgressPage(Page):
     ):
         super().__init__()
         self.controller = controller
-        self.history_df_val: reactive.Value[pd.DataFrame] = reactive.Value(pd.DataFrame())
+        self.history_df_val: reactive.Value[pd.DataFrame] = reactive.Value(
+            pd.DataFrame()
+        )
         self.year_df_val: reactive.Value[pd.DataFrame] = reactive.Value(pd.DataFrame())
 
     def refresh(self):
@@ -39,7 +41,9 @@ class MyProgressPage(Page):
                     class_="text-muted mb-3",
                 ),
                 ui.input_action_button(
-                    "mp_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm mb-3"
+                    "mp_refresh_btn",
+                    "🔄 Refresh",
+                    class_="btn btn-secondary btn-sm mb-3",
                 ),
                 ui.layout_columns(
                     ui.card(
@@ -73,8 +77,12 @@ class MyProgressPage(Page):
                 self.history_df_val.set(pd.DataFrame())
                 self.year_df_val.set(pd.DataFrame())
                 return
-            self.history_df_val.set(await self.controller.history_df(user.serial_number))
-            self.year_df_val.set(await self.controller.current_year_df(user.serial_number))
+            self.history_df_val.set(
+                await self.controller.history_df(user.serial_number)
+            )
+            self.year_df_val.set(
+                await self.controller.current_year_df(user.serial_number)
+            )
 
         @reactive.Effect
         @reactive.event(input.mp_refresh_btn)
@@ -96,7 +104,9 @@ class MyProgressPage(Page):
             df = self.year_df_val.get()
             if df is None or df.empty:
                 df = pd.DataFrame(columns=["Date", "Type", "Total", "Result"])
-            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
+            return render.DataGrid(
+                df, filters=False, selection_mode="none", width="100%"
+            )
 
         @output
         @render.data_frame
@@ -104,7 +114,9 @@ class MyProgressPage(Page):
             df = self.history_df_val.get()
             if df is None or df.empty:
                 df = pd.DataFrame(columns=["Date", "Type", "Total", "Result"])
-            return render.DataGrid(df, filters=True, selection_mode="none", width="100%")
+            return render.DataGrid(
+                df, filters=True, selection_mode="none", width="100%"
+            )
 
         @output
         @render_widget
@@ -115,16 +127,21 @@ class MyProgressPage(Page):
             if series.empty:
                 fig = px.line(title="No PHEF data yet")
                 fig.update_layout(
-                    xaxis_title="Date", yaxis_title="PHEF score",
+                    xaxis_title="Date",
+                    yaxis_title="PHEF score",
                     margin=dict(l=20, r=20, t=40, b=20),
                 )
                 return fig
             fig = px.line(
-                series, x="Date", y="Score", markers=True,
+                series,
+                x="Date",
+                y="Score",
+                markers=True,
                 title="PHEF score over time",
             )
             fig.update_layout(
-                xaxis_title="Date", yaxis_title="PHEF score",
+                xaxis_title="Date",
+                yaxis_title="PHEF score",
                 margin=dict(l=20, r=20, t=40, b=20),
             )
             return fig

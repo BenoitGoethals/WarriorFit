@@ -31,7 +31,9 @@ class Service(ABC):
     ):
         if config is None:
             config = ApplicationConfig()
-        self._user_repo = user_repository if user_repository is not None else UserRepository()
+        self._user_repo = (
+            user_repository if user_repository is not None else UserRepository()
+        )
         self._be_mil_service = (
             military_service if military_service is not None else MilitaryService()
         )

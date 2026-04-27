@@ -32,7 +32,9 @@ class ServiceMarch(Service):
             military_service=military_service,
             config=config,
         )
-        self.__repo = march_repository if march_repository is not None else MarchRepository()
+        self.__repo = (
+            march_repository if march_repository is not None else MarchRepository()
+        )
         self.be_mil_service = (
             military_service if military_service is not None else MilitaryService()
         )
@@ -65,7 +67,9 @@ class ServiceMarch(Service):
                  in the configuration.
         :rtype: list
         """
-        return await self.__repo.get_all_march_by_unit_name(ApplicationConfig().own_unit)
+        return await self.__repo.get_all_march_by_unit_name(
+            ApplicationConfig().own_unit
+        )
 
     async def get_march_by_id(self, ind_id):
         """
@@ -81,7 +85,9 @@ class ServiceMarch(Service):
         """
         return await self.__repo.get_march_by_id(ind_id)
 
-    async def get_march_from_service_men(self, serial_number, this_year=True) -> list[March]:
+    async def get_march_from_service_men(
+        self, serial_number, this_year=True
+    ) -> list[March]:
         """
         Retrieves a list of March objects associated with service personnel based
         on the given serial number. Optionally, filters the results to include only
@@ -96,7 +102,9 @@ class ServiceMarch(Service):
             data.
         :rtype: list[March]
         """
-        return await self.__repo.get_all_march_form_service_men(serial_number, this_year)
+        return await self.__repo.get_all_march_form_service_men(
+            serial_number, this_year
+        )
 
     async def add_march(self, march: March):
         """
@@ -113,13 +121,17 @@ class ServiceMarch(Service):
         from warriorfit.app import FitnessWarriorApp
 
         march = await self.__repo.add_march(march)  # type: ignore[assignment]
-        sm = await self.be_mil_service.get_servicemen_by_serial(str(march.service_number))
+        sm = await self.be_mil_service.get_servicemen_by_serial(
+            str(march.service_number)
+        )
 
         body = self.build_email_body_march(march, sm)  # type: ignore[arg-type]
 
         await FitnessWarriorApp.get_broker().send_message(march)
         if body:
-            notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
+            notify = (
+                self._notify_mail if self._notify_mail is not None else NotifyMail()
+            )
             await notify.send_mail(body=body, subject="Result Test", to=str(sm.mail))  # type: ignore[union-attr]
         await self.add_audit_log(
             details=f"Fitness test {sm.service_number} added to March session {march.datetime_executed} {march.distance} ",  # type: ignore[union-attr]
@@ -166,7 +178,9 @@ class ServiceMarch(Service):
         :return: Boolean value indicating whether the march is unique.
         :rtype: bool
         """
-        return await self.__repo.get_march_is_unique(service_number, distance, datetime_executed)
+        return await self.__repo.get_march_is_unique(
+            service_number, distance, datetime_executed
+        )
 
     def build_email_body_march(self, march: March, service_men: ServiceMen) -> str:
         """

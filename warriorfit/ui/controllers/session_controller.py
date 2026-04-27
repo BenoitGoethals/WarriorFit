@@ -29,7 +29,9 @@ class SessionsController:
         mil_service: MilitaryService = None,
     ):
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
+        self.be_mil_service = (
+            mil_service if mil_service is not None else MilitaryService()
+        )
 
     # Data fetchers
     async def list_sessions(self) -> list[TestSession]:
@@ -82,7 +84,9 @@ class SessionsController:
         """Returns a dict mapping serial_number to 'serial - username' for display"""
         pts = await self._service.get_all_pti()
         return {
-            p.serial_number: f"{p.serial_number} - {p.username}" for p in pts if p.serial_number
+            p.serial_number: f"{p.serial_number} - {p.username}"
+            for p in pts
+            if p.serial_number
         }
 
     async def add_session(self, payload: Dict[str, Any]) -> Optional[TestSession]:
@@ -210,7 +214,9 @@ class SessionsController:
         return await self._service.get_test_session_by_id(sel_id)
 
     async def _recipients_for_unit(self) -> list[str]:
-        results = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+        results = await self.be_mil_service.get_all_be_mil_from_unit(
+            ApplicationConfig().own_unit
+        )
         if not results:
             return []
         return [r.mail for r in results if r.mail]

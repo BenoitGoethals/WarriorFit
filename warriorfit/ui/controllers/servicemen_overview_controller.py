@@ -28,10 +28,11 @@ class ServicemenOverviewController:
         default instance of `ConsentRepository` is created.
     :type consent_repository: ConsentRepository
     """
+
     def __init__(
         self,
-        servicemen_repository: ServicemenRepository = None,  # type: ignore[assignment]
-        consent_repository: ConsentRepository = None,  # type: ignore[assignment]
+        servicemen_repository: ServicemenRepository | None = None,
+        consent_repository: ConsentRepository | None = None,
     ):
         self._sm_repo = servicemen_repository or ServicemenRepository()
         self._consent_repo = consent_repository or ConsentRepository()
@@ -80,8 +81,16 @@ class ServicemenOverviewController:
 
         if not rows:
             cols = [
-                "Service #", "Last Name", "First Name", "Mail", "Rank",
-                "Gender", "Birthdate", "Unit", "Para", "Ops",
+                "Service #",
+                "Last Name",
+                "First Name",
+                "Mail",
+                "Rank",
+                "Gender",
+                "Birthdate",
+                "Unit",
+                "Para",
+                "Ops",
             ] + [ct.replace("_", " ").title() for ct in consent_types]
             return pd.DataFrame(columns=cols)
         return pd.DataFrame(rows)

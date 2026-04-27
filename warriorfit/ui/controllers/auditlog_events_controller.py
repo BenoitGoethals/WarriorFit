@@ -44,7 +44,12 @@ class AuditLogEventsController:
         rows: List[Dict[str, Any]] = []
         for log_entry in logs:
             user = next(
-                (user for user in users if user.id == getattr(log_entry, "user_id", None)), None
+                (
+                    user
+                    for user in users
+                    if user.id == getattr(log_entry, "user_id", None)
+                ),
+                None,
             )
             if user is not None:
                 rows.append(

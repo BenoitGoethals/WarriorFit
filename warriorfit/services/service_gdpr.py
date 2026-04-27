@@ -45,10 +45,10 @@ class GdprService(Service):
     def __init__(
         self,
         user_repository=None,
-        servicemen_repository: ServicemenRepository = None,  # type: ignore[assignment]
-        fitness_test_repository: FitnessTestRepository = None,  # type: ignore[assignment]
-        march_repository: MarchRepository = None,  # type: ignore[assignment]
-        consent_repository: ConsentRepository = None,  # type: ignore[assignment]
+        servicemen_repository: ServicemenRepository | None = None,
+        fitness_test_repository: FitnessTestRepository | None = None,
+        march_repository: MarchRepository | None = None,
+        consent_repository: ConsentRepository | None = None,
         config=None,
     ):
         super().__init__(user_repository=user_repository, config=config)
@@ -57,14 +57,18 @@ class GdprService(Service):
         self._march_repo = march_repository or MarchRepository()
         self._consent_repo = consent_repository or ConsentRepository()
 
-    async def export_serviceman_data(self, service_number: str) -> Optional[Dict[str, Any]]:
+    async def export_serviceman_data(
+        self, service_number: str
+    ) -> Optional[Dict[str, Any]]:
         if not service_number:
             return None
 
         serviceman = None
         try:
             async with self.SessionLocal() as session:
-                stmt = select(ServiceMen).where(ServiceMen.service_number == service_number)
+                stmt = select(ServiceMen).where(
+                    ServiceMen.service_number == service_number
+                )
                 serviceman = (await session.execute(stmt)).scalar_one_or_none()
         except SQLAlchemyError as e:
             self._logger.error("export: serviceman fetch failed: %s", e)
@@ -78,9 +82,17 @@ class GdprService(Service):
             "serviceman": _row_to_dict(
                 serviceman,
                 [
-                    "id", "first_name", "last_name", "mail", "rank",
-                    "service_number", "birthdate", "gender", "unit_id",
-                    "para", "ops_test",
+                    "id",
+                    "first_name",
+                    "last_name",
+                    "mail",
+                    "rank",
+                    "service_number",
+                    "birthdate",
+                    "gender",
+                    "unit_id",
+                    "para",
+                    "ops_test",
                 ],
             ),
             "fitness_tests": await self._export_fitness(service_number),
@@ -90,8 +102,12 @@ class GdprService(Service):
                 _row_to_dict(
                     c,
                     [
-                        "id", "consent_type", "version",
-                        "consent_given_at", "withdrawn_at", "ip_address",
+                        "id",
+                        "consent_type",
+                        "version",
+                        "consent_given_at",
+                        "withdrawn_at",
+                        "ip_address",
                     ],
                 )
                 for c in await self._consent_repo.list_for_serviceman(service_number)
@@ -129,27 +145,47 @@ class GdprService(Service):
                 func = (await session.execute(_join(FunctionalTest))).all()
 
             for t, dt in phef:
-                tests.append({
-                    "type": "phef", "id": t.id, "date": _to_jsonable(dt),
-                    "running_time": t.running_time,
-                    "sideBridge_r": t.sideBridge_r, "sideBridge_l": t.sideBridge_l,
-                })
+                tests.append(
+                    {
+                        "type": "phef",
+                        "id": t.id,
+                        "date": _to_jsonable(dt),
+                        "running_time": t.running_time,
+                        "sideBridge_r": t.sideBridge_r,
+                        "sideBridge_l": t.sideBridge_l,
+                    }
+                )
             for t, dt in combat:
-                tests.append({
-                    "type": "combat", "id": t.id, "date": _to_jsonable(dt),
-                    "running_time": t.running_time,
-                    "obstacle_passed": t.obstacle_passed, "rope_passed": t.rope_passed,
-                })
+                tests.append(
+                    {
+                        "type": "combat",
+                        "id": t.id,
+                        "date": _to_jsonable(dt),
+                        "running_time": t.running_time,
+                        "obstacle_passed": t.obstacle_passed,
+                        "rope_passed": t.rope_passed,
+                    }
+                )
             for t, dt in swim:
-                tests.append({
-                    "type": "swim", "id": t.id, "date": _to_jsonable(dt),
-                    "swim_passed": t.swim_paased,
-                })
+                tests.append(
+                    {
+                        "type": "swim",
+                        "id": t.id,
+                        "date": _to_jsonable(dt),
+                        "swim_passed": t.swim_paased,
+                    }
+                )
             for t, dt in func:
-                tests.append({
-                    "type": "functional", "id": t.id, "date": _to_jsonable(dt),
-                    "push_ups": t.push_ups, "sit_ups": t.sit_ups, "pull_ups": t.pull_ups,
-                })
+                tests.append(
+                    {
+                        "type": "functional",
+                        "id": t.id,
+                        "date": _to_jsonable(dt),
+                        "push_ups": t.push_ups,
+                        "sit_ups": t.sit_ups,
+                        "pull_ups": t.pull_ups,
+                    }
+                )
         except SQLAlchemyError as e:
             self._logger.error("export: fitness fetch failed: %s", e)
         return tests
@@ -158,13 +194,24 @@ class GdprService(Service):
         try:
             async with self.SessionLocal() as session:
                 rows = (
-                    await session.execute(
-                        select(March).where(March.service_number == service_number)
+                    (
+                        await session.execute(
+                            select(March).where(March.service_number == service_number)
+                        )
                     )
-                ).scalars().all()
+                    .scalars()
+                    .all()
+                )
             return [
                 _row_to_dict(
-                    r, ["id", "distance", "succeeded", "datetime_executed", "service_number"]
+                    r,
+                    [
+                        "id",
+                        "distance",
+                        "succeeded",
+                        "datetime_executed",
+                        "service_number",
+                    ],
                 )
                 for r in rows
             ]
@@ -176,16 +223,28 @@ class GdprService(Service):
         try:
             async with self.SessionLocal() as session:
                 rows = (
-                    await session.execute(
-                        select(Reservation).where(Reservation.serial_number == service_number)
+                    (
+                        await session.execute(
+                            select(Reservation).where(
+                                Reservation.serial_number == service_number
+                            )
+                        )
                     )
-                ).scalars().all()
+                    .scalars()
+                    .all()
+                )
             return [
                 _row_to_dict(
                     r,
                     [
-                        "id", "room_id", "date", "start_time", "end_time",
-                        "activity", "serial_number", "created_at",
+                        "id",
+                        "room_id",
+                        "date",
+                        "start_time",
+                        "end_time",
+                        "activity",
+                        "serial_number",
+                        "created_at",
                     ],
                 )
                 for r in rows

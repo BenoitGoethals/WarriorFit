@@ -301,11 +301,15 @@ class Container(containers.DeclarativeContainer):
     functional_controller = providers.Singleton(
         FunctionalController, service=test_service, mil_service=military_service
     )
-    cross_planning_controller = providers.Singleton(CrossPlanningController, service=cross_service)
+    cross_planning_controller = providers.Singleton(
+        CrossPlanningController, service=cross_service
+    )
     auditlog_events_controller = providers.Singleton(
         AuditLogEventsController, user_service=user_service
     )
-    status_log_user_controller = providers.Singleton(StatusLogUserController, service=test_service)
+    status_log_user_controller = providers.Singleton(
+        StatusLogUserController, service=test_service
+    )
     status_tests_controller = providers.Singleton(
         StatusTestsController,
         mil_service=military_service,

@@ -40,7 +40,9 @@ class GeneratorReport(ABC):
     :type be_mil_service: MilitaryService
     """
 
-    def __init__(self, military_service: MilitaryService = None, service_test: ServiceTest = None):
+    def __init__(
+        self, military_service: MilitaryService = None, service_test: ServiceTest = None
+    ):
         self.be_mil_service = (
             military_service if military_service is not None else MilitaryService()
         )
@@ -74,11 +76,15 @@ class GeneratorReport(ABC):
         """
         failed: List[dict] = []
         passed: List[dict] = []
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.PHEF, this_year=this_year
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.PHEF, this_year=this_year
+            )
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
             phef_tests: List[PhefTest] = await self._service.get_all_phef(sess.id)
             for test in phef_tests or []:
@@ -158,13 +164,19 @@ class GeneratorReport(ABC):
         failed: List[dict] = []
         passed: List[dict] = []
 
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.PHEF, this_year=this_year
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.PHEF, this_year=this_year
+            )
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
-            tests: List[FunctionalTest] = await self._service.get_all_functional_test(sess.id)
+            tests: List[FunctionalTest] = await self._service.get_all_functional_test(
+                sess.id
+            )
             for t in tests or []:
                 if own_unit:
                     if t.serial_number not in [s.service_number for s in mils]:
@@ -216,13 +228,19 @@ class GeneratorReport(ABC):
         failed: List[dict] = []
         passed: List[dict] = []
 
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.COMBAT, this_year=this_year
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.COMBAT, this_year=this_year
+            )
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
-            tests: List[CombatTestParatrooper] = await self._service.get_all_combat_test(sess.id)
+            tests: List[CombatTestParatrooper] = (
+                await self._service.get_all_combat_test(sess.id)
+            )
             for t in tests or []:
                 if own_unit:
                     if t.serial_number not in [s.service_number for s in mils]:
@@ -267,14 +285,18 @@ class GeneratorReport(ABC):
         """
         failed: List[dict] = []
         passed: List[dict] = []
-        sessions: List[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.SWIMMING, this_year=this_year
+        sessions: List[TestSession] = (
+            await self._service.get_all_test_sessions_type_fitness_test(
+                TypeFitnessTest.SWIMMING, this_year=this_year
+            )
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(ApplicationConfig().own_unit)
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(
+                ApplicationConfig().own_unit
+            )
         for sess in sessions or []:
-            tests: List[CombatSwimmingTest] = await self._service.get_all_combat_swimming_test(
-                sess.id
+            tests: List[CombatSwimmingTest] = (
+                await self._service.get_all_combat_swimming_test(sess.id)
             )
             for t in tests or []:
                 if own_unit:

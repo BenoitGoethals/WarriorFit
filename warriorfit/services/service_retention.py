@@ -47,13 +47,20 @@ class RetentionService(Service):
 
         from warriorfit.data.model.db_model import SessionFitnessTests, TestSession
 
-        cutoff = datetime.now() - timedelta(days=self._retention["fitness_retention_days"])
+        cutoff = datetime.now() - timedelta(
+            days=self._retention["fitness_retention_days"]
+        )
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    stmt = select(SessionFitnessTests.fitness_test_id).join(
-                        TestSession, TestSession.id == SessionFitnessTests.session_id
-                    ).where(TestSession.datetime_start < cutoff)
+                    stmt = (
+                        select(SessionFitnessTests.fitness_test_id)
+                        .join(
+                            TestSession,
+                            TestSession.id == SessionFitnessTests.session_id,
+                        )
+                        .where(TestSession.datetime_start < cutoff)
+                    )
                     ids = [row[0] for row in (await session.execute(stmt)).all()]
                     if not ids:
                         return 0
@@ -66,22 +73,32 @@ class RetentionService(Service):
             return 0
 
     async def _purge_marches(self) -> int:
-        cutoff = datetime.now() - timedelta(days=self._retention["fitness_retention_days"])
+        cutoff = datetime.now() - timedelta(
+            days=self._retention["fitness_retention_days"]
+        )
         return await self._delete_older_than(March, March.datetime_executed, cutoff)
 
     async def _purge_reservations(self) -> int:
-        cutoff = datetime.now() - timedelta(days=self._retention["fitness_retention_days"])
-        return await self._delete_older_than(Reservation, Reservation.created_at, cutoff)
+        cutoff = datetime.now() - timedelta(
+            days=self._retention["fitness_retention_days"]
+        )
+        return await self._delete_older_than(
+            Reservation, Reservation.created_at, cutoff
+        )
 
     async def _purge_audit_logs(self) -> int:
-        cutoff = datetime.now() - timedelta(days=self._retention["audit_retention_days"])
+        cutoff = datetime.now() - timedelta(
+            days=self._retention["audit_retention_days"]
+        )
         return await self._delete_older_than(AuditLog, AuditLog.created_at, cutoff)
 
     async def _purge_hr_messages(self) -> int:
         cutoff = datetime.now() - timedelta(
             days=self._retention["hr_message_retention_days"]
         )
-        return await self._delete_older_than(HrMessage, HrMessage.datetime_created, cutoff)
+        return await self._delete_older_than(
+            HrMessage, HrMessage.datetime_created, cutoff
+        )
 
     async def _delete_older_than(self, model, date_column, cutoff) -> int:
         try:

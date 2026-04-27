@@ -35,10 +35,14 @@ class UserRepository(ABCRepository):
                 await session.refresh(user)
                 return user
         except IntegrityError as e:
-            self._logger.error("Integrity error adding user %s: %s", user.username, str(e))
+            self._logger.error(
+                "Integrity error adding user %s: %s", user.username, str(e)
+            )
             return None
         except SQLAlchemyError as e:
-            self._logger.error("Database error adding user %s: %s", user.username, str(e))
+            self._logger.error(
+                "Database error adding user %s: %s", user.username, str(e)
+            )
             return None
 
     async def user_mail_exist(self, mail: str) -> bool:
@@ -167,7 +171,9 @@ class UserRepository(ABCRepository):
                     self._logger.error("User '%s' has no password set.", user_name)
                     return False
                 if await Auth.verify_password(plain_password, user.password_hash):
-                    self._logger.info("User '%s' authenticated successfully.", user_name)
+                    self._logger.info(
+                        "User '%s' authenticated successfully.", user_name
+                    )
                     return True
                 self._logger.info("Password mismatch for user '%s'.", user_name)
                 return False
@@ -196,7 +202,9 @@ class UserRepository(ABCRepository):
             self._logger.info("User with ID %d deleted successfully.", id)
             return True
         except SQLAlchemyError as e:
-            self._logger.error("Database error deleting user with ID %d: %s", id, str(e))
+            self._logger.error(
+                "Database error deleting user with ID %d: %s", id, str(e)
+            )
             return False
 
     async def serial_exists(self, serial: str) -> bool:
@@ -246,7 +254,9 @@ class UserRepository(ABCRepository):
                     query = delete(User).where(User.serial_number == selected_serial)
                     result = await session.execute(query)
                     if result.rowcount == 0:
-                        self._logger.error("No user found with serial %s.", selected_serial)
+                        self._logger.error(
+                            "No user found with serial %s.", selected_serial
+                        )
                         return False
                     return True
         except SQLAlchemyError as e:

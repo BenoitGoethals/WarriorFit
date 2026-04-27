@@ -44,7 +44,9 @@ class ServiceCross(Service):
             military_service=military_service,
             config=config,
         )
-        self._cross_repo = cross_repository if cross_repository is not None else CrossRepository()
+        self._cross_repo = (
+            cross_repository if cross_repository is not None else CrossRepository()
+        )
         self.be_mil_service = (
             military_service if military_service is not None else MilitaryService()
         )
@@ -106,7 +108,9 @@ class ServiceCross(Service):
     async def remove_runner_from_cross(self, id_nr: int) -> bool:
         removed = await self._cross_repo.remove_runner(id_nr)
         if removed:
-            await self.add_audit_log(details=f"Runner {id_nr} removed from cross", action="delete")
+            await self.add_audit_log(
+                details=f"Runner {id_nr} removed from cross", action="delete"
+            )
         return removed
 
     async def update_cross(self, cross: Cross) -> Cross | None:
@@ -150,6 +154,8 @@ class ServiceCross(Service):
                 rows.append(
                     {
                         "cross_id": c.id,
+                        "cross_datetime": c.datetime_start,
+                        "cross_description": c.description,
                         "distance": c.distance,
                         "serial_number": r.serial_number,
                         "running_time": r.running_time,
@@ -200,7 +206,11 @@ class ServiceCross(Service):
         # Fetch servicemen once per unique serial, concurrently
         serials = df["serial_number"].dropna().astype(str).unique().tolist()
         servicemen_list = await asyncio.gather(
-            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials if s is not None),
+            *(
+                self.be_mil_service.get_servicemen_by_serial(s)
+                for s in serials
+                if s is not None
+            ),
             return_exceptions=True,
         )
 
@@ -257,7 +267,9 @@ class ServiceCross(Service):
         df_best = df_best.sort_values("running_time", ascending=True).drop_duplicates(
             subset=["distance", "serial_number"], keep="first"
         )
-        df_sorted = df_best.sort_values(["distance", "running_time"], ascending=[True, True])
+        df_sorted = df_best.sort_values(
+            ["distance", "running_time"], ascending=[True, True]
+        )
         for distance, group in df_sorted.groupby("distance", dropna=False, sort=False):
             top_10_by_distance[distance] = group["runner_obj"].head(10).tolist()
 
@@ -269,6 +281,335 @@ class ServiceCross(Service):
             (female_avg, male_avg),
             top_10_by_distance,
         )
+
+    async def get_extended_stats(self) -> dict[str, Any]:
+        """
+        Compute a rich bundle of statistics for the cross-statistics page.
+
+        Returned keys:
+            overview              Distance-agnostic headline counts only
+                                  (total_crosses, total_finishers, unique_runners).
+            overview_per_distance Best/avg/median/std/gap per distance — these
+                                  metrics are meaningless when aggregated across
+                                  different race lengths.
+            per_cross             Per-event aggregates (count, avg, median, std, gap, pace).
+            per_runner            Personal best, race count, average pace per serial.
+            age_distance_best     Best time per (age_group, distance).
+            age_distance_avg      Average time per (age_group, distance).
+            gender_distance       Avg time and count per (gender, distance).
+            trends                Average running_time per cross_date (chronological).
+            podium                Podium frequency per serial across distances.
+            data_quality          Unmatched serials, registered-but-never-raced, missing times.
+            distances             Sorted list of distances actually present in the data.
+        """
+        all_cross: list[Cross] = await self._cross_repo.get_all_cross(lazy=False)
+        empty: dict[str, Any] = {
+            "overview": {
+                "total_crosses": 0,
+                "total_finishers": 0,
+                "unique_runners": 0,
+            },
+            "overview_per_distance": pd.DataFrame(
+                columns=[
+                    "distance",
+                    "finishers",
+                    "unique_runners",
+                    "best_time",
+                    "avg_time",
+                    "median_time",
+                    "std_time",
+                    "gap_time",
+                ]
+            ),
+            "per_cross": pd.DataFrame(),
+            "per_runner": pd.DataFrame(),
+            "age_distance_best": pd.DataFrame(),
+            "age_distance_avg": pd.DataFrame(),
+            "gender_distance": pd.DataFrame(),
+            "trends": pd.DataFrame(),
+            "podium": pd.DataFrame(),
+            "data_quality": {
+                "unmatched_serials": [],
+                "rows_missing_time": 0,
+                "never_raced_serials": [],
+            },
+            "distances": [],
+        }
+        if not all_cross:
+            return empty
+
+        df = self._runners_df(all_cross)
+        if df.empty:
+            return empty
+
+        df["running_time"] = pd.to_numeric(df["running_time"], errors="coerce")
+        rows_missing_time = int(df["running_time"].isna().sum())
+        df = df.dropna(subset=["running_time"])
+        if df.empty:
+            empty["data_quality"]["rows_missing_time"] = rows_missing_time
+            return empty
+
+        # Enrich with serviceman info (gender, age_group, full name)
+        serials = df["serial_number"].dropna().astype(str).unique().tolist()
+        servicemen_list = await asyncio.gather(
+            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials),
+            return_exceptions=True,
+        )
+        sm_rows: list[dict[str, Any]] = []
+        unmatched_serials: list[str] = []
+        for serial, sm in zip(serials, servicemen_list, strict=False):
+            if isinstance(sm, Exception) or sm is None:
+                unmatched_serials.append(serial)
+                continue
+            try:
+                sm_rows.append(
+                    {
+                        "serial_number": str(serial),
+                        "gender": sm.gender,  # type: ignore[union-attr]
+                        "age_group": self._bucket_age(sm.age_from_birthdate()),  # type: ignore[union-attr]
+                        "full_name": f"{sm.first_name} {sm.last_name}",  # type: ignore[union-attr]
+                    }
+                )
+            except Exception:
+                unmatched_serials.append(serial)
+
+        sm_df = pd.DataFrame.from_records(sm_rows)
+        df2 = df.copy()
+        df2["serial_number"] = df2["serial_number"].astype(str)
+        if not sm_df.empty:
+            df2 = df2.merge(sm_df, on="serial_number", how="left")
+        else:
+            df2["gender"] = pd.NA
+            df2["age_group"] = pd.NA
+            df2["full_name"] = pd.NA
+
+        # pace = running_time per km (running_time is seconds, distance in km)
+        df2["pace"] = df2.apply(
+            lambda r: (
+                float(r["running_time"]) / float(r["distance"])
+                if r["distance"] and float(r["distance"]) > 0
+                else None
+            ),
+            axis=1,
+        )
+
+        distances = sorted(df2["distance"].dropna().unique().tolist())
+
+        # ----- Overview (distance-agnostic counts only) -----
+        overview = {
+            "total_crosses": int(df2["cross_id"].nunique()),
+            "total_finishers": int(len(df2)),
+            "unique_runners": int(df2["serial_number"].dropna().nunique()),
+        }
+
+        # ----- Overview per distance -----
+        # Time KPIs MUST be grouped by distance — comparing 5K and 10K times
+        # in a single average/best/median is meaningless.
+        overview_per_distance = (
+            df2.groupby("distance", dropna=False)
+            .agg(
+                finishers=("running_time", "count"),
+                unique_runners=("serial_number", lambda s: int(s.dropna().nunique())),
+                best_time=("running_time", "min"),
+                avg_time=("running_time", "mean"),
+                median_time=("running_time", "median"),
+                std_time=(
+                    "running_time",
+                    lambda s: float(s.std(ddof=0)) if len(s) > 1 else 0.0,
+                ),
+                worst_time=("running_time", "max"),
+            )
+            .reset_index()
+            .sort_values("distance")
+        )
+        overview_per_distance["gap_time"] = (
+            overview_per_distance["worst_time"] - overview_per_distance["best_time"]
+        )
+        overview_per_distance = overview_per_distance.drop(columns=["worst_time"])
+
+        # ----- Per cross -----
+        per_cross = (
+            df2.groupby(["cross_id", "distance", "cross_datetime"], dropna=False)
+            .agg(
+                participants=("running_time", "count"),
+                avg_time=("running_time", "mean"),
+                median_time=("running_time", "median"),
+                std_time=(
+                    "running_time",
+                    lambda s: float(s.std(ddof=0)) if len(s) > 1 else 0.0,
+                ),
+                best_time=("running_time", "min"),
+                worst_time=("running_time", "max"),
+                avg_pace=("pace", "mean"),
+            )
+            .reset_index()
+        )
+        per_cross["gap_time"] = per_cross["worst_time"] - per_cross["best_time"]
+        per_cross = per_cross.sort_values("cross_datetime", ascending=False)
+
+        # ----- Per runner -----
+        per_runner = (
+            df2.dropna(subset=["serial_number"])
+            .groupby("serial_number", dropna=False)
+            .agg(
+                races=("cross_id", "count"),
+                personal_best=("running_time", "min"),
+                avg_time=("running_time", "mean"),
+                avg_pace=("pace", "mean"),
+                full_name=("full_name", "first"),
+            )
+            .reset_index()
+            .sort_values("races", ascending=False)
+        )
+
+        # Improvement vs previous race for each runner (chronological diff of best so far)
+        if not df2.empty:
+            chrono = df2.dropna(subset=["serial_number"]).sort_values(
+                ["serial_number", "cross_datetime"], ascending=[True, True]
+            )
+            chrono["prev_time"] = chrono.groupby("serial_number")["running_time"].shift(
+                1
+            )
+            chrono["delta"] = chrono["running_time"] - chrono["prev_time"]
+            improvement = (
+                chrono.dropna(subset=["delta"])
+                .groupby("serial_number")["delta"]
+                .mean()
+                .rename("avg_improvement")
+                .reset_index()
+            )
+            per_runner = per_runner.merge(improvement, on="serial_number", how="left")
+        else:
+            per_runner["avg_improvement"] = pd.NA
+
+        # ----- Age-group × distance -----
+        ag_df = df2.dropna(subset=["age_group"])
+        age_distance_best = (
+            ag_df.groupby(["age_group", "distance"], dropna=False)["running_time"]
+            .min()
+            .reset_index(name="best_time")
+            if not ag_df.empty
+            else pd.DataFrame(columns=["age_group", "distance", "best_time"])
+        )
+        age_distance_avg = (
+            ag_df.groupby(["age_group", "distance"], dropna=False)["running_time"]
+            .mean()
+            .reset_index(name="avg_time")
+            if not ag_df.empty
+            else pd.DataFrame(columns=["age_group", "distance", "avg_time"])
+        )
+
+        # ----- Gender × distance -----
+        # Convert Gender enum -> str BEFORE groupby (enums aren't orderable for pandas factorize).
+        g_df = df2.dropna(subset=["gender"]).copy()
+        if not g_df.empty:
+            g_df["gender"] = g_df["gender"].apply(
+                lambda g: getattr(g, "name", None)
+                or getattr(g, "value", None)
+                or str(g)
+            )
+            gender_distance = (
+                g_df.groupby(["gender", "distance"], dropna=False)
+                .agg(
+                    avg_time=("running_time", "mean"),
+                    count=("running_time", "count"),
+                )
+                .reset_index()
+            )
+        else:
+            gender_distance = pd.DataFrame(
+                columns=["gender", "distance", "avg_time", "count"]
+            )
+
+        # ----- Trends (chronological average per cross) -----
+        if "cross_datetime" in df2.columns and df2["cross_datetime"].notna().any():
+            trends = (
+                df2.dropna(subset=["cross_datetime"])
+                .groupby(["cross_datetime", "distance"], dropna=False)["running_time"]
+                .mean()
+                .reset_index(name="avg_time")
+                .sort_values("cross_datetime")
+            )
+        else:
+            trends = pd.DataFrame(columns=["cross_datetime", "distance", "avg_time"])
+
+        # ----- Podium frequency (top-3 per cross, deduped per serial per cross) -----
+        podium_rows: list[dict[str, Any]] = []
+        for _, group in df2.dropna(subset=["serial_number"]).groupby(
+            "cross_id", dropna=False
+        ):
+            top3 = (
+                group.sort_values("running_time", ascending=True)
+                .drop_duplicates(subset=["serial_number"])
+                .head(3)
+            )
+            for rank, (_, row) in enumerate(top3.iterrows(), start=1):
+                podium_rows.append(
+                    {
+                        "serial_number": row["serial_number"],
+                        "full_name": row.get("full_name"),
+                        "distance": row["distance"],
+                        "rank": rank,
+                    }
+                )
+        if podium_rows:
+            podium_raw = pd.DataFrame(podium_rows)
+            podium = (
+                podium_raw.groupby(["serial_number", "full_name"], dropna=False)
+                .agg(
+                    podiums=("rank", "count"),
+                    gold=("rank", lambda s: int((s == 1).sum())),
+                    silver=("rank", lambda s: int((s == 2).sum())),
+                    bronze=("rank", lambda s: int((s == 3).sum())),
+                )
+                .reset_index()
+                .sort_values(
+                    ["gold", "silver", "bronze"], ascending=[False, False, False]
+                )
+            )
+        else:
+            podium = pd.DataFrame(
+                columns=[
+                    "serial_number",
+                    "full_name",
+                    "podiums",
+                    "gold",
+                    "silver",
+                    "bronze",
+                ]
+            )
+
+        # ----- Data quality -----
+        try:
+            registered = await self.be_mil_service.get_all_service_men()
+        except Exception:
+            registered = []
+        raced_serials = set(df2["serial_number"].dropna().astype(str).tolist())
+        never_raced: list[str] = []
+        for sm in registered or []:
+            sn = getattr(sm, "service_number", None)
+            if sn and str(sn) not in raced_serials:
+                never_raced.append(str(sn))
+
+        data_quality = {
+            "unmatched_serials": sorted(set(unmatched_serials)),
+            "rows_missing_time": rows_missing_time,
+            "never_raced_serials": sorted(never_raced),
+        }
+
+        return {
+            "overview": overview,
+            "overview_per_distance": overview_per_distance,
+            "per_cross": per_cross,
+            "per_runner": per_runner,
+            "age_distance_best": age_distance_best,
+            "age_distance_avg": age_distance_avg,
+            "gender_distance": gender_distance,
+            "trends": trends,
+            "podium": podium,
+            "data_quality": data_quality,
+            "distances": distances,
+        }
 
     async def get_average(self, all_cross: list[Cross]) -> float:
         """
@@ -371,7 +712,9 @@ class ServiceCross(Service):
 
         return age_groups
 
-    async def get_gender_time(self, all_cross: list[Cross]) -> tuple[floating[Any], floating[Any]]:
+    async def get_gender_time(
+        self, all_cross: list[Cross]
+    ) -> tuple[floating[Any], floating[Any]]:
         """
         Calculate and return the average running times for female and male runners from
         the provided list of crosses. The function asynchronously processes the list of
@@ -396,8 +739,10 @@ class ServiceCross(Service):
             for runner in cross.runners:
                 if runner.serial_number is None:
                     continue
-                service_man: ServiceMen | None = await self.be_mil_service.get_servicemen_by_serial(
-                    runner.serial_number
+                service_man: ServiceMen | None = (
+                    await self.be_mil_service.get_servicemen_by_serial(
+                        runner.serial_number
+                    )
                 )
                 if service_man is None:
                     continue
@@ -475,7 +820,9 @@ class ServiceCross(Service):
             xml_doc = etree.parse(file_path)
 
             if not schema.validate(xml_doc):
-                _logger.warning("Chronos XML failed XSD validation: %s", schema.error_log)
+                _logger.warning(
+                    "Chronos XML failed XSD validation: %s", schema.error_log
+                )
                 return False
             _logger.info("Chronos XML validated successfully.")
             runners = []
@@ -486,7 +833,9 @@ class ServiceCross(Service):
                 # Convert net time "hh:mm:ss" to total seconds (float)
                 parts = net.split(":")
                 if len(parts) == 3:
-                    running_time = int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+                    running_time = (
+                        int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
+                    )
                 elif len(parts) == 2:
                     running_time = int(parts[0]) * 60 + float(parts[1])
                 else:
