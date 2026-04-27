@@ -344,23 +344,57 @@ label, .form-label {
 
 /* ============================================================
    Value boxes
+   ============================================================
+   Shiny value_box(theme=...) paints the entire wrapper with
+   Bootstrap's bg-* classes and white text. Override that:
+   the wrapper is always sand, text is always dark, and the
+   theme colour is conveyed by the left-border accent only.
    ============================================================ */
-.bslib-value-box {
-  border-left: 3px solid var(--wf-primary) !important;
-  border-radius: var(--wf-radius) !important;
+.bslib-value-box,
+.bslib-value-box.bg-primary,
+.bslib-value-box.bg-secondary,
+.bslib-value-box.bg-success,
+.bslib-value-box.bg-info,
+.bslib-value-box.bg-warning,
+.bslib-value-box.bg-danger,
+.bslib-value-box.bg-dark {
   background-color: var(--wf-card-bg) !important;
+  color: var(--mil-od-deep) !important;
+  border: 1px solid var(--wf-border) !important;
+  border-left: 4px solid var(--wf-primary) !important;
+  border-radius: var(--wf-radius) !important;
   box-shadow: var(--wf-shadow) !important;
 }
-.bslib-value-box .value-box-title {
+/* Theme colour shown via the left border, not the whole surface */
+.bslib-value-box.bg-primary   { border-left-color: var(--wf-primary) !important; }
+.bslib-value-box.bg-secondary { border-left-color: #4a4f55 !important; }
+.bslib-value-box.bg-success   { border-left-color: var(--wf-success) !important; }
+.bslib-value-box.bg-info      { border-left-color: var(--wf-info) !important; }
+.bslib-value-box.bg-warning   { border-left-color: var(--wf-warning) !important; }
+.bslib-value-box.bg-danger    { border-left-color: var(--wf-danger) !important; }
+.bslib-value-box.bg-dark      { border-left-color: var(--mil-panel) !important; }
+
+/* Text inside the value box — title and big number, both dark */
+.bslib-value-box .value-box-title,
+.bslib-value-box .value-box-area > p,
+.bslib-value-box .value-box-area > div,
+.bslib-value-box p {
   font-family: var(--mil-display) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   font-weight: 600 !important;
+  color: var(--mil-od-dark) !important;
 }
-.bslib-value-box .value-box-value {
+.bslib-value-box .value-box-value,
+.bslib-value-box .value-box-area > .value-box-value {
   font-family: var(--mil-display) !important;
   font-weight: 700 !important;
   letter-spacing: 0.01em !important;
+  color: var(--mil-od-deep) !important;
+}
+/* Catch-all for any remaining child text (numbers wrapped in spans, etc.) */
+.bslib-value-box * {
+  color: var(--mil-od-deep) !important;
 }
 
 /* ============================================================
