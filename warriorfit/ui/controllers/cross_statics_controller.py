@@ -25,6 +25,7 @@ class CrossStaticsController:
     :ivar _mil_service: Instance of `MilitaryService` responsible for fetching servicemen details.
     :type _mil_service: MilitaryService
     """
+
     def __init__(
         self,
         service: ServiceCross = None,
@@ -142,9 +143,7 @@ class CrossStaticsController:
         df["worst_time"] = df["worst_time"].apply(Formatter.format_time)
         df["gap_time"] = df["gap_time"].apply(Formatter.format_time)
         df["std_time"] = df["std_time"].round(1)
-        df["avg_pace"] = df["avg_pace"].apply(
-            lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-"
-        )
+        df["avg_pace"] = df["avg_pace"].apply(lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-")
         df = df.rename(
             columns={
                 "cross_id": "Cross",
@@ -179,9 +178,7 @@ class CrossStaticsController:
             return df
         df["personal_best"] = df["personal_best"].apply(Formatter.format_time)
         df["avg_time"] = df["avg_time"].apply(Formatter.format_time)
-        df["avg_pace"] = df["avg_pace"].apply(
-            lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-"
-        )
+        df["avg_pace"] = df["avg_pace"].apply(lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-")
         if "avg_improvement" in df.columns:
             df["avg_improvement"] = df["avg_improvement"].apply(
                 lambda v: f"{v:+.1f} s" if pd.notna(v) else "-"
@@ -290,6 +287,7 @@ class CrossStaticsController:
         :rtype: pd.DataFrame
         """
         await self._ensure()
+        assert self._ext is not None
         df = self._ext["trends"].copy()
         if df.empty:
             return df
@@ -316,6 +314,7 @@ class CrossStaticsController:
         :rtype: pd.DataFrame
         """
         await self._ensure()
+        assert self._ext is not None
         df = self._ext["podium"].copy()
         if df.empty:
             return df
@@ -341,6 +340,7 @@ class CrossStaticsController:
         :rtype: dict[str, Any]
         """
         await self._ensure()
+        assert self._ext is not None
         return self._ext["data_quality"]
 
     async def distances(self) -> list[float]:
@@ -354,6 +354,7 @@ class CrossStaticsController:
         :rtype: list[float]
         """
         await self._ensure()
+        assert self._ext is not None
         return self._ext["distances"]
 
     # ----- Legacy: per-distance Best-10 (now also dedup-aware in service) -----
@@ -374,6 +375,7 @@ class CrossStaticsController:
         :rtype: dict[int, pd.DataFrame]
         """
         await self._ensure()
+        assert self._stats is not None
 
         data: dict[Any, list[Runner]] = self._stats[5]
         data_panda_dict: dict[int, pd.DataFrame] = {}
@@ -384,9 +386,9 @@ class CrossStaticsController:
             for rank_idx, runner in enumerate(value, start=1):
                 if runner.serial_number is None:
                     continue
-                service_men: ServiceMen = await self._mil_service.get_servicemen_by_serial(
+                service_men: ServiceMen | None = await self._mil_service.get_servicemen_by_serial(
                     runner.serial_number
-                )  # type: ignore[assignment]
+                )
                 if service_men:
                     data_p.append(
                         {

@@ -495,9 +495,7 @@ class ServiceCross(Service):
                 .reset_index()
             )
         else:
-            gender_distance = pd.DataFrame(
-                columns=["gender", "distance", "avg_time", "count"]
-            )
+            gender_distance = pd.DataFrame(columns=["gender", "distance", "avg_time", "count"])
 
         # ----- Trends (chronological average per cross) -----
         if "cross_datetime" in df2.columns and df2["cross_datetime"].notna().any():
@@ -514,9 +512,11 @@ class ServiceCross(Service):
         # ----- Podium frequency (top-3 per cross, deduped per serial per cross) -----
         podium_rows: list[dict[str, Any]] = []
         for _, group in df2.dropna(subset=["serial_number"]).groupby("cross_id", dropna=False):
-            top3 = group.sort_values("running_time", ascending=True).drop_duplicates(
-                subset=["serial_number"]
-            ).head(3)
+            top3 = (
+                group.sort_values("running_time", ascending=True)
+                .drop_duplicates(subset=["serial_number"])
+                .head(3)
+            )
             for rank, (_, row) in enumerate(top3.iterrows(), start=1):
                 podium_rows.append(
                     {
@@ -537,9 +537,7 @@ class ServiceCross(Service):
                     bronze=("rank", lambda s: int((s == 3).sum())),
                 )
                 .reset_index()
-                .sort_values(
-                    ["gold", "silver", "bronze"], ascending=[False, False, False]
-                )
+                .sort_values(["gold", "silver", "bronze"], ascending=[False, False, False])
             )
         else:
             podium = pd.DataFrame(

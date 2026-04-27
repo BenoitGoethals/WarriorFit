@@ -118,9 +118,7 @@ class CrossStaticsPage(Page):
                         col_widths=[6, 6],
                     ),
                     ui.card(
-                        ui.card_header(
-                            "Gender split per distance", class_="bg-info text-white"
-                        ),
+                        ui.card_header("Gender split per distance", class_="bg-info text-white"),
                         ui.output_data_frame("gender_distance_grid"),
                     ),
                 ),
@@ -291,7 +289,9 @@ class CrossStaticsPage(Page):
             dfc = await self._controller.best_10_all_df()
             df = dfc.get(5)
             if df is None or df.empty:
-                df = pd.DataFrame(columns=["rank", "serial_number", "Name", "running_time", "distance", "age"])
+                df = pd.DataFrame(
+                    columns=["rank", "serial_number", "Name", "running_time", "distance", "age"]
+                )
             return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         @output
@@ -301,7 +301,9 @@ class CrossStaticsPage(Page):
             dfc = await self._controller.best_10_all_df()
             df = dfc.get(10)
             if df is None or df.empty:
-                df = pd.DataFrame(columns=["rank", "serial_number", "Name", "running_time", "distance", "age"])
+                df = pd.DataFrame(
+                    columns=["rank", "serial_number", "Name", "running_time", "distance", "age"]
+                )
             return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         # ----- Per-cross -----
