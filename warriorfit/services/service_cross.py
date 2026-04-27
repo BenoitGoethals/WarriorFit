@@ -229,9 +229,12 @@ class ServiceCross(Service):
             df2["gender"] = pd.NA
             df2["age_group"] = pd.NA
 
-        # Age groups
+        # Age groups — count each person (serial_number) only once
+        unique_persons = df2.dropna(subset=["serial_number"]).drop_duplicates(
+            subset=["serial_number"]
+        )
         age_group_stats: dict[str, int] = (
-            df2["age_group"].dropna().value_counts().astype(int).to_dict()
+            unique_persons["age_group"].dropna().value_counts().astype(int).to_dict()
         )
 
         # Gender avg times
@@ -246,9 +249,15 @@ class ServiceCross(Service):
             else 0.0
         )
 
-        # Top 10 per distance, ascending running_time (best first), return Runner objects
+        # Top 10 per distance, ascending running_time (best first), return Runner objects.
+        # Each person (serial_number) appears at most once per distance — keep their best time.
         top_10_by_distance: dict[Any, list[Runner]] = {}
-        df_sorted = df2.sort_values(["distance", "running_time"], ascending=[True, True])
+        df_best = df2.dropna(subset=["serial_number"]).copy()
+        df_best["serial_number"] = df_best["serial_number"].astype(str)
+        df_best = df_best.sort_values("running_time", ascending=True).drop_duplicates(
+            subset=["distance", "serial_number"], keep="first"
+        )
+        df_sorted = df_best.sort_values(["distance", "running_time"], ascending=[True, True])
         for distance, group in df_sorted.groupby("distance", dropna=False, sort=False):
             top_10_by_distance[distance] = group["runner_obj"].head(10).tolist()
 
@@ -425,7 +434,15 @@ class ServiceCross(Service):
 
         for distance, runners in top_runners_by_distance.items():
             runners.sort(key=lambda x: x.running_time)
-            top_runners_by_distance[distance] = runners[:10]
+            seen: set[str] = set()
+            unique_runners: list[Runner] = []
+            for r in runners:
+                key = r.serial_number
+                if key is None or key in seen:
+                    continue
+                seen.add(key)
+                unique_runners.append(r)
+            top_runners_by_distance[distance] = unique_runners[:10]
 
         return top_runners_by_distance
 
