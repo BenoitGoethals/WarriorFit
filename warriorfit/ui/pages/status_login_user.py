@@ -4,7 +4,7 @@ from pathlib import Path
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.container import Container
 from warriorfit.core.role import Role
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController

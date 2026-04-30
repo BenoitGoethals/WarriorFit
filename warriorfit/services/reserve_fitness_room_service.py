@@ -3,7 +3,7 @@ from warriorfit.data.repositories.reservation_repository import ReservationRepos
 from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
 from warriorfit.data.repositories.user_repository import UserRepository
 from warriorfit.services.service import Service
-from warriorfit.ui.pages.notify_mail import NotifyMail
+from warriorfit.services.notify_mail import NotifyMail
 
 
 def build_email_add_reservation(reservation: Reservation) -> str:

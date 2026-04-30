@@ -3,7 +3,7 @@ import os
 import aiofiles
 import aiohttp
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.repositories.abc_repository import ABCRepository
 from warriorfit.utils.Os import Os
 

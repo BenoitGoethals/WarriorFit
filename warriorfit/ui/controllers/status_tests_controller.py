@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
 

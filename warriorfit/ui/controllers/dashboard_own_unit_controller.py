@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
@@ -17,7 +17,7 @@ from warriorfit.data.model.db_model import (
     PhefTest,
     ServiceMen,
 )
-from warriorfit.data.repositories.mom_repositor import MomRepository
+from warriorfit.data.repositories.mom_repository import MomRepository
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch

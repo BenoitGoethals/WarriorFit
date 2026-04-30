@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Tuple
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.config.settings_data import SettingsData
 
 

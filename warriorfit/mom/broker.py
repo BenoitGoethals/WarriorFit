@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
@@ -13,7 +13,7 @@ from warriorfit.data.model.db_model import (
     March,
     PhefTest,
 )
-from warriorfit.data.repositories.mom_repositor import MomRepository
+from warriorfit.data.repositories.mom_repository import MomRepository
 from warriorfit.mom.message import Message
 from warriorfit.services.be_mil_service import BEMILService
 

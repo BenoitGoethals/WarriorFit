@@ -51,7 +51,7 @@ MINIMAL_VERSION = {"version": "2.0.0", "date": "2026-03-23"}
 @pytest.fixture(autouse=True)
 def clear_singleton():
     """Ensure every test starts with a fresh ApplicationConfig instance."""
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     Singleton._instances.pop(ApplicationConfig, None)
     yield
@@ -65,7 +65,7 @@ def app_config():
     YAML loading and the DB engine are replaced with mocks; builtins.open is untouched
     so that tests calling save_config() can write real files.
     """
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     with (
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
@@ -74,7 +74,7 @@ def app_config():
             ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION
         ),
         patch(
-            "warriorfit.config.appliccation_config.create_async_engine",
+            "warriorfit.config.application_config.create_async_engine",
             return_value=MagicMock(),
         ),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
@@ -88,7 +88,7 @@ def app_config():
 
 
 def test_singleton_returns_same_instance(app_config):
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     second = ApplicationConfig()
     assert app_config is second
@@ -205,7 +205,7 @@ def test_config_property_returns_engine(app_config):
 
 
 def test_development_env_uses_dev_config():
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     with (
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
@@ -214,7 +214,7 @@ def test_development_env_uses_dev_config():
             ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION
         ),
         patch(
-            "warriorfit.config.appliccation_config.create_async_engine",
+            "warriorfit.config.application_config.create_async_engine",
             return_value=MagicMock(),
         ),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
@@ -225,7 +225,7 @@ def test_development_env_uses_dev_config():
 
 
 def test_production_env_missing_secret_key_raises():
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     env = {k: v for k, v in os.environ.items() if k != "WF_SECRET_KEY"}
     env["APP_ENV"] = "production"
@@ -236,7 +236,7 @@ def test_production_env_missing_secret_key_raises():
 
 
 def test_production_env_with_secret_key_and_config_override(tmp_path):
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     config_file = tmp_path / "config.yml"
     config_file.write_text(yaml.dump(MINIMAL_CONFIG), encoding="utf-8")
@@ -261,7 +261,7 @@ def test_production_env_with_secret_key_and_config_override(tmp_path):
         ),
         patch("builtins.open", side_effect=fake_open),
         patch(
-            "warriorfit.config.appliccation_config.create_async_engine",
+            "warriorfit.config.application_config.create_async_engine",
             return_value=MagicMock(),
         ),
         patch.object(ApplicationConfig, "_ensure_directory", side_effect=lambda p: p),
@@ -277,7 +277,7 @@ def test_production_env_with_secret_key_and_config_override(tmp_path):
 
 
 def test_ensure_directory_creates_missing_path(tmp_path):
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     new_dir = tmp_path / "sub" / "dir"
     assert not new_dir.exists()
@@ -286,7 +286,7 @@ def test_ensure_directory_creates_missing_path(tmp_path):
 
 
 def test_ensure_directory_is_idempotent_on_existing_path(tmp_path):
-    from warriorfit.config.appliccation_config import ApplicationConfig
+    from warriorfit.config.application_config import ApplicationConfig
 
     result = ApplicationConfig._ensure_directory(str(tmp_path))
     assert Path(result).exists()
