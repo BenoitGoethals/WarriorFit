@@ -19,9 +19,11 @@ class StatusLoginUser(Page):
         controller: StatusLogUserController = Provide[
             Container.status_log_user_controller
         ],
+        config: ApplicationConfig = Provide[Container.config],
     ):
         super().__init__()
         self.controller = controller
+        self._config = config
 
     def refresh(self):
         self.refresh_tick.set(self.refresh_tick.get() + 1)
@@ -89,7 +91,7 @@ class StatusLoginUser(Page):
 
         @render.text
         def version_header():
-            v = ApplicationConfig().version
+            v = self._config.version
             if v is None:
                 return "Version : -  Date : -"
             return f"Version : {v[0]}  Date :{v[2]}"

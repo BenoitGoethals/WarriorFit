@@ -31,6 +31,7 @@ class Service(ABC):
     ):
         if config is None:
             config = ApplicationConfig()
+        self._config = config
         self._user_repo = (
             user_repository if user_repository is not None else UserRepository()
         )

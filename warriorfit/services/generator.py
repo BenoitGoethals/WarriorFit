@@ -17,8 +17,9 @@ from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_test import ServiceTest
 
 
-def _output_dir() -> str:
-    path = ApplicationConfig().pdf_output_path
+def _output_dir(config: ApplicationConfig = None) -> str:
+    cfg = config if config is not None else ApplicationConfig()
+    path = cfg.pdf_output_path
     if path:
         return path
     else:
@@ -41,13 +42,17 @@ class GeneratorReport(ABC):
     """
 
     def __init__(
-        self, military_service: MilitaryService = None, service_test: ServiceTest = None
+        self,
+        military_service: MilitaryService = None,
+        service_test: ServiceTest = None,
+        config: ApplicationConfig = None,
     ):
         self.be_mil_service = (
             military_service if military_service is not None else MilitaryService()
         )
         self._service = service_test if service_test is not None else ServiceTest()
         self._user_service = self._service
+        self._config = config if config is not None else ApplicationConfig()
         self._logger = logging.getLogger(__name__)
 
     async def calculate_score(self, own_unit, this_year):
@@ -83,7 +88,7 @@ class GeneratorReport(ABC):
         )
         if own_unit:
             mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                ApplicationConfig().own_unit
+                self._config.own_unit
             )
         for sess in sessions or []:
             phef_tests: List[PhefTest] = await self._service.get_all_phef(sess.id)
@@ -171,7 +176,7 @@ class GeneratorReport(ABC):
         )
         if own_unit:
             mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                ApplicationConfig().own_unit
+                self._config.own_unit
             )
         for sess in sessions or []:
             tests: List[FunctionalTest] = await self._service.get_all_functional_test(
@@ -235,7 +240,7 @@ class GeneratorReport(ABC):
         )
         if own_unit:
             mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                ApplicationConfig().own_unit
+                self._config.own_unit
             )
         for sess in sessions or []:
             tests: List[CombatTestParatrooper] = (
@@ -292,7 +297,7 @@ class GeneratorReport(ABC):
         )
         if own_unit:
             mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                ApplicationConfig().own_unit
+                self._config.own_unit
             )
         for sess in sessions or []:
             tests: List[CombatSwimmingTest] = (
