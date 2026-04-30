@@ -78,6 +78,8 @@ class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(
         modules=[
+            # App server factory
+            "warriorfit.ui.app_server",
             # Pages (use @inject + Provide[Container.xxx_controller])
             "warriorfit.ui.pages.phef",
             "warriorfit.ui.pages.cross",
