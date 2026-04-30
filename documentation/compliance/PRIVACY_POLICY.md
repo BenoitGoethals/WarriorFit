@@ -1,6 +1,6 @@
 # Privacy Notice — WarriorFit
 
-**Version:** 1.0 · **Effective:** 2026-04-24
+**Version:** 1.1 · **Effective:** 2026-04-30
 
 ## Who we are
 
@@ -55,6 +55,7 @@ that cannot be handled via self-service, contact your unit admin.
 - Passwords: Argon2id (time=3, memory=64 MB, parallelism=4)
 - Access control: role-based (ADMIN, PTI, APTI, PLANNER, USER, GUEST)
 - Session: 10-minute inactivity timeout, rate-limited login (5 attempts / 15 min lockout)
+- Database transport: TLS (`verify-full`) in production — encrypted in transit + server certificate validated against the unit CA
 - Audit: every create/update/delete, login, logout, consent change is logged
 
 ## Contact

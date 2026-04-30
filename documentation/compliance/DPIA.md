@@ -1,7 +1,7 @@
 # Data Protection Impact Assessment (DPIA) — WarriorFit
 
-**Document version:** 1.0
-**Date:** 2026-04-24
+**Document version:** 1.1
+**Date:** 2026-04-30
 **Controller:** Belgian Defence (Land Component — 3 Para)
 **System:** WarriorFit — Military Physical Fitness Test Digitization Platform
 **Deployment:** Intranet only (no public Internet exposure)
@@ -53,7 +53,8 @@ internal HR system reachable via the `hr_url` allowlist.
 | Lack of lawful basis for health data | Medium | Critical | Explicit consent table (`user_consents`), Art. 9(2)(a) fallback |
 | Data-subject rights not honored | High | High | Self-service Privacy page (export, erase, consent management) |
 | DB breach (theft of backup) | Low | High | Platform admin scope: full-disk encryption, encrypted backups, restricted DB account |
-| TLS absent on DB/HTTP transport | Low (intranet) | Medium | Platform admin scope: unit firewall + VLAN isolation; TLS target for platform hardening |
+| TLS absent on DB transport | Low (intranet) | Medium | TLS configurable per environment via `db.ssl` (`disable`/`prefer`/`require`/`verify-ca`/`verify-full`) and `db.ssl_root_cert`. Production set to `verify-full` against `/etc/WarriorFit/pg-ca.pem`. Dev/test default `prefer`. |
+| TLS absent on outbound HTTP (HR) | Low (intranet) | Medium | Platform admin scope: unit firewall + VLAN isolation; HTTPS + URL allowlist on HR endpoint is open work (OWASP A10) |
 | Orphan PII after user deletion | Previously high | — | FK `ON DELETE CASCADE` on `service_men.user_id`; application-level cascade in `GdprService.erase_user` |
 
 ## 6. Data subject rights implemented
@@ -78,13 +79,20 @@ internal HR system reachable via the `hr_url` allowlist.
 | HR broker messages | 90 days | Transient integration data |
 | Consent records | Lifetime of account + legal-proof window | GDPR Art. 7(1) requires demonstrability |
 
-Configurable via `config_dev.yml` → `gdpr:` block.
+Configurable per environment via the `gdpr:` block in `config.yml`,
+`config_dev.yml`, `config_test.yml`, and `config_prod.yml`. All
+environments now declare retention windows explicitly (no implicit
+defaults) so audit reviewers can verify the active values without
+reading code.
 
 ## 8. Residual risks
 
-- **No TLS at transport layer** (platform admin scope; mitigated by intranet isolation but not eliminated).
+- **TLS to HR system** still HTTP — open work (OWASP A10): add HTTPS + URL allowlist + request timeout.
 - **No column-level encryption at rest** for birthdate/name/scores. Accepted risk given intranet-only deployment and DB full-disk encryption at OS level.
 - **No automated DPIA review cadence** — recommend annual review or on schema change.
+
+### Resolved since v1.0
+- **TLS to PostgreSQL** — `verify-full` enforced in production via `db.ssl` config (2026-04-30).
 
 ## 9. Sign-off
 

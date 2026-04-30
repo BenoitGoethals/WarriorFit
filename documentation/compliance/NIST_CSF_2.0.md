@@ -1,6 +1,6 @@
 # NIST Cybersecurity Framework 2.0 — WarriorFit Self-Assessment
 
-> Last reviewed: 2026-04-30
+> Last reviewed: 2026-04-30 (rev. 2 — TLS to PostgreSQL closed; GDPR retention now explicit in all envs)
 > Framework: NIST CSF 2.0 (released 2024)
 > Scope: WarriorFit application, build pipeline, and supporting governance artifacts in this repository
 
@@ -48,11 +48,13 @@ Strongest function. RBAC, modern hashing, parameterized ORM, TLS planned.
 |----------|----------|----------|-----|
 | PR.AA — Identity Mgmt, Auth, Access Control | Good | RBAC across 6 roles, Argon2id (`security/auth_service.py`), rate limiter (`security/rate_limiter.py`), session inactivity 10 min | UI-only enforcement (A01); dev auto-login bypass (A01); no MFA (A07); rate limiter in-memory (A07) |
 | PR.AT — Awareness & Training | None | — | No documented developer security training |
-| PR.DS — Data Security | Partial | Argon2id at rest for credentials; `audit_logs` table | No TLS on PostgreSQL (A05); no field-level encryption for PII; data retention policy implicit |
+| PR.DS — Data Security | Good | Argon2id at rest for credentials; `audit_logs` table; TLS to PostgreSQL (`verify-full` in prod via `db.ssl`); GDPR retention windows declared explicitly per environment in YAML | No field-level encryption for PII at rest |
 | PR.PS — Platform Security | Good | Dockerized deploy, secrets via env (`WF_SECRET_KEY`), pre-commit hooks, ruff/mypy/black in CI | Image not signed (A08); base image patch cadence not documented |
 | PR.IR — Technology Infrastructure Resilience | Partial | Async broker with outbox + retry + dead-letter (`warriorfit/mom/broker.py`) | No documented HA/DR posture; single-process `UserStore` singleton |
 
-**Priority gaps:** TLS to PostgreSQL, persistent rate limiter, dev-mode guard, MFA for ADMIN, image signing.
+**Priority gaps:** persistent rate limiter, dev-mode guard, MFA for ADMIN, image signing.
+
+**Resolved 2026-04-30:** TLS to PostgreSQL (`db.ssl=verify-full` in prod).
 
 ## DETECT (DE)
 
@@ -89,16 +91,19 @@ These are the highest-leverage items to lift the overall posture. They map to ex
 
 | # | Function     | Action                                                            | Maps to            |
 |---|--------------|-------------------------------------------------------------------|--------------------|
-| 1 | PR.DS / GV.SC| Enable TLS on PostgreSQL connection                               | OWASP A05 (P1)     |
-| 2 | PR.AA        | Persistent rate limiter (Redis or DB-backed)                      | OWASP A07 (P1)     |
-| 3 | PR.AA        | Guard dev auto-login (hostname / required env-secret check)       | OWASP A01 (P1)     |
-| 4 | PR.IR        | `aiohttp.ClientTimeout` + URL allowlist on HR status check        | OWASP A10 (P1)     |
-| 5 | RS.MA        | Write `documentation/compliance/INCIDENT_RESPONSE.md` (severity, contacts, runbook) | new |
-| 6 | RC.RP        | Document PostgreSQL backup & restore procedure with RTO/RPO       | new                |
-| 7 | DE.CM        | Audit logout events; thread client IP through CRUD audit calls    | OWASP A09 (P2)     |
-| 8 | GV.SC        | Generate SBOM in CI (`cyclonedx-py` or `syft`); sign Docker image | OWASP A08 (Info)   |
-| 9 | ID.RA        | Add a threat model document (STRIDE per page)                     | new                |
-|10 | PR.AA        | TOTP MFA for ADMIN role                                           | OWASP A07 (P3)     |
+| 1 | PR.AA        | Persistent rate limiter (Redis or DB-backed)                      | OWASP A07 (P1)     |
+| 2 | PR.AA        | Guard dev auto-login (hostname / required env-secret check)       | OWASP A01 (P1)     |
+| 3 | PR.IR        | `aiohttp.ClientTimeout` + URL allowlist on HR status check        | OWASP A10 (P1)     |
+| 4 | RS.MA        | Write `documentation/compliance/INCIDENT_RESPONSE.md` (severity, contacts, runbook) | new |
+| 5 | RC.RP        | Document PostgreSQL backup & restore procedure with RTO/RPO       | new                |
+| 6 | DE.CM        | Audit logout events; thread client IP through CRUD audit calls    | OWASP A09 (P2)     |
+| 7 | GV.SC        | Generate SBOM in CI (`cyclonedx-py` or `syft`); sign Docker image | OWASP A08 (Info)   |
+| 8 | ID.RA        | Add a threat model document (STRIDE per page)                     | new                |
+| 9 | PR.AA        | TOTP MFA for ADMIN role                                           | OWASP A07 (P3)     |
+|10 | PR.DS        | Field-level encryption for PII at rest (birthdate, name, scores)  | DPIA residual      |
+
+### Closed since rev. 1
+- TLS on PostgreSQL connection (was Top-10 #1) — `db.ssl=verify-full` in prod via `_build_db_ssl()` in `application_config.py`.
 
 ## Mapping Notes
 

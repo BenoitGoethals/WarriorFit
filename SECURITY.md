@@ -1,6 +1,6 @@
 # Security Documentation — WarriorFit
 
-> Last reviewed: 2026-03-19
+> Last reviewed: 2026-04-30
 
 ## Table of Contents
 1. [Authentication Flow](#authentication-flow)
@@ -284,7 +284,7 @@ audit_logs
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | No TLS on PostgreSQL connection | Medium | `config/appliccation_config.py:202` | `create_async_engine()` builds the connection URL without `ssl=True` or `sslmode=require`. Database traffic is unencrypted in transit. |
+| 1 | TLS on PostgreSQL connection | Resolved | `config/application_config.py:_build_db_ssl` | `db.ssl` config (`disable`/`prefer`/`require`/`verify-ca`/`verify-full`) drives `connect_args["ssl"]` on `create_async_engine()`. Production uses `verify-full` with CA at `/etc/WarriorFit/pg-ca.pem`. Dev/test default `prefer`. |
 | 2 | `WF_SECRET_KEY` at build time | Low | `Dockerfile:17` | `ARG WF_SECRET_KEY` could bake the secret into an image layer if provided at `docker build` time. Must only be passed via `docker run -e`. |
 | 3 | Config not bundled in image | Info | `Dockerfile` | `/etc/WarriorFit/config.yml` must be volume-mounted. Intentional design; must be in the deployment runbook. |
 
@@ -335,7 +335,6 @@ audit_logs
 
 | Priority | Severity | OWASP | Issue | Recommended Fix |
 |----------|----------|-------|-------|-----------------|
-| P1 | Medium | A05 | No TLS on PostgreSQL connection | Add `ssl=True` (or `connect_args={"ssl": ssl_ctx}`) to `create_async_engine()` |
 | P1 | Medium | A07 | Rate limiter is in-memory only | Replace with Redis-backed or DB counter |
 | P1 | Medium | A01 | Dev auto-login has no guard | Add a hostname or secret-presence check before activating dev bypass |
 | P1 | Medium | A10 | HTTP request to HR URL has no timeout | Add `aiohttp.ClientTimeout(total=5)` to `_check_http_status()` |
