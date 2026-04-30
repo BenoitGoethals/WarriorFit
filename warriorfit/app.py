@@ -50,6 +50,6 @@ _container.broker().start()
 # ── 5. Assemble the Shiny app ─────────────────────────────────────────────────
 app = App(
     ui=build_app_ui(),
-    server=make_server(_container),
+    server=make_server(),
     static_assets=Path(__file__).parent / "www",
 )

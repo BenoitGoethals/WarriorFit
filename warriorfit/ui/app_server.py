@@ -3,11 +3,15 @@ import os
 import time
 from typing import Any, Callable, Optional
 
+from dependency_injector.wiring import Provide, inject
 from shiny import render, ui
 
 from warriorfit.config.application_config import ApplicationConfig
+from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Role  # type: ignore[attr-defined]
+from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
 from warriorfit.security.rate_limiter import login_rate_limiter
+from warriorfit.services.service_user import UserService
 from warriorfit.ui.page_registry import PageSpec, get_pages, pages_for_role
 from warriorfit.ui.user_store import UserStore
 
@@ -82,15 +86,18 @@ def _register_pages_server(
             mounted.set({*mounted.get(), "CalendarEvents"})
 
 
-def make_server(container: Any) -> Callable[[Any, Any, Any], None]:
-    """Return the Shiny server function, closing over *container*."""
+@inject
+def make_server(
+    user_service: UserService = Provide[Container.user_service],
+    servicemen_repository: ServicemenRepository = Provide[Container.servicemen_repository],
+    config: ApplicationConfig = Provide[Container.config],
+) -> Callable[[Any, Any, Any], None]:
+    """Return the Shiny server function. Dependencies are resolved by the DI container."""
 
     def server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
         from warriorfit.ui.pages import calendar_events
 
-        user_service = container.user_service()
-        servicemen_repository = container.servicemen_repository()
         _register_pages_server(input, output, session)
 
         status_text: reactive.Value[str] = reactive.Value("")
@@ -340,7 +347,7 @@ def make_server(container: Any) -> Callable[[Any, Any, Any], None]:
                     UserStore.set_user(dev_user)
                     _set_session_user(dev_user)
                     login_user_text.set(
-                        f"User: admin  Role: {Role.ADMIN}  Unit: {ApplicationConfig().own_unit}"
+                        f"User: admin  Role: {Role.ADMIN}  Unit: {config.own_unit}"
                     )
                     nav_version.set(nav_version.get() + 1)
                 return
@@ -481,7 +488,7 @@ def make_server(container: Any) -> Callable[[Any, Any, Any], None]:
                     _set_session_user(user)
                     login_user_text.set(
                         f"User: {username_login}  Role: {user.role}"
-                        f"  Unit: {ApplicationConfig().own_unit}"
+                        f"  Unit: {config.own_unit}"
                     )
                     status_text.set("")
                     ui.modal_remove()
