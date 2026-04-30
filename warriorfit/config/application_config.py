@@ -1,5 +1,6 @@
 import logging
 import os
+import ssl
 from pathlib import Path
 from typing import Any
 
@@ -193,6 +194,8 @@ class ApplicationConfig(metaclass=Singleton):
             db_database=config["db"]["database"],
             db_username=config["db"]["username"],
             db_password=config["db"]["password"],
+            db_ssl=config["db"].get("ssl", "prefer"),
+            db_ssl_root_cert=config["db"].get("ssl_root_cert", ""),
             pdf_path=self._ensure_directory(config["path"]["pdf_path"]),
             own_unit=config["unit"]["name"],
             mail_server=SmtpConfig(**config["mail"]),
@@ -257,6 +260,10 @@ class ApplicationConfig(metaclass=Singleton):
         Set up the database connection using SQLAlchemy.
         """
         assert self._settings_data is not None
+        connect_args: dict[str, Any] = {}
+        ssl_arg = self._build_db_ssl(self._settings_data)
+        if ssl_arg is not None:
+            connect_args["ssl"] = ssl_arg
         return create_async_engine(
             url=f"postgresql+asyncpg://{self._settings_data.db_username}:{self._settings_data.db_password}@"
             f"{self._settings_data.db_host}:{self._settings_data.db_port}/{self._settings_data.db_database}",
@@ -267,7 +274,22 @@ class ApplicationConfig(metaclass=Singleton):
             pool_recycle=3600,
             pool_timeout=30,
             pool_pre_ping=True,
+            connect_args=connect_args,
         )
+
+    @staticmethod
+    def _build_db_ssl(settings: SettingsData) -> Any:
+        mode = (settings.db_ssl or "prefer").lower()
+        if mode == "disable":
+            return False
+        if mode in {"verify-ca", "verify-full"}:
+            ctx = ssl.create_default_context(cafile=settings.db_ssl_root_cert or None)
+            if mode == "verify-ca":
+                ctx.check_hostname = False
+            return ctx
+        if mode in {"allow", "prefer", "require"}:
+            return mode
+        raise ValueError(f"Unsupported db.ssl mode: {settings.db_ssl}")
 
     def save_config(self, config: SettingsData) -> None:
         """
@@ -281,6 +303,8 @@ class ApplicationConfig(metaclass=Singleton):
                 "password": config.db_password,
                 "port": config.db_port,
                 "username": config.db_username,
+                "ssl": config.db_ssl,
+                "ssl_root_cert": config.db_ssl_root_cert,
             },
             "hr": {"url": config.hr_url, "api_key": config.hr_api_key},
             "mail": {

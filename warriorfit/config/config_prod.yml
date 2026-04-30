@@ -4,6 +4,8 @@ db:
   password: Airborne%Warrior!1978
   port: 5432
   username: produser
+  ssl: verify-full
+  ssl_root_cert: /etc/WarriorFit/pg-ca.pem
 hr:
   url: http://192.168.0.30:8400
   api_key: "warrior_secret"
@@ -23,3 +25,22 @@ unit:
 version:
   number: RC 2.0
   status: pred
+gdpr:
+  # Retention for fitness/march/reservation records (days). 5 years default.
+  fitness_retention_days: 1825
+  # Retention for audit logs (days). 1 year default.
+  audit_retention_days: 365
+  # Retention for HR broker messages (days).
+  hr_message_retention_days: 90
+broker:
+  # How often the worker wakes up to drain the queue and send messages.
+  poll_interval_s: 5
+  # How many due messages we attempt to send per worker cycle.
+  batch_size: 5
+  # After this many failed attempts, a message is moved to dead-letter
+  # (broker stops retrying it; it stays in hr_messages with dead_letter=True).
+  max_attempts: 10
+  # Exponential back-off bounds (seconds): delay = min(base * 2**(attempt-1), max).
+  base_backoff_s: 5
+  max_backoff_s: 600
+

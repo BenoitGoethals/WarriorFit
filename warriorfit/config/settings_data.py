@@ -27,6 +27,8 @@ class SettingsData:
     db_database: str = ""
     db_username: str = ""
     db_password: str = ""
+    db_ssl: str = "prefer"
+    db_ssl_root_cert: str = ""
 
     # Application configuration
     pdf_path: str = ""

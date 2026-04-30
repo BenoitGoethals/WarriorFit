@@ -4,6 +4,8 @@ db:
   password: ranger14
   port: 5432
   username: benoi
+  ssl: prefer
+  ssl_root_cert: ""
 hr:
   url: http://192.168.0.30:8400
   api_key: warrior_secret
@@ -14,7 +16,7 @@ mail:
   sender: null
   sender_email: benoit@albatros.be
   use_ssl: false
-  use_tls: false
+  use_tls: prefer
   username: benoit
 path:
   pdf_path: /tmp/pdf
