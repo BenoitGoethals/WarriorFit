@@ -283,7 +283,14 @@ class ApplicationConfig(metaclass=Singleton):
         if mode == "disable":
             return False
         if mode in {"verify-ca", "verify-full"}:
-            ctx = ssl.create_default_context(cafile=settings.db_ssl_root_cert or None)
+            cafile = settings.db_ssl_root_cert or None
+            if cafile and not Path(cafile).is_file():
+                raise FileNotFoundError(
+                    f"db.ssl_root_cert points to '{cafile}', but no such file exists. "
+                    f"Mount the CA certificate into the container or clear db.ssl_root_cert "
+                    f"to use the system trust store."
+                )
+            ctx = ssl.create_default_context(cafile=cafile)
             if mode == "verify-ca":
                 ctx.check_hostname = False
             return ctx
