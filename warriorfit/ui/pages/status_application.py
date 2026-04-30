@@ -6,7 +6,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
-from warriorfit.ui.controllers.StatusApplicationController import (
+from warriorfit.ui.controllers.status_application_controller import (
     StatusApplicationController,
 )
 from warriorfit.ui.pages.page import Page

@@ -6,7 +6,7 @@ import httpx
 from pydantic import BaseModel, ConfigDict
 from pydantic.v1 import Field
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.Gender import Gender
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.mom.message import Message

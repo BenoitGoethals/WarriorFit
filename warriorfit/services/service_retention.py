@@ -24,7 +24,7 @@ class RetentionService(Service):
         self._retention = self._config().gdpr_retention
 
     def _config(self):
-        from warriorfit.config.appliccation_config import ApplicationConfig
+        from warriorfit.config.application_config import ApplicationConfig
 
         return ApplicationConfig()
 

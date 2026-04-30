@@ -1,9 +1,9 @@
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.model.db_model import March, ServiceMen
 from warriorfit.data.repositories.march_repository import MarchRepository
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service import Service
-from warriorfit.ui.pages.notify_mail import NotifyMail
+from warriorfit.services.notify_mail import NotifyMail
 
 
 class ServiceMarch(Service):
