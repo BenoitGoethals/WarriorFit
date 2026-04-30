@@ -23,8 +23,8 @@ class ReportGeneratorCsv(GeneratorReport):
     :ivar calculate_swim_score: Method reference to calculate scores for swimming performance.
     """
 
-    def __init__(self, military_service=None, service_test=None):
-        super().__init__(military_service=military_service, service_test=service_test)
+    def __init__(self, military_service=None, service_test=None, config=None):
+        super().__init__(military_service=military_service, service_test=service_test, config=config)
 
     async def generate_report(
         self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool
@@ -90,7 +90,7 @@ class ReportGeneratorCsv(GeneratorReport):
             return None
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{report_name}_{file_suffix}_{timestamp}.csv"
-        out_dir = _output_dir()
+        out_dir = _output_dir(self._config)
 
         output_path = os.path.join(out_dir, file_name)
 

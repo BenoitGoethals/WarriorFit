@@ -40,8 +40,9 @@ class ReportGeneratorPdf(GeneratorReport):
         cross_service: ServiceCross = None,
         military_service=None,
         service_test=None,
+        config=None,
     ):
-        super().__init__(military_service=military_service, service_test=service_test)
+        super().__init__(military_service=military_service, service_test=service_test, config=config)
         self._cross_service = (
             cross_service if cross_service is not None else ServiceCross()
         )
@@ -260,7 +261,7 @@ class ReportGeneratorPdf(GeneratorReport):
         deps = self._ensure_pdf_deps()
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{report_name}_{file_suffix}_{timestamp}.pdf"
-        output_path = os.path.join(_output_dir(), file_name)
+        output_path = os.path.join(_output_dir(self._config), file_name)
 
         doc = deps["SimpleDocTemplate"](output_path, pagesize=deps["A4"])
         styles = deps["getSampleStyleSheet"]()
@@ -494,7 +495,7 @@ class ReportGeneratorPdf(GeneratorReport):
         deps = self._ensure_pdf_deps()
         year_suffix = f"_{current_year}" if current_year_only else ""
         file_name = f"Report_{serial_number}{year_suffix}.pdf"
-        output_path = os.path.join(_output_dir(), file_name)
+        output_path = os.path.join(_output_dir(self._config), file_name)
 
         doc = deps["SimpleDocTemplate"](output_path, pagesize=deps["A4"])
         styles = deps["getSampleStyleSheet"]()
@@ -700,7 +701,7 @@ class ReportGeneratorPdf(GeneratorReport):
 
         deps = self._ensure_pdf_deps()
         file_name = f"Report_Own_unit_{datetime.now().year}.pdf"
-        output_path = os.path.join(_output_dir(), file_name)
+        output_path = os.path.join(_output_dir(self._config), file_name)
 
         doc = deps["SimpleDocTemplate"](output_path, pagesize=deps["A4"])
         styles = deps["getSampleStyleSheet"]()

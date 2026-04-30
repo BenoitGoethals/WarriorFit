@@ -257,6 +257,7 @@ class Container(containers.DeclarativeContainer):
         service_test=test_service,
         service_march=march_service,
         military_service=military_service,
+        config=config,
     )
 
     # Report Generators
@@ -265,12 +266,14 @@ class Container(containers.DeclarativeContainer):
         cross_service=cross_service,
         military_service=military_service,
         service_test=test_service,
+        config=config,
     )
 
     report_generator_csv = providers.Singleton(
         ReportGeneratorCsv,
         military_service=military_service,
         service_test=test_service,
+        config=config,
     )
 
     # Controllers
@@ -322,7 +325,11 @@ class Container(containers.DeclarativeContainer):
         SwimmingController, service=test_service, mil_service=military_service
     )
     sessions_controller = providers.Singleton(
-        SessionsController, service=test_service, mil_service=military_service
+        SessionsController,
+        service=test_service,
+        mil_service=military_service,
+        mail_service=mail_service,
+        config=config,
     )
     combat_controller = providers.Singleton(
         CombatController, service=test_service, mil_service=military_service

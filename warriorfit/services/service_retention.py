@@ -21,12 +21,7 @@ class RetentionService(Service):
 
     def __init__(self, user_repository=None, config=None):
         super().__init__(user_repository=user_repository, config=config)
-        self._retention = self._config().gdpr_retention
-
-    def _config(self):
-        from warriorfit.config.application_config import ApplicationConfig
-
-        return ApplicationConfig()
+        self._retention = self._config.gdpr_retention
 
     async def purge_all(self) -> Dict[str, int]:
         """Run every purge. Returns rows deleted per category."""
