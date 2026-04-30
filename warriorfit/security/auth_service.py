@@ -3,20 +3,16 @@ import asyncio
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 
-from warriorfit.services.service_user import UserService
-
 _ph = PasswordHasher(time_cost=3, memory_cost=65536, parallelism=4)
 
 
 class Auth:
-    """
-    Handles user authentication using Argon2id one-way hashing.
-    """
+    """Handles user authentication using Argon2id one-way hashing."""
 
     @staticmethod
-    async def authenticate_user(username: str, password: str):
-        db_service = UserService()
-        user = await db_service.get_user_by_username(username)
+    async def authenticate_user(username: str, password: str, user_service):
+        """Verify credentials. Callers must supply an injected user_service instance."""
+        user = await user_service.get_user_by_username(username)
         if not user:
             return None
         if not await Auth.verify_password(password, user.password_hash):

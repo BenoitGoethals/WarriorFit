@@ -4,7 +4,7 @@ from pathlib import Path
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.container import Container
 from warriorfit.core.role import Role
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
@@ -19,9 +19,11 @@ class StatusLoginUser(Page):
         controller: StatusLogUserController = Provide[
             Container.status_log_user_controller
         ],
+        config: ApplicationConfig = Provide[Container.config],
     ):
         super().__init__()
         self.controller = controller
+        self._config = config
 
     def refresh(self):
         self.refresh_tick.set(self.refresh_tick.get() + 1)
@@ -89,7 +91,7 @@ class StatusLoginUser(Page):
 
         @render.text
         def version_header():
-            v = ApplicationConfig().version
+            v = self._config.version
             if v is None:
                 return "Version : -  Date : -"
             return f"Version : {v[0]}  Date :{v[2]}"

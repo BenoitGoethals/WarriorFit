@@ -8,7 +8,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
-from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
+from warriorfit.ui.controllers.cross_planning_controller import CrossPlanningController
 from warriorfit.ui.pages.page import Page
 
 

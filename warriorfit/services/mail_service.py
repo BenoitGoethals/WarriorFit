@@ -7,7 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Iterable, Optional
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.utils.Os import Os
 
 

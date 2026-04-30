@@ -16,7 +16,7 @@ from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepo
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.service import Service
-from warriorfit.ui.pages.notify_mail import NotifyMail
+from warriorfit.services.notify_mail import NotifyMail
 
 
 class ServiceTest(Service):

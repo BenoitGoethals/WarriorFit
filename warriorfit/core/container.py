@@ -4,12 +4,12 @@ Dependency Injection Container for WarriorFit application.
 
 from dependency_injector import containers, providers
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.repositories.consent_repository import ConsentRepository
 from warriorfit.data.repositories.cross_repository import CrossRepository
 from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
 from warriorfit.data.repositories.march_repository import MarchRepository
-from warriorfit.data.repositories.mom_repositor import MomRepository
+from warriorfit.data.repositories.mom_repository import MomRepository
 from warriorfit.data.repositories.reservation_repository import ReservationRepository
 from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
 from warriorfit.data.repositories.user_repository import UserRepository
@@ -36,7 +36,7 @@ from warriorfit.ui.controllers.calendar_events_controller import (
 )
 from warriorfit.ui.controllers.combat_controller import CombatController
 from warriorfit.ui.controllers.cross_controller import CrossController
-from warriorfit.ui.controllers.cross_plannig_controller import CrossPlanningController
+from warriorfit.ui.controllers.cross_planning_controller import CrossPlanningController
 from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
 from warriorfit.ui.controllers.dashboard_own_unit_controller import (
     DashboardOwnUnitController,
@@ -59,12 +59,12 @@ from warriorfit.ui.controllers.session_controller import SessionsController
 from warriorfit.ui.controllers.setting_controller import SettingsController
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
 from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
-from warriorfit.ui.controllers.StatusApplicationController import (
+from warriorfit.ui.controllers.status_application_controller import (
     StatusApplicationController,
 )
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.controllers.usermanagement_controller import UserManagementController
-from warriorfit.ui.pages.notify_mail import NotifyMail
+from warriorfit.services.notify_mail import NotifyMail
 
 
 class Container(containers.DeclarativeContainer):
@@ -78,12 +78,14 @@ class Container(containers.DeclarativeContainer):
 
     wiring_config = containers.WiringConfiguration(
         modules=[
+            # App server factory
+            "warriorfit.ui.app_server",
             # Pages (use @inject + Provide[Container.xxx_controller])
             "warriorfit.ui.pages.phef",
             "warriorfit.ui.pages.cross",
             "warriorfit.ui.pages.march",
             "warriorfit.ui.pages.reserve_fitness_room",
-            "warriorfit.ui.pages.usermangement",
+            "warriorfit.ui.pages.usermanagement",
             "warriorfit.ui.pages.calendar_events",
             "warriorfit.ui.pages.cross_statics",
             "warriorfit.ui.pages.functional_test",
@@ -255,6 +257,7 @@ class Container(containers.DeclarativeContainer):
         service_test=test_service,
         service_march=march_service,
         military_service=military_service,
+        config=config,
     )
 
     # Report Generators
@@ -263,12 +266,14 @@ class Container(containers.DeclarativeContainer):
         cross_service=cross_service,
         military_service=military_service,
         service_test=test_service,
+        config=config,
     )
 
     report_generator_csv = providers.Singleton(
         ReportGeneratorCsv,
         military_service=military_service,
         service_test=test_service,
+        config=config,
     )
 
     # Controllers
@@ -320,7 +325,11 @@ class Container(containers.DeclarativeContainer):
         SwimmingController, service=test_service, mil_service=military_service
     )
     sessions_controller = providers.Singleton(
-        SessionsController, service=test_service, mil_service=military_service
+        SessionsController,
+        service=test_service,
+        mil_service=military_service,
+        mail_service=mail_service,
+        config=config,
     )
     combat_controller = providers.Singleton(
         CombatController, service=test_service, mil_service=military_service

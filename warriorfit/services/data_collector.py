@@ -1,6 +1,6 @@
 import pandas as pd
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import PhefTest
 from warriorfit.logic.phef_calculator import PhefCalculator
@@ -20,6 +20,7 @@ class DataCollector:
         service_test: ServiceTest = None,
         service_march: ServiceMarch = None,
         military_service: MilitaryService = None,
+        config: ApplicationConfig = None,
     ) -> None:
         self._service = service_test if service_test is not None else ServiceTest()
         self._service_mars = (
@@ -28,6 +29,7 @@ class DataCollector:
         self.be_mil = (
             military_service if military_service is not None else MilitaryService()
         )
+        self._config = config if config is not None else ApplicationConfig()
 
     # -------------------------
     # Small helpers
@@ -385,7 +387,7 @@ class DataCollector:
 
     async def collect_all_mil_from_own_unit_not_executed_phefs(self) -> pd.DataFrame:
         mil_series = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
+            self._config.own_unit
         )
         rows: list[dict] = []
         for m in mil_series:
@@ -412,7 +414,7 @@ class DataCollector:
 
     async def collect_all_mil_from_own_unit_failed_phefs(self) -> pd.DataFrame:
         mil_series = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
+            self._config.own_unit
         )
         rows: list[dict] = []
         for m in mil_series:
@@ -455,7 +457,7 @@ class DataCollector:
 
     async def collect_tests_data_for_own_unit(self) -> pd.DataFrame:
         own_unit = await self.be_mil.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
+            self._config.own_unit
         )
         rows: list[dict] = []
 

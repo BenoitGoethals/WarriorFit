@@ -1,9 +1,8 @@
-from warriorfit.config.appliccation_config import ApplicationConfig
 from warriorfit.data.model.db_model import March, ServiceMen
 from warriorfit.data.repositories.march_repository import MarchRepository
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service import Service
-from warriorfit.ui.pages.notify_mail import NotifyMail
+from warriorfit.services.notify_mail import NotifyMail
 
 
 class ServiceMarch(Service):
@@ -68,7 +67,7 @@ class ServiceMarch(Service):
         :rtype: list
         """
         return await self.__repo.get_all_march_by_unit_name(
-            ApplicationConfig().own_unit
+            self._config.own_unit
         )
 
     async def get_march_by_id(self, ind_id):

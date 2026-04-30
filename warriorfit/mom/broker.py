@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
@@ -13,7 +13,7 @@ from warriorfit.data.model.db_model import (
     March,
     PhefTest,
 )
-from warriorfit.data.repositories.mom_repositor import MomRepository
+from warriorfit.data.repositories.mom_repository import MomRepository
 from warriorfit.mom.message import Message
 from warriorfit.services.be_mil_service import BEMILService
 
@@ -66,7 +66,7 @@ class Broker:
 
     async def worker(self):
         """Background task running on the main event loop"""
-        hr_url = ApplicationConfig().hr_url
+        hr_url = self._config.hr_url
         print("🚀 Message Queue Service started")
         print(f"📍 Target URL: {hr_url}")
         print(
@@ -132,7 +132,7 @@ class Broker:
 
         # 1. Drain queue to DB
         if not self._msg_queue.empty():
-            repo = MomRepository()
+            repo = self._mom_repo
             messages_processed = 0
             while not self._msg_queue.empty():
                 try:
@@ -326,7 +326,7 @@ class Broker:
             message = Message(content=message_hr.message)
             self._logger.debug(
                 "Sending message to HR service",
-                extra={"message_id": message_id, "hr_url": ApplicationConfig().hr_url},
+                extra={"message_id": message_id, "hr_url": self._config.hr_url},
             )
             result = await self._be_mil_service.sent_hr_message_to_hr(message)
             self._logger.info(
@@ -342,7 +342,7 @@ class Broker:
                     "error_type": "TimeoutError",
                     "error_message": str(e),
                     "message_id": message_id,
-                    "hr_url": ApplicationConfig().hr_url,
+                    "hr_url": self._config.hr_url,
                 },
             )
             return None
@@ -354,7 +354,7 @@ class Broker:
                     "error_type": type(e).__name__,
                     "error_message": str(e),
                     "message_id": message_id,
-                    "hr_url": ApplicationConfig().hr_url,
+                    "hr_url": self._config.hr_url,
                 },
             )
             return None
@@ -412,7 +412,7 @@ class Broker:
         """
         self._logger.debug("Checking for due HR messages to send")
         try:
-            repo = MomRepository()
+            repo = self._mom_repo
             due = await repo.get_due_pending_messages(limit=self._batch_size)
             if not due:
                 self._logger.debug("No due HR messages")

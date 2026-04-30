@@ -3,7 +3,7 @@ from abc import ABC
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.repositories.user_repository import UserRepository
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.user_store import UserStore
@@ -31,6 +31,7 @@ class Service(ABC):
     ):
         if config is None:
             config = ApplicationConfig()
+        self._config = config
         self._user_repo = (
             user_repository if user_repository is not None else UserRepository()
         )

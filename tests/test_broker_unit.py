@@ -276,10 +276,10 @@ class TestProcessCycle:
 
             mock_repo = AsyncMock()
             mock_repo.add_hr_message = AsyncMock(return_value=hr_msg)
+            broker._mom_repo = mock_repo
             broker.check_and_send_messages = AsyncMock()
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker._process_cycle()
+            await broker._process_cycle()
 
             mock_repo.add_hr_message.assert_awaited_once_with(hr_msg)
             assert broker._msg_queue.empty()
@@ -288,12 +288,10 @@ class TestProcessCycle:
 
     def test_empty_queue_skips_db_write(self):
         async def _test():
-            broker, _, _ = _make_broker()
-            mock_repo = AsyncMock()
+            broker, mock_repo, _ = _make_broker()
             broker.check_and_send_messages = AsyncMock()
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker._process_cycle()
+            await broker._process_cycle()
 
             mock_repo.add_hr_message.assert_not_awaited()
 
@@ -302,11 +300,9 @@ class TestProcessCycle:
     def test_always_calls_check_and_send(self):
         async def _test():
             broker, _, _ = _make_broker()
-            mock_repo = AsyncMock()
             broker.check_and_send_messages = AsyncMock()
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker._process_cycle()
+            await broker._process_cycle()
 
             broker.check_and_send_messages.assert_awaited_once()
 
@@ -321,10 +317,10 @@ class TestProcessCycle:
                 )
             mock_repo = AsyncMock()
             mock_repo.add_hr_message = AsyncMock(return_value=None)
+            broker._mom_repo = mock_repo
             broker.check_and_send_messages = AsyncMock()
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker._process_cycle()
+            await broker._process_cycle()
 
             assert mock_repo.add_hr_message.await_count == 3
             assert broker._msg_queue.empty()
@@ -354,10 +350,10 @@ class TestCheckAndSendMessages:
             mock_repo = AsyncMock()
             mock_repo.get_due_pending_messages = AsyncMock(return_value=[msg])
             mock_repo.delete_hr_message = AsyncMock(return_value=True)
+            broker._mom_repo = mock_repo
             broker._try_send_to_hr = AsyncMock(return_value=({"ok": True}, None))
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker.check_and_send_messages()
+            await broker.check_and_send_messages()
 
             mock_repo.delete_hr_message.assert_awaited_once_with(42)
             mock_repo.mark_failure.assert_not_awaited()
@@ -371,10 +367,10 @@ class TestCheckAndSendMessages:
             mock_repo = AsyncMock()
             mock_repo.get_due_pending_messages = AsyncMock(return_value=[msg])
             mock_repo.mark_failure = AsyncMock(return_value=True)
+            broker._mom_repo = mock_repo
             broker._try_send_to_hr = AsyncMock(return_value=(None, "timeout"))
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker.check_and_send_messages()
+            await broker.check_and_send_messages()
 
             mock_repo.mark_failure.assert_awaited_once_with(
                 7,
@@ -394,11 +390,11 @@ class TestCheckAndSendMessages:
             mock_repo = AsyncMock()
             mock_repo.get_due_pending_messages = AsyncMock(return_value=[msg])
             mock_repo.mark_failure = AsyncMock(return_value=True)
+            broker._mom_repo = mock_repo
             broker._try_send_to_hr = AsyncMock(return_value=(None, "conn refused"))
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                with caplog.at_level(logging.ERROR):
-                    await broker.check_and_send_messages()
+            with caplog.at_level(logging.ERROR):
+                await broker.check_and_send_messages()
 
             assert any("dead-letter" in r.message for r in caplog.records)
 
@@ -406,12 +402,10 @@ class TestCheckAndSendMessages:
 
     def test_no_due_messages_does_nothing(self):
         async def _test():
-            broker, _, _ = _make_broker()
-            mock_repo = AsyncMock()
+            broker, mock_repo, _ = _make_broker()
             mock_repo.get_due_pending_messages = AsyncMock(return_value=[])
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker.check_and_send_messages()
+            await broker.check_and_send_messages()
 
             mock_repo.delete_hr_message.assert_not_awaited()
             mock_repo.mark_failure.assert_not_awaited()
@@ -423,9 +417,9 @@ class TestCheckAndSendMessages:
             broker, _, _ = _make_broker(batch_size=7)
             mock_repo = AsyncMock()
             mock_repo.get_due_pending_messages = AsyncMock(return_value=[])
+            broker._mom_repo = mock_repo
 
-            with patch("warriorfit.mom.broker.MomRepository", return_value=mock_repo):
-                await broker.check_and_send_messages()
+            await broker.check_and_send_messages()
 
             mock_repo.get_due_pending_messages.assert_awaited_once_with(limit=7)
 

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
-from warriorfit.config.appliccation_config import ApplicationConfig
+from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import TestSession
 from warriorfit.services.mail_service import MailService
@@ -27,11 +27,15 @@ class SessionsController:
         self,
         service: ServiceTest = None,
         mil_service: MilitaryService = None,
+        mail_service: MailService = None,
+        config: ApplicationConfig = None,
     ):
         self._service = service if service is not None else ServiceTest()
         self.be_mil_service = (
             mil_service if mil_service is not None else MilitaryService()
         )
+        self._mail_service = mail_service if mail_service is not None else MailService()
+        self._config = config if config is not None else ApplicationConfig()
 
     # Data fetchers
     async def list_sessions(self) -> list[TestSession]:
@@ -215,7 +219,7 @@ class SessionsController:
 
     async def _recipients_for_unit(self) -> list[str]:
         results = await self.be_mil_service.get_all_be_mil_from_unit(
-            ApplicationConfig().own_unit
+            self._config.own_unit
         )
         if not results:
             return []
@@ -336,20 +340,20 @@ class SessionsController:
         recipients = await self._recipients_for_unit()
         if not recipients:
             return
-        MailService().send_html(
+        self._mail_service.send_html(
             subject=subject,
             html_body=html_body,
-            from_email=ApplicationConfig().mail_server.sender_email,
+            from_email=self._config.mail_server.sender_email,
             to=recipients,
         )
         if invite:
-            MailService().send_with_calendar_invite(
+            self._mail_service.send_with_calendar_invite(
                 to=recipients,
                 subject="Fitness Assessment Invite",
                 html_body="Fitness Session scheduled",
                 start=start_dt,  # type: ignore[arg-type]
                 end=end_dt,  # type: ignore[arg-type]
-                organizer_email=ApplicationConfig().mail_server.sender_email,  # type: ignore[arg-type]
+                organizer_email=self._config.mail_server.sender_email,  # type: ignore[arg-type]
                 organizer_name=organizer_name,
                 location="Gym Hall",
             )
