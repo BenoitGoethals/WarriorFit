@@ -5,6 +5,48 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-05-01] - Code quality refactor: naming fixes, app.py split, full DI wiring
+
+### Changed
+- **`app.py` split** — 1 023-line monolith decomposed into three focused modules:
+  - `warriorfit/ui/page_registry.py` — `PageSpec` dataclass + `get_pages()` + `pages_for_role()`
+  - `warriorfit/ui/app_server.py` — `build_app_ui()` + `make_server()` server factory
+  - `warriorfit/app.py` — minimal entry point (logger setup, broker start, `App()`)
+- **`@inject` DI applied to `make_server()`** — `user_service`, `servicemen_repository` and `config`
+  are now resolved via `Provide[Container.xxx]`; no explicit container reference at call site.
+- **Full DI wiring across the service layer** — all method-level `ApplicationConfig()` and
+  direct repository instantiations replaced with injected instance variables:
+  - `Service` base class now stores `self._config = config` (all 10 subclasses inherit it)
+  - `RetentionService` — removed the `_config()` factory method; uses `self._config.gdpr_retention`
+  - `ServiceMarch` — `ApplicationConfig().own_unit` → `self._config.own_unit`
+  - `DataCollector` — `config` injected via constructor; 3 method-level calls removed
+  - `GeneratorReport` — `config` injected via constructor; 4 method-level calls removed
+  - `Broker` — `_process_cycle` methods use `self._mom_repo` instead of new `MomRepository()`;
+    `worker()` and `_send_message_to_hr()` use `self._config.hr_url`
+  - `SessionsController` — `MailService()` and `ApplicationConfig()` replaced with
+    `self._mail_service` / `self._config`; `mail_service` and `config` added to constructor
+  - `StatusLoginUser` page — `config` injected via `Provide[Container.config]`; `version_header`
+    uses `self._config.version`
+- **`Auth.authenticate_user`** — removed circular-import-inducing `@inject`; `user_service` is
+  now a required parameter so callers supply their already-injected instance.
+- **Container providers updated** — `data_collector`, `sessions_controller`,
+  `report_generator_pdf`, `report_generator_csv` now receive `config=config`.
+- **Navbar label** corrected from "Psychical Tests" → "Physical Tests".
+
+### Fixed
+- **5 filename typos** corrected (all import references updated across 29 files):
+  - `appliccation_config.py` → `application_config.py`
+  - `usermangement.py` → `usermanagement.py`
+  - `mom_repositor.py` → `mom_repository.py`
+  - `cross_plannig_controller.py` → `cross_planning_controller.py`
+  - `StatusApplicationController.py` → `status_application_controller.py`
+- **`notify_mail.py`** moved from `warriorfit/ui/pages/` to `warriorfit/services/` — the class
+  has no UI concern and was incorrectly placed in the pages layer.
+- Broker unit tests updated to use `broker._mom_repo = mock_repo` instead of patching the now-removed
+  `MomRepository()` call sites inside `_process_cycle` methods.
+
+---
+
 ## [2026-04-27] - Broker outbox: exponential back-off, batch send, dead-letter
 
 ### Added

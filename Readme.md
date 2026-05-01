@@ -74,6 +74,11 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   gender split per distance, chronological trends, podium frequency, data-quality flags (unmatched serials, never-raced);
   best/avg/median now broken down per distance (no more meaningless 5K+10K aggregation), top-N deduplicated by serial,
   full mypy clean across the codebase
+* 2026-05-01 : code quality refactor — fixed 5 filename typos (`appliccation_config`, `usermangement`, `mom_repositor`, `cross_plannig_controller`, `StatusApplicationController`);
+  split 1 023-line `app.py` monolith into `page_registry.py`, `app_server.py`, and a thin entry-point `app.py`;
+  moved `notify_mail.py` from `ui/pages/` to `services/`;
+  corrected navbar label "Psychical Tests" → "Physical Tests";
+  applied `@inject` + `Provide[Container.xxx]` throughout the full application — `make_server()`, all service/broker/controller method-level instantiations replaced with injected instance variables
 
 
 
