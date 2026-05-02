@@ -1,0 +1,78 @@
+import os
+
+import aiofiles
+import aiohttp
+
+from warriorfit.config.application_config import ApplicationConfig
+from warriorfit.data.repositories.abc_repository import ABCRepository
+from warriorfit.utils.Os import Os
+
+
+class StatusApplicationController:
+    def __init__(
+        self,
+        repo: ABCRepository = None,
+        config: ApplicationConfig = None,
+    ) -> None:
+        from warriorfit.data.repositories.user_repository import UserRepository
+
+        self._repo = repo if repo is not None else UserRepository()
+        self._config = config if config is not None else ApplicationConfig()
+
+    async def status_db(self):
+        status = await self._repo.check_if_db_is_operational()
+        return self._format_status(status)
+
+    async def status_hr(self):
+        url = self._config.hr_url
+        return await self._check_http_status(url)
+
+    async def status_mail_server(self):
+        ip = self._config.mail_server.host
+        server_ok = Os.is_alive(ip)
+        return self._format_status(server_ok)
+
+    async def _check_http_status(self, url: str) -> str:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    return self._format_status(response.status == 200)
+        except aiohttp.ClientError:
+            return self._format_status(False)
+
+    @staticmethod
+    def _format_status(is_operational: bool) -> str:
+        return "✅ OPERATIONAL" if is_operational else "❌ DOWN"
+
+    async def status_server(self):
+        project_root = Os.get_project_root()
+        log = project_root / "logs" / "application.log"  # type: ignore[operator]
+        error = 0
+        if log.exists():
+            # Use aiofiles for async file operations
+
+            async with aiofiles.open(log, "r") as f:
+                lines = await f.readlines()
+            error = sum(1 for line in lines if "error" in line.lower())
+
+        return f"Log: {error} Errors"
+
+    async def load_log_application(self) -> str:
+        project_root = Os.get_project_root()
+        log_path = project_root / "logs" / "application.log"  # type: ignore[operator]
+        async with aiofiles.open(log_path, "r") as f:
+            lines = await f.readlines()
+            last_100_lines = lines[-300:] if len(lines) > 300 else lines
+            last_100_lines_error = [
+                line for line in last_100_lines if "info" not in line.lower()
+            ]
+            return "".join(last_100_lines_error)
+
+    def check_log_modified(self):
+        from warriorfit.utils.Os import Os
+
+        project_root = Os.get_project_root()
+        log_path = project_root / "logs" / "application.log"  # type: ignore[operator]
+        if log_path.exists():
+            return os.path.getmtime(log_path)
+        return None

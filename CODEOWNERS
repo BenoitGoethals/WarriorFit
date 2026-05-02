@@ -1,0 +1,28 @@
+# Default owner for everything
+*                       @BenoitGoethals
+
+# Build & dependencies
+/pyproject.toml         @BenoitGoethals
+/uv.lock                @BenoitGoethals
+/Dockerfile             @BenoitGoethals
+/docker-compose*.yml    @BenoitGoethals
+
+# Database migrations
+/alembic/               @BenoitGoethals
+/alembic.ini            @BenoitGoethals
+
+# Application core
+/warriorfit/core/       @BenoitGoethals
+/warriorfit/config/     @BenoitGoethals
+/warriorfit/security/   @BenoitGoethals
+/warriorfit/data/       @BenoitGoethals
+/warriorfit/services/   @BenoitGoethals
+/warriorfit/mom/        @BenoitGoethals
+/warriorfit/ui/         @BenoitGoethals
+
+# Tests
+/tests/                 @BenoitGoethals
+
+# CI / governance
+/.github/               @BenoitGoethals
+/CLAUDE.md              @BenoitGoethals

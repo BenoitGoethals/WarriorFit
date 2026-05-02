@@ -1,0 +1,160 @@
+import base64
+from pathlib import Path
+
+from dependency_injector.wiring import Provide, inject
+from shiny import reactive, render, ui
+
+from warriorfit.config.application_config import ApplicationConfig
+from warriorfit.core.container import Container
+from warriorfit.core.role import Role
+from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
+from warriorfit.ui.pages.page import Page
+from warriorfit.ui.user_store import UserStore
+
+
+class StatusLoginUser(Page):
+    @inject
+    def __init__(
+        self,
+        controller: StatusLogUserController = Provide[
+            Container.status_log_user_controller
+        ],
+        config: ApplicationConfig = Provide[Container.config],
+    ):
+        super().__init__()
+        self.controller = controller
+        self._config = config
+
+    def refresh(self):
+        self.refresh_tick.set(self.refresh_tick.get() + 1)
+
+    def get_ui(self):
+        return ui.nav_panel(
+            "Welcome",
+            ui.div(
+                ui.row(
+                    ui.column(
+                        12,
+                        ui.div(
+                            ui.h1(
+                                ui.output_text("welcome_header"),
+                                class_="display-4 fw-bold text-primary mb-2",
+                            ),
+                            ui.p(
+                                ui.output_text("welcome_subheader"),
+                                class_="lead text-muted",
+                            ),
+                            ui.p(
+                                ui.output_text("version_header"),
+                                class_="lead text-muted",
+                            ),
+                            ui.output_ui("welcome_image"),
+                            class_="text-center py-5 wf-hero mb-4",
+                        ),
+                    )
+                ),
+                ui.input_action_button(
+                    "wl_refresh_btn",
+                    "🔄 Refresh",
+                    class_="btn btn-secondary btn-sm my-2",
+                ),
+                ui.output_ui("pti_dashboard_section"),
+                class_="container-fluid p-4",
+            ),
+        )
+
+    def server(self, input, output, session):
+        @reactive.Effect
+        @reactive.event(input.wl_refresh_btn)
+        def _on_wl_refresh():
+            self.refresh_tick.set(self.refresh_tick.get() + 1)
+
+        @reactive.Effect
+        async def _init() -> None:
+            # Triggered on init and whenever refresh_tick changes
+            self.refresh_tick.get()
+
+        @output
+        @render.ui
+        def welcome_image():
+            img_path = Path(__file__).parent / "sor.png"
+            with open(img_path, "rb") as f:
+                img_data = base64.b64encode(f.read()).decode()
+            return ui.img(src=f"data:image/png;base64,{img_data}", class_="img-fluid")
+
+        @render.text
+        def welcome_header():
+            user = UserStore.get_user()
+            if user:
+                return f"Welcome back, {user.username}!"
+            return "Welcome to WarriorFit."
+
+        @render.text
+        def version_header():
+            v = self._config.version
+            if v is None:
+                return "Version : -  Date : -"
+            return f"Version : {v[0]}  Date :{v[2]}"
+
+        @render.text
+        def welcome_subheader():
+            user = UserStore.get_user()
+            if user:
+                return f"Logged in as {user.role} | {user.email}"
+            return "Please log in to access the system."
+
+        @render.ui
+        def pti_dashboard_section():
+            self.refresh_tick.get()
+            user = UserStore.get_user()
+            # Check if user is PTI or APTI
+            if user and user.role in [Role.PTI, Role.APTI]:
+                return ui.row(
+                    ui.column(
+                        8,
+                        ui.card(
+                            ui.card_header(
+                                ui.div(
+                                    ui.span(
+                                        "📅 Upcoming Test Sessions",
+                                        class_="fs-5 fw-bold",
+                                    ),
+                                    class_="d-flex align-items-center",
+                                ),
+                                class_="bg-white border-bottom-0",
+                            ),
+                            ui.output_data_frame("sessions_grid"),
+                            full_screen=True,
+                            class_="shadow-sm h-100",
+                        ),
+                        offset=2,
+                    )
+                )
+            return ui.div()
+
+        @output
+        @render.data_frame
+        async def sessions_grid():
+            self.refresh_tick.get()
+            df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)  # type: ignore[arg-type, union-attr]
+            return render.DataGrid(
+                df, width="100%", filters=True, selection_mode="none"
+            )
+
+
+_page = None
+
+
+def _get_page():
+    global _page
+    if _page is None:
+        _page = StatusLoginUser()
+    return _page
+
+
+def get_ui():
+    return _get_page().get_ui()
+
+
+def server(input, output, session):
+    _get_page().server(input, output, session)
