@@ -79,6 +79,14 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   moved `notify_mail.py` from `ui/pages/` to `services/`;
   corrected navbar label "Psychical Tests" → "Physical Tests";
   applied `@inject` + `Provide[Container.xxx]` throughout the full application — `make_server()`, all service/broker/controller method-level instantiations replaced with injected instance variables
+* 2026-05-10 : security hardening pass —
+  authenticate MOM ingestion endpoint (`/api/v1/phef/test`) with `X-API-Key` (`WF_MOM_API_KEY`, constant-time compare, fail-closed),
+  lock down CORS (methods/headers restricted, origins via `WF_MOM_CORS_ORIGINS`),
+  require `WF_MOM_API_KEY` in `deploy-test.sh` / `deploy-prod.sh`,
+  fix IDOR on test deletes by adding server-side role guard `_assert_can_modify_tests()` in `services/service_test.py`,
+  drop GUEST role from "Status Unit" and "Individual" pages,
+  scope `UserStore` to the active Shiny session (PR #217) — no more cross-session identity leak;
+  see [SECURITY.md](SECURITY.md) for the updated OWASP Top 10 assessment
 
 
 

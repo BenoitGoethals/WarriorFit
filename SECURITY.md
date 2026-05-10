@@ -1,6 +1,6 @@
 # Security Documentation — WarriorFit
 
-> Last reviewed: 2026-04-30
+> Last reviewed: 2026-05-10
 
 ## Table of Contents
 1. [Authentication Flow](#authentication-flow)
@@ -10,8 +10,9 @@
 5. [Session Management](#session-management)
 6. [Rate Limiting](#rate-limiting)
 7. [Audit Logging](#audit-logging)
-8. [OWASP Top 10 Assessment](#owasp-top-10-assessment)
-9. [Open Issues](#open-issues)
+8. [MOM API (FastAPI) Authentication](#mom-api-fastapi-authentication)
+9. [OWASP Top 10 Assessment](#owasp-top-10-assessment)
+10. [Open Issues](#open-issues)
 
 ---
 
@@ -173,7 +174,7 @@ Enforced at creation and password-change via `UserManagementController.validate_
 | Property           | Detail                                                                          |
 |--------------------|---------------------------------------------------------------------------------|
 | Session store      | Shiny server-side session object (`session.user`)                               |
-| Global user store  | `UserStore` singleton — one value per process                                   |
+| Per-session user store | `UserStore` (since 2026-05-10, PR #217) — backed by the active Shiny session via `get_current_session()`; no longer a process-wide singleton |
 | Inactivity timeout | 10 minutes (`time.time() - ts >= 600`, polled every 5 s)                        |
 | Activity tracking  | JS events: `click`, `keydown`, `mousemove`, `scroll`, `touchstart`, `touchmove`, `visibilitychange` |
 | Logout             | Clears `session.user`, JS `location.reload()` after 100 ms                     |
@@ -247,15 +248,40 @@ audit_logs
 
 ---
 
+## MOM API (FastAPI) Authentication
+
+The Message-Oriented Middleware ingestion endpoint (`warriorfit/mom/hr_fatapi_dummy.py`)
+exposes `/api/v1/phef/test` for the HR system to push PHEF test results.
+
+| Property        | Detail                                                                                  |
+|-----------------|-----------------------------------------------------------------------------------------|
+| Auth scheme     | API key — `X-API-Key` header (`fastapi.security.APIKeyHeader`)                          |
+| Expected key    | `WF_MOM_API_KEY` environment variable (read at request time)                            |
+| Comparison      | `hmac.compare_digest()` — constant-time, no timing oracle                               |
+| Fail-closed     | If `WF_MOM_API_KEY` is unset or empty, all requests are rejected with `401`             |
+| CORS origins    | Configurable via `WF_MOM_CORS_ORIGINS` (comma-separated). Empty → no cross-origin allowed |
+| CORS methods    | Restricted to `POST` only                                                               |
+| CORS headers    | Restricted to `Content-Type`, `X-API-Key`                                               |
+| Deploy guard    | `deploy-test.sh` / `deploy-prod.sh` refuse to start without `WF_MOM_API_KEY` set        |
+
+> **Rotation:** rotate `WF_MOM_API_KEY` by updating the env on both the MOM container
+> and the HR pusher, then redeploying. There is no overlap window — schedule a brief
+> downtime or push from a single instance during the swap.
+
+---
+
 ## OWASP Top 10 Assessment
 
 ### A01 — Broken Access Control
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | UI-only enforcement | Medium | `app.py:296` | `_pages_for_role()` filters which panels are rendered; no server-side guard on reactive handlers. A WebSocket-level adversary could invoke handlers for pages they are not authorized to see. |
-| 2 | `UserStore` singleton | Low | `ui/user_store.py` | One value per process. In standard single-worker Shiny deployment this is acceptable; concurrent sessions in the same process would share the same singleton. |
-| 3 | Dev auto-login bypass | Medium | `app.py:559` | `APP_ENV=development` auto-injects a synthetic ADMIN session with no credentials and no hostname/key guard. If set accidentally on a production host, authentication is completely bypassed. |
+| 1 | UI-only enforcement on most pages | Medium | `ui/page_registry.py`, `ui/app_server.py` | `FitnessWarriorApp._pages_for_role()` filters panels by role at navbar build time; no server-side guard on most reactive handlers. A WebSocket-level adversary could invoke handlers for pages they are not authorized to see. Server-side guards now exist for high-impact mutations (see #4). |
+| 2 | `UserStore` per-session | Resolved | `ui/user_store.py` | Previously a process-global Singleton — leaked auth state between concurrent sessions and was not cleared on logout. Now backed by the active Shiny session (`get_current_session()`) so isolation and teardown are handled per session. Fixed in PR #217 (2026-05-10). |
+| 3 | Dev auto-login bypass | Medium | `ui/app_server.py` | `APP_ENV=development` auto-injects a synthetic ADMIN session with no credentials and no hostname/key guard. If set accidentally on a production host, authentication is completely bypassed. |
+| 4 | Server-side guard on test mutations | Resolved | `services/service_test.py` | `_assert_can_modify_tests()` enforces role on `delete_fitness_test_from_test_session()` so navbar-level RBAC cannot be bypassed via crafted reactive inputs (IDOR class fix, 2026-05-10). |
+| 5 | GUEST scope reduced | Resolved | `ui/page_registry.py` | GUEST role removed from "Status Unit" and "Individual" pages — guests can no longer enumerate arbitrary servicemen. Welcome remains the only landing page for GUEST. |
+| 6 | MOM ingestion endpoint authenticated | Resolved | `mom/hr_fatapi_dummy.py` | `/api/v1/phef/test` was previously unauthenticated. Now requires `X-API-Key` matching `WF_MOM_API_KEY` (constant-time compare, fail-closed). CORS methods/headers restricted; origins configurable via `WF_MOM_CORS_ORIGINS`. Fixed 2026-05-10. |
 
 ### A02 — Cryptographic Failures
 
@@ -278,7 +304,8 @@ audit_logs
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
 | 1 | Reversible passwords eliminated | Resolved | — | `hash_password()` is one-way Argon2id. No admin recovery mechanism. |
-| 2 | Dev auto-login (see A01-3) | Medium | `app.py:559` | Covered above. |
+| 2 | Dev auto-login (see A01-3) | Medium | `ui/app_server.py` | Covered above. |
+| 3 | Shared mutable user state | Resolved | `ui/user_store.py` | `UserStore` is now per-session — concurrent users no longer overwrite each other's identity (see A01-2). |
 
 ### A05 — Security Misconfiguration
 
@@ -316,11 +343,12 @@ audit_logs
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | Failed logins persisted | Resolved | `app.py:634` | `login_failed` events written to `audit_logs` with client IP. |
-| 2 | Real client IP captured | Resolved | `app.py:606` | `X-Forwarded-For` header read first, falls back to `session.http_conn.client.host`. |
-| 3 | `audit_logs.user_id` nullable | Resolved | `data/model/db_model.py:41` | Migration `a1b2c3d4e5f6` drops NOT NULL — unauthenticated events can be logged. |
-| 4 | Logout not audited | Low | `app.py:670,749` | Manual logout and inactivity auto-logout do not write to `audit_logs`. Session end events cannot be reconstructed forensically. |
-| 5 | CRUD operations missing client IP | Low | `services/service.py:46` | `add_audit_log()` does not receive a client IP for CRUD calls (user create/update/delete). Only login events carry the real IP. |
+| 1 | Failed logins persisted | Resolved | `ui/app_server.py` | `login_failed` events written to `audit_logs` with client IP. |
+| 2 | Real client IP captured | Resolved | `ui/app_server.py` | `X-Forwarded-For` header read first, falls back to `session.http_conn.client.host`. |
+| 3 | `audit_logs.user_id` nullable | Resolved | `data/model/db_model.py` | Migration `a1b2c3d4e5f6` drops NOT NULL — unauthenticated events can be logged. |
+| 4 | Logout not audited | Low | `ui/app_server.py` | Manual logout (`_on_logout_button_click`) and inactivity auto-logout do not write to `audit_logs`. Session end events cannot be reconstructed forensically. |
+| 5 | CRUD operations missing client IP | Low | `services/service.py` | `add_audit_log()` does not receive a client IP for CRUD calls (user create/update/delete). Only login events carry the real IP. |
+| 6 | MOM endpoint access not audited | Low | `mom/hr_fatapi_dummy.py` | Successful and rejected `X-API-Key` requests to `/api/v1/phef/test` are not written to `audit_logs`. Consider mirroring login_failed semantics for repeated 401s. |
 
 ### A10 — Server-Side Request Forgery (SSRF)
 
@@ -342,6 +370,7 @@ audit_logs
 | P1 | Low | A02 | Legacy bcrypt/Fernet values still in DB | Run `update_passwords.sql`; find accounts with `password_hash NOT LIKE '$argon2id$%'` and force password reset |
 | P2 | Low | A09 | Logout events not audited | Add `audit_log` call in `_on_logout_button_click()` and `_auto_logout_timer()` |
 | P2 | Low | A09 | CRUD operations missing client IP | Thread client IP through `add_audit_log()` calls for user management actions |
+| P2 | Low | A09 | MOM endpoint access not audited | Log 401s and successful pushes from `/api/v1/phef/test` to `audit_logs` |
 | P2 | Low | A06 | Unused dependency `python-jose` | Remove from `pyproject.toml` |
 | P3 | Low | A07 | No MFA | Integrate TOTP (e.g. `pyotp`) for ADMIN accounts at minimum |
 | P3 | Low | A07 | No password expiry | Add `password_changed_at` column; enforce rotation in `validate()` |
