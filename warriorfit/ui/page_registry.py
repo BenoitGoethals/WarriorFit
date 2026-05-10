@@ -74,14 +74,14 @@ def get_pages() -> list[PageSpec]:
             group="root",
             ui_factory=own_unit.get_ui,
             server_factory=own_unit.server,
-            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST},
+            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
         ),
         PageSpec(
             tab="Individual",
             group="root",
             ui_factory=ind_test_show.get_ui,
             server_factory=ind_test_show.server,
-            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST},
+            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
         ),
         PageSpec(
             tab="Reports",
