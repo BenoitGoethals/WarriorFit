@@ -49,6 +49,26 @@ class ServiceTest(Service):
         )
         self._notify_mail = notify_mail
 
+    @staticmethod
+    def _assert_can_modify_tests() -> None:
+        """Defense-in-depth: verify the current session user holds a role
+        permitted to mutate fitness test data. The page-level RBAC already
+        hides the relevant UI, but server-side reactive inputs can still be
+        invoked by anyone with a session, so we re-check here.
+
+        Raises PermissionError when no privileged user is present.
+        """
+        from warriorfit.data.model.db_model import Role
+        from warriorfit.ui.user_store import UserStore
+
+        privileged = {Role.ADMIN, Role.PTI, Role.APTI}
+        user = UserStore.get_user()
+        role = getattr(user, "role", None)
+        if role not in privileged:
+            raise PermissionError(
+                "Current user is not authorized to modify fitness tests"
+            )
+
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)
 
@@ -144,6 +164,7 @@ class ServiceTest(Service):
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
+        self._assert_can_modify_tests()
         deleted = await self._test_repo.delete_fitness_test_from_test_session(
             param, param1
         )
