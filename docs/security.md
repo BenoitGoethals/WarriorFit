@@ -18,50 +18,26 @@
 
 ## Authentication Flow
 
-```
-User loads app
-      │
-      ▼
-login_dialog() triggered (app.py)
-      │
-      ├── APP_ENV == "development" → inject synthetic ADMIN user, skip auth entirely
-      │
-      └── production / test
-             │
-             ▼
-         Modal login form (username + password)
-             │
-             ▼ input.handle_login event
-         Username lowercased
-             │
-             ▼
-         LoginRateLimiter.is_locked(username)
-             │ locked → display lockout message, abort
-             │
-             ▼
-         Read client IP (X-Forwarded-For → client.host fallback)
-             │
-             ▼
-         UserService.check_user(username, password)
-           └── UserRepository.check_user()
-                 └── SELECT User WHERE username = ? (parameterized ORM)
-                       └── await Auth.verify_password(plain, stored_hash)
-                             └── argon2.PasswordHasher.verify() via asyncio.to_thread()
-             │
-             ├── FAIL ──► LoginRateLimiter.record_failure()
-             │            audit_log: action="login_failed", ip=client_ip, user_id=NULL
-             │            display remaining attempts or lockout message
-             │
-             └── SUCCESS
-                   │
-                   ├── user.is_active == False → abort with message
-                   │
-                   ▼
-               LoginRateLimiter.reset(username)
-               UserStore.set_user(user)         ← singleton process-wide store
-               session.user = user              ← per-session Shiny object
-               audit_log: action="login", ip=client_ip, user_id=user.id
-               Modal dismissed — navbar rebuilt for user's role
+```mermaid
+flowchart TD
+    Start([User loads app]) --> LD["login_dialog() — app.py"]
+    LD --> EnvCheck{APP_ENV}
+    EnvCheck -- "development" --> DevBypass[/"Inject synthetic ADMIN<br/>auth skipped"/]:::warn
+    EnvCheck -- "production / test" --> Modal["Modal login form<br/>(username + password)"]
+    Modal --> Lower["Username lowercased<br/>handle_login event"]
+    Lower --> RL{"LoginRateLimiter<br/>is_locked?"}
+    RL -- yes --> Lock[/"Display lockout msg<br/>abort"/]:::fail
+    RL -- no --> IP["Read client IP<br/>(X-Forwarded-For → client.host)"]
+    IP --> Check["UserService.check_user()<br/>→ UserRepository (ORM)<br/>→ Auth.verify_password()<br/>→ argon2 via asyncio.to_thread"]
+    Check --> Result{result}
+    Result -- FAIL --> Fail["LoginRateLimiter.record_failure()<br/>audit_log: login_failed<br/>show remaining attempts"]:::fail
+    Result -- SUCCESS --> Active{user.is_active}
+    Active -- false --> Abort[/abort with message/]:::fail
+    Active -- true --> Win["LoginRateLimiter.reset()<br/>UserStore.set_user(user) <i>per-session</i><br/>session.user = user<br/>audit_log: login<br/>navbar rebuilt for role"]:::ok
+
+    classDef ok fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+    classDef fail fill:#ffebee,stroke:#c62828,color:#b71c1c;
+    classDef warn fill:#fff8e1,stroke:#f9a825,color:#5d4037;
 ```
 
 ---
@@ -182,16 +158,13 @@ Enforced at creation and password-change via `UserManagementController.validate_
 
 ### Auto-logout Flow
 
-```
-reactive.invalidate_later(5)  ← every 5 seconds
-      │
-      ▼
-time.time() - last_activity >= 600 ?
-      │ yes
-      ▼
-_clear_session_user()
-ui.notification_show("logged out due to inactivity")
-location.reload()
+```mermaid
+flowchart TD
+    Tick["reactive.invalidate_later(5)<br/><i>every 5 seconds</i>"] --> Q{"time.time()<br/>− last_activity ≥ 600?"}
+    Q -- no --> Tick
+    Q -- yes --> Clear["_clear_session_user()<br/>ui.notification_show('logged out')<br/>location.reload()"]:::warn
+
+    classDef warn fill:#fff8e1,stroke:#f9a825,color:#5d4037;
 ```
 
 ---

@@ -107,81 +107,81 @@ https://youtu.be/wZveSgpKTf8
 
 ### Timeline
 
-```
-Sep 2025                                                              Apr 2026
- │                                                                        │
- ├──── Phase 1  ───┼────── Phase 2  ─────┼────── Phase 3  ─────┼─Phase 4─ ┤
- │   Prototype     │  Feature growth     │  Architectural      │Hardening │
- │   ~50 commits   │  ~250 commits       │  refactor           │& DevOps  │
- │                 │                     │  ~300 commits       │~346 com. │ 
- │                 │                     │                     │          │
- Sep          Oct  │              Dec    │              Feb    │    Apr   │
-                   ▼                     ▼                     ▼
-             First business        DI container          CI/CD &
-             logic extraction      & layering            Docker prod
+```mermaid
+gantt
+    title WarriorFit — Development Timeline (Sep 2025 → Apr 2026)
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %Y
+
+    section Phases
+    Phase 1 · Prototype (~50 commits)            :p1, 2025-09-01, 2025-10-31
+    Phase 2 · Feature growth (~250 commits)      :p2, 2025-10-15, 2025-12-15
+    Phase 3 · Architectural refactor (~300 c.)   :p3, 2025-12-01, 2026-02-15
+    Phase 4 · Hardening & DevOps (~346 c.)       :p4, 2026-02-01, 2026-04-30
+
+    section Milestones
+    Business-logic extraction   :milestone, 2025-10-31, 0d
+    DI container & layering     :milestone, 2025-12-15, 0d
+    CI/CD & Docker prod         :milestone, 2026-02-28, 0d
 ```
 
 ### Complexity Growth
 
+```mermaid
+xychart-beta
+    title "Architectural complexity over time"
+    x-axis ["Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26"]
+    y-axis "Complexity (relative)" 0 --> 10
+    line [1, 2, 3, 5, 6, 8, 9, 10]
+    bar  [1, 2, 3, 5, 6, 8, 9, 10]
 ```
-Complexity
-     ▲
-     │                                              ┌─────────────┐
- high│                              ┌───────────────┤  Phase 4    │
-     │                              │   Phase 3     │  Hardening  │
-     │                              │   Layered DI  │  CI/CD      │
-     │              ┌───────────────┘               └─────────────┘
-  mid│              │   Phase 2
-     │              │   Features &
-     │              │   Calculators
-     │──────────────┘
-  low│  Phase 1
-     │  Prototype
-     │  Monolith
-     └──────────────────────────────────────────────────────────▶ Time
-      Sep 2025    Oct       Dec       Feb 2026      Apr
-```
+
+| Phase | Period | Complexity | Architecture |
+|---|---|---|---|
+| 1 — Prototype | Sep–Oct 2025 | low | Monolith |
+| 2 — Features & Calculators | Oct–Dec 2025 | mid | Emerging layers |
+| 3 — Layered DI | Dec 2025–Feb 2026 | high | DI container |
+| 4 — Hardening & CI/CD | Feb–Apr 2026 | high | Production-ready |
 
 ### Architecture Evolution
 
-```
- PHASE 1                   PHASE 2                   PHASE 3 & 4
- ───────                   ───────                   ───────────
+```mermaid
+flowchart TB
+    subgraph P1["PHASE 1 — Prototype"]
+        direction TB
+        P1U[Shiny Pages] --> P1S["DBService<br/><i>god-class</i>"] --> P1DB[(PostgreSQL)]
+    end
 
- ┌──────────┐              ┌──────────┐              ┌──────────────┐
- │  Shiny   │              │  Shiny   │              │  Shiny Pages │
- │  Pages   │              │  Pages   │              │  (RBAC)      │
- └────┬─────┘              └────┬─────┘              └──────┬───────┘
-      │                         │                           │
-      │ direct                  │                    ┌──────▼───────┐
-      │                    ┌────▼─────┐              │ Controllers  │
-      │                    │PhefCalc  │              └──────┬───────┘
-      │                    │ExtService│                     │
-      │                    └────┬─────┘              ┌──────▼───────┐
-      │                         │                    │  Services    │
- ┌────▼─────┐              ┌────▼─────┐              │  + Broker    │
- │DBService │              │DBService │              │  + Mail      │
- │(god-class)│             │(extended)│              └──────┬───────┘
- └────┬─────┘              └────┬─────┘                     │
-      │                         │                    ┌──────▼───────┐
- ┌────▼─────┐              ┌────▼─────┐              │ Repositories │
- │PostgreSQL│              │PostgreSQL│              │ (async)      │
- └──────────┘              └──────────┘              └──────┬───────┘
-                                                           │
-                                                    ┌──────▼───────┐
-                                                    │  ORM Models  │
-                                                    │ (polymorphic)│
-                                                    └──────┬───────┘
-                                                           │
-                                                    ┌──────▼───────┐
-                                                    │  PostgreSQL  │
-                                                    └──────────────┘
+    subgraph P2["PHASE 2 — Feature growth"]
+        direction TB
+        P2U[Shiny Pages] --> P2C["PhefCalc<br/>ExtService"]
+        P2U --> P2S["DBService<br/><i>extended</i>"]
+        P2C --> P2S
+        P2S --> P2DB[(PostgreSQL)]
+    end
 
-                                                    + DI Container
-                                                    + CI/CD pipeline
-                                                    + Docker
-                                                    + MkDocs
+    subgraph P34["PHASE 3 & 4 — Layered + DevOps"]
+        direction TB
+        P3U["Shiny Pages (RBAC)"] --> P3C[Controllers]
+        P3C --> P3S["Services<br/>+ Broker · + Mail"]
+        P3S --> P3R["Repositories (async)"]
+        P3R --> P3M["ORM Models<br/><i>polymorphic</i>"]
+        P3M --> P3DB[(PostgreSQL)]
+    end
+
+    P1 --> P2 --> P34
+
+    classDef ui   fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
+    classDef svc  fill:#e0f7fa,stroke:#00838f,color:#006064;
+    classDef repo fill:#fff3e0,stroke:#ef6c00,color:#e65100;
+    classDef db   fill:#fce4ec,stroke:#ad1457,color:#880e4f;
+    class P1U,P2U,P3U ui
+    class P1S,P2S,P2C,P3C,P3S svc
+    class P3R,P3M repo
+    class P1DB,P2DB,P3DB db
 ```
+
+> Phase 3 & 4 also bring: **DI Container · CI/CD pipeline · Docker · MkDocs**.
 
 ### Phase 1: Prototype (Sep–Oct 2025) — commits 1–~50
 
