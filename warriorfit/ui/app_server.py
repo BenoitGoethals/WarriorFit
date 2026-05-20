@@ -38,6 +38,8 @@ def build_app_ui() -> Any:
             ui.tags.link(rel="stylesheet", href="custom.css"),
             # Military theme overrides (loaded second so it wins).
             ui.tags.link(rel="stylesheet", href="military.css"),
+            # Validation & status-bar semantic colouring helper.
+            ui.tags.script(src="ui-validate.js", defer=True),
         ),
         ui.output_ui("main_content_container"),
         ui.tags.script(
