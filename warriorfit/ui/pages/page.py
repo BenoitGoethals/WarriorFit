@@ -5,6 +5,19 @@ from shiny import reactive, ui
 
 
 class Page(ABC):
+    """
+    Abstract base class representing a web application page.
+
+    This class serves as a blueprint for implementing specific pages in a web
+    application. It enforces the implementation of methods for user interface
+    generation, server-side logic, and page refresh functionalities. Additionally,
+    it contains utility methods to enhance user experience, such as a password
+    input with a toggle button and automatic refresh behavior when navigating to
+    specific tabs.
+
+    :ivar refresh_tick: Reactive value to track refresh ticks for the page.
+    :type refresh_tick: reactive.Value
+    """
     toggle_disabled_registered_func = """
                 (function () {
                   if (window.__wf_toggle_disabled_registered) return;

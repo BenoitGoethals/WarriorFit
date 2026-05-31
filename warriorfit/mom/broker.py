@@ -1,9 +1,10 @@
-import asyncio
+import asyncio  # noqa: I001
 import json
 import logging
 from datetime import datetime
 
 from warriorfit.config.application_config import ApplicationConfig
+from warriorfit.services.notify_mail import NotifyMail
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
@@ -41,6 +42,7 @@ class Broker:
         mom_repository: MomRepository = None,
         be_mil_service: BEMILService = None,
         config: ApplicationConfig = None,
+        notify_mail: NotifyMail = None,
     ):
         self._mom_repo = (
             mom_repository if mom_repository is not None else MomRepository()
@@ -53,6 +55,7 @@ class Broker:
             be_mil_service if be_mil_service is not None else BEMILService()
         )
         self._config = config if config is not None else ApplicationConfig()
+        self._notify_mail = notify_mail
         # Outbox tunables — read from config, fall back to safe defaults.
         # poll_interval: how often the worker wakes up (seconds).
         # batch_size:    how many due messages we attempt to send per cycle.
@@ -454,6 +457,7 @@ class Broker:
                                 "last_error": err,
                             },
                         )
+                        await self._send_dead_letter_alert(message_id, attempt_before + 1, err)
                     else:
                         self._logger.warning(
                             "HR message send failed, scheduled for retry",
@@ -506,6 +510,29 @@ class Broker:
                 )
         else:
             self._logger.warning("Broker start() called but worker is already running")
+
+    async def _send_dead_letter_alert(
+        self, message_id: int, attempts: int, last_error: str | None
+    ) -> None:
+        alert_email = getattr(self._config, "broker_alert_email", "")
+        if not self._notify_mail or not alert_email:
+            return
+        subject = f"[WarriorFit] Dead-letter: HR-bericht {message_id} kan niet worden verzonden"
+        body = (
+            f"<p>Bericht <strong>ID {message_id}</strong> heeft "
+            f"<strong>{attempts} pogingen</strong> uitgeput en is naar "
+            f"<strong>dead-letter</strong> verplaatst.</p>"
+            f"<p><strong>Laatste fout:</strong> {last_error or 'onbekend'}</p>"
+            f"<p>Actie vereist:<br>"
+            f"&nbsp;&bull; Controleer de verbinding met het HR-systeem.<br>"
+            f"&nbsp;&bull; Reset de rij in <code>hr_messages</code> "
+            f"(<code>dead_letter = false</code>, <code>attempt_count = 0</code>) "
+            f"wanneer het HR-systeem weer beschikbaar is.</p>"
+        )
+        try:
+            await self._notify_mail.send_mail(to=alert_email, subject=subject, body=body)
+        except Exception as exc:  # noqa: BLE001
+            self._logger.error("Failed to send dead-letter alert email: %s", exc)
 
     def stop(self):
         """Stop Service"""

@@ -86,6 +86,7 @@ class ApplicationConfig(metaclass=Singleton):
             "base_backoff_s": 5,
             "max_backoff_s": 600,
         }
+        self.__broker_alert_email: str = ""
         self.load_config()
 
     @property
@@ -156,6 +157,10 @@ class ApplicationConfig(metaclass=Singleton):
         return int(self.__broker["max_backoff_s"])
 
     @property
+    def broker_alert_email(self) -> str:
+        return self.__broker_alert_email
+
+    @property
     def mail_server(self) -> SmtpConfig:
         assert self._settings_data is not None
         if not self._settings_data.mail_server:
@@ -218,6 +223,7 @@ class ApplicationConfig(metaclass=Singleton):
         for key in self.__broker:
             if key in broker_cfg:
                 self.__broker[key] = int(broker_cfg[key])
+        self.__broker_alert_email = str(broker_cfg.get("alert_email") or "")
 
         self.__config_db = self._setup_database_connection()
 

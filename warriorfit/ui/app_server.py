@@ -33,6 +33,17 @@ class _ServicemanSessionUser:
 
 
 def build_app_ui() -> Any:
+    """
+    Constructs and returns the user interface layout for the application.
+
+    The function defines the main structure of the app's UI, including external
+    CSS stylesheets that are applied to style the page and JavaScript to handle
+    specific tab-related behaviors. The UI is composed of a fillable page with
+    a specified HTML head section and a main content container.
+
+    :return: The user interface layout for the application.
+    :rtype: Any
+    """
     return ui.page_fillable(
         ui.tags.head(
             ui.tags.link(rel="stylesheet", href="custom.css"),
@@ -57,8 +68,24 @@ def _register_pages_server(
     output: Any,
     session: Any,
 ) -> None:
-    """Mount each page's server function the first time its tab is activated."""
-    from shiny import reactive
+    """
+    Registers and mounts page servers dynamically based on the currently active navigation tab.
+
+    This function manages the lifecycle of server initialization for individual pages of the
+    application. Page-specific server instances are created and mounted only when the associated
+    navigation tab is activated. It ensures that necessary server logic is executed for both
+    tab-specific pages and the calendar modal, which operates outside the main navigation structure.
+
+    :param input: Reactive input object for listening to changes in user interaction.
+    :type input: Any
+    :param output: Reactive output object for rendering user interface updates.
+    :type output: Any
+    :param session: Current session object providing context for the reactive environment.
+    :type session: Any
+    :return: None
+    :rtype: None
+    """
+    from shiny import reactive  # noqa: I001
     from warriorfit.ui.pages import calendar_events
 
     servers_by_tab: dict[str, Callable[[Any, Any, Any], Any]] = {
@@ -92,10 +119,43 @@ def make_server(
     servicemen_repository: ServicemenRepository = Provide[Container.servicemen_repository],
     config: ApplicationConfig = Provide[Container.config],
 ) -> Callable[[Any, Any, Any], None]:
-    """Return the Shiny server function. Dependencies are resolved by the DI container."""
+    """
+    Creates and configures the server function for managing application state, session
+    attributes, user interactions, and reactive elements.
+
+    The server function facilitates interaction between the user interface, session
+    handling, calendar events, and page navigation. It defines reactive effects
+    for toggling calendars and manages the application's main navigation bar based on
+    user roles and session properties.
+
+    :param user_service: Dependency-injected service for user-related operations
+    :type user_service: UserService
+    :param servicemen_repository: Dependency-injected repository for servicemen data
+    :type servicemen_repository: ServicemenRepository
+    :param config: Dependency-injected application configuration parameters
+    :type config: ApplicationConfig
+    :return: The server function to be executed by the reactive framework
+    :rtype: Callable[[Any, Any, Any], None]
+    """
 
     def server(input: Any, output: Any, session: Any) -> None:
+        """
+        Handles server-side initialization and reactive rendering logic for the
+        Shiny application. The server function is responsible for registering
+        page servers, managing user sessions, handling calendar panels,
+        building navigation bars, and rendering the main application content.
+
+        :param input: Reactive input object for capturing user interactions.
+        :type input: Any
+        :param output: Reactive output object for updating UI components.
+        :type output: Any
+        :param session: Session object for maintaining user-specific state throughout the
+            user interaction session.
+        :type session: Any
+        :return: None
+        """
         from shiny import reactive
+
         from warriorfit.ui.pages import calendar_events
 
         _register_pages_server(input, output, session)
@@ -263,6 +323,16 @@ def make_server(
         @output
         @render.ui
         def main_content_container() -> Any:
+            """
+            Renders the main content container based on the current state of the application.
+
+            This function dynamically creates and returns the appropriate UI layout
+            for the main content container by checking the state of `show_calendar`
+            and `show_personal_calendar`. Depending on the state, it either displays
+            the calendar view, personal calendar view, or the navigation bar content.
+
+            :return: The dynamically generated UI layout for the main content container.
+            """
             if show_calendar.get():
                 return ui.div(
                     ui.div(
@@ -330,6 +400,17 @@ def make_server(
 
         @reactive.Effect
         async def login_dialog() -> None:
+            """
+            Reactively displays and handles a login dialog interface for the application. This function
+            determines the current app environment and either initializes a default developer user for
+            development environments or displays the login modal interface for other environments. The modal
+            offers two login modes and dynamically updates input labels and placeholders based on the selected mode.
+
+            :param login_dialog: Reactively triggered login logic and UI rendering.
+            :type login_dialog: asynchronous React effect
+            :return: None
+
+            """
             app_env = os.getenv("APP_ENV", "")
 
             if app_env == "development":
@@ -416,6 +497,38 @@ def make_server(
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login() -> None:
+            """
+            Reactive function to handle user or serviceman login attempts. This function
+            processes user-provided credentials, handles multiple invalid login attempts,
+            performs user or serviceman authentication, updates session state, resets the
+            login rate limiter on successful login, and maintains audit logs for all
+            attempts. In the case of serviceman mode, a password is temporarily skipped
+            (subject to proper implementation in the future).
+
+            :param input: Reactive input object providing username, password, and login mode.
+            :type input: Any
+            :param session: The current user session object used for managing session details.
+            :type session: Any
+            :param status_text: Reactive object containing status information for the
+                               login process.
+            :type status_text: Any
+            :param login_user_text: Reactive object updating session user details on a
+                                    successful login.
+            :type login_user_text: Any
+            :param nav_version: Reactive object updating the navigation version on a
+                                successful login.
+            :type nav_version: Any
+            :param user_service: Service for handling user-related operations, including
+                                 authentication and audit logging.
+            :type user_service: Any
+            :param servicemen_repository: Service for retrieving serviceman data from the
+                                           repository.
+            :type servicemen_repository: Any
+            :param login_rate_limiter: Object managing the rate limiter for login attempts.
+            :type login_rate_limiter: Any
+
+            :return: None
+            """
             logger = logging.getLogger(__name__)
             username_login = (input.username_login() or "").lower()
             password_login = input.password_login()
@@ -520,6 +633,13 @@ def make_server(
 
         @reactive.Effect
         async def _on_logout_button_click() -> None:
+            """
+            Handles the logout button click event, performing user logout operations and updating
+            the user interface accordingly. It ensures the user's session is cleared, an audit log
+            is created for the logout event, and the UI is refreshed to reflect the logout action.
+
+            :return: None
+            """
             try:
                 clicks = input.logout_btn()
             except (AttributeError, KeyError):
@@ -582,7 +702,19 @@ def make_server(
 
         @reactive.Effect
         async def _auto_logout_timer() -> None:
-            """Auto-logout after 10 minutes of inactivity (fires every 5 seconds)."""
+            """
+            Automatically logs out an inactive user after 10 minutes of inactivity. This function
+            is reactive and triggers the logout process by invalidating later after a set time
+            interval. Upon inactivity of 10 minutes or more, the user's session is cleared, a
+            notification is shown, and the page is reloaded.
+
+            Raises an audit log entry indicating the auto-logout due to inactivity and provides
+            visual feedback via UI changes.
+
+            :raises Exception: If there is an error while adding the audit log entry.
+
+            :returns: None
+            """
             reactive.invalidate_later(5)
             user = _get_session_user()
             if not user:

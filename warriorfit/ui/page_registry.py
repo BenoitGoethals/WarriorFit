@@ -6,7 +6,30 @@ from warriorfit.data.model.db_model import Role  # type: ignore[attr-defined]
 
 @dataclass(frozen=True)
 class PageSpec:
-    """Page definition: UI/server factories and the roles that may access it."""
+    """
+    Defines the PageSpec class which represents specifications and configurations for a page
+    in a system or application.
+
+    This class provides attributes to configure the UI factory, server factory, allowed roles,
+    and information about the page's tab and group. The class is immutable due to the frozen=True
+    dataclass decorator, ensuring the integrity of its instances.
+
+    :ivar tab: Represents the name of the tab where the page belongs.
+    :type tab: str
+    :ivar group: Specifies the group to which the page belongs, such as "root", "Physical
+                 Tests", "Cross/Runs", "Admin", or "About".
+    :type group: str
+    :ivar ui_factory: A callable responsible for generating the UI component for the page. It
+                      takes no arguments and returns an optional UI component.
+    :type ui_factory: Callable[[], Optional[Any]]
+    :ivar server_factory: A callable responsible for creating the server logic for the page,
+                          accepting three arguments. It can also be None if no server-side
+                          logic is needed for the page.
+    :type server_factory: Callable[[Any, Any, Any], Any] | None
+    :ivar allowed_roles: A set of roles that are allowed to access the page. This ensures that only
+                         permitted roles can interact with the page's functionalities.
+    :type allowed_roles: set[Role]
+    """
 
     tab: str
     group: str  # "root" | "Physical Tests" | "Cross/Runs" | "Admin" | "About"
