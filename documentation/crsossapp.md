@@ -1,4 +1,4 @@
-# WarriorFit Cross/Running Event System
+# (out of scope) WarriorFit Cross/Running Event System
 
 ## Goal
 

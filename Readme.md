@@ -260,14 +260,14 @@ flowchart TB
 | Aspect | Start | Now |
 |---|---|---|
 | **Structure** | Flat files | 7+ packages, layered |
-| **DI** | None | `DeclarativeContainer` |
+| **DI** |  | `DeclarativeContainer` |
 | **DB access** | God-class `DBService` | Repository pattern, async |
 | **Business logic** | Inside UI pages | Calculators, Services, Controllers |
 | **Auth** | Simple login | RBAC with 6 roles, OWASP-hardened |
-| **Testing** | None | Pytest with DB isolation + Broker unit tests |
-| **CI/CD** | None | GitHub Actions, Docker |
-| **Docs** | None | MkDocs site, ARCHITECTURE.md, DPIA, Privacy Policy |
-| **Compliance** | None | GDPR (Art. 7/15/20), NIST CSF 2.0, PostgreSQL TLS |
+| **Testing** |  | Pytest with DB isolation + Broker unit tests |
+| **CI/CD** |  | GitHub Actions, Docker |
+| **Docs** |  | MkDocs site, ARCHITECTURE.md, DPIA, Privacy Policy |
+| **Compliance** |  | GDPR (Art. 7/15/20), NIST CSF 2.0, PostgreSQL TLS |
 
 The pattern is classic and healthy: **working prototype → add features → architectural restructuring → harden for production → compliance & security**. The biggest leaps in maturity were the introduction of dependency injection (Phase 3) and the OWASP/GDPR hardening pass (Phase 5) — transforming it from a "script that works" into a production-ready, security-audited application.
 
@@ -277,8 +277,7 @@ The pattern is classic and healthy: **working prototype → add features → arc
 The main goals of this project are:
 * To develop a comprehensive fitness military management application
 * To integrate data collection, statistical analysis, and reporting capabilities tailored for military fitness standards
-* Cross (running event) management (out of scope)
-* Reservation of rooms (out of scope)
+
 * To integrate with existing Defence systems (HRM)
 * To integrate with existing Defence systems (SIMULATOR)
 
@@ -314,6 +313,7 @@ The project documentation is structured in different documents:
 21. * **Compliance / GDPR**:
     * [Privacy Policy](documentation/compliance/PRIVACY_POLICY.md) (Done)
     * [Data Protection Impact Assessment (DPIA)](documentation/compliance/DPIA.md) (Done)
+22. * [Sprint Analysis](documentation/sprint_analysis.md) (Done) — Scrum velocity, burndown, epic delivery timeline
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
@@ -357,7 +357,7 @@ https://github.com/users/BenoitGoethals/projects/20
 
 ## 4. SOR structuur
 
-![land-nl.png](documentation/land-nl.png)
+<img alt="land-nl.png" height="400" src="documentation/land-nl.png" width="800"/>
 
 
  ## Licence
