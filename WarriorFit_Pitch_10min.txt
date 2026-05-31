@@ -1,0 +1,201 @@
+WARRIORFIT — 10-MINUTE PITCH SCRIPT
+Benoit Goethals · May 2026
+Target: ~1 400 words · ~140 wpm · 10 slides · ~60 s per slide
+
+================================================================
+SLIDE 1 — TITLE  (≈ 45 s)
+================================================================
+Good morning. My name is Benoit Goethals, and over the past eight
+months I built WarriorFit — a platform that digitizes the military
+physical fitness testing process from end to end.
+
+In the next ten minutes I will show you the problem WarriorFit
+solves, the solution I delivered, how it was built, and where it
+goes next. The whole platform is live today on three URLs you can
+visit during the demo.
+
+The stack in one sentence: Shiny for Python on the front, async
+SQLAlchemy on PostgreSQL on the back, a Flet field app for on-site
+race timing, and FastAPI services tying it all together.
+
+================================================================
+SLIDE 2 — THE PROBLEM  (≈ 60 s)
+================================================================
+Today, military fitness testing runs on paper. PTIs — the Physical
+Training Instructors — fill in forms by hand, type the results into
+spreadsheets, and forward them to HR by email. Five different test
+types — PHEF, functional, combat, march, and cross-country — each
+have their own scoring rules and are managed completely separately.
+
+The consequences are real: there is no central view, no trend
+analysis, no unit dashboard. HR synchronization is fully manual,
+which means compliance gaps. There is no GDPR-compliant consent
+process. And cross-country events are timed on paper or with basic
+apps that don't talk to anything else.
+
+In short: data exists, but it isn't usable. That's the problem
+WarriorFit solves.
+
+================================================================
+SLIDE 3 — THE SOLUTION  (≈ 60 s)
+================================================================
+WarriorFit is not one application — it is an ecosystem of five
+components.
+
+First, the Shiny web platform: 24 reactive pages covering test
+sessions, scoring, dashboards, reports, and GDPR self-service.
+
+Second, a Flet cross-country client — a mobile and desktop app the
+PTI uses on the sports field to time runners and push results
+directly into the shared database.
+
+Third, a FastAPI backend that bridges the Flet client to PostgreSQL
+with JWT authentication.
+
+Fourth, an HR simulator — a FastAPI stub that mimics the BEMIL HR
+API, so the broker integration can be tested end-to-end without
+touching the real system.
+
+And fifth, Mailpit — an SMTP trap that catches every notification
+during development.
+
+All five are live, containerized, and reachable on the URLs you
+see at the bottom of the slide.
+
+================================================================
+SLIDE 4 — USERS & TEST TYPES  (≈ 75 s)
+================================================================
+WarriorFit serves six roles, each with role-based access enforced
+on every single page route:
+
+  • Admin — IT and command staff, full access
+  • PTI and APTI — conduct tests, run dashboards, generate reports
+  • Planner — schedules test sessions
+  • Guest — unit officers with read-only access
+  • User — the serviceman, who sees only their own history and
+    privacy controls
+
+These six roles operate across five unified test categories: PHEF
+with the 2400-metre run and side bridge, functional tests with
+push-ups sit-ups and pull-ups, combat tests for paratroopers, the
+long-distance march, and finally cross-country runs — which support
+bulk Chronos XML import and live timing through the Flet client.
+
+One platform, five test types, six roles — all RBAC-enforced.
+
+================================================================
+SLIDE 5 — AGILE DELIVERY  (≈ 60 s)
+================================================================
+The project ran fully agile. I broke the work into 20 epics, 80
+user stories and 231 story points, on a Fibonacci scale where one
+point equals two to four hours of work.
+
+The biggest epics by points were Cross & Runs at 28 points, PHEF
+test input and user management at 18 each, and individual history
+and GDPR at 15.
+
+Every single story is delivered. From the first commit in
+September 2025 to today, May 2026 — that is 946 commits, 21 800
+lines of code, zero mypy errors, all stories done.
+
+This was not vibe coding. Every feature shipped started life as a
+written user story with acceptance criteria and linked test cases.
+
+================================================================
+SLIDE 6 — ARCHITECTURE & DATA FLOW  (≈ 75 s)
+================================================================
+The architecture is strict layered, with unidirectional dependency
+flow:
+
+  UI → Controllers → Services → Repositories → ORM Models
+
+Wiring is done by a DeclarativeContainer from dependency-injector
+— more than forty singletons, all injected.
+
+Let me walk you through the PHEF flow, because it shows the design
+philosophy. When the PTI enters a result, two paths fire in
+parallel. The synchronous path saves the test to PostgreSQL and
+returns immediately — the PTI never waits. The asynchronous path
+hands a DTO to the broker, which writes it to a durable outbox
+table and forwards it to the HR system in the background.
+
+If HR is offline, the broker retries with exponential backoff —
+from five seconds up to ten minutes — and dead-letters after ten
+failures. The outbox survives application crashes. The user never
+waits for HR. Everything is in the audit log.
+
+================================================================
+SLIDE 7 — FIELD APP & DEV INFRASTRUCTURE  (≈ 60 s)
+================================================================
+Now the Flet cross-country client. The PTI creates a session in
+WarriorFit, then opens the Flet app on a tablet, authenticates
+with JWT, and times runners one at a time. Each finisher posts to
+the FastAPI backend, which writes to the shared PostgreSQL. The
+Shiny dashboard updates live with top-ten results and demographics.
+
+For development I built two pieces of supporting infrastructure.
+The HR simulator is a FastAPI stub that accepts PhefTestDto JSON
+and acknowledges it — validating the broker pipeline end-to-end.
+Mailpit is an SMTP trap on port 1025 that catches every outgoing
+notification. No real email is ever sent during development.
+
+================================================================
+SLIDE 8 — QUALITY & SECURITY  (≈ 75 s)
+================================================================
+Quality: over 1 500 lines of test code. Calculators are unit-
+tested across every age and gender bracket. The broker has more
+than thirty unit tests covering the queue, retries, and dead-
+letter logic. Chronos XML import is integration-tested against a
+real async session. Ruff, black, mypy strict, and CI on every
+commit. Zero mypy errors.
+
+Security: WarriorFit is defence-grade from day one. Argon2id for
+password hashing — the OWASP-recommended memory-hard algorithm.
+Ten-minute server-side session timeout. RBAC enforced on every
+PageSpec — no client-side trust. Full audit trail with IP
+addresses. PostgreSQL TLS in production with sslmode verify-full.
+No secrets baked into the Docker image — everything is injected
+at runtime. And a full OWASP Top 10 assessment, documented in
+SECURITY.md.
+
+================================================================
+SLIDE 9 — TECH STACK & ROADMAP  (≈ 60 s)
+================================================================
+The stack: Python 3.13 async-first, Shiny for Python for 24
+reactive pages, SQLAlchemy 2.0 async with polymorphic single-table
+inheritance and Alembic migrations, PostgreSQL with asyncpg and a
+tuned connection pool, Plotly for charts, Flet for the field app,
+FastAPI for the REST layer, and a full GitHub Actions CI/CD
+pipeline producing a Docker image served behind Nginx with HTTPS.
+
+What's next: a mobile-responsive layout for tablets on the field,
+offline mode through a service worker, scheduled notifications for
+expiring test deadlines, a multi-unit battalion view, and finally
+the cut-over from the HR simulator to the real BEMIL HR API.
+
+================================================================
+SLIDE 10 — Q&A  (≈ 30 s)
+================================================================
+That is WarriorFit: an end-to-end ecosystem that turns paper-based
+fitness testing into a secure, auditable, real-time platform —
+delivered as 20 epics over eight months.
+
+The platform is live now. The URLs on the slide work today.
+
+I'm happy to take your questions.
+
+================================================================
+TIMING SUMMARY
+================================================================
+Slide 1  Title                          ~ 45 s
+Slide 2  Problem                        ~ 60 s
+Slide 3  Solution                       ~ 60 s
+Slide 4  Users & Test Types             ~ 75 s
+Slide 5  Agile Delivery                 ~ 60 s
+Slide 6  Architecture & Data Flow       ~ 75 s
+Slide 7  Field App & Dev Infrastructure ~ 60 s
+Slide 8  Quality & Security             ~ 75 s
+Slide 9  Tech Stack & Roadmap           ~ 60 s
+Slide 10 Q&A                            ~ 30 s
+-------------------------------------------------
+TOTAL                                   ~ 600 s = 10 min
