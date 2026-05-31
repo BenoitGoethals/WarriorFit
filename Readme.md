@@ -6,7 +6,7 @@
 
 **Academic Year:** 2025–2026
 
-**Project Status:** In Progress
+**Project Status:** Final phase — security hardened, GDPR-compliant, preparing for delivery
 
 **Project Type:** Software Engineering
 
@@ -74,11 +74,18 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   gender split per distance, chronological trends, podium frequency, data-quality flags (unmatched serials, never-raced);
   best/avg/median now broken down per distance (no more meaningless 5K+10K aggregation), top-N deduplicated by serial,
   full mypy clean across the codebase
+* 2026-04-27 : broker hardening — exponential back-off on retries, batch-send support, dead-letter queue for permanently failed messages (PR #211);
+  transactional outbox pattern documented
+* 2026-04-27 : military UI theme — Rajdhani + JetBrains Mono fonts, olive-drab / khaki / amber colour system applied across all pages;
+  Dashboard redesigned with side-by-side charts and a Broker / HR System health card
+* 2026-04-30 : NIST CSF 2.0 compliance self-assessment added; PostgreSQL SSL/TLS enabled with `db.ssl_root_cert` certificate validation (file-existence check at startup)
+* 2026-04-30 : comprehensive unit tests for Broker module — DTO mappings, lifecycle management, messaging logic
 * 2026-05-01 : code quality refactor — fixed 5 filename typos (`appliccation_config`, `usermangement`, `mom_repositor`, `cross_plannig_controller`, `StatusApplicationController`);
   split 1 023-line `app.py` monolith into `page_registry.py`, `app_server.py`, and a thin entry-point `app.py`;
   moved `notify_mail.py` from `ui/pages/` to `services/`;
   corrected navbar label "Psychical Tests" → "Physical Tests";
   applied `@inject` + `Provide[Container.xxx]` throughout the full application — `make_server()`, all service/broker/controller method-level instantiations replaced with injected instance variables
+* 2026-05-01 : added core repository docs — detailed `ARCHITECTURE.md`, `ASSETS.md`, `CODEOWNERS`, `LICENSE`; added `WarriorFit_Presentation.pptx`
 * 2026-05-10 : security hardening pass —
   authenticate MOM ingestion endpoint (`/api/v1/phef/test`) with `X-API-Key` (`WF_MOM_API_KEY`, constant-time compare, fail-closed),
   lock down CORS (methods/headers restricted, origins via `WF_MOM_CORS_ORIGINS`),
@@ -103,13 +110,13 @@ https://youtu.be/wZveSgpKTf8
 
 ## Code Evolution
 
-**946 commits** over ~7 months (Sep 2025 – Apr 2026) — currently ~21,800 lines of Python.
+**1 012 commits** over ~8 months (Sep 2025 – May 2026) — currently ~25,800 lines of Python.
 
 ### Timeline
 
 ```mermaid
 gantt
-    title WarriorFit — Development Timeline (Sep 2025 → Apr 2026)
+    title WarriorFit — Development Timeline (Sep 2025 → May 2026)
     dateFormat  YYYY-MM-DD
     axisFormat  %b %Y
 
@@ -118,11 +125,13 @@ gantt
     Phase 2 · Feature growth (~250 commits)      :p2, 2025-10-15, 2025-12-15
     Phase 3 · Architectural refactor (~300 c.)   :p3, 2025-12-01, 2026-02-15
     Phase 4 · Hardening & DevOps (~346 c.)       :p4, 2026-02-01, 2026-04-30
+    Phase 5 · Security & Finalization (~66 c.)   :p5, 2026-04-25, 2026-05-31
 
     section Milestones
     Business-logic extraction   :milestone, 2025-10-31, 0d
     DI container & layering     :milestone, 2025-12-15, 0d
     CI/CD & Docker prod         :milestone, 2026-02-28, 0d
+    GDPR + security hardened    :milestone, 2026-05-10, 0d
 ```
 
 ### Complexity Growth
@@ -130,10 +139,10 @@ gantt
 ```mermaid
 xychart-beta
     title "Architectural complexity over time"
-    x-axis ["Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26"]
+    x-axis ["Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26", "May '26"]
     y-axis "Complexity (relative)" 0 --> 10
-    line [1, 2, 3, 5, 6, 8, 9, 10]
-    bar  [1, 2, 3, 5, 6, 8, 9, 10]
+    line [1, 2, 3, 5, 6, 8, 9, 10, 10]
+    bar  [1, 2, 3, 5, 6, 8, 9, 10, 10]
 ```
 
 | Phase | Period | Complexity | Architecture |
@@ -142,6 +151,7 @@ xychart-beta
 | 2 — Features & Calculators | Oct–Dec 2025 | mid | Emerging layers |
 | 3 — Layered DI | Dec 2025–Feb 2026 | high | DI container |
 | 4 — Hardening & CI/CD | Feb–Apr 2026 | high | Production-ready |
+| 5 — Security & Finalization | Apr–May 2026 | high | OWASP-hardened, GDPR-compliant |
 
 ### Architecture Evolution
 
@@ -182,6 +192,7 @@ flowchart TB
 ```
 
 > Phase 3 & 4 also bring: **DI Container · CI/CD pipeline · Docker · MkDocs**.
+> Phase 5 adds: **OWASP hardening · GDPR compliance · NIST CSF 2.0 · PostgreSQL TLS · military UI theme**.
 
 ### Phase 1: Prototype (Sep–Oct 2025) — commits 1–~50
 
@@ -232,6 +243,18 @@ flowchart TB
 - Type annotations across the entire codebase
 - PR workflow via GitHub (merge requests, code review)
 
+### Phase 5: Security & Finalization (Apr–May 2026) — commits ~946–1 012
+
+**Complexity: high | Architecture: OWASP-hardened, GDPR-compliant**
+
+- GDPR compliance: serviceman consent table, Privacy self-service page (Art. 7/15/20), data-retention service
+- NIST CSF 2.0 self-assessment; PostgreSQL SSL/TLS with certificate validation
+- OWASP hardening: authenticated MOM endpoint (`X-API-Key`), IDOR fix on test deletes, GUEST role scope reduction, `UserStore` scoped per Shiny session (PR #217)
+- Military UI theme: Rajdhani + JetBrains Mono fonts, olive-drab / khaki / amber colour system
+- Broker resilience: exponential back-off, batch send, dead-letter queue; comprehensive unit tests
+- Dashboard redesign: side-by-side charts, Broker / HR System health card
+- Core docs added: `ARCHITECTURE.md`, `ASSETS.md`, `CODEOWNERS`, `LICENSE`
+
 ### Evolution Summary
 
 | Aspect | Start | Now |
@@ -240,12 +263,13 @@ flowchart TB
 | **DI** | None | `DeclarativeContainer` |
 | **DB access** | God-class `DBService` | Repository pattern, async |
 | **Business logic** | Inside UI pages | Calculators, Services, Controllers |
-| **Auth** | Simple login | RBAC with 6 roles |
-| **Testing** | None | Pytest with DB isolation |
+| **Auth** | Simple login | RBAC with 6 roles, OWASP-hardened |
+| **Testing** | None | Pytest with DB isolation + Broker unit tests |
 | **CI/CD** | None | GitHub Actions, Docker |
-| **Docs** | None | MkDocs site |
+| **Docs** | None | MkDocs site, ARCHITECTURE.md, DPIA, Privacy Policy |
+| **Compliance** | None | GDPR (Art. 7/15/20), NIST CSF 2.0, PostgreSQL TLS |
 
-The pattern is classic and healthy: **working prototype → add features → architectural restructuring → harden for production**. The biggest leap in maturity was the introduction of dependency injection and the layered architecture pattern — transforming it from a "script that works" into a maintainable application.
+The pattern is classic and healthy: **working prototype → add features → architectural restructuring → harden for production → compliance & security**. The biggest leaps in maturity were the introduction of dependency injection (Phase 3) and the OWASP/GDPR hardening pass (Phase 5) — transforming it from a "script that works" into a production-ready, security-audited application.
 
 ---
 
@@ -314,9 +338,10 @@ if you want to see the project in action, you can check  :
 * Enhancements and bug fixes
 * Testing and validation
 
-### **Phase 4 — Testing & Validation (April 2026)**
+### **Phase 4 — Testing & Validation (April–May 2026)** (Done)
 
 * Acceptance testing and bug fixing
+* Security hardening (OWASP Top 10, GDPR, NIST CSF 2.0)
 
 ### **Phase 5 — Delivery & Demo (Jun 2026)**
 
