@@ -6,11 +6,14 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
 from warriorfit.ui.pages.page import Page
 
 
 class IndTestShowPage(Page):
+    TAB_NAME = "Individual"
+
     @inject
     def __init__(
         self,
@@ -19,7 +22,7 @@ class IndTestShowPage(Page):
         super().__init__()
         self.controller = controller
         self.serial = reactive.Value("")
-        self.mil_info = reactive.Value("No serviceman selected.")
+        self.mil_info = reactive.Value(t("individual.no_serviceman"))
         self.tests_df = reactive.Value(pd.DataFrame())
         self.report_path = reactive.Value(None)
 
@@ -28,54 +31,55 @@ class IndTestShowPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Individual",
-            ui.h2("Individual Test History"),
+            t("nav.individual"),
+            ui.h2(t("individual.title")),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Lookup"),
+                    ui.card_header(t("individual.lookup")),
                     ui.div(
-                        ui.input_text("ind_serial", "Serial number"),
+                        ui.input_text("ind_serial", t("common.serial_number")),
                         class_="wf-serial-input",
                     ),
                     ui.input_action_button(
                         "ind_search_serial_search_btn",
-                        "🔍 Search own Unit",
+                        t("common.search_own_unit"),
                         class_="btn btn-info btn-sm w-100 mt-1",
                     ),
                     ui.input_action_button(
                         "ind_search",
-                        "✅ Confirm Serviceman",
+                        t("individual.confirm_serviceman"),
                         class_="btn btn-primary btn-sm w-100 mt-2",
                     ),
                     ui.hr(),
                     ui.input_action_button(
                         "full_report_cy",
-                        "📄 Generate Full Report",
+                        t("individual.generate_report"),
                         class_="btn btn-secondary btn-sm w-100",
                     ),
                     ui.output_ui("download_btn_ui"),
                     ui.input_action_button(
                         "ind_refresh_btn",
-                        "🔄 Refresh",
+                        t("common.refresh"),
                         class_="btn btn-secondary btn-sm w-100 mt-1",
                     ),
                     ui.hr(),
                     ui.output_text("ind_status"),
-                    ui.h4("Serviceman"),
+                    ui.h4(t("individual.serviceman")),
                     ui.output_text("ind_mil_info"),
                     full_screen=False,
                 ),
                 ui.card(
-                    ui.card_header("Test history"),
+                    ui.card_header(t("individual.test_history")),
                     ui.output_data_frame("ind_grid"),
                     full_screen=False,
                 ),
                 col_widths=(3, 9),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
-        status = reactive.Value("Ready.")
+        status = reactive.Value(t("common.ready"))
 
         @reactive.effect
         @reactive.event(input.ind_refresh_btn)
@@ -87,7 +91,7 @@ class IndTestShowPage(Page):
                     self.tests_df.set(
                         df if isinstance(df, pd.DataFrame) else pd.DataFrame()
                     )
-                    status.set(f"Refreshed {len(self.tests_df.get())} records.")
+                    status.set(t("individual.refreshed").format(count=len(self.tests_df.get())))
                 except Exception:
                     pass
 
@@ -97,7 +101,7 @@ class IndTestShowPage(Page):
             s = (input.ind_serial() or "").strip()
             self.report_path.set(None)
             if s:
-                status.set("Generating report...")
+                status.set(t("common.generating"))
                 output_path = (
                     await self.controller._report_generator_pdf.generate_ind_report(
                         serial_number=s
@@ -105,13 +109,13 @@ class IndTestShowPage(Page):
                 )
                 if output_path:
                     self.report_path.set(output_path)
-                    status.set(f"Full report for {s} generated.")
+                    status.set(t("individual.report_generated").format(serial=s))
                     self.refresh_tick.set(self.refresh_tick.get() + 1)
                     ui.notification_show("Report generated", type="message", duration=2)
                 else:
-                    status.set("Failed to generate report.")
+                    status.set(t("common.report_failed"))
             else:
-                status.set("No serviceman selected.")
+                status.set(t("individual.no_serviceman"))
 
         @output
         @render.ui
@@ -119,7 +123,7 @@ class IndTestShowPage(Page):
             if self.report_path.get():
                 return ui.download_button(
                     "download_generated_report",
-                    "Download PDF",
+                    t("common.download"),
                     width="150px",
                     class_="btn-success",
                 )
@@ -137,8 +141,8 @@ class IndTestShowPage(Page):
         async def _on_search():
             s = (input.ind_serial() or "").strip()
             if not s:
-                status.set("Enter a serial number.")
-                self.mil_info.set("No serviceman selected.")
+                status.set(t("individual.no_serial"))
+                self.mil_info.set(t("individual.no_serviceman"))
                 self.tests_df.set(pd.DataFrame())
                 return
             try:
@@ -154,13 +158,13 @@ class IndTestShowPage(Page):
                     df if isinstance(df, pd.DataFrame) else pd.DataFrame()
                 )
                 status.set(
-                    f"Loaded {len(self.tests_df.get())} records."
+                    t("individual.loaded").format(count=len(self.tests_df.get()))
                     if not self.tests_df.get().empty
-                    else "No tests found."
+                    else t("individual.no_tests")
                 )
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 self.serial.set("")
-                self.mil_info.set("Not found.")
+                self.mil_info.set(t("individual.not_found"))
                 self.tests_df.set(pd.DataFrame())
                 status.set(e)  # type: ignore[arg-type]
 
@@ -193,7 +197,7 @@ class IndTestShowPage(Page):
         async def _open_ind_search_serial_search_btn_modal() -> None:
             modal_content = ui.modal(
                 ui.card(
-                    ui.card_header("Select Serial Number"),
+                    ui.card_header(t("common.select_serial_number")),
                     ui.output_data_frame("ind_serial_search_grid"),
                     full_screen=False,
                 ),

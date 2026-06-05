@@ -3,10 +3,13 @@ from shiny import ui
 
 from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.pages.page import Page
 
 
 class AboutPage(Page):
+    TAB_NAME = "About"
+
     @inject
     def __init__(self, config: ApplicationConfig = Provide[Container.config]):
         super().__init__()
@@ -17,13 +20,12 @@ class AboutPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "About",
+            t("nav.about"),
             ui.div(
                 ui.div(
-                    ui.tags.h2("About WarriorFit", class_="mb-1"),
+                    ui.tags.h2(t("about.title"), class_="mb-1"),
                     ui.tags.p(
-                        "WarriorFit is an application for managing and tracking physical fitness tests "
-                        "and training activities within the Belgian Defence.",
+                        t("about.description"),
                         class_="text-muted mb-4",
                     ),
                     class_="mb-4",
@@ -33,7 +35,7 @@ class AboutPage(Page):
                         ui.card_header(
                             ui.div(
                                 ui.tags.span("👤", class_="me-2"),
-                                "Development Team",
+                                t("about.dev_team"),
                             )
                         ),
                         ui.div(
@@ -67,7 +69,7 @@ class AboutPage(Page):
                         ui.card_header(
                             ui.div(
                                 ui.tags.span("ℹ️", class_="me-2"),
-                                "Application Info",
+                                t("about.app_info"),
                             )
                         ),
                         ui.div(
@@ -75,39 +77,39 @@ class AboutPage(Page):
                                 ui.tags.tbody(
                                     ui.tags.tr(
                                         ui.tags.td(
-                                            "Application", class_="fw-bold pe-3 py-1"
+                                            t("about.application"), class_="fw-bold pe-3 py-1"
                                         ),
                                         ui.tags.td("WarriorFit"),
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td(
-                                            "Organisation", class_="fw-bold pe-3 py-1"
+                                            t("about.organisation"), class_="fw-bold pe-3 py-1"
                                         ),
-                                        ui.tags.td("Belgian Defence"),
+                                        ui.tags.td(t("about.org_name")),
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td(
-                                            "Purpose", class_="fw-bold pe-3 py-1"
+                                            t("about.purpose"), class_="fw-bold pe-3 py-1"
                                         ),
                                         ui.tags.td(
-                                            "Physical fitness tracking & management"
+                                            t("about.purpose_desc")
                                         ),
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td(
-                                            "Version", class_="fw-bold pe-3 py-1"
+                                            t("about.version"), class_="fw-bold pe-3 py-1"
                                         ),
                                         ui.tags.td(self._config.version[1]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td(
-                                            "Status", class_="fw-bold pe-3 py-1"
+                                            t("about.status"), class_="fw-bold pe-3 py-1"
                                         ),
                                         ui.tags.td(self._config.version[0]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(
                                         ui.tags.td(
-                                            "Release Date", class_="fw-bold pe-3 py-1"
+                                            t("about.release_date"), class_="fw-bold pe-3 py-1"
                                         ),
                                         ui.tags.td(self._config.version[2]),  # type: ignore[index]
                                     ),
@@ -120,6 +122,7 @@ class AboutPage(Page):
                     col_widths=(6, 6),
                 ),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):

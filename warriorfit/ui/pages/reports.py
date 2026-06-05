@@ -8,6 +8,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.reports_controller import (
     ReportRequest,
     ReportsController,
@@ -16,6 +17,8 @@ from warriorfit.ui.pages.page import Page
 
 
 class ReportsPage(Page):
+    TAB_NAME = "Reports"
+
     @inject
     def __init__(
         self, controller: ReportsController = Provide[Container.reports_controller]
@@ -23,7 +26,7 @@ class ReportsPage(Page):
         super().__init__()
         self.controller = controller
         self._status_msg = reactive.Value(
-            ("info", "Click 'Generate Report' to create your report.")
+            ("info", t("reports.click_to_generate"))
         )
         self._last_paths = reactive.Value([])  # type: ignore[var-annotated]
         self.__logger = logging.getLogger(__name__)
@@ -33,40 +36,40 @@ class ReportsPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Reports",
-            ui.h2("Reports"),
+            t("nav.reports"),
+            ui.h2(t("reports.title")),
             ui.layout_sidebar(
                 ui.sidebar(
                     ui.input_text(
-                        "report_title", "Report Title:", "Fitness Test Report"
+                        "report_title", t("reports.report_title_label"), t("reports.fitness_test_report")
                     ),
-                    ui.input_checkbox("own_Unit", "Own Unit", value=True),
-                    ui.input_checkbox("this_year", "This Year", value=True),
+                    ui.input_checkbox("own_Unit", t("reports.own_unit"), value=True),
+                    ui.input_checkbox("this_year", t("reports.this_year"), value=True),
                     ui.input_select(
                         "test_type",
-                        "Test Type:",
+                        t("reports.test_type"),
                         {
-                            "all": "All Tests",
-                            "PHEF": "PHEF Tests",
-                            "FUNCTIONAL": "Functional Tests",
-                            "COMBAT": "Combat Tests",
-                            "SWIMMING": "Swimming Tests",
+                            "all": t("reports.all_tests"),
+                            "PHEF": t("reports.phef_tests"),
+                            "FUNCTIONAL": t("reports.functional_tests"),
+                            "COMBAT": t("reports.combat_tests"),
+                            "SWIMMING": t("reports.swimming_tests"),
                         },
                     ),
                     ui.input_select(
                         "report_format",
-                        "Export Format:",
+                        t("reports.export_format"),
                         {
-                            "pdf": "PDF",
-                            "csv": "CSV",
-                            "both": "Both (PDF & CSV)",
+                            "pdf": t("reports.pdf"),
+                            "csv": t("reports.csv"),
+                            "both": t("reports.both"),
                         },
                     ),
                     ui.input_action_button(
-                        "generate_report", "Generate Report", class_="btn-primary"
+                        "generate_report", t("common.generate_report"), class_="btn-primary"
                     ),
                     ui.download_button(
-                        "download_report", "Download", class_="btn-primary"
+                        "download_report", t("common.download"), class_="btn-primary"
                     ),
                     width=300,
                 ),
@@ -75,6 +78,7 @@ class ReportsPage(Page):
                     ui.output_ui("report_paths"),
                 ),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
@@ -112,7 +116,7 @@ class ReportsPage(Page):
                 return ui.div()
             items = [ui.tags.li(ui.tags.code(Path(p).name)) for p in paths]
             return ui.div(
-                ui.tags.h4("Generated files"),
+                ui.tags.h4(t("reports.generated_files")),
                 ui.tags.ul(*items),
             )
 

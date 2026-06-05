@@ -6,6 +6,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
 from warriorfit.ui.pages.page import Page
 
@@ -26,15 +27,21 @@ class StatusTests(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "PHEF Not done",
+            t("nav.phef_not_done"),
             ui.card(
                 ui.card_header(
-                    f"List of Military who did NOT executed PHEF test from current year {datetime.datetime.now().year} - {self._controller.unit_name}"
+                    t("phef_not_done.title").format(
+                        year=datetime.datetime.now().year,
+                        unit=self._controller.unit_name,
+                    )
                 ),
-                ui.input_action_button("refresh_own_unit_status_grid", "Refresh"),
+                ui.input_action_button(
+                    "refresh_own_unit_status_grid", t("phef_not_done.refresh")
+                ),
                 ui.output_data_frame("own_unit_status_grid"),
                 full_screen=False,
             ),
+            value="PHEF Not done",
         )
 
     def server(self, input, output, session):

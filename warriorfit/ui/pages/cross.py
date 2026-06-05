@@ -7,6 +7,7 @@ from typing import Any, Dict
 import pandas as pd
 from shiny import reactive, render, ui
 
+from warriorfit.i18n import t
 from warriorfit.ui.pages.page import Page
 
 # UI:
@@ -39,19 +40,19 @@ class CrossPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Cross",
-            ui.h2("🏃 Cross Runners"),
+            t("nav.cross"),
+            ui.h2(t("cross.title")),
             ui.input_action_button(
                 "cross_refresh_btn",
-                "🔄 Refresh",
+                t("common.refresh"),
                 class_="btn btn-secondary btn-sm my-2",
             ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
-                        ui.card_header("Cross"),
-                        ui.input_select("cross_id", "Cross", choices=[]),
-                        ui.input_action_button("cross_locker", "Select", width="150px"),
+                        ui.card_header(t("nav.cross")),
+                        ui.input_select("cross_id", t("nav.cross"), choices=[]),
+                        ui.input_action_button("cross_locker", t("cross.select"), width="150px"),
                         full_screen=False,
                     ),
                     ui.output_ui("runner_card"),
@@ -59,7 +60,7 @@ class CrossPage(Page):
                 ui.card(
                     ui.card_header(
                         ui.div(
-                            "Runners",
+                            t("cross.runners_label"),
                             ui.output_ui("runners_summary_ui"),
                             style="display:flex; align-items:center; gap:1rem;",
                         )
@@ -72,10 +73,11 @@ class CrossPage(Page):
                 ),
                 col_widths=(4, 8),
             ),
+            value="Cross",
         )
 
     def server(self, input, output, session):
-        status = reactive.Value("Ready.")
+        status = reactive.Value(t("common.ready"))
         cross_selected_id = reactive.Value("")  # or None
 
         @output
@@ -84,7 +86,7 @@ class CrossPage(Page):
             df = await runners_df()
             if not df.empty or not cross_selected_id.get():
                 return ui.div()  # hidden: no cross selected or no runners registered
-            return ui.input_file("file", "Upload Chronos Data", accept=".xml")
+            return ui.input_file("file", t("cross.upload_chronos"), accept=".xml")
 
         @output
         @render.ui
@@ -94,10 +96,10 @@ class CrossPage(Page):
                 return ui.div()
             return ui.div(
                 ui.input_action_button(
-                    "report_lst_run", "Generate Report", class_="btn-secondary"
+                    "report_lst_run", t("common.generate_report"), class_="btn-secondary"
                 ),
                 ui.download_button(
-                    "download_report_cross_run", "Download", class_="btn-primary"
+                    "download_report_cross_run", t("common.download"), class_="btn-primary"
                 ),
             )
 
@@ -129,42 +131,42 @@ class CrossPage(Page):
             if not cross_selected_id.get():
                 return ui.div()  # hidden
             return ui.card(
-                ui.card_header("Runner"),
-                ui.input_text("runner_serialnr", "Serial Number"),
+                ui.card_header(t("cross.runner")),
+                ui.input_text("runner_serialnr", t("common.serial_number")),
                 ui.input_action_button(
                     "runner_search",
-                    "✅ Confirm Serial",
+                    t("cross.confirm_serial"),
                     class_="btn btn-primary btn-sm",
                     width="200px",
                 ),
                 ui.output_text("runner_military"),
                 ui.input_text(
                     "runner_time",
-                    "Running time (hh::mm:ss)",
-                    placeholder="e.g., 01:10:45",
+                    t("cross.running_time"),
+                    placeholder=t("cross.running_time_placeholder"),
                 ),
                 ui.layout_columns(
                     ui.input_action_button(
                         "runner_add_btn",
-                        "Add",
+                        t("cross.add"),
                         width="120px",
                         class_="btn-primary w-100",
                     ),
                     ui.input_action_button(
                         "runner_update_btn",
-                        "Update",
+                        t("cross.update"),
                         width="120px",
                         class_="btn-warning w-100",
                     ),
                     ui.input_action_button(
                         "runner_clear_btn",
-                        "Clear Form",
+                        t("cross.clear"),
                         width="120px",
                         class_="btn-secondary w-100",
                     ),
                     ui.input_action_button(
                         "runner_delete_btn",
-                        "Delete Selected",
+                        t("cross.delete"),
                         width="240px",
                         class_="btn-danger w-100",
                     ),

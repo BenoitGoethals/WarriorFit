@@ -10,12 +10,15 @@ from shiny import reactive, render, ui
 from shinywidgets import output_widget, render_widget
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.my_progress_controller import MyProgressController
 from warriorfit.ui.pages.page import Page
 from warriorfit.ui.user_store import UserStore
 
 
 class MyProgressPage(Page):
+    TAB_NAME = "My Progress"
+
     @inject
     def __init__(
         self,
@@ -33,39 +36,40 @@ class MyProgressPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "My Progress",
+            t("nav.my_progress"),
             ui.div(
-                ui.h2("My Test Progress", class_="mb-1"),
+                ui.h2(t("progress.title"), class_="mb-1"),
                 ui.p(
                     ui.output_text("mp_header"),
                     class_="text-muted mb-3",
                 ),
                 ui.input_action_button(
                     "mp_refresh_btn",
-                    "🔄 Refresh",
+                    t("common.refresh"),
                     class_="btn btn-secondary btn-sm mb-3",
                 ),
                 ui.layout_columns(
                     ui.card(
-                        ui.card_header("This year"),
+                        ui.card_header(t("progress.this_year")),
                         ui.output_data_frame("mp_year_grid"),
                         full_screen=True,
                     ),
                     ui.card(
-                        ui.card_header("All history"),
+                        ui.card_header(t("progress.all_history")),
                         ui.output_data_frame("mp_history_grid"),
                         full_screen=True,
                     ),
                     col_widths=(6, 6),
                 ),
                 ui.card(
-                    ui.card_header("Progress over time"),
+                    ui.card_header(t("progress.over_time")),
                     output_widget("mp_progress_chart"),
                     full_screen=True,
                     class_="mt-3",
                 ),
                 class_="container-fluid p-4",
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
@@ -93,9 +97,9 @@ class MyProgressPage(Page):
         def mp_header():
             user = UserStore.get_user()
             if user is None:
-                return "Not logged in."
+                return t("progress.not_logged_in")
             if not user.serial_number:
-                return "Your account has no service number attached — no tests to show."
+                return t("progress.no_serial")
             return f"{user.username} · {user.serial_number}"
 
         @output
@@ -125,7 +129,7 @@ class MyProgressPage(Page):
             series = MyProgressController.progress_series(df)
             series = series[series["Type"] == "PHEF"] if not series.empty else series
             if series.empty:
-                fig = px.line(title="No PHEF data yet")
+                fig = px.line(title=t("progress.no_phef"))
                 fig.update_layout(
                     xaxis_title="Date",
                     yaxis_title="PHEF score",
@@ -137,7 +141,7 @@ class MyProgressPage(Page):
                 x="Date",
                 y="Score",
                 markers=True,
-                title="PHEF score over time",
+                title=t("progress.phef_chart"),
             )
             fig.update_layout(
                 xaxis_title="Date",

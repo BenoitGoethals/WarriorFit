@@ -11,12 +11,15 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.privacy_controller import PrivacyController
 from warriorfit.ui.pages.page import Page
 from warriorfit.ui.user_store import UserStore
 
 
 class PrivacyPage(Page):
+    TAB_NAME = "Privacy"
+
     @inject
     def __init__(
         self,
@@ -30,43 +33,36 @@ class PrivacyPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Privacy",
+            t("nav.privacy"),
             ui.div(
-                ui.h2("Privacy & Your Data", class_="mb-3"),
+                ui.h2(t("privacy.title"), class_="mb-3"),
                 ui.p(
-                    "WarriorFit processes your personal and fitness data under "
-                    "the EU General Data Protection Regulation (GDPR). "
-                    "Use this page to exercise your rights.",
+                    t("privacy.description"),
                     class_="text-muted",
                 ),
                 ui.hr(),
-                ui.h4("Your consents"),
+                ui.h4(t("privacy.your_consents")),
                 ui.output_ui("privacy_consent_block"),
                 ui.hr(),
-                ui.h4("Export your data (Art. 15 / 20)"),
-                ui.p(
-                    "Download a machine-readable copy of all personal data "
-                    "WarriorFit holds about you."
-                ),
+                ui.h4(t("privacy.export_title")),
+                ui.p(t("privacy.export_desc")),
                 ui.input_action_button(
                     "privacy_export_btn",
-                    "Prepare export",
+                    t("privacy.prepare_export"),
                     class_="btn btn-primary me-2",
                 ),
                 ui.output_ui("privacy_export_download"),
                 ui.hr(),
-                ui.h4("Erase your account (Art. 17)"),
+                ui.h4(t("privacy.erase_title")),
                 ui.div(
-                    ui.tags.strong("Not available. "),
-                    "By organisational regulations, your fitness records and "
-                    "service file must be retained for the statutory period and "
-                    "cannot be erased on request. Contact your unit admin or "
-                    "the Defence DPO for restriction or rectification requests.",
+                    ui.tags.strong(t("privacy.not_available") + " "),
+                    t("privacy.retention_notice"),
                     class_="alert alert-warning",
                 ),
                 ui.output_text("privacy_status"),
                 class_="container-fluid p-4",
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
@@ -79,12 +75,11 @@ class PrivacyPage(Page):
             self.refresh_tick.get()
             user = UserStore.get_user()
             if user is None:
-                return ui.p("Log in to manage consents.")
+                return ui.p(t("privacy.login_to_manage"))
             serial = PrivacyController.serviceman_serial(user)
             if serial is None:
                 return ui.div(
-                    "Privacy actions are only available when logged in as a "
-                    "serviceman. Please log out and log in using Serviceman mode.",
+                    t("privacy.serviceman_only"),
                     class_="alert alert-info",
                 )
             consents = await self.controller.consents(serial)
@@ -105,7 +100,7 @@ class PrivacyPage(Page):
                             ui.span(f"{label} — granted {active['given_at']}"),
                             ui.input_action_button(
                                 f"withdraw_{ct}",
-                                "Withdraw",
+                                t("privacy.withdraw"),
                                 class_="btn btn-sm btn-outline-warning ms-2",
                             ),
                             class_="mb-2",
@@ -117,7 +112,7 @@ class PrivacyPage(Page):
                             ui.span(f"{label} — not granted"),
                             ui.input_action_button(
                                 f"grant_{ct}",
-                                "Grant",
+                                t("privacy.grant"),
                                 class_="btn btn-sm btn-outline-primary ms-2",
                             ),
                             class_="mb-2",
@@ -140,11 +135,13 @@ class PrivacyPage(Page):
                     try:
                         ok = await self.controller.grant(serial, ct)
                     except Exception as e:
-                        status.set(f"Grant '{ct}' error: {e}")
+                        status.set(t("privacy.grant_error").format(ct=ct, error=e))
                         self.refresh()
                         return
                     status.set(
-                        f"Consent '{ct}' granted." if ok else f"Grant '{ct}' failed."
+                        t("privacy.grant_ok").format(ct=ct)
+                        if ok
+                        else t("privacy.grant_failed").format(ct=ct)
                     )
                     self.refresh()
 
@@ -159,13 +156,13 @@ class PrivacyPage(Page):
                     try:
                         ok = await self.controller.withdraw(serial, ct)
                     except Exception as e:
-                        status.set(f"Withdraw '{ct}' error: {e}")
+                        status.set(t("privacy.withdraw_error").format(ct=ct, error=e))
                         self.refresh()
                         return
                     status.set(
-                        f"Consent '{ct}' withdrawn."
+                        t("privacy.withdraw_ok").format(ct=ct)
                         if ok
-                        else f"Withdraw '{ct}' failed."
+                        else t("privacy.withdraw_failed").format(ct=ct)
                     )
                     self.refresh()
 
@@ -177,18 +174,18 @@ class PrivacyPage(Page):
         async def _on_export():
             serial = PrivacyController.serviceman_serial(UserStore.get_user())
             if serial is None:
-                status.set("Log in as a serviceman to export your data.")
+                status.set(t("privacy.login_to_export"))
                 return
             try:
                 payload = await self.controller.export_json(serial)
             except Exception as e:
-                status.set(f"Export error: {e}")
+                status.set(t("privacy.export_error").format(error=e))
                 return
             if payload is None:
-                status.set("Export failed (serviceman not found).")
+                status.set(t("privacy.export_not_found"))
                 return
             export_payload.set(payload)
-            status.set("Export ready — click Download.")
+            status.set(t("privacy.export_ready"))
 
         @output
         @render.ui
@@ -196,7 +193,7 @@ class PrivacyPage(Page):
             payload = export_payload.get()
             if not payload:
                 return ui.div()
-            return ui.download_button("privacy_export_dl", "Download JSON")
+            return ui.download_button("privacy_export_dl", t("privacy.download_json"))
 
         @session.download(filename="warriorfit-export.json")
         def privacy_export_dl():

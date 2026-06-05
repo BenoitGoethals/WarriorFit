@@ -8,6 +8,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.cross_planning_controller import CrossPlanningController
 from warriorfit.ui.pages.page import Page
 
@@ -31,48 +32,52 @@ class CrossPlanningPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Cross Planning",
-            ui.h2("🏃 Cross Planning"),
+            t("nav.cross_planning"),
+            ui.h2(t("cross_plan.title")),
             ui.input_action_button(
-                "cr_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+                "cr_refresh_btn", t("common.refresh"), class_="btn btn-secondary btn-sm my-2"
             ),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Cross Form"),
-                    ui.input_date("cr_date", "Date"),
+                    ui.card_header(t("cross_plan.cross_form")),
+                    ui.input_date("cr_date", t("cross_plan.date")),
                     ui.input_text(
                         "cr_time",
-                        "Pick a time:",
+                        t("cross_plan.pick_time"),
                         placeholder="Select a time",
                         value="09:30",
                     ),
                     ui.output_text_verbatim("show_time"),
-                    ui.input_numeric("cr_distance", "Distance", value=5, min=0),
-                    ui.input_checkbox("cr_executed", "Executed", value=False),
-                    ui.input_text("cr_desc", "Description", placeholder="Optional"),
+                    ui.input_numeric("cr_distance", t("cross_plan.distance"), value=5, min=0),
+                    ui.input_checkbox("cr_executed", t("cross_plan.executed"), value=False),
+                    ui.input_text(
+                        "cr_desc",
+                        t("cross_plan.description"),
+                        placeholder=t("cross_plan.optional"),
+                    ),
                     ui.br(),
                     ui.layout_columns(
                         ui.input_action_button(
                             "cr_add_btn",
-                            "Add",
+                            t("cross_plan.add"),
                             width="120px",
                             class_="btn-primary w-100",
                         ),
                         ui.input_action_button(
                             "cr_update_btn",
-                            "Update",
+                            t("cross_plan.update"),
                             width="120px",
                             class_="btn-warning w-100",
                         ),
                         ui.input_action_button(
                             "cr_clear_btn",
-                            "Clear",
+                            t("cross_plan.clear"),
                             width="120px",
                             class_="btn-secondary w-100",
                         ),
                         ui.input_action_button(
                             "cr_delete_btn",
-                            "Delete Selected",
+                            t("cross_plan.delete_selected"),
                             width="170px",
                             class_="btn-danger w-100",
                         ),
@@ -82,7 +87,7 @@ class CrossPlanningPage(Page):
                     full_screen=False,
                 ),
                 ui.card(
-                    ui.card_header("Crosses"),
+                    ui.card_header(t("cross_plan.crosses")),
                     ui.layout_columns(
                         ui.output_data_frame("cr_grid"),
                     ),
@@ -90,6 +95,7 @@ class CrossPlanningPage(Page):
                 ),
                 col_widths=(4, 8),
             ),
+            value="Cross Planning",
         )
 
     # ---------------------------
@@ -149,7 +155,7 @@ class CrossPlanningPage(Page):
     # ---------------------------
 
     def server(self, input, output, session):
-        status = reactive.Value("Ready.")
+        status = reactive.Value(t("common.ready"))
 
         @output
         @render.text

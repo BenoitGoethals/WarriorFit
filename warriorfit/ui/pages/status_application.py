@@ -6,6 +6,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.status_application_controller import (
     StatusApplicationController,
 )
@@ -16,6 +17,8 @@ _start_time = time.time()
 
 
 class StatusApplicationPage(Page):
+    TAB_NAME = "Status Application"
+
     @inject
     def __init__(
         self,
@@ -41,54 +44,55 @@ class StatusApplicationPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Status Application",
-            ui.h2("Application Status Dashboard"),
+            t("nav.status_application"),
+            ui.h2(t("app_status.title")),
             # ── Service connectivity ──────────────────────────────────
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Database Connectivity"),
+                    ui.card_header(t("app_status.db_connectivity")),
                     ui.output_text("db_status_display"),
                 ),
                 ui.card(
-                    ui.card_header("HR Service Ops"),
+                    ui.card_header(t("app_status.hr_service")),
                     ui.output_text("hr_status_display"),
                 ),
                 ui.card(
-                    ui.card_header("Mail Server Status"),
+                    ui.card_header(t("app_status.mail_status")),
                     ui.output_text("mail_server_status_display"),
                 ),
                 ui.card(
-                    ui.card_header("Server Status"),
+                    ui.card_header(t("app_status.server_status")),
                     ui.output_text("server_status_display"),
                 ),
             ),
             # ── Runtime memory & process metrics ─────────────────────
             ui.div(
-                ui.div("Runtime Metrics", class_="wf-section-label mt-3 mb-2 px-1"),
+                ui.div(t("app_status.runtime_metrics"), class_="wf-section-label mt-3 mb-2 px-1"),
                 ui.layout_columns(
-                    self._metric_card("Physical Memory (RSS)", "mem_rss", "🧠"),
-                    self._metric_card("Virtual Memory (VMS)", "mem_vms", "💾"),
-                    self._metric_card("CPU Usage", "mem_cpu", "⚙️"),
-                    self._metric_card("Threads", "mem_threads", "🔀"),
-                    self._metric_card("Uptime", "mem_uptime", "⏱️"),
+                    self._metric_card(t("app_status.physical_memory"), "mem_rss", "🧠"),
+                    self._metric_card(t("app_status.virtual_memory"), "mem_vms", "💾"),
+                    self._metric_card(t("app_status.cpu_usage"), "mem_cpu", "⚙️"),
+                    self._metric_card(t("app_status.threads"), "mem_threads", "🔀"),
+                    self._metric_card(t("app_status.uptime"), "mem_uptime", "⏱️"),
                 ),
             ),
             # ── Log file ─────────────────────────────────────────────
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Log File"),
+                    ui.card_header(t("app_status.log_file")),
                     ui.div(
                         ui.output_text_verbatim("lof_file"),
                         style="max-height: 600px; overflow-y: auto;",
                     ),
                 ),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
         refresh_tick = reactive.Value(0)
 
-        self.refresh_on_nav(input, "Status Application", refresh_tick)
+        self.refresh_on_nav(input, self.TAB_NAME, refresh_tick)
 
         @output
         @render.text

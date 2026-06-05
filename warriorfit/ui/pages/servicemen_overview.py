@@ -7,6 +7,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.servicemen_overview_controller import (
     ServicemenOverviewController,
 )
@@ -14,6 +15,8 @@ from warriorfit.ui.pages.page import Page
 
 
 class ServicemenOverviewPage(Page):
+    TAB_NAME = "Servicemen Overview"
+
     @inject
     def __init__(
         self,
@@ -29,28 +32,28 @@ class ServicemenOverviewPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Servicemen Overview",
+            t("nav.servicemen_overview"),
             ui.div(
-                ui.h2("Servicemen Overview", class_="mb-3"),
+                ui.h2(t("servicemen.title"), class_="mb-3"),
                 ui.p(
-                    "All servicemen with their personal fields and current "
-                    "privacy / consent grant status.",
+                    t("servicemen.description"),
                     class_="text-muted",
                 ),
                 ui.input_action_button(
-                    "so_refresh", "🔄 Refresh", class_="btn btn-secondary btn-sm mb-3"
+                    "so_refresh", t("common.refresh"), class_="btn btn-secondary btn-sm mb-3"
                 ),
                 ui.card(
-                    ui.card_header("Servicemen"),
+                    ui.card_header(t("servicemen.title")),
                     ui.output_data_frame("so_grid"),
                     full_screen=True,
                 ),
                 class_="container-fluid p-4",
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
-        self.refresh_on_nav(input, "Servicemen Overview", self.refresh_tick)
+        self.refresh_on_nav(input, self.TAB_NAME, self.refresh_tick)
 
         @reactive.calc
         async def df_val():

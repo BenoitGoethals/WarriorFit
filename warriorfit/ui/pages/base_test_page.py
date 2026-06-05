@@ -8,6 +8,7 @@ from typing import Any, Optional
 from shiny import reactive, ui
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.i18n import t
 from warriorfit.ui.pages.page import Page
 
 
@@ -54,9 +55,9 @@ class BaseTestPage(Page):
             await self._clear_form_hook(input, session)
             self.selected_session = None
             if not val:
-                status.set("Select a session.")
+                status.set(t("common.select_session"))
                 return
-            status.set("Session selected. Confirm a serial to enter results.")
+            status.set(t("common.session_selected_confirm"))
 
         @reactive.Effect
         @reactive.event(getattr(input, f"{prefix}_session_id"))
@@ -120,12 +121,12 @@ class BaseTestPage(Page):
         prefix = self.get_prefix()
 
         if not (selected_session_id.get() or "").strip():
-            status.set("Select a session first.")
+            status.set(t("common.select_session_first"))
             return False
 
         serial = (getattr(input, f"{prefix}_serialnr")() or "").strip()
         if not serial:
-            status.set("Enter a serial number.")
+            status.set(t("common.enter_serial"))
             await self._clear_form_hook(input, session)
             return False
 
@@ -136,15 +137,15 @@ class BaseTestPage(Page):
 
         self.selected_military = val
         if val is None:
-            military_text.set("Not found")
-            status.set("Serial not found.")
+            military_text.set(t("common.not_found"))
+            status.set(t("common.serial_not_found"))
             return False
 
         military_text.set(
             f"{val.rank} {val.service_number} {val.first_name} {val.last_name} "
-            f"{val.gender} {val.age_from_birthdate()} years old"
+            f"{val.gender} {val.age_from_birthdate()} {t('common.years_old')}"
         )
-        status.set("Serial confirmed. Enter results.")
+        status.set(t("common.serial_confirmed"))
         return True
 
     # -------------------------
@@ -172,14 +173,14 @@ class BaseTestPage(Page):
     ) -> bool:
         """Check if session is selected. Returns True if valid."""
         if not (selected_session_id.get() or "").strip():
-            status.set("Select a session first.")
+            status.set(t("common.select_session_first"))
             return False
         return True
 
     def require_military_selected(self, status: reactive.Value) -> bool:
         """Check if military is selected. Returns True if valid."""
         if self.selected_military is None:
-            status.set("Confirm a valid serial first.")
+            status.set(t("common.confirm_valid_serial"))
             return False
         return True
 

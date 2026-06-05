@@ -3,6 +3,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.auditlog_events_controller import (
     AuditLogEventsController,
 )
@@ -25,16 +26,17 @@ class AuditLogEventsPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Audit Logs",
-            ui.h2("Audit Logs"),
+            t("nav.audit_logs"),
+            ui.h2(t("audit.title")),
             ui.card(
-                ui.card_header("Audit Logs"),
+                ui.card_header(t("audit.title")),
                 ui.input_action_button(
-                    "au_refresh", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+                    "au_refresh", t("common.refresh"), class_="btn btn-secondary btn-sm my-2"
                 ),
                 ui.output_data_frame("au_grid"),
                 full_screen=False,
             ),
+            value="Audit Logs",
         )
 
     def server(self, input, output, session):

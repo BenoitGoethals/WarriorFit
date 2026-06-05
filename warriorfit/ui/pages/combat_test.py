@@ -10,6 +10,7 @@ from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.combat_controller import CombatController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
 
@@ -52,91 +53,91 @@ class CombatPage(BaseTestPage):
 
     def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
-            self.TAB_NAME,
+            t("nav.combat_tests"),
             # Register ONE JS custom message handler (same pattern as PHEF)
             ui.tags.script(self.toggle_disabled_registered_func),
-            ui.h2("🧪 Combat Tests"),
+            ui.h2(t("combat.title")),
             ui.input_action_button(
                 "combat_refresh_btn",
-                "🔄 Refresh",
+                t("common.refresh"),
                 class_="btn btn-secondary btn-sm my-2",
             ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
-                        ui.card_header("Session"),
-                        ui.input_select("combat_session_id", "Session", choices=[]),
+                        ui.card_header(t("common.session")),
+                        ui.input_select("combat_session_id", t("common.session"), choices=[]),
                         full_screen=False,
                     ),
                     ui.card(
                         ui.div(
                             ui.input_text(
                                 "combat_serialnr",
-                                "Serial Number",
-                                placeholder="Service Number",
+                                t("common.serial_number"),
+                                placeholder=t("common.service_number"),
                             ),
                             ui.input_action_button(
                                 "combat_serial_search_btn",
-                                "🔍 Search own Unit",
+                                t("common.search_own_unit"),
                                 class_="btn-info btn-sm",
                                 style="margin-top: 5px;",
                             ),
                         ),
                         ui.input_action_button(
                             "combat_search",
-                            "✅ Confirm Serial",
+                            t("common.confirm_serial"),
                             class_="btn btn-primary btn-sm",
                             width="200px",
                         ),
                         ui.output_text("combat_military"),
                         ui.layout_columns(
                             ui.input_checkbox(
-                                "combat_obstacle", "Obstacle course", value=False
+                                "combat_obstacle", t("combat.obstacle_course"), value=False
                             ),
                         ),
                         ui.layout_columns(
                             ui.input_checkbox(
-                                "combat_robe", "Robe Course", value=False
+                                "combat_robe", t("combat.robe_course"), value=False
                             ),
                         ),
                         ui.layout_columns(
                             ui.input_text(
                                 "combat_speedmars",
-                                "Speedmars time (mm:ss)",
+                                t("combat.speedmars"),
                                 placeholder="e.g., 10:45",
                             ),
-                            ui.div("Score:", ui.output_ui("combat_speedmars_score")),
+                            ui.div(t("combat.score"), ui.output_ui("combat_speedmars_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
-                            ui.div("Total:", ui.output_ui("combat_total_score")),
+                            ui.div(t("combat.total"), ui.output_ui("combat_total_score")),
                             col_widths=(12,),
                         ),
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button(
                                 "combat_add_btn",
-                                "Add",
+                                t("common.add"),
                                 disabled=True,
                                 width="150px",
                                 class_="btn-primary w-100",
                             ),
                             ui.input_action_button(
                                 "combat_update_btn",
-                                "Update",
+                                t("common.update"),
                                 disabled=True,
                                 width="150px",
                                 class_="btn-warning w-100",
                             ),
                             ui.input_action_button(
                                 "combat_clear_btn",
-                                "Clear Form",
+                                t("common.clear_form"),
                                 width="150px",
                                 class_="btn-secondary w-100",
                             ),
                             ui.input_action_button(
                                 "combat_delete_btn",
-                                "Delete Selected",
+                                t("common.delete_selected"),
                                 class_="btn-danger w-100",
                             ),
                             col_widths=(4,),
@@ -147,19 +148,20 @@ class CombatPage(BaseTestPage):
                     ),
                 ),
                 ui.card(
-                    ui.card_header("Combat Tests (Pass requires all tests)"),
+                    ui.card_header(t("combat.table_header")),
                     ui.output_data_frame("combat_grid"),
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input: Any, output: Any, session: Any) -> None:
         self.refresh_on_nav(input, self.TAB_NAME)
 
-        status = reactive.Value("Ready.")
-        military_text = reactive.Value("No selection")
+        status = reactive.Value(t("common.ready"))
+        military_text = reactive.Value(t("common.no_selection"))
 
         selected_session_id = reactive.Value("")
         selected_combat_id = reactive.Value("")
@@ -172,7 +174,7 @@ class CombatPage(BaseTestPage):
             self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
-            status.set("Ready.")
+            status.set(t("common.ready"))
 
         # ----------------------------
         # UI state helpers
@@ -277,7 +279,7 @@ class CombatPage(BaseTestPage):
 
             serial = (input.combat_serialnr() or "").strip()
             if not serial:
-                status.set("Enter a serial number.")
+                status.set(t("common.enter_serial"))
                 await _clear_form()
                 return
 
@@ -288,8 +290,8 @@ class CombatPage(BaseTestPage):
 
             self.selected_military = val
             if val is None:
-                military_text.set("Not found")
-                status.set("Serial not found.")
+                military_text.set(t("common.not_found"))
+                status.set(t("common.serial_not_found"))
                 await _toggle_inputs(disabled=True)
                 _set_buttons(can_add=False, can_update=False)
                 return
@@ -298,7 +300,7 @@ class CombatPage(BaseTestPage):
                 f"{val.rank} {val.service_number} {val.first_name} {val.last_name} "
                 f"{val.gender} {val.age_from_birthdate()} years old"
             )
-            status.set("Serial confirmed. Enter results.")
+            status.set(t("common.serial_confirmed"))
             await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
 
@@ -364,17 +366,17 @@ class CombatPage(BaseTestPage):
         async def _on_row_selected() -> None:
             sel = input.combat_grid_selected_rows()
             if not sel:
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t("common.no_row_selected"))
                 return
 
             df = await combat_df()
             if df is None or df.empty:
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t("common.no_row_selected"))
                 return
 
             row_idx = sel[0]
             if row_idx < 0 or row_idx >= len(df):
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t("common.no_row_selected"))
                 return
 
             row = df.iloc[row_idx]
@@ -461,16 +463,16 @@ class CombatPage(BaseTestPage):
             )
             if not added:
                 status.set(
-                    f"Failed to add Combat test for {form.serialnr} in session {form.session_id}."
+                    t("combat.failed_add").format(serial=form.serialnr, session=form.session_id)
                 )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(
-                f"Added Combat test for {form.serialnr} in session {form.session_id}."
+                t("combat.added_status").format(serial=form.serialnr, session=form.session_id)
             )
             ui.notification_show(
-                f"Combat test added for {form.serialnr}.", type="message", duration=3
+                t("combat.added").format(serial=form.serialnr), type="message", duration=3
             )
             await _clear_form()
 
@@ -482,7 +484,7 @@ class CombatPage(BaseTestPage):
 
             combat_id_raw = (selected_combat_id.get() or "").strip()
             if not combat_id_raw:
-                status.set("Select a row to update.")
+                status.set(t("common.select_row_to_update"))
                 return
 
             form = _read_form()
@@ -500,16 +502,18 @@ class CombatPage(BaseTestPage):
             updated = await self.controller.update_combat(int(combat_id_raw), payload)
             if not updated:
                 status.set(
-                    f"Failed to update Combat test for {form.serialnr} in session {form.session_id}."
+                    t("combat.failed_update").format(
+                        serial=form.serialnr, session=form.session_id
+                    )
                 )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(
-                f"Updated Combat test for {form.serialnr} in session {form.session_id}."
+                t("combat.updated_status").format(serial=form.serialnr, session=form.session_id)
             )
             ui.notification_show(
-                f"Combat test updated for {form.serialnr}.", type="message", duration=3
+                t("combat.updated").format(serial=form.serialnr), type="message", duration=3
             )
             await _clear_form()
 
@@ -519,19 +523,19 @@ class CombatPage(BaseTestPage):
             sess_id_raw = (input.combat_session_id() or "").strip()
             combat_id_raw = (selected_combat_id.get() or "").strip()
             if not sess_id_raw or not combat_id_raw:
-                status.set("Select a row to delete.")
+                status.set(t("common.select_row_to_delete"))
                 return
 
             ok = await self.controller.delete_combat(
                 int(sess_id_raw), int(combat_id_raw)
             )
             if not ok:
-                status.set("Failed to delete selected Combat record.")
+                status.set(t("combat.failed_delete"))
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set("Combat record deleted successfully.")
-            ui.notification_show("Combat record deleted.", type="warning", duration=3)
+            status.set(t("combat.deleted_success"))
+            ui.notification_show(t("combat.deleted"), type="warning", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -543,7 +547,7 @@ class CombatPage(BaseTestPage):
         @reactive.event(input.combat_clear_btn)
         async def _on_clear() -> None:
             await _clear_form()
-            status.set("Form cleared.")
+            status.set(t("common.form_cleared"))
 
         # Serial number search modal
         @reactive.Effect
@@ -551,7 +555,7 @@ class CombatPage(BaseTestPage):
         async def _open_serial_search_modal() -> None:
             modal_content = ui.modal(
                 ui.card(
-                    ui.card_header("Select Serial Number"),
+                    ui.card_header(t("common.select_serial_number")),
                     ui.output_data_frame("combat_serial_search_grid"),
                     full_screen=False,
                 ),
