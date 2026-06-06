@@ -22,10 +22,7 @@ if [ -z "${WF_SECRET_KEY}" ]; then
 fi
 
 if [ -z "${WF_MOM_API_KEY}" ]; then
-    echo "ERROR: WF_MOM_API_KEY environment variable is not set."
-    echo "Without it the MOM /api/v1/phef/test endpoint stays locked (401)."
-    echo "Usage: WF_SECRET_KEY=<secret> WF_MOM_API_KEY=<key> ./deploy-test.sh"
-    exit 1
+    echo "WARNING: WF_MOM_API_KEY is not set. The MOM /api/v1/phef/test endpoint will stay locked (401)."
 fi
 
 # 1. List all containers
