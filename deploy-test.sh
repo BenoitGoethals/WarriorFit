@@ -60,8 +60,8 @@ echo ""
 echo "Step 5: Starting test container '${CONTAINER_NAME}'..."
 sudo docker run -d \
     --restart on-failure \
+    --network host \
     --name "${CONTAINER_NAME}" \
-    -p "${PORT_MAPPING}" \
     -e WF_SECRET_KEY="${WF_SECRET_KEY}" \
     -e WF_MOM_API_KEY="${WF_MOM_API_KEY}" \
     -e APP_ENV="${APP_ENV}" \

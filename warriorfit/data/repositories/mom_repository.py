@@ -144,6 +144,9 @@ class MomRepository(ABCRepository):
                 )
                 result = await session.execute(query)
                 return list(result.scalars().all())
+        except OSError as e:
+            self._logger.error("DB unreachable fetching due HR messages: %s", str(e))
+            return []
         except SQLAlchemyError as e:
             self._logger.error("Database error fetching due HR messages: %s", str(e))
             return []

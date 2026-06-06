@@ -134,9 +134,18 @@ class Broker:
             repo = self._mom_repo
             messages_processed = 0
             while not self._msg_queue.empty():
+                msg = None
                 try:
                     msg = self._msg_queue.get_nowait()
-                    await repo.add_hr_message(msg)
+                    saved = await repo.add_hr_message(msg)
+                    if saved is None:
+                        # Repository swallowed an integrity/DB error — re-queue
+                        await self._msg_queue.put(msg)
+                        self._logger.warning(
+                            "add_hr_message returned None; message re-queued for next cycle",
+                            extra={"queue_size": self._msg_queue.qsize()},
+                        )
+                        break
                     messages_processed += 1
                     self._logger.debug(
                         "Message saved to database",
@@ -152,12 +161,15 @@ class Broker:
                         extra={
                             "error_type": "AttributeError",
                             "error_message": str(e),
-                            "message_type": type(msg).__name__,
+                            "message_type": type(msg).__name__ if msg else "unknown",
                         },
                     )
                 except OSError as e:
+                    # DB unreachable — put the message back so it survives the cycle
+                    if msg is not None:
+                        await self._msg_queue.put(msg)
                     self._logger.error(
-                        f"Database I/O error while saving message: {type(e).__name__}",
+                        f"Database I/O error while saving message: {type(e).__name__}; message re-queued",
                         exc_info=True,
                         extra={
                             "error_type": type(e).__name__,
@@ -165,6 +177,7 @@ class Broker:
                             "queue_size": self._msg_queue.qsize(),
                         },
                     )
+                    break  # stop draining; wait for next cycle
                 except (ValueError, TypeError) as e:
                     self._logger.error(
                         f"Invalid data type or value in message: {type(e).__name__}",
@@ -316,7 +329,9 @@ class Broker:
         """
         message_id = getattr(message_hr, "id", None)
         try:
-            message = Message(content=message_hr.message)
+            raw = message_hr.message
+            content = json.loads(raw) if isinstance(raw, str) else raw
+            message = Message(content=content)
             self._logger.debug(
                 "Sending message to HR service",
                 extra={"message_id": message_id, "hr_url": self._config.hr_url},
@@ -577,7 +592,7 @@ class CombatTestDto:
 class CombatSwimTestDto:
     def __init__(self, test: CombatSwimmingTest):
         self.serial_number = test.serial_number
-        self.swim_passed = test.swim_paased
+        self.swim_passed = test.swim_passed
 
     def to_dict(self) -> dict:
         return {

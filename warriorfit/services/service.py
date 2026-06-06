@@ -63,7 +63,8 @@ class Service(ABC):  # noqa: B024  # base class, subclassed not instantiated
         :return: A coroutine that resolves once the audit log has been created.
         :rtype: Coroutine
         """
-        user_id = getattr(UserStore.get_user(), "id", None)
+        raw_id = getattr(UserStore.get_user(), "id", None)
+        user_id = raw_id if raw_id else None  # 0 or None → anonymous (no FK row)
         return await self._user_repo.create_audit_log(
             user_id=user_id,  # type: ignore[arg-type]
             details=details,
