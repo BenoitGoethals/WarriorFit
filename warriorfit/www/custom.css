@@ -1009,3 +1009,37 @@ hr { border-color: var(--wf-border) !important; margin: 1rem 0 !important; }
   .card-header { padding: 0.5rem 0.8rem !important; font-size: 0.85rem !important; }
   .navbar-brand { font-size: 0.85rem !important; }
 }
+
+/* ── Language dropdown in navbar ──────────────────────────────────── */
+.navbar-nav > .nav-item:has(.wf-lang-select),
+li.nav-item:has(.wf-lang-select) {
+  display: flex !important;
+  align-items: center !important;
+}
+.wf-lang-select {
+  display: flex !important;
+  align-items: center !important;
+}
+.wf-lang-select .shiny-input-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.wf-lang-select select {
+  width: auto !important;
+  min-width: 56px;
+  height: 31px !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  font-size: 0.75rem !important;
+  padding: 2px 24px 2px 8px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 4px !important;
+}
+.wf-lang-select select option {
+  color: #000 !important;
+}

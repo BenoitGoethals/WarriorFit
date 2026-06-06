@@ -1,6 +1,5 @@
 import hmac
 import os
-from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +12,7 @@ _API_KEY_HEADER = "X-API-Key"
 _api_key_scheme = APIKeyHeader(name=_API_KEY_HEADER, auto_error=False)
 
 
-def require_api_key(api_key: Optional[str] = Depends(_api_key_scheme)) -> None:
+def require_api_key(api_key: str | None = Depends(_api_key_scheme)) -> None:
     """Reject requests that don't carry a valid MOM API key.
 
     The expected key is read from the WF_MOM_API_KEY environment variable at
@@ -35,10 +34,10 @@ class MessageContent(BaseModel):
     PHEF test result message content (transport schema)
     """
 
-    serial_number: Optional[str] = None
-    running_time: Optional[float] = None
-    sideBridge_r: Optional[float] = None
-    sideBridge_l: Optional[float] = None
+    serial_number: str | None = None
+    running_time: float | None = None
+    sideBridge_r: float | None = None
+    sideBridge_l: float | None = None
 
     model_config = {
         "json_schema_extra": {
@@ -54,7 +53,7 @@ class MessageContent(BaseModel):
 
 class MessageIn(BaseModel):
     content: MessageContent
-    timestamp: Optional[str] = None
+    timestamp: str | None = None
 
 
 class AckResponse(BaseModel):
@@ -111,7 +110,7 @@ def receive_message(payload: MessageIn):
     except HTTPException:
         raise
     except (ValueError, TypeError, KeyError) as e:
-        raise HTTPException(status_code=400, detail=f"Invalid message: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid message: {e}") from e
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from warriorfit.services.military_service import MilitaryService
 from warriorfit.ui.user_store import UserStore
 
 
-class Service(ABC):
+class Service(ABC):  # noqa: B024  # base class, subclassed not instantiated
     """
     Service class to manage interactions with repositories and external services.
 
@@ -32,9 +32,7 @@ class Service(ABC):
         if config is None:
             config = ApplicationConfig()
         self._config = config
-        self._user_repo = (
-            user_repository if user_repository is not None else UserRepository()
-        )
+        self._user_repo = user_repository if user_repository is not None else UserRepository()
         self._be_mil_service = (
             military_service if military_service is not None else MilitaryService()
         )

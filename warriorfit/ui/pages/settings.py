@@ -7,15 +7,16 @@ from shiny import reactive, render, ui
 from warriorfit.config.settings_data import SettingsData
 from warriorfit.config.smtp_config import SmtpConfig
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.setting_controller import SettingsController
 from warriorfit.ui.pages.page import Page
 
 
 class SettingsPage(Page):
+    TAB_NAME = "Settings"
+
     @inject
-    def __init__(
-        self, controller: SettingsController = Provide[Container.settings_controller]
-    ):
+    def __init__(self, controller: SettingsController = Provide[Container.settings_controller]):
         super().__init__()
         self.controller = controller
         self._status = reactive.Value("")
@@ -24,9 +25,7 @@ class SettingsPage(Page):
     def refresh(self):
         pass
 
-    def _inline_label_input(
-        self, *, label: str, input_tag: ui.Tag, label_for: str
-    ) -> ui.Tag:
+    def _inline_label_input(self, *, label: str, input_tag: ui.Tag, label_for: str) -> ui.Tag:
         """Render label + input on the same line."""
         return ui.div(
             ui.tags.label(
@@ -41,119 +40,113 @@ class SettingsPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Settings",
-            ui.h2("⚙ Settings"),
+            t("nav.settings"),
+            ui.h2(t("settings.title")),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Application Configuration"),
-                    ui.h5("Unit Settings"),
+                    ui.card_header(t("settings.app_config")),
+                    ui.h5(t("settings.unit_settings")),
                     self._inline_label_input(
-                        label="Own Unit",
+                        label=t("settings.own_unit"),
                         label_for="own_unit",
                         input_tag=ui.input_text(
-                            "own_unit", None, placeholder="Enter your unit name"
+                            "own_unit", None, placeholder=t("settings.unit_placeholder")
                         ),
                     ),
                     ui.output_text("unit_status"),
-                    ui.h5("Database Configuration"),
+                    ui.h5(t("settings.db_config")),
                     self._inline_label_input(
-                        label="Host",
+                        label=t("settings.db_host"),
                         label_for="db_host",
                         input_tag=ui.input_text(
-                            "db_host", None, placeholder="e.g., 78.21.255.25"
+                            "db_host", None, placeholder=t("settings.db_host_placeholder")
                         ),
                     ),
                     self._inline_label_input(
-                        label="Port",
+                        label=t("settings.db_port"),
                         label_for="db_port",
-                        input_tag=ui.input_numeric(
-                            "db_port", None, value=5432, min=1, max=65535
-                        ),
+                        input_tag=ui.input_numeric("db_port", None, value=5432, min=1, max=65535),
                     ),
                     self._inline_label_input(
-                        label="Database",
+                        label=t("settings.db_name"),
                         label_for="db_database",
                         input_tag=ui.input_text(
-                            "db_database", None, placeholder="e.g., warriorfit"
+                            "db_database", None, placeholder=t("settings.db_name_placeholder")
                         ),
                     ),
                     self._inline_label_input(
-                        label="Username",
+                        label=t("settings.db_user"),
                         label_for="db_username",
                         input_tag=ui.input_text(
-                            "db_username", None, placeholder="e.g., mike"
+                            "db_username", None, placeholder=t("settings.db_user_placeholder")
                         ),
                     ),
                     self._inline_label_input(
-                        label="Password",
+                        label=t("settings.db_password"),
                         label_for="db_password",
                         input_tag=Page.input_password_with_toggle("db_password"),
                     ),
-                    ui.h5("HR Configuration"),
+                    ui.h5(t("settings.hr_config")),
                     self._inline_label_input(
-                        label="HR URL",
+                        label=t("settings.hr_url"),
                         label_for="hr_url",
                         input_tag=ui.input_text(
-                            "hr_url", None, placeholder="e.g., http://hr-system/api"
+                            "hr_url", None, placeholder=t("settings.hr_url_placeholder")
                         ),
                     ),
                     self._inline_label_input(
-                        label="Key",
+                        label=t("settings.hr_key"),
                         label_for="hr_key",
                         input_tag=ui.input_text(
-                            "hr_key", None, placeholder="e.g., 1234567890"
+                            "hr_key", None, placeholder=t("settings.hr_key_placeholder")
                         ),
                     ),
                 ),
                 ui.card(
-                    ui.card_header("Mail & Paths"),
-                    ui.h5("Mail Configuration"),
+                    ui.card_header(t("settings.mail_paths")),
+                    ui.h5(t("settings.mail_config")),
                     self._inline_label_input(
-                        label="SMTP Host",
+                        label=t("settings.smtp_host"),
                         label_for="mail_host",
                         input_tag=ui.input_text(
-                            "mail_host", None, placeholder="e.g., smtp.gmail.com"
+                            "mail_host", None, placeholder=t("settings.smtp_host_placeholder")
                         ),
                     ),
                     self._inline_label_input(
-                        label="SMTP Port",
+                        label=t("settings.smtp_port"),
                         label_for="mail_port",
-                        input_tag=ui.input_numeric(
-                            "mail_port", None, value=587, min=1, max=65535
-                        ),
+                        input_tag=ui.input_numeric("mail_port", None, value=587, min=1, max=65535),
                     ),
                     self._inline_label_input(
-                        label="Mail Username",
+                        label=t("settings.mail_user"),
                         label_for="mail_username",
                         input_tag=ui.input_text(
-                            "mail_username", None, placeholder="e.g., user@example.com"
+                            "mail_username", None, placeholder=t("settings.mail_user_placeholder")
                         ),
                     ),
                     self._inline_label_input(
-                        label="Mail Password",
+                        label=t("settings.mail_password"),
                         label_for="mail_password",
                         input_tag=Page.input_password_with_toggle("mail_password"),
                     ),
                     self._inline_label_input(
-                        label="Sender Email",
+                        label=t("settings.sender_email"),
                         label_for="sender_email",
                         input_tag=ui.input_text(
                             "sender_email",
                             None,
-                            placeholder="e.g., no-reply@warriorfit.com",
+                            placeholder=t("settings.sender_placeholder"),
                         ),
                     ),
                     ui.layout_columns(
-                        ui.input_checkbox("mail_use_ssl", "Use SSL", value=False),
-                        ui.input_checkbox("mail_use_tls", "Use TLS", value=True),
+                        ui.input_checkbox("mail_use_ssl", t("settings.use_ssl"), value=False),
+                        ui.input_checkbox("mail_use_tls", t("settings.use_tls"), value=True),
                     ),
-                    ui.h5("Path Configuration"),
+                    ui.h5(t("settings.path_config")),
                     self._inline_label_input(
                         label="PDF Path",
                         label_for="pdf_path",
-                        input_tag=ui.input_text(
-                            "pdf_path", None, placeholder="e.g., c:/temp"
-                        ),
+                        input_tag=ui.input_text("pdf_path", None, placeholder="e.g., c:/temp"),
                     ),
                     ui.br(),
                     ui.input_action_button(
@@ -167,6 +160,7 @@ class SettingsPage(Page):
                 ),
                 col_widths=(6, 6),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
@@ -188,15 +182,11 @@ class SettingsPage(Page):
                 ui.update_numeric("mail_port", value=data.mail_server.port)
                 ui.update_text("mail_username", value=data.mail_server.username or "")
                 ui.update_text("mail_password", value=data.mail_server.password or "")
-                ui.update_text(
-                    "sender_email", value=data.mail_server.sender_email or ""
-                )
+                ui.update_text("sender_email", value=data.mail_server.sender_email or "")
                 ui.update_checkbox("mail_use_ssl", value=data.mail_server.use_ssl)
                 ui.update_checkbox("mail_use_tls", value=data.mail_server.use_tls)
 
-            self._unit_status.set(
-                f"✓ Unit set to: {data.own_unit}" if data.own_unit else ""
-            )
+            self._unit_status.set(f"✓ Unit set to: {data.own_unit}" if data.own_unit else "")
 
         @reactive.Effect
         @reactive.event(input.own_unit)
@@ -234,9 +224,7 @@ class SettingsPage(Page):
             if ok:
                 ui.notification_show("Settings saved.", type="message", duration=3)
             else:
-                ui.notification_show(
-                    f"Failed to save settings: {msg}", type="error", duration=3
-                )
+                ui.notification_show(f"Failed to save settings: {msg}", type="error", duration=3)
 
         @output
         @render.text

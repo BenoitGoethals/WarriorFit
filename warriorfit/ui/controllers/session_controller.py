@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -31,9 +31,7 @@ class SessionsController:
         config: ApplicationConfig = None,
     ):
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
         self._mail_service = mail_service if mail_service is not None else MailService()
         self._config = config if config is not None else ApplicationConfig()
 
@@ -80,20 +78,18 @@ class SessionsController:
             ]
         ).sort_values(by="Start", ascending=True)
 
-    async def get_all_pti_serials(self) -> List[str]:
+    async def get_all_pti_serials(self) -> list[str]:
         pts = await self._service.get_all_pti()
         return [p.serial_number for p in pts]
 
-    async def get_all_pti_choices(self) -> Dict[str, str]:
+    async def get_all_pti_choices(self) -> dict[str, str]:
         """Returns a dict mapping serial_number to 'serial - username' for display"""
         pts = await self._service.get_all_pti()
         return {
-            p.serial_number: f"{p.serial_number} - {p.username}"
-            for p in pts
-            if p.serial_number
+            p.serial_number: f"{p.serial_number} - {p.username}" for p in pts if p.serial_number
         }
 
-    async def add_session(self, payload: Dict[str, Any]) -> Optional[TestSession]:
+    async def add_session(self, payload: dict[str, Any]) -> TestSession | None:
         """
         Asynchronously adds a new test session based on the provided payload. The method
         parses the input payload to configure a new test session, determines the type of the
@@ -134,7 +130,7 @@ class SessionsController:
         )
         return sess
 
-    async def update_session(self, sel_id: int, payload: Dict[str, Any]) -> bool:
+    async def update_session(self, sel_id: int, payload: dict[str, Any]) -> bool:
         """
         Updates a fitness test session with new information and sends an HTML-based
         notification email after the session update is completed.
@@ -202,7 +198,7 @@ class SessionsController:
         )
         return success
 
-    async def get_session_by_id(self, sel_id: int | None) -> Optional[TestSession]:
+    async def get_session_by_id(self, sel_id: int | None) -> TestSession | None:
         """
         Retrieve a test session by its unique identifier.
 
@@ -218,9 +214,7 @@ class SessionsController:
         return await self._service.get_test_session_by_id(sel_id)
 
     async def _recipients_for_unit(self) -> list[str]:
-        results = await self.be_mil_service.get_all_be_mil_from_unit(
-            self._config.own_unit
-        )
+        results = await self.be_mil_service.get_all_be_mil_from_unit(self._config.own_unit)
         if not results:
             return []
         return [r.mail for r in results if r.mail]

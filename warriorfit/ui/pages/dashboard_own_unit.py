@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import datetime
-from typing import Any, Awaitable, Callable, Final, Mapping
+from typing import Any, Final
 
 from dependency_injector.wiring import Provide, inject
 from htmltools import HTML, Tag
@@ -9,6 +10,7 @@ from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.dashboard_own_unit_controller import (
     DashboardOwnUnitController,
 )
@@ -21,9 +23,7 @@ class DashboardOwnUnitPage(Page):
     @inject
     def __init__(
         self,
-        controller: DashboardOwnUnitController = Provide[
-            Container.dashboard_own_unit_controller
-        ],
+        controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller],
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -64,40 +64,38 @@ class DashboardOwnUnitPage(Page):
         year = datetime.now().year
         unit = getattr(self.controller, "unit_name", "Unit")
         return ui.nav_panel(
-            self.TAB_NAME,
+            t("nav.dashboard"),
             ui.h2(f"📊 {unit} Dashboard {year}"),
             ui.input_action_button(
                 "dashboard_refresh_btn",
-                "🔄 Refresh",
+                t("common.refresh"),
                 class_="btn btn-secondary btn-sm my-2",
             ),
             ui.br(),
             # ----- Stats cards row -----
             ui.layout_columns(
                 ui.card(
-                    ui.card_header(
-                        "👥 Unit Personnel", class_="bg-secondary text-white"
-                    ),
+                    ui.card_header(t("dashboard.unit_personnel"), class_="bg-secondary text-white"),
                     ui.output_ui("own_unit_personnel_stats"),
                     class_="text-center",
                 ),
                 ui.card(
-                    ui.card_header("🏃 PHEF Tests", class_="bg-primary text-white"),
+                    ui.card_header(t("dashboard.phef_tests"), class_="bg-primary text-white"),
                     ui.output_ui("own_unit_phef_stats"),
                     class_="text-center",
                 ),
                 ui.card(
-                    ui.card_header("🪖 Combat Tests", class_="bg-success text-white"),
+                    ui.card_header(t("dashboard.combat_tests"), class_="bg-success text-white"),
                     ui.output_ui("own_unit_combat_stats"),
                     class_="text-center",
                 ),
                 ui.card(
-                    ui.card_header("🏊 Swimming Tests", class_="bg-info text-white"),
+                    ui.card_header(t("dashboard.swimming_tests"), class_="bg-info text-white"),
                     ui.output_ui("own_unit_swimming_stats"),
                     class_="text-center",
                 ),
                 ui.card(
-                    ui.card_header("🥾 March Tests", class_="bg-info text-white"),
+                    ui.card_header(t("dashboard.march_tests"), class_="bg-info text-white"),
                     ui.output_ui("own_unit_march_stats"),
                     class_="text-center",
                 ),
@@ -107,7 +105,7 @@ class DashboardOwnUnitPage(Page):
             ui.layout_columns(
                 ui.card(
                     ui.card_header(
-                        "🔌 Broker / HR System",
+                        t("dashboard.broker"),
                         class_="text-dark fw-bold",
                         style=(
                             "background-color:#ffc107;"
@@ -123,21 +121,24 @@ class DashboardOwnUnitPage(Page):
             # ----- Charts row: side-by-side -----
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Pass/Fail Rates by Test Type (Own Unit)"),
+                    ui.card_header(t("dashboard.pass_fail_chart")),
                     ui.output_ui("own_unit_pass_fail_chart"),
                     full_screen=True,
                 ),
                 ui.card(
-                    ui.card_header("PHEF Score Distribution (Own Unit)"),
+                    ui.card_header(t("dashboard.phef_dist_chart")),
                     ui.output_ui("own_unit_phef_score_histogram"),
                     full_screen=True,
                 ),
                 col_widths=[6, 6],
             ),
             ui.br(),
+            value=self.TAB_NAME,
         )
 
     def server(self, input: Any, output: Any, session: Any) -> None:
+        _total_tests = t("dashboard.total_tests")
+        _no_chart = t("dashboard.no_chart")
         refresh_tick = reactive.Value(0)
         self.refresh_on_nav(input, self.TAB_NAME, refresh_tick)
 
@@ -157,7 +158,7 @@ class DashboardOwnUnitPage(Page):
                 return {
                     "total": 0,
                     "sub_value": None,
-                    "sub_label": f"Unavailable: {e}",
+                    "sub_label": t("dashboard.unavailable").format(error=e),
                     "sub_class": "text-muted",
                 }
 
@@ -206,27 +207,27 @@ class DashboardOwnUnitPage(Page):
         # Register stat cards (no duplicated output bodies)
         _register_stats_output(
             output_id="own_unit_personnel_stats",
-            total_text="Service members in unit",
+            total_text=t("dashboard.service_members"),
             fetcher=self.controller.personnel_stats,
         )
         _register_stats_output(
             output_id="own_unit_phef_stats",
-            total_text="Total Tests (Own Unit)",
+            total_text=_total_tests,
             fetcher=self.controller.phef_stats,
         )
         _register_stats_output(
             output_id="own_unit_combat_stats",
-            total_text="Total Tests (Own Unit)",
+            total_text=_total_tests,
             fetcher=self.controller.combat_stats,
         )
         _register_stats_output(
             output_id="own_unit_swimming_stats",
-            total_text="Total Tests (Own Unit)",
+            total_text=_total_tests,
             fetcher=self.controller.swimming_stats,
         )
         _register_stats_output(
             output_id="own_unit_march_stats",
-            total_text="Total Tests (Own Unit)",
+            total_text=_total_tests,
             fetcher=self.controller.march_stats,
         )
 
@@ -234,14 +235,14 @@ class DashboardOwnUnitPage(Page):
         _register_plotly_html_output(
             output_id="own_unit_pass_fail_chart",
             fetcher=self.controller.pass_fail_bar_html,
-            empty_msg="No chart HTML was generated.",
-            non_div_msg="No chart HTML was generated.",
+            empty_msg=_no_chart,
+            non_div_msg=_no_chart,
         )
         _register_plotly_html_output(
             output_id="own_unit_phef_score_histogram",
             fetcher=self.controller.phef_hist_html,  # type: ignore[arg-type]
-            empty_msg="No PHEF data available for your unit.",
-            non_div_msg="No histogram HTML was generated.",
+            empty_msg=t("dashboard.no_phef_data"),
+            non_div_msg=_no_chart,
         )
 
         # Broker / HR System health card.
@@ -255,7 +256,7 @@ class DashboardOwnUnitPage(Page):
             try:
                 h = await self.controller.broker_health()
             except (KeyError, TypeError, ValueError, AttributeError) as e:
-                return self._no_data(f"Broker status unavailable: {e}")
+                return self._no_data(t("dashboard.unavailable").format(error=e))
 
             badge = ui.span(
                 h.get("badge_label", "Unknown"),
@@ -264,13 +265,13 @@ class DashboardOwnUnitPage(Page):
 
             details_left = ui.div(
                 ui.p(
-                    ui.strong("HR endpoint: "),
+                    ui.strong(t("dashboard.hr_endpoint")),
                     ui.tags.code(h.get("hr_url", "—")),
                     class_="mb-1",
                 ),
                 ui.p(
-                    ui.strong("Database: "),
-                    "✅ reachable" if h.get("db_ok") else "❌ unreachable",
+                    ui.strong(t("dashboard.database")),
+                    t("dashboard.reachable") if h.get("db_ok") else t("dashboard.unreachable"),
                     class_="mb-1",
                 ),
             )
@@ -279,28 +280,23 @@ class DashboardOwnUnitPage(Page):
             dead = int(h.get("dead_letter", 0))
             details_middle = ui.div(
                 ui.p(
-                    ui.strong("Pending messages: "),
+                    ui.strong(t("dashboard.pending_msgs")),
                     ui.span(
                         str(pending),
-                        class_=(
-                            "fw-bold "
-                            + ("text-warning" if pending > 0 else "text-success")
-                        ),
+                        class_=("fw-bold " + ("text-warning" if pending > 0 else "text-success")),
                     ),
                     class_="mb-1",
                 ),
                 ui.p(
-                    ui.strong("Dead-letter: "),
+                    ui.strong(t("dashboard.dead_letter")),
                     ui.span(
                         str(dead),
-                        class_=(
-                            "fw-bold " + ("text-danger" if dead > 0 else "text-success")
-                        ),
+                        class_=("fw-bold " + ("text-danger" if dead > 0 else "text-success")),
                     ),
                     class_="mb-1",
                 ),
                 ui.p(
-                    ui.strong("Oldest pending: "),
+                    ui.strong(t("dashboard.oldest_pending")),
                     h.get("oldest_pending_age_human", "—"),
                     class_="mb-1",
                 ),
@@ -308,7 +304,7 @@ class DashboardOwnUnitPage(Page):
 
             last_err = h.get("last_error")
             details_right = ui.div(
-                ui.p(ui.strong("Last error: "), class_="mb-1"),
+                ui.p(ui.strong(t("dashboard.last_error")), class_="mb-1"),
                 (
                     ui.tags.code(
                         str(last_err)[:300],
@@ -316,13 +312,13 @@ class DashboardOwnUnitPage(Page):
                         style="white-space:pre-wrap; word-break:break-word;",
                     )
                     if last_err
-                    else ui.p("None — no recent send failures.", class_="text-muted")
+                    else ui.p(t("dashboard.no_recent_errors"), class_="text-muted")
                 ),
             )
 
             return ui.div(
                 ui.div(
-                    ui.h5("Status: ", class_="d-inline me-2 mb-0"),
+                    ui.h5(t("dashboard.status"), class_="d-inline me-2 mb-0"),
                     badge,
                     class_="mb-3",
                 ),

@@ -44,9 +44,7 @@ class ServiceCross(Service):
             military_service=military_service,
             config=config,
         )
-        self._cross_repo = (
-            cross_repository if cross_repository is not None else CrossRepository()
-        )
+        self._cross_repo = cross_repository if cross_repository is not None else CrossRepository()
         self.be_mil_service = (
             military_service if military_service is not None else MilitaryService()
         )
@@ -108,9 +106,7 @@ class ServiceCross(Service):
     async def remove_runner_from_cross(self, id_nr: int) -> bool:
         removed = await self._cross_repo.remove_runner(id_nr)
         if removed:
-            await self.add_audit_log(
-                details=f"Runner {id_nr} removed from cross", action="delete"
-            )
+            await self.add_audit_log(details=f"Runner {id_nr} removed from cross", action="delete")
         return removed
 
     async def update_cross(self, cross: Cross) -> Cross | None:
@@ -206,11 +202,7 @@ class ServiceCross(Service):
         # Fetch servicemen once per unique serial, concurrently
         serials = df["serial_number"].dropna().astype(str).unique().tolist()
         servicemen_list = await asyncio.gather(
-            *(
-                self.be_mil_service.get_servicemen_by_serial(s)
-                for s in serials
-                if s is not None
-            ),
+            *(self.be_mil_service.get_servicemen_by_serial(s) for s in serials if s is not None),
             return_exceptions=True,
         )
 
@@ -267,9 +259,7 @@ class ServiceCross(Service):
         df_best = df_best.sort_values("running_time", ascending=True).drop_duplicates(
             subset=["distance", "serial_number"], keep="first"
         )
-        df_sorted = df_best.sort_values(
-            ["distance", "running_time"], ascending=[True, True]
-        )
+        df_sorted = df_best.sort_values(["distance", "running_time"], ascending=[True, True])
         for distance, group in df_sorted.groupby("distance", dropna=False, sort=False):
             top_10_by_distance[distance] = group["runner_obj"].head(10).tolist()
 
@@ -467,9 +457,7 @@ class ServiceCross(Service):
             chrono = df2.dropna(subset=["serial_number"]).sort_values(
                 ["serial_number", "cross_datetime"], ascending=[True, True]
             )
-            chrono["prev_time"] = chrono.groupby("serial_number")["running_time"].shift(
-                1
-            )
+            chrono["prev_time"] = chrono.groupby("serial_number")["running_time"].shift(1)
             chrono["delta"] = chrono["running_time"] - chrono["prev_time"]
             improvement = (
                 chrono.dropna(subset=["delta"])
@@ -504,9 +492,7 @@ class ServiceCross(Service):
         g_df = df2.dropna(subset=["gender"]).copy()
         if not g_df.empty:
             g_df["gender"] = g_df["gender"].apply(
-                lambda g: getattr(g, "name", None)
-                or getattr(g, "value", None)
-                or str(g)
+                lambda g: getattr(g, "name", None) or getattr(g, "value", None) or str(g)
             )
             gender_distance = (
                 g_df.groupby(["gender", "distance"], dropna=False)
@@ -517,9 +503,7 @@ class ServiceCross(Service):
                 .reset_index()
             )
         else:
-            gender_distance = pd.DataFrame(
-                columns=["gender", "distance", "avg_time", "count"]
-            )
+            gender_distance = pd.DataFrame(columns=["gender", "distance", "avg_time", "count"])
 
         # ----- Trends (chronological average per cross) -----
         if "cross_datetime" in df2.columns and df2["cross_datetime"].notna().any():
@@ -535,9 +519,7 @@ class ServiceCross(Service):
 
         # ----- Podium frequency (top-3 per cross, deduped per serial per cross) -----
         podium_rows: list[dict[str, Any]] = []
-        for _, group in df2.dropna(subset=["serial_number"]).groupby(
-            "cross_id", dropna=False
-        ):
+        for _, group in df2.dropna(subset=["serial_number"]).groupby("cross_id", dropna=False):
             top3 = (
                 group.sort_values("running_time", ascending=True)
                 .drop_duplicates(subset=["serial_number"])
@@ -563,9 +545,7 @@ class ServiceCross(Service):
                     bronze=("rank", lambda s: int((s == 3).sum())),
                 )
                 .reset_index()
-                .sort_values(
-                    ["gold", "silver", "bronze"], ascending=[False, False, False]
-                )
+                .sort_values(["gold", "silver", "bronze"], ascending=[False, False, False])
             )
         else:
             podium = pd.DataFrame(
@@ -712,9 +692,7 @@ class ServiceCross(Service):
 
         return age_groups
 
-    async def get_gender_time(
-        self, all_cross: list[Cross]
-    ) -> tuple[floating[Any], floating[Any]]:
+    async def get_gender_time(self, all_cross: list[Cross]) -> tuple[floating[Any], floating[Any]]:
         """
         Calculate and return the average running times for female and male runners from
         the provided list of crosses. The function asynchronously processes the list of
@@ -739,10 +717,8 @@ class ServiceCross(Service):
             for runner in cross.runners:
                 if runner.serial_number is None:
                     continue
-                service_man: ServiceMen | None = (
-                    await self.be_mil_service.get_servicemen_by_serial(
-                        runner.serial_number
-                    )
+                service_man: ServiceMen | None = await self.be_mil_service.get_servicemen_by_serial(
+                    runner.serial_number
                 )
                 if service_man is None:
                     continue
@@ -820,9 +796,7 @@ class ServiceCross(Service):
             xml_doc = etree.parse(file_path)
 
             if not schema.validate(xml_doc):
-                _logger.warning(
-                    "Chronos XML failed XSD validation: %s", schema.error_log
-                )
+                _logger.warning("Chronos XML failed XSD validation: %s", schema.error_log)
                 return False
             _logger.info("Chronos XML validated successfully.")
             runners = []
@@ -833,9 +807,7 @@ class ServiceCross(Service):
                 # Convert net time "hh:mm:ss" to total seconds (float)
                 parts = net.split(":")
                 if len(parts) == 3:
-                    running_time = (
-                        int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
-                    )
+                    running_time = int(parts[0]) * 3600 + int(parts[1]) * 60 + float(parts[2])
                 elif len(parts) == 2:
                     running_time = int(parts[0]) * 60 + float(parts[1])
                 else:

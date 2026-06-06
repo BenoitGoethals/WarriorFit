@@ -30,7 +30,6 @@ from warriorfit.mom.broker import (
     PhefTestDto,
 )
 
-
 # ── helpers ────────────────────────────────────────────────────────────────────
 
 
@@ -128,7 +127,7 @@ class TestMarchTestDto:
         test.service_number = "SVC001"
         test.distance = 30.0
         test.succeeded = True
-        test.datetime_executed = dt
+        test.datetime_executed = dt  # type: ignore[assignment]
         assert MarchTestDto(test).to_dict() == {
             "service_number": "SVC001",
             "distance": 30.0,
@@ -141,7 +140,7 @@ class TestMarchTestDto:
         test.service_number = "SVC002"
         test.distance = 20.0
         test.succeeded = False
-        test.datetime_executed = None
+        test.datetime_executed = None  # type: ignore[assignment]
         assert MarchTestDto(test).to_dict()["datetime_executed"] is None
 
 
@@ -168,6 +167,7 @@ class TestSendMessage:
     verifies that invalid or unrecognized message types are not queued.
 
     """
+
     def test_phef_test_queued_with_correct_payload(self):
         async def _test():
             broker, _, _ = _make_broker()
@@ -212,7 +212,7 @@ class TestSendMessage:
             test.service_number = "SVC1"
             test.distance = 30.0
             test.succeeded = True
-            test.datetime_executed = datetime(2026, 1, 1)
+            test.datetime_executed = datetime(2026, 1, 1)  # type: ignore[assignment]
             await broker.send_message(test)
             assert broker._msg_queue.qsize() == 1
 
@@ -268,6 +268,7 @@ class TestProcessCycle:
     :ivar hr_msg: Represents a human-readable message object used for testing.
     :type hr_msg: HrMessage
     """
+
     def test_drains_queue_to_db(self):
         async def _test():
             broker, _, _ = _make_broker()
@@ -343,6 +344,7 @@ class TestCheckAndSendMessages:
     The tests employ asynchronous mocks and patches to verify interactions with external
     dependencies while simulating different outcomes during message processing.
     """
+
     def test_success_deletes_row(self):
         async def _test():
             broker, _, _ = _make_broker()
@@ -456,6 +458,7 @@ class TestTrySendToHr:
             broker._send_message_to_hr = AsyncMock(side_effect=RuntimeError("boom"))
             result, err = await broker._try_send_to_hr(_hr_msg())
             assert result is None
+            assert err is not None
             assert "RuntimeError" in err
 
         asyncio.run(_test())
@@ -492,7 +495,7 @@ class TestSendMessageToHr:
     def test_returns_none_on_timeout(self):
         async def _test():
             broker, _, mock_service = _make_broker()
-            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=asyncio.TimeoutError())
+            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=TimeoutError())
             with self._config_patch:
                 assert await broker._send_message_to_hr(_hr_msg()) is None
 
@@ -501,9 +504,7 @@ class TestSendMessageToHr:
     def test_returns_none_on_connection_error(self):
         async def _test():
             broker, _, mock_service = _make_broker()
-            mock_service.sent_hr_message_to_hr = AsyncMock(
-                side_effect=ConnectionError("refused")
-            )
+            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=ConnectionError("refused"))
             with self._config_patch:
                 assert await broker._send_message_to_hr(_hr_msg()) is None
 
@@ -512,9 +513,7 @@ class TestSendMessageToHr:
     def test_returns_none_on_value_error(self):
         async def _test():
             broker, _, mock_service = _make_broker()
-            mock_service.sent_hr_message_to_hr = AsyncMock(
-                side_effect=ValueError("bad data")
-            )
+            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=ValueError("bad data"))
             with self._config_patch:
                 assert await broker._send_message_to_hr(_hr_msg()) is None
 
@@ -553,6 +552,7 @@ class TestLifecycle:
             broker.worker = AsyncMock()
             broker.start()
             first_task = broker._worker_task
+            assert first_task is not None
             with caplog.at_level(logging.WARNING):
                 broker.start()
             assert broker._worker_task is first_task
@@ -579,6 +579,7 @@ class TestLifecycle:
             broker.worker = AsyncMock()
             broker.start()
             task = broker._worker_task
+            assert task is not None
             broker.stop()
             assert task.cancelled() or task.cancelling() > 0
 

@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 from datetime import date
@@ -45,14 +46,11 @@ class BEMILService:
         serviceman_data = schema.model_dump(exclude_none=True)
 
         if "gender" in serviceman_data and isinstance(serviceman_data["gender"], str):
-            try:
+            with contextlib.suppress(ValueError):
                 serviceman_data["gender"] = Gender(serviceman_data["gender"])
-            except ValueError:
-                pass
 
-        if "unit" in data and isinstance(data["unit"], dict):
-            if "unit_id" not in serviceman_data:
-                serviceman_data["unit_id"] = data["unit"].get("id")
+        if "unit" in data and isinstance(data["unit"], dict) and "unit_id" not in serviceman_data:
+            serviceman_data["unit_id"] = data["unit"].get("id")
 
         valid_fields = {
             "id",

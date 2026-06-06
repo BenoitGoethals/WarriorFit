@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pandas as pd
 from shiny import reactive, render, ui
 
+from warriorfit.i18n import t
 from warriorfit.ui.pages.page import Page
 
 # UI:
@@ -20,9 +21,7 @@ from warriorfit.ui.controllers.cross_controller import CrossController
 
 class CrossPage(Page):
     @inject
-    def __init__(
-        self, controller: CrossController = Provide[Container.cross_controller]
-    ):
+    def __init__(self, controller: CrossController = Provide[Container.cross_controller]):
         super().__init__()
         self.controller = controller
         self.refresh_tick = reactive.Value(0)
@@ -32,26 +31,27 @@ class CrossPage(Page):
         self._logger = logging.getLogger(__name__)
         self._last_paths = None
 
-    NO_SELECTION_MESSAGE = "No row selected"
+    NO_SELECTION_MESSAGE = "common.no_row_selected"
+    _CROSS_NAV_KEY = "nav.cross"
 
     def refresh(self):
         pass
 
     def get_ui(self):
         return ui.nav_panel(
-            "Cross",
-            ui.h2("🏃 Cross Runners"),
+            t(self._CROSS_NAV_KEY),
+            ui.h2(t("cross.title")),
             ui.input_action_button(
                 "cross_refresh_btn",
-                "🔄 Refresh",
+                t("common.refresh"),
                 class_="btn btn-secondary btn-sm my-2",
             ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
-                        ui.card_header("Cross"),
-                        ui.input_select("cross_id", "Cross", choices=[]),
-                        ui.input_action_button("cross_locker", "Select", width="150px"),
+                        ui.card_header(t(self._CROSS_NAV_KEY)),
+                        ui.input_select("cross_id", t(self._CROSS_NAV_KEY), choices=[]),
+                        ui.input_action_button("cross_locker", t("cross.select"), width="150px"),
                         full_screen=False,
                     ),
                     ui.output_ui("runner_card"),
@@ -59,7 +59,7 @@ class CrossPage(Page):
                 ui.card(
                     ui.card_header(
                         ui.div(
-                            "Runners",
+                            t("cross.runners_label"),
                             ui.output_ui("runners_summary_ui"),
                             style="display:flex; align-items:center; gap:1rem;",
                         )
@@ -72,10 +72,11 @@ class CrossPage(Page):
                 ),
                 col_widths=(4, 8),
             ),
+            value="Cross",
         )
 
     def server(self, input, output, session):
-        status = reactive.Value("Ready.")
+        status = reactive.Value(t("common.ready"))
         cross_selected_id = reactive.Value("")  # or None
 
         @output
@@ -84,7 +85,7 @@ class CrossPage(Page):
             df = await runners_df()
             if not df.empty or not cross_selected_id.get():
                 return ui.div()  # hidden: no cross selected or no runners registered
-            return ui.input_file("file", "Upload Chronos Data", accept=".xml")
+            return ui.input_file("file", t("cross.upload_chronos"), accept=".xml")
 
         @output
         @render.ui
@@ -94,10 +95,10 @@ class CrossPage(Page):
                 return ui.div()
             return ui.div(
                 ui.input_action_button(
-                    "report_lst_run", "Generate Report", class_="btn-secondary"
+                    "report_lst_run", t("common.generate_report"), class_="btn-secondary"
                 ),
                 ui.download_button(
-                    "download_report_cross_run", "Download", class_="btn-primary"
+                    "download_report_cross_run", t("common.download"), class_="btn-primary"
                 ),
             )
 
@@ -129,42 +130,42 @@ class CrossPage(Page):
             if not cross_selected_id.get():
                 return ui.div()  # hidden
             return ui.card(
-                ui.card_header("Runner"),
-                ui.input_text("runner_serialnr", "Serial Number"),
+                ui.card_header(t("cross.runner")),
+                ui.input_text("runner_serialnr", t("common.serial_number")),
                 ui.input_action_button(
                     "runner_search",
-                    "✅ Confirm Serial",
+                    t("cross.confirm_serial"),
                     class_="btn btn-primary btn-sm",
                     width="200px",
                 ),
                 ui.output_text("runner_military"),
                 ui.input_text(
                     "runner_time",
-                    "Running time (hh::mm:ss)",
-                    placeholder="e.g., 01:10:45",
+                    t("cross.running_time"),
+                    placeholder=t("cross.running_time_placeholder"),
                 ),
                 ui.layout_columns(
                     ui.input_action_button(
                         "runner_add_btn",
-                        "Add",
+                        t("cross.add"),
                         width="120px",
                         class_="btn-primary w-100",
                     ),
                     ui.input_action_button(
                         "runner_update_btn",
-                        "Update",
+                        t("cross.update"),
                         width="120px",
                         class_="btn-warning w-100",
                     ),
                     ui.input_action_button(
                         "runner_clear_btn",
-                        "Clear Form",
+                        t("cross.clear"),
                         width="120px",
                         class_="btn-secondary w-100",
                     ),
                     ui.input_action_button(
                         "runner_delete_btn",
-                        "Delete Selected",
+                        t("cross.delete"),
                         width="240px",
                         class_="btn-danger w-100",
                     ),
@@ -208,13 +209,11 @@ class CrossPage(Page):
             _last_uploaded.set(file_key)
             if passed:
                 _upload_tick.set(_upload_tick.get() + 1)  # refresh grid only
-                ui.notification_show(
-                    "File uploaded successfully.", type="message", duration=3
-                )
+                ui.notification_show("File uploaded successfully.", type="message", duration=3)
             else:
                 ui.notification_show("Failed to upload file.", type="error", duration=3)
 
-        def _read_form() -> Dict[str, Any]:
+        def _read_form() -> dict[str, Any]:
             return {
                 "serialnr": (input.runner_serialnr() or "").strip(),
                 "running_time": (input.runner_time() or "").strip(),
@@ -299,9 +298,7 @@ class CrossPage(Page):
             if sm is None:
                 status.set("Not found.")
             else:
-                status.set(
-                    f"Service {sm.rank} {sm.last_name} {sm.service_number} member found."
-                )
+                status.set(f"Service {sm.rank} {sm.last_name} {sm.service_number} member found.")
 
         @reactive.Effect
         @reactive.event(input.runners_grid_selected_rows)
@@ -318,9 +315,7 @@ class CrossPage(Page):
                     return
                 row = df.iloc[row_idx]
                 self.selected_runner_id.set(str(row["ID"]))
-                self.selected_military.set(
-                    await self.controller.search_military(row["Serial"])
-                )
+                self.selected_military.set(await self.controller.search_military(row["Serial"]))
                 serial = str(row.get("Serial", "") or "")
                 run_t = str(row.get("Running Time", "") or "")
                 ui.update_text("runner_serialnr", value=serial)
@@ -349,9 +344,7 @@ class CrossPage(Page):
             self.selected_runner_id.set("")
             self.refresh_tick.set(self.refresh_tick.get() + 1)  # triggers runners_df
             status.set(f"Added runner {payload['serialnr']}.")
-            ui.notification_show(
-                f"Runner {payload['serialnr']} added.", type="message", duration=3
-            )
+            ui.notification_show(f"Runner {payload['serialnr']} added.", type="message", duration=3)
 
         @reactive.Effect
         @reactive.event(input.runner_update_btn)
@@ -361,9 +354,7 @@ class CrossPage(Page):
                 status.set("Select a row first.")
                 return
             data = _read_form()
-            data["old_serialnr"] = getattr(
-                self.selected_military.get(), "service_number", None
-            )
+            data["old_serialnr"] = getattr(self.selected_military.get(), "service_number", None)
             ok, res = await self.controller.validate_form(data, True)
             if not ok:
                 status.set(res)  # type: ignore[arg-type]
@@ -408,9 +399,7 @@ class CrossPage(Page):
         @reactive.effect
         @reactive.event(input.report_lst_run)
         async def _on_generate():
-            self._last_paths = await self.controller.generate_report_cross(
-                cross_selected_id.get()
-            )
+            self._last_paths = await self.controller.generate_report_cross(cross_selected_id.get())
             if not self._last_paths:
                 status.set("No report generated.")
                 return

@@ -18,6 +18,7 @@ class Page(ABC):
     :ivar refresh_tick: Reactive value to track refresh ticks for the page.
     :type refresh_tick: reactive.Value
     """
+
     toggle_disabled_registered_func = """
                 (function () {
                   if (window.__wf_toggle_disabled_registered) return;
@@ -80,9 +81,7 @@ class Page(ABC):
         )
         children: list = [input_group]
         if label:
-            children = [
-                ui.tags.label(label, for_=input_id, class_="form-label")
-            ] + children
+            children = [ui.tags.label(label, for_=input_id, class_="form-label")] + children
         return ui.div(*children, class_="form-group shiny-input-container")
 
     def refresh_on_nav(self, input, tab_name: str, refresh_tick=None):

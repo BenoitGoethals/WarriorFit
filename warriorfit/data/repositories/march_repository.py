@@ -59,9 +59,7 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def get_all_march_by_unit_name(
-        self, unit_name: str, this_year=True
-    ) -> list[March]:
+    async def get_all_march_by_unit_name(self, unit_name: str, this_year=True) -> list[March]:
         if this_year:
             end, start = await self.running_year()
             query = (
@@ -81,9 +79,7 @@ class MarchRepository(ABCRepository):
         results = await self.fetch_and_log(query, "March")
         return results if results else []
 
-    async def get_all_march_form_service_men(
-        self, service_men: str, this_year=True
-    ) -> list[March]:
+    async def get_all_march_form_service_men(self, service_men: str, this_year=True) -> list[March]:
         """
         Fetches all marches associated with a given service member, optionally filtering
         for the current year.
@@ -123,29 +119,28 @@ class MarchRepository(ABCRepository):
         """
         session = None
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    # Check if march already exists for this service_number and datetime
-                    query = select(March).where(
-                        March.service_number == mars.service_number,
-                        March.datetime_executed == mars.datetime_executed,
-                        March.distance == mars.distance,
+            async with self.SessionLocal() as session, session.begin():
+                # Check if march already exists for this service_number and datetime
+                query = select(March).where(
+                    March.service_number == mars.service_number,
+                    March.datetime_executed == mars.datetime_executed,
+                    March.distance == mars.distance,
+                )
+                result = await session.execute(query)
+                existing_march = result.scalar_one_or_none()
+
+                if existing_march:
+                    self._logger.info(
+                        "March already exists for service_number %s at %s",
+                        mars.service_number,
+                        mars.datetime_executed,
                     )
-                    result = await session.execute(query)
-                    existing_march = result.scalar_one_or_none()
+                    return existing_march
 
-                    if existing_march:
-                        self._logger.info(
-                            "March already exists for service_number %s at %s",
-                            mars.service_number,
-                            mars.datetime_executed,
-                        )
-                        return existing_march
-
-                    session.add(mars)
-                    await session.flush()
-                    await session.refresh(mars)
-                    return mars
+                session.add(mars)
+                await session.flush()
+                await session.refresh(mars)
+                return mars
         except SQLAlchemyError as e:
             self._logger.exception(e)
             if session is not None:
@@ -170,14 +165,13 @@ class MarchRepository(ABCRepository):
         """
         session = None
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    query = delete(March).where(March.id == ind_march)
-                    result = await session.execute(query)
-                    if result.rowcount == 0:
-                        self._logger.error("No March found with ID %d.", ind_march)
-                        return False
-                    return True
+            async with self.SessionLocal() as session, session.begin():
+                query = delete(March).where(March.id == ind_march)
+                result = await session.execute(query)
+                if result.rowcount == 0:
+                    self._logger.error("No March found with ID %d.", ind_march)
+                    return False
+                return True
         except SQLAlchemyError:
             self._logger.exception("Failed to delete March")
             if session is not None:
@@ -203,43 +197,37 @@ class MarchRepository(ABCRepository):
         """
         session = None
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    existing_mars = await session.get(March, march.id)
-                    if not existing_mars:
-                        self._logger.error("No march found with ID %d", march.id)
-                        return None
-                    existing_mars.service_number = march.service_number
-                    existing_mars.distance = march.distance
-                    existing_mars.succeeded = march.succeeded
-                    existing_mars.datetime_executed = march.datetime_executed
-                    await session.flush()
-                    await session.refresh(existing_mars)
-                    return existing_mars
+            async with self.SessionLocal() as session, session.begin():
+                existing_mars = await session.get(March, march.id)
+                if not existing_mars:
+                    self._logger.error("No march found with ID %d", march.id)
+                    return None
+                existing_mars.service_number = march.service_number
+                existing_mars.distance = march.distance
+                existing_mars.succeeded = march.succeeded
+                existing_mars.datetime_executed = march.datetime_executed
+                await session.flush()
+                await session.refresh(existing_mars)
+                return existing_mars
         except SQLAlchemyError as e:
-            self._logger.exception(
-                "Failed to update March with ID %d: %s", march.id, str(e)
-            )
+            self._logger.exception("Failed to update March with ID %d: %s", march.id, str(e))
             if session is not None:
                 await session.rollback()
             return None
 
     async def get_march_is_unique(self, service_number, distance, datetime_executed):
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    # Check if march already exists for this service_number and datetime
-                    query = select(March).where(
-                        March.service_number == service_number,
-                        March.datetime_executed == datetime_executed,
-                        March.distance == distance,
-                    )
-                    result = await session.execute(query)
-                    existing_march = result.scalar_one_or_none()
+            async with self.SessionLocal() as session, session.begin():
+                # Check if march already exists for this service_number and datetime
+                query = select(March).where(
+                    March.service_number == service_number,
+                    March.datetime_executed == datetime_executed,
+                    March.distance == distance,
+                )
+                result = await session.execute(query)
+                existing_march = result.scalar_one_or_none()
 
-                    if existing_march:
-                        return False
-                    return True
+                return not existing_march
         except SQLAlchemyError as e:
             self._logger.exception(e)
             return False
