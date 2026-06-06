@@ -201,9 +201,7 @@ def test_repo_failure_returns_false(svc_fail, valid_xml_file):
 def test_missing_file_returns_false(svc_ok):
     svc, _, _ = svc_ok
     result = run(
-        svc.read_xml_chronos_and_save(
-            [{"datapath": "/nonexistent/path/file.xml"}], cross_id=1
-        )
+        svc.read_xml_chronos_and_save([{"datapath": "/nonexistent/path/file.xml"}], cross_id=1)
     )
     assert result is False
 

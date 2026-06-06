@@ -1,5 +1,3 @@
-from typing import Optional
-
 from shiny.session import get_current_session
 
 from warriorfit.data.model.db_model import User
@@ -17,14 +15,14 @@ class UserStore:
     """
 
     @classmethod
-    def set_user(cls, user: Optional[User]) -> None:
+    def set_user(cls, user: User | None) -> None:
         session = get_current_session()
         if session is None:
             return
         setattr(session, _SESSION_USER_ATTR, user)
 
     @classmethod
-    def get_user(cls) -> Optional[User]:
+    def get_user(cls) -> User | None:
         session = get_current_session()
         if session is None:
             return None

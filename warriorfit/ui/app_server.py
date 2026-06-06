@@ -1,7 +1,9 @@
+import contextlib
 import logging
 import os
 import time
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from dependency_injector.wiring import Provide, inject
 from shiny import render, ui
@@ -15,6 +17,7 @@ from warriorfit.security.rate_limiter import login_rate_limiter
 from warriorfit.services.service_user import UserService
 from warriorfit.ui.page_registry import PageSpec, get_pages, pages_for_role
 from warriorfit.ui.user_store import UserStore
+
 
 class _ServicemanSessionUser:
     """Lightweight shim for serviceman-mode sessions."""
@@ -128,11 +131,11 @@ def make_server(
 
         # ── Session helpers ──────────────────────────────────────────────────
 
-        def _get_session_user() -> Optional[Any]:
+        def _get_session_user() -> Any | None:
             return getattr(session, "user", None)
 
         def _set_session_user(user: Any) -> None:
-            setattr(session, "user", user)
+            session.user = user
 
         def _clear_session_user() -> None:
             if hasattr(session, "user"):
@@ -194,15 +197,11 @@ def make_server(
             "About": "nav.group.about",
         }
 
-        def _safe_panel(panel: Optional[Any]) -> Optional[ui.Tag]:
+        def _safe_panel(panel: Any | None) -> ui.Tag | None:
             return panel if panel is not None else None
 
-        def _build_menu(
-            group: str, role_pages: list[PageSpec]
-        ) -> Optional[ui.Tag]:
-            children = [
-                _safe_panel(p.ui_factory()) for p in role_pages if p.group == group
-            ]
+        def _build_menu(group: str, role_pages: list[PageSpec]) -> ui.Tag | None:
+            children = [_safe_panel(p.ui_factory()) for p in role_pages if p.group == group]
             children = [c for c in children if c is not None]
             label = t(_GROUP_LABELS.get(group, group))
             return ui.nav_menu(label, *children) if children else None  # type: ignore[arg-type, return-value]
@@ -391,9 +390,7 @@ def make_server(
                     )
                     UserStore.set_user(dev_user)
                     _set_session_user(dev_user)
-                    login_user_text.set(
-                        f"User: admin  Role: {Role.ADMIN}  Unit: {config.own_unit}"
-                    )
+                    login_user_text.set(f"User: admin  Role: {Role.ADMIN}  Unit: {config.own_unit}")
                     nav_version.set(nav_version.get() + 1)
                 return
 
@@ -409,17 +406,20 @@ def make_server(
                 # Language switcher inside the login modal
                 ui.div(
                     ui.input_action_button(
-                        "lang_en", "EN",
+                        "lang_en",
+                        "EN",
                         class_="btn btn-outline-secondary btn-sm me-1",
                         style="font-size:0.75rem; padding:2px 8px;",
                     ),
                     ui.input_action_button(
-                        "lang_nl", "NL",
+                        "lang_nl",
+                        "NL",
                         class_="btn btn-outline-secondary btn-sm me-1",
                         style="font-size:0.75rem; padding:2px 8px;",
                     ),
                     ui.input_action_button(
-                        "lang_fr", "FR",
+                        "lang_fr",
+                        "FR",
                         class_="btn btn-outline-secondary btn-sm",
                         style="font-size:0.75rem; padding:2px 8px;",
                     ),
@@ -438,12 +438,8 @@ def make_server(
                         selected="application",
                         inline=False,
                     ),
-                    ui.tags.label(
-                        lbl_username, for_="username_login", class_="form-label"
-                    ),
-                    ui.input_text(
-                        "username_login", None, placeholder=ph_username
-                    ),
+                    ui.tags.label(lbl_username, for_="username_login", class_="form-label"),
+                    ui.input_text("username_login", None, placeholder=ph_username),
                     ui.tags.label(
                         t("login.password"), for_="password_login", class_="form-label mt-2"
                     ),
@@ -495,9 +491,7 @@ def make_server(
             locked, seconds_left = login_rate_limiter.is_locked(username_login)
             if locked:
                 minutes = (seconds_left + 59) // 60
-                status_text.set(
-                    t("login.error.locked").format(minutes=minutes)
-                )
+                status_text.set(t("login.error.locked").format(minutes=minutes))
                 return
 
             client = getattr(session.http_conn, "client", None)
@@ -521,7 +515,7 @@ def make_server(
                         return
                     shim_user = _ServicemanSessionUser(mil)
                     login_rate_limiter.reset(service_number)
-                    setattr(session, "login_mode", mode)
+                    session.login_mode = mode
                     UserStore.set_user(shim_user)  # type: ignore[arg-type]
                     await user_service.add_audit_log(
                         f"Serviceman {service_number} logged in (password skipped — TODO)",
@@ -544,7 +538,7 @@ def make_server(
                     if user.is_active is False:
                         status_text.set(t("login.error.account_disabled"))
                         return
-                    setattr(session, "login_mode", mode)
+                    session.login_mode = mode
                     login_rate_limiter.reset(username_login)
                     UserStore.set_user(user)
                     await user_service.add_audit_log(
@@ -554,8 +548,7 @@ def make_server(
                     )
                     _set_session_user(user)
                     login_user_text.set(
-                        f"User: {username_login}  Role: {user.role}"
-                        f"  Unit: {config.own_unit}"
+                        f"User: {username_login}  Role: {user.role}" f"  Unit: {config.own_unit}"
                     )
                     status_text.set("")
                     ui.modal_remove()
@@ -571,14 +564,10 @@ def make_server(
                     locked, seconds_left = login_rate_limiter.is_locked(username_login)
                     if locked:
                         minutes = (seconds_left + 59) // 60
-                        status_text.set(
-                            t("login.error.account_locked").format(minutes=minutes)
-                        )
+                        status_text.set(t("login.error.account_locked").format(minutes=minutes))
                     else:
                         left = login_rate_limiter.attempts_remaining(username_login)
-                        status_text.set(
-                            t("login.error.invalid").format(left=left)
-                        )
+                        status_text.set(t("login.error.invalid").format(left=left))
             except (ValueError, TypeError, AttributeError) as e:
                 logging.getLogger(__name__).error("Login error: %s", e)
                 status_text.set(t("login.error.general"))
@@ -594,21 +583,17 @@ def make_server(
             if clicks and clicks > 0:
                 current_user = _get_session_user()
                 if current_user is not None:
-                    try:
+                    with contextlib.suppress(Exception):
                         await user_service.add_audit_log(
                             f"User {current_user.username} logged out",
                             "logout",
                         )
-                    except Exception:
-                        pass
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show(t("logout.notification"), type="message")
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
         # ── Activity tracking & auto-logout ──────────────────────────────────
@@ -640,10 +625,8 @@ def make_server(
 
         @reactive.Effect
         def _reset_on_nav_or_login() -> None:
-            try:
+            with contextlib.suppress(AttributeError, KeyError):
                 _ = input.main_nav()
-            except (AttributeError, KeyError):
-                pass
             _ = nav_version.get()
             last_activity.set(time.time())
 
@@ -655,13 +638,11 @@ def make_server(
                 return
             ts = last_activity.get() or time.time()
             if time.time() - ts >= 600:
-                try:
+                with contextlib.suppress(Exception):
                     await user_service.add_audit_log(
                         f"User {user.username} auto-logged out after 10min inactivity",
                         "logout_inactivity",
                     )
-                except Exception:
-                    pass
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show(
@@ -670,9 +651,7 @@ def make_server(
                 )
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
     return server

@@ -88,9 +88,7 @@ class IndTestShowPage(Page):
             if s:
                 try:
                     df = await self.controller.collect_tests_df(s)
-                    self.tests_df.set(
-                        df if isinstance(df, pd.DataFrame) else pd.DataFrame()
-                    )
+                    self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
                     status.set(t("individual.refreshed").format(count=len(self.tests_df.get())))
                 except Exception:
                     pass
@@ -102,10 +100,8 @@ class IndTestShowPage(Page):
             self.report_path.set(None)
             if s:
                 status.set(t("common.generating"))
-                output_path = (
-                    await self.controller._report_generator_pdf.generate_ind_report(
-                        serial_number=s
-                    )
+                output_path = await self.controller._report_generator_pdf.generate_ind_report(
+                    serial_number=s
                 )
                 if output_path:
                     self.report_path.set(output_path)
@@ -154,9 +150,7 @@ class IndTestShowPage(Page):
                     f"{mil.rank} {mil.first_name} {mil.last_name} — {mil.service_number} — {mil.unit}"
                 )
                 df = await self.controller.collect_tests_df(s)
-                self.tests_df.set(
-                    df if isinstance(df, pd.DataFrame) else pd.DataFrame()
-                )
+                self.tests_df.set(df if isinstance(df, pd.DataFrame) else pd.DataFrame())
                 status.set(
                     t("individual.loaded").format(count=len(self.tests_df.get()))
                     if not self.tests_df.get().empty
@@ -209,9 +203,7 @@ class IndTestShowPage(Page):
         @render.data_frame
         async def ind_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.ind_serial_search_grid_selected_rows)
@@ -229,9 +221,7 @@ class IndTestShowPage(Page):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [

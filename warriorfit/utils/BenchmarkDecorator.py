@@ -3,7 +3,8 @@ import functools
 import logging
 import os
 import time
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ IS_DEV = os.getenv("ENV", "development").lower() in (
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def benchmark(func: F) -> F:
+def benchmark[F: Callable[..., Any]](func: F) -> F:
     """
     Decorator that logs the execution time of a function.
     Only active in development mode.

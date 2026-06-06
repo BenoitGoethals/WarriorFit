@@ -41,9 +41,7 @@ class AboutPage(Page):
                         ui.div(
                             ui.tags.h5("Goethals Benoit", class_="mb-1"),
                             ui.tags.p(
-                                ui.tags.span(
-                                    "Adjudant Majoor", class_="badge bg-secondary me-2"
-                                ),
+                                ui.tags.span("Adjudant Majoor", class_="badge bg-secondary me-2"),
                                 ui.tags.span("OR-9", class_="badge bg-dark"),
                                 class_="mb-2",
                             ),
@@ -88,23 +86,15 @@ class AboutPage(Page):
                                         ui.tags.td(t("about.org_name")),
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td(
-                                            t("about.purpose"), class_="fw-bold pe-3 py-1"
-                                        ),
-                                        ui.tags.td(
-                                            t("about.purpose_desc")
-                                        ),
+                                        ui.tags.td(t("about.purpose"), class_="fw-bold pe-3 py-1"),
+                                        ui.tags.td(t("about.purpose_desc")),
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td(
-                                            t("about.version"), class_="fw-bold pe-3 py-1"
-                                        ),
+                                        ui.tags.td(t("about.version"), class_="fw-bold pe-3 py-1"),
                                         ui.tags.td(self._config.version[1]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(
-                                        ui.tags.td(
-                                            t("about.status"), class_="fw-bold pe-3 py-1"
-                                        ),
+                                        ui.tags.td(t("about.status"), class_="fw-bold pe-3 py-1"),
                                         ui.tags.td(self._config.version[0]),  # type: ignore[index]
                                     ),
                                     ui.tags.tr(

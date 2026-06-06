@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
@@ -26,9 +26,7 @@ class FunctionalController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
 
     # ----- Helpers -----
     @staticmethod
@@ -38,7 +36,7 @@ class FunctionalController:
         return g
 
     @staticmethod
-    def validate_form(data: Dict[str, Any]) -> Tuple[bool, Dict[str, Any] | str]:
+    def validate_form(data: dict[str, Any]) -> tuple[bool, dict[str, Any] | str]:
         """
         Validates the fitness form data including serial number, push-up, sit-up,
         and pull-up counts, ensuring that the inputs meet certain requirements.
@@ -70,10 +68,10 @@ class FunctionalController:
             TypeFitnessTest.FUNCTIONAL
         )
 
-    async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
+    async def get_session_by_id(self, session_id: int) -> TestSession | None:
         return await self._service.get_test_session_by_id(int(session_id))
 
-    async def search_military(self, serialnr: str) -> Optional[ServiceMen]:
+    async def search_military(self, serialnr: str) -> ServiceMen | None:
         serial = (serialnr or "").strip()
         if not serial:
             return None
@@ -104,15 +102,9 @@ class FunctionalController:
                     continue
                 gender = self.normalize_gender(sm.gender)
                 age = sm.age_from_birthdate()
-                pull = FunctionalCalculator.get_score_pullup(
-                    gender, age, int(r.pull_ups)
-                )
-                situp = FunctionalCalculator.get_score_situp(
-                    gender, age, int(r.sit_ups)
-                )
-                push = FunctionalCalculator.get_score_pushup(
-                    gender, age, int(r.push_ups)
-                )
+                pull = FunctionalCalculator.get_score_pullup(gender, age, int(r.pull_ups))
+                situp = FunctionalCalculator.get_score_situp(gender, age, int(r.sit_ups))
+                push = FunctionalCalculator.get_score_pushup(gender, age, int(r.push_ups))
                 total = ((pull + situp + push) / 60) * 100
                 data.append(
                     {
@@ -161,9 +153,7 @@ class FunctionalController:
                     sit_score = float(row.get("Sit-ups-score", 0))
                     pull_score = float(row.get("Pull-ups-score", 0))
 
-                    all_scores_valid = (
-                        push_score > 10 and sit_score > 10 and pull_score > 10
-                    )
+                    all_scores_valid = push_score > 10 and sit_score > 10 and pull_score > 10
                     passes = n >= 50 and all_scores_valid
 
                     return f"🟩 {n:.0f}" if passes else f"❌ {n:.0f}"
@@ -183,10 +173,10 @@ class FunctionalController:
     async def add_functional(
         self,
         session_id: int,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         session: TestSession,
         military: ServiceMen,
-    ) -> Optional[FunctionalTest]:
+    ) -> FunctionalTest | None:
         """
         Add a functional test to the specified test session.
 
@@ -220,8 +210,8 @@ class FunctionalController:
         )
 
     async def update_functional(
-        self, functional_id: int, payload: Dict[str, Any]
-    ) -> Optional[FunctionalTest]:
+        self, functional_id: int, payload: dict[str, Any]
+    ) -> FunctionalTest | None:
         """
         Updates the functional fitness test with the provided parameters.
 

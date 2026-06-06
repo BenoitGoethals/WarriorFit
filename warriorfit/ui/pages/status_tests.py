@@ -35,9 +35,7 @@ class StatusTests(Page):
                         unit=self._controller.unit_name,
                     )
                 ),
-                ui.input_action_button(
-                    "refresh_own_unit_status_grid", t("phef_not_done.refresh")
-                ),
+                ui.input_action_button("refresh_own_unit_status_grid", t("phef_not_done.refresh")),
                 ui.output_data_frame("own_unit_status_grid"),
                 full_screen=False,
             ),

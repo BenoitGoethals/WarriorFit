@@ -34,9 +34,8 @@ class StatusApplicationController:
 
     async def _check_http_status(self, url: str) -> str:
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    return self._format_status(response.status == 200)
+            async with aiohttp.ClientSession() as session, session.get(url) as response:
+                return self._format_status(response.status == 200)
         except aiohttp.ClientError:
             return self._format_status(False)
 
@@ -51,7 +50,7 @@ class StatusApplicationController:
         if log.exists():
             # Use aiofiles for async file operations
 
-            async with aiofiles.open(log, "r") as f:
+            async with aiofiles.open(log) as f:
                 lines = await f.readlines()
             error = sum(1 for line in lines if "error" in line.lower())
 
@@ -60,12 +59,10 @@ class StatusApplicationController:
     async def load_log_application(self) -> str:
         project_root = Os.get_project_root()
         log_path = project_root / "logs" / "application.log"  # type: ignore[operator]
-        async with aiofiles.open(log_path, "r") as f:
+        async with aiofiles.open(log_path) as f:
             lines = await f.readlines()
             last_100_lines = lines[-300:] if len(lines) > 300 else lines
-            last_100_lines_error = [
-                line for line in last_100_lines if "info" not in line.lower()
-            ]
+            last_100_lines_error = [line for line in last_100_lines if "info" not in line.lower()]
             return "".join(last_100_lines_error)
 
     def check_log_modified(self):

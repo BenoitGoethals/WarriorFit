@@ -14,9 +14,7 @@ class AuditLogEventsPage(Page):
     @inject
     def __init__(
         self,
-        controller: AuditLogEventsController = Provide[
-            Container.auditlog_events_controller
-        ],
+        controller: AuditLogEventsController = Provide[Container.auditlog_events_controller],
     ) -> None:
         super().__init__()
         self.ctrl = controller
@@ -57,9 +55,7 @@ class AuditLogEventsPage(Page):
         async def au_grid():
             # _ = _tick()
             df = await au_df()
-            return render.DataGrid(
-                df, filters=True, selection_mode="rows", width="100%"
-            )
+            return render.DataGrid(df, filters=True, selection_mode="rows", width="100%")
 
         @reactive.Effect
         @reactive.event(input.au_refresh)

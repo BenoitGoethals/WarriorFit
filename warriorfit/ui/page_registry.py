@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any
 
 from warriorfit.data.model.db_model import Role  # type: ignore[attr-defined]
 
@@ -33,7 +34,7 @@ class PageSpec:
 
     tab: str
     group: str  # "root" | "Physical Tests" | "Cross/Runs" | "Admin" | "About"
-    ui_factory: Callable[[], Optional[Any]]
+    ui_factory: Callable[[], Any | None]
     server_factory: Callable[[Any, Any, Any], Any] | None
     allowed_roles: set[Role]
 
@@ -260,7 +261,7 @@ def get_pages() -> list[PageSpec]:
     ]
 
 
-def pages_for_role(role: Optional[Role]) -> list[PageSpec]:
+def pages_for_role(role: Role | None) -> list[PageSpec]:
     if role is None:
         return []
     return [p for p in get_pages() if role in p.allowed_roles]

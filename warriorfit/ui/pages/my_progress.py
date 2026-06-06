@@ -26,9 +26,7 @@ class MyProgressPage(Page):
     ):
         super().__init__()
         self.controller = controller
-        self.history_df_val: reactive.Value[pd.DataFrame] = reactive.Value(
-            pd.DataFrame()
-        )
+        self.history_df_val: reactive.Value[pd.DataFrame] = reactive.Value(pd.DataFrame())
         self.year_df_val: reactive.Value[pd.DataFrame] = reactive.Value(pd.DataFrame())
 
     def refresh(self):
@@ -81,12 +79,8 @@ class MyProgressPage(Page):
                 self.history_df_val.set(pd.DataFrame())
                 self.year_df_val.set(pd.DataFrame())
                 return
-            self.history_df_val.set(
-                await self.controller.history_df(user.serial_number)
-            )
-            self.year_df_val.set(
-                await self.controller.current_year_df(user.serial_number)
-            )
+            self.history_df_val.set(await self.controller.history_df(user.serial_number))
+            self.year_df_val.set(await self.controller.current_year_df(user.serial_number))
 
         @reactive.Effect
         @reactive.event(input.mp_refresh_btn)
@@ -108,9 +102,7 @@ class MyProgressPage(Page):
             df = self.year_df_val.get()
             if df is None or df.empty:
                 df = pd.DataFrame(columns=["Date", "Type", "Total", "Result"])
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         @output
         @render.data_frame
@@ -118,9 +110,7 @@ class MyProgressPage(Page):
             df = self.history_df_val.get()
             if df is None or df.empty:
                 df = pd.DataFrame(columns=["Date", "Type", "Total", "Result"])
-            return render.DataGrid(
-                df, filters=True, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=True, selection_mode="none", width="100%")
 
         @output
         @render_widget

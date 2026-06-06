@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy import and_, exists, insert, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import selectinload
@@ -50,7 +48,7 @@ class CrossRepository(ABCRepository):
         results = await self.fetch_and_log(query, "cross")
         return results[0] if results else None
 
-    async def get_all_cross(self, lazy=True) -> List[Cross]:
+    async def get_all_cross(self, lazy=True) -> list[Cross]:
         """
         Asynchronously retrieves all `Cross` objects from the database.
 
@@ -124,15 +122,12 @@ class CrossRepository(ABCRepository):
             does not exist or if an error occurs during the operation.
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    cross = await session.get(Cross, id)
-                    if not cross:
-                        return False
-                    await session.delete(
-                        cross
-                    )  # delete supports await with AsyncSession in SA 2.x
-                    return True
+            async with self.SessionLocal() as session, session.begin():
+                cross = await session.get(Cross, id)
+                if not cross:
+                    return False
+                await session.delete(cross)  # delete supports await with AsyncSession in SA 2.x
+                return True
         except IntegrityError as e:
             self._logger.error("Integrity error removing cross %d: %s", id, str(e))
             return False
@@ -157,49 +152,46 @@ class CrossRepository(ABCRepository):
         :rtype: Runner | None
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    cross = await session.get(Cross, cross_id)
-                    if not cross:
-                        self._logger.error("Cross %d not found", cross_id)
-                        return None
+            async with self.SessionLocal() as session, session.begin():
+                cross = await session.get(Cross, cross_id)
+                if not cross:
+                    self._logger.error("Cross %d not found", cross_id)
+                    return None
 
-                    already_encoded = await session.execute(
-                        select(1).where(
-                            CrossRunners.cross_id == cross_id,
-                            CrossRunners.runner_id == runner.id,
-                        )
+                already_encoded = await session.execute(
+                    select(1).where(
+                        CrossRunners.cross_id == cross_id,
+                        CrossRunners.runner_id == runner.id,
                     )
-                    if already_encoded.scalar() is not None:
-                        return None
+                )
+                if already_encoded.scalar() is not None:
+                    return None
 
-                    # Persist runner (new or detached)
-                    if runner.id is None:
-                        session.add(runner)
-                        await session.flush()  # ensure runner.id
-                    else:
-                        # ensure runner is attached to this session
-                        runner = await session.merge(runner)
-                        await session.flush()
+                # Persist runner (new or detached)
+                if runner.id is None:
+                    session.add(runner)
+                    await session.flush()  # ensure runner.id
+                else:
+                    # ensure runner is attached to this session
+                    runner = await session.merge(runner)
+                    await session.flush()
 
-                    # Avoid touching cross.runners (prevents lazy-load)
-                    exists = await session.execute(
-                        select(1)
-                        .select_from(CrossRunners)
-                        .where(
-                            CrossRunners.cross_id == cross_id,
-                            CrossRunners.runner_id == runner.id,
-                        )
+                # Avoid touching cross.runners (prevents lazy-load)
+                exists = await session.execute(
+                    select(1)
+                    .select_from(CrossRunners)
+                    .where(
+                        CrossRunners.cross_id == cross_id,
+                        CrossRunners.runner_id == runner.id,
                     )
-                    if exists.scalar() is None:
-                        await session.execute(
-                            insert(CrossRunners).values(
-                                cross_id=cross_id, runner_id=runner.id
-                            )
-                        )
+                )
+                if exists.scalar() is None:
+                    await session.execute(
+                        insert(CrossRunners).values(cross_id=cross_id, runner_id=runner.id)
+                    )
 
-                    # If you need current state, refresh here while session is active
-                    await session.refresh(runner)
+                # If you need current state, refresh here while session is active
+                await session.refresh(runner)
 
             return runner
         except SQLAlchemyError as e:
@@ -220,13 +212,12 @@ class CrossRepository(ABCRepository):
         :rtype: bool
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    runner = await session.get(Runner, id)
-                    if not runner:
-                        return False
-                    await session.delete(runner)
-                    return True
+            async with self.SessionLocal() as session, session.begin():
+                runner = await session.get(Runner, id)
+                if not runner:
+                    return False
+                await session.delete(runner)
+                return True
         except IntegrityError as e:
             self._logger.error("Integrity error removing runner %d: %s", id, str(e))
             return False
@@ -234,7 +225,7 @@ class CrossRepository(ABCRepository):
             self._logger.error("Database error removing runner %d: %s", id, str(e))
             return False
 
-    async def get_all_runners(self) -> List[Runner]:
+    async def get_all_runners(self) -> list[Runner]:
         """
         Retrieves all runners from the database.
 
@@ -256,7 +247,7 @@ class CrossRepository(ABCRepository):
         results = await self.fetch_and_log(query, "runners")
         return results[0] if results else None
 
-    async def get_runners_from_a_cross(self, id: int) -> List[Runner]:
+    async def get_runners_from_a_cross(self, id: int) -> list[Runner]:
         """
         Retrieves all runners associated with a specific cross.
 
@@ -283,20 +274,19 @@ class CrossRepository(ABCRepository):
         :return: The updated Runner object or None if not found
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    existing_runner = await session.get(Runner, id)
-                    if not existing_runner:
-                        self._logger.error("Runner %d not found for update", id)
-                        return None
-                    # whitelist updatable attributes
-                    fields = ("serial_number", "running_time")
-                    for key in fields:
-                        val = getattr(r, key, None)
-                        if val is not None:
-                            setattr(existing_runner, key, val)
-                    await session.flush()
-                    await session.refresh(existing_runner)
+            async with self.SessionLocal() as session, session.begin():
+                existing_runner = await session.get(Runner, id)
+                if not existing_runner:
+                    self._logger.error("Runner %d not found for update", id)
+                    return None
+                # whitelist updatable attributes
+                fields = ("serial_number", "running_time")
+                for key in fields:
+                    val = getattr(r, key, None)
+                    if val is not None:
+                        setattr(existing_runner, key, val)
+                await session.flush()
+                await session.refresh(existing_runner)
             return existing_runner
         except IntegrityError as e:
             self._logger.error("Integrity error updating runner %d: %s", id, str(e))
@@ -328,9 +318,7 @@ class CrossRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session:
                 async with session.begin():
-                    existing_cross = await session.get(
-                        Cross, cross.id
-                    )  # use class, not instance
+                    existing_cross = await session.get(Cross, cross.id)  # use class, not instance
                     if not existing_cross:
                         self._logger.error("Cross with ID %d not found.", cross.id)
                         return None
@@ -371,9 +359,7 @@ class CrossRepository(ABCRepository):
         try:
             cross_id_int = int(cross_id)
         except (TypeError, ValueError):
-            self._logger.warning(
-                f"exist_in_cross called with non-integer cross_id={cross_id!r}"
-            )
+            self._logger.warning(f"exist_in_cross called with non-integer cross_id={cross_id!r}")
             return False
 
         stmt = select(
@@ -400,42 +386,39 @@ class CrossRepository(ABCRepository):
 
     async def add_runners_to_cross(self, cross_id, runners) -> bool:
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    cross = await session.get(Cross, cross_id)
-                    if not cross:
-                        self._logger.error("Cross %d not found", cross_id)
-                        return False
-                    for runner in runners:
-                        # Persist runner (new or detached)
-                        if runner.id is None:
-                            session.add(runner)
-                            await session.flush()  # ensure runner.id
-                        else:
-                            # ensure runner is attached to this session
-                            runner = await session.merge(runner)
-                            await session.flush()
+            async with self.SessionLocal() as session, session.begin():
+                cross = await session.get(Cross, cross_id)
+                if not cross:
+                    self._logger.error("Cross %d not found", cross_id)
+                    return False
+                for runner in runners:
+                    # Persist runner (new or detached)
+                    if runner.id is None:
+                        session.add(runner)
+                        await session.flush()  # ensure runner.id
+                    else:
+                        # ensure runner is attached to this session
+                        runner = await session.merge(runner)
+                        await session.flush()
 
-                        # Avoid touching cross.runners (prevents lazy-load)
-                        exists = await session.execute(
-                            select(1)
-                            .select_from(CrossRunners)
-                            .where(
-                                CrossRunners.cross_id == cross_id,
-                                CrossRunners.runner_id == runner.id,
-                            )
+                    # Avoid touching cross.runners (prevents lazy-load)
+                    exists = await session.execute(
+                        select(1)
+                        .select_from(CrossRunners)
+                        .where(
+                            CrossRunners.cross_id == cross_id,
+                            CrossRunners.runner_id == runner.id,
                         )
-                        if exists.scalar() is None:
-                            await session.execute(
-                                insert(CrossRunners).values(
-                                    cross_id=cross_id, runner_id=runner.id
-                                )
-                            )
+                    )
+                    if exists.scalar() is None:
+                        await session.execute(
+                            insert(CrossRunners).values(cross_id=cross_id, runner_id=runner.id)
+                        )
 
-                    # Mark cross as executed after all runners are saved
-                    cross.executed = True
-                    await session.flush()
-                    return True
+                # Mark cross as executed after all runners are saved
+                cross.executed = True
+                await session.flush()
+                return True
 
         except SQLAlchemyError as e:
             self._logger.error("Linking runners to cross failed: %s", e)

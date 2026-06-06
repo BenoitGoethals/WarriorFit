@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
 
 import pandas as pd
 
@@ -50,7 +49,7 @@ class UserManagementController:
         self.selected_user = None
 
     @staticmethod
-    def role_choices() -> List[str]:
+    def role_choices() -> list[str]:
         """
         Builds a list of role choices based on the enumerated type `Role`.
 
@@ -102,7 +101,7 @@ class UserManagementController:
             ]
         )
 
-    async def validate(self, form: UserForm, *, is_update: bool) -> Tuple[bool, str]:
+    async def validate(self, form: UserForm, *, is_update: bool) -> tuple[bool, str]:
         """
         Validates the user form input to ensure all required fields are correctly filled,
         checks for unique constraints on serial, email, and username, and validates the
@@ -128,9 +127,7 @@ class UserManagementController:
                 return False, f"Field '{f}' is required."
         if "@" not in form.email or "." not in form.email.split("@")[-1]:
             return False, "Invalid email address."
-        if not self.USER_REGEX.match(form.username) or not (
-            3 < len(form.username) < 30
-        ):
+        if not self.USER_REGEX.match(form.username) or not (3 < len(form.username) < 30):
             return (
                 False,
                 "Username must be valid (a..z,A..Z,0..9,_). Length must be between 3 and 30. ",
@@ -182,7 +179,7 @@ class UserManagementController:
         """
         self.selected_user = user  # type: ignore[assignment]
 
-    async def create_user(self, form: UserForm) -> Optional[User]:
+    async def create_user(self, form: UserForm) -> User | None:
         """
         Creates a new user using provided form data and adds it to the user service.
 

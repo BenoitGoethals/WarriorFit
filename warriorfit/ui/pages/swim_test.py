@@ -82,9 +82,7 @@ class SwimTestPage(BaseTestPage):
                         ),
                         ui.output_text("swim_military"),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "swim_passed", t("swim.passed_label"), value=False
-                            ),
+                            ui.input_checkbox("swim_passed", t("swim.passed_label"), value=False),
                             ui.div(t("swim.status"), ui.output_ui("swim_status_display")),
                             col_widths=(8, 4),
                         ),
@@ -217,9 +215,7 @@ class SwimTestPage(BaseTestPage):
             status.set(t("common.ready"))
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -249,9 +245,7 @@ class SwimTestPage(BaseTestPage):
                 _set_buttons(can_add=False, can_update=False)
                 return
 
-            military_text.set(
-                f"{val.rank} {val.service_number} {val.first_name} {val.last_name}"
-            )
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
             status.set(t("common.serial_confirmed"))
             await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
@@ -333,11 +327,7 @@ class SwimTestPage(BaseTestPage):
                 self.selected_military = None
 
             await _toggle_inputs(disabled=(self.selected_military is None))
-            status.set(
-                f"Selected Swimming Test: {serial}"
-                if serial
-                else "Selected Swimming Test."
-            )
+            status.set(f"Selected Swimming Test: {serial}" if serial else "Selected Swimming Test.")
 
         # ----------------------------
         # CRUD
@@ -374,17 +364,13 @@ class SwimTestPage(BaseTestPage):
             )
             if not added:
                 status.set(
-                    t("swim.failed_add").format(
-                        serial=payload["serialnr"], session=payload["id"]
-                    )
+                    t("swim.failed_add").format(serial=payload["serialnr"], session=payload["id"])
                 )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(
-                t("swim.added_status").format(
-                    serial=payload["serialnr"], session=payload["id"]
-                )
+                t("swim.added_status").format(serial=payload["serialnr"], session=payload["id"])
             )
             ui.notification_show(
                 t("swim.added").format(serial=payload["serialnr"]),
@@ -424,9 +410,7 @@ class SwimTestPage(BaseTestPage):
 
             updated = await self.controller.update_swim(int(swim_id_raw), payload)
             if not updated:
-                status.set(
-                    t("swim.failed_update").format(serial=payload["serialnr"])
-                )
+                status.set(t("swim.failed_update").format(serial=payload["serialnr"]))
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
@@ -487,9 +471,7 @@ class SwimTestPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -507,9 +489,7 @@ class SwimTestPage(BaseTestPage):
         @render.data_frame
         async def swim_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.swim_serial_search_grid_selected_rows)

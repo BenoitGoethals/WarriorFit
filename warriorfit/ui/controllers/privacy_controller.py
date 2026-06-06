@@ -1,7 +1,7 @@
 """Controller for the Privacy / GDPR self-service page (serviceman-scoped)."""
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from warriorfit.services.service_consent import CURRENT_CONSENT_VERSIONS, ConsentService
 from warriorfit.services.service_gdpr import GdprService
@@ -14,25 +14,23 @@ class PrivacyController:
         consent_service: ConsentService | None = None,
     ):
         self._gdpr = gdpr_service if gdpr_service is not None else GdprService()
-        self._consent = (
-            consent_service if consent_service is not None else ConsentService()
-        )
+        self._consent = consent_service if consent_service is not None else ConsentService()
 
     @staticmethod
-    def serviceman_serial(session_user) -> Optional[str]:
+    def serviceman_serial(session_user) -> str | None:
         """Return the service_number of the logged-in user, or None."""
         if session_user is None:
             return None
         serial = getattr(session_user, "serial_number", None)
         return serial or None
 
-    async def export_json(self, service_number: str) -> Optional[str]:
+    async def export_json(self, service_number: str) -> str | None:
         data = await self._gdpr.export_serviceman_data(service_number)
         if data is None:
             return None
         return json.dumps(data, indent=2, default=str)
 
-    async def consents(self, service_number: str) -> List[Dict[str, Any]]:
+    async def consents(self, service_number: str) -> list[dict[str, Any]]:
         rows = await self._consent.list_for_serviceman(service_number)
         return [
             {
@@ -45,20 +43,16 @@ class PrivacyController:
         ]
 
     async def grant(
-        self, service_number: str, consent_type: str, ip_address: Optional[str] = None
+        self, service_number: str, consent_type: str, ip_address: str | None = None
     ) -> bool:
-        result = await self._consent.grant(
-            service_number, consent_type, ip_address=ip_address
-        )
+        result = await self._consent.grant(service_number, consent_type, ip_address=ip_address)
         return result is not None
 
     async def withdraw(
-        self, service_number: str, consent_type: str, ip_address: Optional[str] = None
+        self, service_number: str, consent_type: str, ip_address: str | None = None
     ) -> bool:
-        return await self._consent.withdraw(
-            service_number, consent_type, ip_address=ip_address
-        )
+        return await self._consent.withdraw(service_number, consent_type, ip_address=ip_address)
 
     @staticmethod
-    def available_consent_types() -> List[str]:
+    def available_consent_types() -> list[str]:
         return list(CURRENT_CONSENT_VERSIONS.keys())

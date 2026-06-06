@@ -39,9 +39,7 @@ class PhefPage(BaseTestPage):
     )
 
     @inject
-    def __init__(
-        self, controller: PhefController = Provide[Container.phef_controller]
-    ) -> None:
+    def __init__(self, controller: PhefController = Provide[Container.phef_controller]) -> None:
         super().__init__()
         self.controller = controller
 
@@ -271,9 +269,7 @@ class PhefPage(BaseTestPage):
             status.set(t("common.ready"))
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock form
@@ -376,13 +372,9 @@ class PhefPage(BaseTestPage):
             if not sess_id:
                 return pd.DataFrame()
 
-            sess_date = (
-                self.selected_session.datetime_start if self.selected_session else None
-            )
+            sess_date = self.selected_session.datetime_start if self.selected_session else None
             try:
-                df = await self.controller.list_phef_df(
-                    int(sess_id), session_date=sess_date
-                )
+                df = await self.controller.list_phef_df(int(sess_id), session_date=sess_date)
             except Exception:
                 return pd.DataFrame()
 
@@ -403,9 +395,7 @@ class PhefPage(BaseTestPage):
         @render.data_frame
         async def ph_grid():
             df_view = await sessions_phef__data_view()
-            return render.DataGrid(
-                df_view, filters=False, selection_mode="rows", width="100%"
-            )
+            return render.DataGrid(df_view, filters=False, selection_mode="rows", width="100%")
 
         # ----------------------------
         # Row selection -> populate form
@@ -434,9 +424,7 @@ class PhefPage(BaseTestPage):
 
             serial = str(row.get("Serial", "") or "").strip()
             ui.update_text("ph_serialnr", value=serial)
-            ui.update_text(
-                "ph_side_bridge_l", value=str(row.get("Sidebridge L", "") or "")
-            )
+            ui.update_text("ph_side_bridge_l", value=str(row.get("Sidebridge L", "") or ""))
             ui.update_text(
                 "ph_side_bridge_r",
                 value=str(row.get("Sidebridge R", row.get("Sidebridge R ", "")) or ""),
@@ -457,11 +445,7 @@ class PhefPage(BaseTestPage):
             await self.toggle_inputs(
                 session, self._DISABLE_IDS, disabled=(self.selected_military is None)
             )
-            status.set(
-                f"Selected PHEF record for: {serial}"
-                if serial
-                else "Selected PHEF record."
-            )
+            status.set(f"Selected PHEF record for: {serial}" if serial else "Selected PHEF record.")
 
         # ----------------------------
         # CRUD
@@ -516,9 +500,7 @@ class PhefPage(BaseTestPage):
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(
-                t("phef.added_status").format(serial=form.serialnr, session=form.session_id)
-            )
+            status.set(t("phef.added_status").format(serial=form.serialnr, session=form.session_id))
             ui.notification_show(
                 t("phef.added").format(serial=form.serialnr), type="message", duration=3
             )
@@ -617,9 +599,7 @@ class PhefPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -637,9 +617,7 @@ class PhefPage(BaseTestPage):
         @render.data_frame
         async def ph_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.ph_serial_search_grid_selected_rows)

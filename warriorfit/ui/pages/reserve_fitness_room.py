@@ -1,6 +1,5 @@
 import calendar
 from datetime import datetime, timedelta
-from typing import List
 
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
@@ -25,9 +24,9 @@ class ReserveFitnessRoomPage(Page):
         ],
     ):
         super().__init__()
-        self.rooms: List[Room] = []
-        self.reservations: List[Reservation] = []
-        self.pti_s: List[User] = []
+        self.rooms: list[Room] = []
+        self.reservations: list[Reservation] = []
+        self.pti_s: list[User] = []
         self._controller = controller
 
         # Time slots from 06:00 to 23:00
@@ -97,8 +96,8 @@ class ReserveFitnessRoomPage(Page):
 
     def server(self, input, output, session):
         # Reactive values
-        reservations: reactive.Value[List[Reservation]] = reactive.Value([])
-        rooms: reactive.Value[List[Room]] = reactive.Value([])
+        reservations: reactive.Value[list[Reservation]] = reactive.Value([])
+        rooms: reactive.Value[list[Room]] = reactive.Value([])
         selected_room = reactive.Value(None)
         current_month_val = reactive.Value(datetime.now().month)
         current_year_val = reactive.Value(datetime.now().year)
@@ -207,9 +206,7 @@ class ReserveFitnessRoomPage(Page):
                     # Find reservations for this day and time slot
                     day_reservations = []
                     for r in all_res:
-                        r_date = (
-                            r.date.date() if isinstance(r.date, datetime) else r.date
-                        )
+                        r_date = r.date.date() if isinstance(r.date, datetime) else r.date
                         r_start = (
                             r.start_time.strftime("%H:%M")
                             if isinstance(r.start_time, datetime)
@@ -265,9 +262,7 @@ class ReserveFitnessRoomPage(Page):
                                         f"{res.serial_number}",
                                         style="font-weight: bold;",
                                     ),
-                                    ui.div(
-                                        f"{res.room.name}", style="font-size: 0.7rem;"
-                                    ),
+                                    ui.div(f"{res.room.name}", style="font-size: 0.7rem;"),
                                     ui.div(
                                         f"{r_start}-{r_end}",
                                         style="font-size: 0.65rem; font-weight: bold;",
@@ -352,11 +347,7 @@ class ReserveFitnessRoomPage(Page):
                         # Count reservations for this day
                         day_reservations = []
                         for r in all_res:
-                            r_date = (
-                                r.date.date()
-                                if isinstance(r.date, datetime)
-                                else r.date
-                            )
+                            r_date = r.date.date() if isinstance(r.date, datetime) else r.date
                             if r_date == date_val:
                                 day_reservations.append(r)
 
@@ -369,9 +360,7 @@ class ReserveFitnessRoomPage(Page):
                         # Create badges
                         badges = []
                         for room_id, count in room_counts.items():
-                            room = next(
-                                (r for r in self.rooms if r.id == room_id), None
-                            )
+                            room = next((r for r in self.rooms if r.id == room_id), None)
                             if room:
                                 badges.append(
                                     ui.span(
@@ -387,9 +376,7 @@ class ReserveFitnessRoomPage(Page):
                         if selected_calendar_date() == date_str:
                             css_classes.append("selected")
 
-                        cell_content = ui.div(
-                            ui.div(str(day), class_="day-number"), *badges
-                        )
+                        cell_content = ui.div(ui.div(str(day), class_="day-number"), *badges)
 
                         cells.append(
                             ui.tags.td(
@@ -506,9 +493,7 @@ class ReserveFitnessRoomPage(Page):
                     ui.div(
                         ui.div(
                             ui.h3(t("reserve.new_reservation")),
-                            ui.input_action_button(
-                                "close_modal", "✕", class_="wf-overlay-close"
-                            ),
+                            ui.input_action_button("close_modal", "✕", class_="wf-overlay-close"),
                             class_="wf-overlay-header",
                         ),
                         ui.div(
@@ -516,8 +501,7 @@ class ReserveFitnessRoomPage(Page):
                                 "pti_name",
                                 t("reserve.pti_name"),
                                 choices=[
-                                    f"{pti.serial_number} - {pti.username} "
-                                    for pti in self.pti_s
+                                    f"{pti.serial_number} - {pti.username} " for pti in self.pti_s
                                 ],
                             ),
                             ui.input_text(
@@ -541,9 +525,7 @@ class ReserveFitnessRoomPage(Page):
                                 ),
                                 col_widths=[6, 6],
                             ),
-                            ui.div(
-                                t("reserve.sport_area"), class_="wf-section-label mt-3"
-                            ),
+                            ui.div(t("reserve.sport_area"), class_="wf-section-label mt-3"),
                             ui.output_ui("room_choice"),
                             ui.input_action_button(
                                 "reserve",
@@ -659,9 +641,7 @@ class ReserveFitnessRoomPage(Page):
 
                         if start_idx < res_end_idx and end_idx > res_start_idx:
                             ui.notification_show(
-                                t("reserve.already_booked").format(
-                                    start=r_start, end=r_end
-                                ),
+                                t("reserve.already_booked").format(start=r_start, end=r_end),
                                 type="error",
                             )
                             return
@@ -674,21 +654,15 @@ class ReserveFitnessRoomPage(Page):
             date_res = datetime.strptime(date_str, "%Y-%m-%d")
 
             # Combine date with start time string to create full datetime
-            start_time = datetime.strptime(
-                f"{date_str} {input.start_time()}", "%Y-%m-%d %H:%M"
-            )
+            start_time = datetime.strptime(f"{date_str} {input.start_time()}", "%Y-%m-%d %H:%M")
 
             # Combine date with end time string to create full datetime
-            end_time = datetime.strptime(
-                f"{date_str} {input.end_time()}", "%Y-%m-%d %H:%M"
-            )
+            end_time = datetime.strptime(f"{date_str} {input.end_time()}", "%Y-%m-%d %H:%M")
 
             # Extract service number from selected PTI (format: "service_number - First Last")
             pti_selection = input.pti_name()
             service_number = (
-                pti_selection.split(" - ")[0]
-                if " - " in pti_selection
-                else pti_selection
+                pti_selection.split(" - ")[0] if " - " in pti_selection else pti_selection
             )
 
             # Create new reservation
@@ -706,9 +680,7 @@ class ReserveFitnessRoomPage(Page):
             current_reservations.append(new_reservation)
             reservations.set(current_reservations)
 
-            ui.notification_show(
-                t("reserve.created"), type="message", duration=3
-            )
+            ui.notification_show(t("reserve.created"), type="message", duration=3)
             await self._controller.add_reservation(new_reservation)
             # Reset fields and close modal
             ui.update_text("activity", value="")
@@ -742,9 +714,7 @@ class ReserveFitnessRoomPage(Page):
 
             room_divs = []
             for room in self.rooms:
-                room_reservations = [
-                    r for r in filtered_reservations if r.room_id == room.id
-                ]
+                room_reservations = [r for r in filtered_reservations if r.room_id == room.id]
 
                 reservation_cards = []
                 for res in sorted(room_reservations, key=lambda x: x.start_time):
@@ -766,9 +736,7 @@ class ReserveFitnessRoomPage(Page):
                                     ui.br(),
                                     f"👤 {res.serial_number}",
                                     ui.br(),
-                                    ui.tags.small(
-                                        res.activity, style="color: #6b7280;"
-                                    ),
+                                    ui.tags.small(res.activity, style="color: #6b7280;"),
                                 ),
                                 ui.input_action_button(
                                     f"delete_{res.id}", "❌", class_="btn-danger btn-sm"

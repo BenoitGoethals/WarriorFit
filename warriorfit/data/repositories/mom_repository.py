@@ -101,17 +101,14 @@ class MomRepository(ABCRepository):
         :rtype: bool | None
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    query = delete(HrMessage).where(HrMessage.id == id_msg)
-                    result = await session.execute(query)
+            async with self.SessionLocal() as session, session.begin():
+                query = delete(HrMessage).where(HrMessage.id == id_msg)
+                result = await session.execute(query)
 
-                    if result.rowcount == 0:
-                        self._logger.error(
-                            "No HR message found with ID %s to delete.", id_msg
-                        )
-                        return False
-                    return True
+                if result.rowcount == 0:
+                    self._logger.error("No HR message found with ID %s to delete.", id_msg)
+                    return False
+                return True
         except SQLAlchemyError as e:
             self._logger.error("Database error deleting cross %s: %s", id_msg, str(e))
             return False
@@ -174,31 +171,26 @@ class MomRepository(ABCRepository):
         Returns True if the row was updated, False otherwise.
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    row = (
-                        await session.execute(
-                            select(HrMessage).where(HrMessage.id == msg_id)
-                        )
-                    ).scalar_one_or_none()
-                    if row is None:
-                        return False
-                    row.attempt_count = (row.attempt_count or 0) + 1
-                    row.last_error = (error or "")[:500]
-                    if row.attempt_count >= max_attempts:
-                        row.dead_letter = True
-                        row.next_retry_at = None
-                    else:
-                        delay_s = min(
-                            base_backoff_seconds * (2 ** (row.attempt_count - 1)),
-                            max_backoff_seconds,
-                        )
-                        row.next_retry_at = datetime.now() + timedelta(seconds=delay_s)
-                    return True
+            async with self.SessionLocal() as session, session.begin():
+                row = (
+                    await session.execute(select(HrMessage).where(HrMessage.id == msg_id))
+                ).scalar_one_or_none()
+                if row is None:
+                    return False
+                row.attempt_count = (row.attempt_count or 0) + 1
+                row.last_error = (error or "")[:500]
+                if row.attempt_count >= max_attempts:
+                    row.dead_letter = True
+                    row.next_retry_at = None
+                else:
+                    delay_s = min(
+                        base_backoff_seconds * (2 ** (row.attempt_count - 1)),
+                        max_backoff_seconds,
+                    )
+                    row.next_retry_at = datetime.now() + timedelta(seconds=delay_s)
+                return True
         except SQLAlchemyError as e:
-            self._logger.error(
-                "Database error marking HR message %s as failed: %s", msg_id, str(e)
-            )
+            self._logger.error("Database error marking HR message %s as failed: %s", msg_id, str(e))
             return False
 
     async def list_dead_letter(self) -> list[HrMessage]:
@@ -213,9 +205,7 @@ class MomRepository(ABCRepository):
                 result = await session.execute(query)
                 return list(result.scalars().all())
         except SQLAlchemyError as e:
-            self._logger.error(
-                "Database error listing dead-letter HR messages: %s", str(e)
-            )
+            self._logger.error("Database error listing dead-letter HR messages: %s", str(e))
             return []
 
     async def outbox_health_summary(self) -> dict:
@@ -235,16 +225,12 @@ class MomRepository(ABCRepository):
             async with self.SessionLocal() as session:
                 pending = (
                     await session.execute(
-                        select(sa_func.count(HrMessage.id)).where(
-                            HrMessage.dead_letter.is_(False)
-                        )
+                        select(sa_func.count(HrMessage.id)).where(HrMessage.dead_letter.is_(False))
                     )
                 ).scalar_one()
                 dead = (
                     await session.execute(
-                        select(sa_func.count(HrMessage.id)).where(
-                            HrMessage.dead_letter.is_(True)
-                        )
+                        select(sa_func.count(HrMessage.id)).where(HrMessage.dead_letter.is_(True))
                     )
                 ).scalar_one()
                 oldest = (

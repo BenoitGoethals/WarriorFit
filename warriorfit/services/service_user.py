@@ -55,9 +55,7 @@ class UserService(Service):
         """
         user = await self._user_repo.add_user(user)
         if user:
-            await self.add_audit_log(
-                details=f"User {user.username} added", action="add"
-            )
+            await self.add_audit_log(details=f"User {user.username} added", action="add")
         return user
 
     async def update_user(self, user_id, user):
@@ -78,9 +76,7 @@ class UserService(Service):
         """
         user = await self._user_repo.update_user(user_id, user)
         if user:
-            await self.add_audit_log(
-                details=f"User {user.username} updated", action="update"
-            )
+            await self.add_audit_log(details=f"User {user.username} updated", action="update")
         return user
 
     async def delete_user_by_serial(self, serial):

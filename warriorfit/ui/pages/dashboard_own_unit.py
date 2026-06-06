@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import datetime
-from typing import Any, Awaitable, Callable, Final, Mapping
+from typing import Any, Final
 
 from dependency_injector.wiring import Provide, inject
 from htmltools import HTML, Tag
@@ -22,9 +23,7 @@ class DashboardOwnUnitPage(Page):
     @inject
     def __init__(
         self,
-        controller: DashboardOwnUnitController = Provide[
-            Container.dashboard_own_unit_controller
-        ],
+        controller: DashboardOwnUnitController = Provide[Container.dashboard_own_unit_controller],
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -76,9 +75,7 @@ class DashboardOwnUnitPage(Page):
             # ----- Stats cards row -----
             ui.layout_columns(
                 ui.card(
-                    ui.card_header(
-                        t("dashboard.unit_personnel"), class_="bg-secondary text-white"
-                    ),
+                    ui.card_header(t("dashboard.unit_personnel"), class_="bg-secondary text-white"),
                     ui.output_ui("own_unit_personnel_stats"),
                     class_="text-center",
                 ),
@@ -284,10 +281,7 @@ class DashboardOwnUnitPage(Page):
                     ui.strong(t("dashboard.pending_msgs")),
                     ui.span(
                         str(pending),
-                        class_=(
-                            "fw-bold "
-                            + ("text-warning" if pending > 0 else "text-success")
-                        ),
+                        class_=("fw-bold " + ("text-warning" if pending > 0 else "text-success")),
                     ),
                     class_="mb-1",
                 ),
@@ -295,9 +289,7 @@ class DashboardOwnUnitPage(Page):
                     ui.strong(t("dashboard.dead_letter")),
                     ui.span(
                         str(dead),
-                        class_=(
-                            "fw-bold " + ("text-danger" if dead > 0 else "text-success")
-                        ),
+                        class_=("fw-bold " + ("text-danger" if dead > 0 else "text-success")),
                     ),
                     class_="mb-1",
                 ),

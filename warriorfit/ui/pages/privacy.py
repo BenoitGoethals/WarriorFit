@@ -86,11 +86,7 @@ class PrivacyPage(Page):
             rows = []
             for ct in PrivacyController.available_consent_types():
                 active = next(
-                    (
-                        c
-                        for c in consents
-                        if c["type"] == ct and c["withdrawn_at"] is None
-                    ),
+                    (c for c in consents if c["type"] == ct and c["withdrawn_at"] is None),
                     None,
                 )
                 label = ct.replace("_", " ").title()

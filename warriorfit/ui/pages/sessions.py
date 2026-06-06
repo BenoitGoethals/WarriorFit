@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
@@ -26,7 +26,7 @@ class SessionsPage(Page):
         super().__init__()
         self.controller = controller
 
-    def _validate(self, data: Dict[str, Any]) -> tuple[bool, str]:
+    def _validate(self, data: dict[str, Any]) -> tuple[bool, str]:
         if not data["datetime_start"]:
             return False, t("sessions.date_time_required")
         if not (data["type_test"] or "").strip():
@@ -51,7 +51,10 @@ class SessionsPage(Page):
                     ui.input_select("se_serial", t("sessions.pti_serial"), choices=[]),
                     ui.input_date("se_date", t("sessions.date")),
                     ui.input_text(
-                        "se_time", t("sessions.time"), placeholder=t("sessions.time_placeholder"), value="09:00"
+                        "se_time",
+                        t("sessions.time"),
+                        placeholder=t("sessions.time_placeholder"),
+                        value="09:00",
                     ),
                     ui.input_select("se_type", t("sessions.type"), choices=self.SESSION_TYPES),
                     ui.input_checkbox("se_canceled", t("sessions.canceled"), value=False),
@@ -96,7 +99,7 @@ class SessionsPage(Page):
         status = reactive.Value(t("common.ready"))
         selected_session_id = reactive.Value("")
 
-        async def all_pti_choices() -> Dict[str, str]:
+        async def all_pti_choices() -> dict[str, str]:
             return await self.controller.get_all_pti_choices()
 
         async def _populate_pti_choices():
@@ -110,7 +113,7 @@ class SessionsPage(Page):
         async def _populate_pti_choices_effect():
             await _populate_pti_choices()
 
-        def _read_form() -> Dict[str, Any]:
+        def _read_form() -> dict[str, Any]:
             dt_date = input.se_date()
             dt_time = input.se_time()
             dt = None
@@ -134,23 +137,17 @@ class SessionsPage(Page):
                 "type_test": (input.se_type() or "").strip(),
             }
 
-        def _write_form(rec: Dict[str, Any]):
-            dt = rec.get("datetime_start", None)
+        def _write_form(rec: dict[str, Any]):
+            dt = rec.get("datetime_start")
             dt_date = dt.date() if isinstance(dt, datetime.datetime) else None
-            dt_time = (
-                dt.time().strftime("%H:%M:%S")
-                if isinstance(dt, datetime.datetime)
-                else None
-            )
+            dt_time = dt.time().strftime("%H:%M:%S") if isinstance(dt, datetime.datetime) else None
             session.send_input_message(
                 "se_serial", {"value": rec.get("serial_number_pti", "") or ""}
             )
             session.send_input_message("se_date", {"value": dt_date})
             session.send_input_message("se_time", {"value": dt_time})
             session.send_input_message("se_type", {"value": rec.get("type_test", "")})
-            session.send_input_message(
-                "se_canceled", {"value": bool(rec.get("canceled", False))}
-            )
+            session.send_input_message("se_canceled", {"value": bool(rec.get("canceled", False))})
             session.send_input_message(
                 "se_description", {"value": rec.get("description", "") or ""}
             )
@@ -167,15 +164,11 @@ class SessionsPage(Page):
         async def _refresh_select():
             items = sessions.get() or []
             choices = {
-                str(
-                    r["id"]
-                ): f"{r['id']}: {r.get('type_test', '')} ({r.get('datetime_start', '')})"
+                str(r["id"]): f"{r['id']}: {r.get('type_test', '')} ({r.get('datetime_start', '')})"
                 for r in items
                 if r.get("id") is not None
             }
-            session.send_input_message(
-                "se_select_id", {"choices": choices, "selected": None}
-            )
+            session.send_input_message("se_select_id", {"choices": choices, "selected": None})
 
         @output
         @render.text
@@ -229,16 +222,12 @@ class SessionsPage(Page):
             ui.update_text(
                 "se_time",
                 value=(
-                    start_dt.strftime("%H:%M")
-                    if getattr(start_dt, "strftime", None)
-                    else "09:00"
+                    start_dt.strftime("%H:%M") if getattr(start_dt, "strftime", None) else "09:00"
                 ),
             )
             type_raw = str(row["Type"]).strip()
             ui.update_select("se_type", choices=self.SESSION_TYPES, selected=type_raw)
-            ui.update_checkbox(
-                "se_canceled", value=(str(row["Canceled"]).strip().lower() == "yes")
-            )
+            ui.update_checkbox("se_canceled", value=(str(row["Canceled"]).strip().lower() == "yes"))
             ui.update_text_area("se_description", value=str(row["Description"]))
             return f"Selected session ID: {row['ID']}"
 
@@ -275,9 +264,7 @@ class SessionsPage(Page):
                 status.set(t("sessions.select_to_load"))
                 return
             sel_id = int(sel)
-            rec = next(
-                (r for r in (sessions.get() or []) if r.get("id") == sel_id), None
-            )
+            rec = next((r for r in (sessions.get() or []) if r.get("id") == sel_id), None)
             if not rec:
                 status.set(t("sessions.not_found"))
                 return
@@ -333,7 +320,7 @@ class SessionsPage(Page):
             status.set(t("sessions.form_cleared"))
 
 
-_page_instance: Optional[SessionsPage] = None
+_page_instance: SessionsPage | None = None
 
 
 def _get_page() -> SessionsPage:

@@ -1,7 +1,7 @@
 """GDPR data-subject-rights service: export (Art. 15/20) and erasure (Art. 17)."""
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.exc import SQLAlchemyError
@@ -35,7 +35,7 @@ def _to_jsonable(value: Any) -> Any:
     return value
 
 
-def _row_to_dict(row: Any, columns: List[str]) -> Dict[str, Any]:
+def _row_to_dict(row: Any, columns: list[str]) -> dict[str, Any]:
     return {col: _to_jsonable(getattr(row, col, None)) for col in columns}
 
 
@@ -57,18 +57,14 @@ class GdprService(Service):
         self._march_repo = march_repository or MarchRepository()
         self._consent_repo = consent_repository or ConsentRepository()
 
-    async def export_serviceman_data(
-        self, service_number: str
-    ) -> Optional[Dict[str, Any]]:
+    async def export_serviceman_data(self, service_number: str) -> dict[str, Any] | None:
         if not service_number:
             return None
 
         serviceman = None
         try:
             async with self.SessionLocal() as session:
-                stmt = select(ServiceMen).where(
-                    ServiceMen.service_number == service_number
-                )
+                stmt = select(ServiceMen).where(ServiceMen.service_number == service_number)
                 serviceman = (await session.execute(stmt)).scalar_one_or_none()
         except SQLAlchemyError as e:
             self._logger.error("export: serviceman fetch failed: %s", e)
@@ -77,7 +73,7 @@ class GdprService(Service):
         if serviceman is None:
             return None
 
-        out: Dict[str, Any] = {
+        out: dict[str, Any] = {
             "export_generated_at": datetime.now().isoformat(),
             "serviceman": _row_to_dict(
                 serviceman,
@@ -120,8 +116,8 @@ class GdprService(Service):
         )
         return out
 
-    async def _export_fitness(self, service_number: str) -> List[Dict[str, Any]]:
-        tests: List[Dict[str, Any]] = []
+    async def _export_fitness(self, service_number: str) -> list[dict[str, Any]]:
+        tests: list[dict[str, Any]] = []
 
         def _join(model):
             return (
@@ -190,7 +186,7 @@ class GdprService(Service):
             self._logger.error("export: fitness fetch failed: %s", e)
         return tests
 
-    async def _export_marches(self, service_number: str) -> List[Dict[str, Any]]:
+    async def _export_marches(self, service_number: str) -> list[dict[str, Any]]:
         try:
             async with self.SessionLocal() as session:
                 rows = (
@@ -219,15 +215,13 @@ class GdprService(Service):
             self._logger.error("export: march fetch failed: %s", e)
             return []
 
-    async def _export_reservations(self, service_number: str) -> List[Dict[str, Any]]:
+    async def _export_reservations(self, service_number: str) -> list[dict[str, Any]]:
         try:
             async with self.SessionLocal() as session:
                 rows = (
                     (
                         await session.execute(
-                            select(Reservation).where(
-                                Reservation.serial_number == service_number
-                            )
+                            select(Reservation).where(Reservation.serial_number == service_number)
                         )
                     )
                     .scalars()
@@ -261,34 +255,25 @@ class GdprService(Service):
         service_number = user.serial_number
 
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    if service_number:
-                        await session.execute(
-                            delete(FitnessTest).where(
-                                FitnessTest.serial_number == service_number
-                            )
-                        )
-                        await session.execute(
-                            delete(March).where(March.service_number == service_number)
-                        )
-                        await session.execute(
-                            delete(Reservation).where(
-                                Reservation.serial_number == service_number
-                            )
-                        )
-                        await session.execute(
-                            delete(ServiceMen).where(
-                                ServiceMen.service_number == service_number
-                            )
-                        )
-                    if service_number:
-                        await session.execute(
-                            delete(UserConsent).where(
-                                UserConsent.service_number == service_number
-                            )
-                        )
-                    await session.execute(delete(User).where(User.id == user.id))
+            async with self.SessionLocal() as session, session.begin():
+                if service_number:
+                    await session.execute(
+                        delete(FitnessTest).where(FitnessTest.serial_number == service_number)
+                    )
+                    await session.execute(
+                        delete(March).where(March.service_number == service_number)
+                    )
+                    await session.execute(
+                        delete(Reservation).where(Reservation.serial_number == service_number)
+                    )
+                    await session.execute(
+                        delete(ServiceMen).where(ServiceMen.service_number == service_number)
+                    )
+                if service_number:
+                    await session.execute(
+                        delete(UserConsent).where(UserConsent.service_number == service_number)
+                    )
+                await session.execute(delete(User).where(User.id == user.id))
         except SQLAlchemyError as e:
             self._logger.error("erase_user failed for %d: %s", user_id, e)
             return False

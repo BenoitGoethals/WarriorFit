@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -30,8 +29,8 @@ class ConsentRepository(ABCRepository):
         service_number: str,
         consent_type: str,
         version: str,
-        ip_address: Optional[str] = None,
-    ) -> Optional[UserConsent]:
+        ip_address: str | None = None,
+    ) -> UserConsent | None:
         consent = UserConsent(
             service_number=service_number,
             consent_type=consent_type,
@@ -45,19 +44,13 @@ class ConsentRepository(ABCRepository):
                 await session.refresh(consent)
                 return consent
         except IntegrityError:
-            existing = await self.get_active_consent(
-                service_number, consent_type, version
-            )
+            existing = await self.get_active_consent(service_number, consent_type, version)
             return existing
         except SQLAlchemyError as e:
-            self._logger.error(
-                "record_consent failed for serviceman %s: %s", service_number, e
-            )
+            self._logger.error("record_consent failed for serviceman %s: %s", service_number, e)
             return None
 
-    async def withdraw_consent(
-        self, service_number: str, consent_type: str, version: str
-    ) -> bool:
+    async def withdraw_consent(self, service_number: str, consent_type: str, version: str) -> bool:
         """
         Withdraws consent for a specified service number and consent type version. Updates the
         withdrawal timestamp if the consent exists and has not been previously withdrawn. Logs
@@ -74,28 +67,25 @@ class ConsentRepository(ABCRepository):
         :rtype: bool
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    stmt = select(UserConsent).where(
-                        UserConsent.service_number == service_number,
-                        UserConsent.consent_type == consent_type,
-                        UserConsent.version == version,
-                        UserConsent.withdrawn_at.is_(None),
-                    )
-                    row = (await session.execute(stmt)).scalar_one_or_none()
-                    if row is None:
-                        return False
-                    row.withdrawn_at = datetime.now()
-                    return True
+            async with self.SessionLocal() as session, session.begin():
+                stmt = select(UserConsent).where(
+                    UserConsent.service_number == service_number,
+                    UserConsent.consent_type == consent_type,
+                    UserConsent.version == version,
+                    UserConsent.withdrawn_at.is_(None),
+                )
+                row = (await session.execute(stmt)).scalar_one_or_none()
+                if row is None:
+                    return False
+                row.withdrawn_at = datetime.now()
+                return True
         except SQLAlchemyError as e:
-            self._logger.error(
-                "withdraw_consent failed for serviceman %s: %s", service_number, e
-            )
+            self._logger.error("withdraw_consent failed for serviceman %s: %s", service_number, e)
             return False
 
     async def get_active_consent(
         self, service_number: str, consent_type: str, version: str
-    ) -> Optional[UserConsent]:
+    ) -> UserConsent | None:
         """
         Retrieve the active consent record for a given user service number, consent type,
         and version. The method filters results by withdrawing status to ensure only
@@ -120,7 +110,7 @@ class ConsentRepository(ABCRepository):
         results = await self.fetch_and_log(stmt, "user_consent")
         return results[0] if results else None
 
-    async def list_for_serviceman(self, service_number: str) -> List[UserConsent]:
+    async def list_for_serviceman(self, service_number: str) -> list[UserConsent]:
         """
         Retrieve a list of user consents for a specific service number.
 
@@ -137,7 +127,7 @@ class ConsentRepository(ABCRepository):
         results = await self.fetch_and_log(stmt, "user_consents")
         return list(results) if results else []
 
-    async def list_all_active(self) -> List[UserConsent]:
+    async def list_all_active(self) -> list[UserConsent]:
         """
         Lists all active user consents.
 

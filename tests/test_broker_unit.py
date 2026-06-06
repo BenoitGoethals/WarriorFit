@@ -30,7 +30,6 @@ from warriorfit.mom.broker import (
     PhefTestDto,
 )
 
-
 # ── helpers ────────────────────────────────────────────────────────────────────
 
 
@@ -168,6 +167,7 @@ class TestSendMessage:
     verifies that invalid or unrecognized message types are not queued.
 
     """
+
     def test_phef_test_queued_with_correct_payload(self):
         async def _test():
             broker, _, _ = _make_broker()
@@ -268,6 +268,7 @@ class TestProcessCycle:
     :ivar hr_msg: Represents a human-readable message object used for testing.
     :type hr_msg: HrMessage
     """
+
     def test_drains_queue_to_db(self):
         async def _test():
             broker, _, _ = _make_broker()
@@ -343,6 +344,7 @@ class TestCheckAndSendMessages:
     The tests employ asynchronous mocks and patches to verify interactions with external
     dependencies while simulating different outcomes during message processing.
     """
+
     def test_success_deletes_row(self):
         async def _test():
             broker, _, _ = _make_broker()
@@ -493,7 +495,7 @@ class TestSendMessageToHr:
     def test_returns_none_on_timeout(self):
         async def _test():
             broker, _, mock_service = _make_broker()
-            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=asyncio.TimeoutError())
+            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=TimeoutError())
             with self._config_patch:
                 assert await broker._send_message_to_hr(_hr_msg()) is None
 
@@ -502,9 +504,7 @@ class TestSendMessageToHr:
     def test_returns_none_on_connection_error(self):
         async def _test():
             broker, _, mock_service = _make_broker()
-            mock_service.sent_hr_message_to_hr = AsyncMock(
-                side_effect=ConnectionError("refused")
-            )
+            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=ConnectionError("refused"))
             with self._config_patch:
                 assert await broker._send_message_to_hr(_hr_msg()) is None
 
@@ -513,9 +513,7 @@ class TestSendMessageToHr:
     def test_returns_none_on_value_error(self):
         async def _test():
             broker, _, mock_service = _make_broker()
-            mock_service.sent_hr_message_to_hr = AsyncMock(
-                side_effect=ValueError("bad data")
-            )
+            mock_service.sent_hr_message_to_hr = AsyncMock(side_effect=ValueError("bad data"))
             with self._config_patch:
                 assert await broker._send_message_to_hr(_hr_msg()) is None
 

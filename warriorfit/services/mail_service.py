@@ -2,10 +2,10 @@ import logging
 import os
 import smtplib
 import ssl
-from datetime import datetime
+from collections.abc import Iterable
+from datetime import UTC, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Iterable, Optional
 
 from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.utils.Os import Os
@@ -30,16 +30,14 @@ class MailService:
         to: Iterable[str] | str,
         subject: str,
         html_body: str,
-        from_email: Optional[str] = None,
-        cc: Optional[Iterable[str] | str] = None,
-        bcc: Optional[Iterable[str] | str] = None,
+        from_email: str | None = None,
+        cc: Iterable[str] | str | None = None,
+        bcc: Iterable[str] | str | None = None,
     ) -> None:
         self._send_message(
             to=self._ensure_list(to),  # type: ignore[arg-type]
             subject=subject,
-            from_email=from_email
-            or self.config.sender_email
-            or (self.config.username or ""),
+            from_email=from_email or self.config.sender_email or (self.config.username or ""),
             html_body=html_body,
             ics_text=None,
             cc=self._ensure_list(cc),
@@ -55,14 +53,14 @@ class MailService:
         start: datetime,
         end: datetime,
         organizer_email: str,
-        organizer_name: Optional[str] = None,
-        location: Optional[str] = None,
-        description_text: Optional[str] = None,
-        uid: Optional[str] = None,
-        from_email: Optional[str] = None,
-        cc: Optional[Iterable[str] | str] = None,
-        bcc: Optional[Iterable[str] | str] = None,
-        alarm_minutes_before: Optional[int] = 15,
+        organizer_name: str | None = None,
+        location: str | None = None,
+        description_text: str | None = None,
+        uid: str | None = None,
+        from_email: str | None = None,
+        cc: Iterable[str] | str | None = None,
+        bcc: Iterable[str] | str | None = None,
+        alarm_minutes_before: int | None = 15,
     ) -> None:
         """
         Sends an HTML email with an iCalendar invite attached. Works for Google and Outlook.
@@ -82,9 +80,7 @@ class MailService:
         self._send_message(
             to=self._ensure_list(to),  # type: ignore[arg-type]
             subject=subject,
-            from_email=from_email
-            or self.config.sender_email
-            or (self.config.username or ""),
+            from_email=from_email or self.config.sender_email or (self.config.username or ""),
             html_body=html_body,
             ics_text=ics,
             cc=self._ensure_list(cc),
@@ -99,9 +95,9 @@ class MailService:
         subject: str,
         from_email: str,
         html_body: str,
-        ics_text: Optional[str],
-        cc: Optional[list[str]],
-        bcc: Optional[list[str]],
+        ics_text: str | None,
+        cc: list[str] | None,
+        bcc: list[str] | None,
     ) -> None:
         msg = MIMEMultipart("mixed")
         msg["Subject"] = subject
@@ -120,9 +116,7 @@ class MailService:
             cal_part = MIMEText(ics_text, "calendar", "utf-8")
             cal_part.add_header("Content-Class", "urn:content-classes:calendarmessage")
             cal_part.add_header("Content-ID", "<calendar_invite>")
-            cal_part.replace_header(
-                "Content-Type", "text/calendar; method=REQUEST; charset=UTF-8"
-            )
+            cal_part.replace_header("Content-Type", "text/calendar; method=REQUEST; charset=UTF-8")
             alt.attach(cal_part)
 
         msg.attach(alt)
@@ -130,9 +124,7 @@ class MailService:
         recipients = list({*to, *(cc or []), *(bcc or [])})
         self._deliver(from_email, recipients, msg)
 
-    def _deliver(
-        self, from_email: str, recipients: list[str], msg: MIMEMultipart
-    ) -> None:
+    def _deliver(self, from_email: str, recipients: list[str], msg: MIMEMultipart) -> None:
         if os.getenv("APP_ENV", "development") == "development":
             self._logger.debug("Mail suppressed in development mode")
             return
@@ -162,12 +154,10 @@ class MailService:
             if server.has_extn("AUTH"):
                 server.login(self.config.username, self.config.password)
             else:
-                self._logger.warning(
-                    "SMTP server does not support authentication, skipping login"
-                )
+                self._logger.warning("SMTP server does not support authentication, skipping login")
 
     @staticmethod
-    def _ensure_list(val: Optional[Iterable[str] | str]) -> Optional[list[str]]:
+    def _ensure_list(val: Iterable[str] | str | None) -> list[str] | None:
         if val is None:
             return None
         if isinstance(val, str):
@@ -196,9 +186,8 @@ class MailService:
 
     @staticmethod
     def _utc():
-        from datetime import timezone
 
-        return timezone.utc
+        return UTC
 
     def _build_ics(
         self,
@@ -207,12 +196,12 @@ class MailService:
         start: datetime,
         end: datetime,
         organizer_email: str,
-        organizer_name: Optional[str],
+        organizer_name: str | None,
         attendees: list[str],
-        location: Optional[str],
-        description: Optional[str],
-        uid: Optional[str],
-        alarm_minutes_before: Optional[int],
+        location: str | None,
+        description: str | None,
+        uid: str | None,
+        alarm_minutes_before: int | None,
     ) -> str:
         dtstamp = self._fmt_dt(datetime.utcnow())
         dtstart = self._fmt_dt(start)
@@ -244,9 +233,7 @@ class MailService:
             )
 
         loc_line = f"LOCATION:{self._escape_ics(location)}\r\n" if location else ""
-        desc_line = (
-            f"DESCRIPTION:{self._escape_ics(description)}\r\n" if description else ""
-        )
+        desc_line = f"DESCRIPTION:{self._escape_ics(description)}\r\n" if description else ""
 
         ics = (
             "BEGIN:VCALENDAR\r\n"
@@ -272,7 +259,7 @@ class MailService:
         return ics
 
     @staticmethod
-    def _escape_ics(val: Optional[str]) -> str:
+    def _escape_ics(val: str | None) -> str:
         if not val:
             return ""
         # Escape commas, semicolons, and backslashes; replace newlines

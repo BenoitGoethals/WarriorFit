@@ -22,9 +22,7 @@ class StatusApplicationPage(Page):
     @inject
     def __init__(
         self,
-        controller: StatusApplicationController = Provide[
-            Container.status_application_controller
-        ],
+        controller: StatusApplicationController = Provide[Container.status_application_controller],
     ):
         super().__init__()
         self._controller = controller

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
 
 from warriorfit.services.report_generator_csv import ReportGeneratorCsv
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
@@ -39,7 +38,7 @@ class ReportsController:
         self._csv_gen = csv_gen if csv_gen is not None else ReportGeneratorCsv()
         self._pdf_gen = pdf_gen if pdf_gen is not None else ReportGeneratorPdf()
 
-    def _resolve_targets(self, test_type: str) -> List[ReportType]:
+    def _resolve_targets(self, test_type: str) -> list[ReportType]:
         if test_type == "all":
             return [
                 ReportType.PHEF,
@@ -49,7 +48,7 @@ class ReportsController:
             ]
         return [ReportType.from_str(test_type)]
 
-    async def generate(self, req: ReportRequest) -> Tuple[List[str], Tuple[str, str]]:
+    async def generate(self, req: ReportRequest) -> tuple[list[str], tuple[str, str]]:
         """
         Asynchronously generates reports in the format(s) specified in the request
         and returns the file paths and status information.
@@ -68,18 +67,18 @@ class ReportsController:
         try:
             report_name = (req.title or "Report").strip().replace(" ", "_")
             targets = self._resolve_targets(req.test_type)
-            paths: List[str] = []
+            paths: list[str] = []
 
             for t in targets:
                 if req.format in ("csv", "both"):
-                    csv_result: Dict[str, str] = await self._csv_gen.generate_report(
+                    csv_result: dict[str, str] = await self._csv_gen.generate_report(
                         report_name, t, req.own_unit, req.this_year
                     )
                     for v in (csv_result or {}).values():
                         if v:
                             paths.append(v)
                 if req.format in ("pdf", "both"):
-                    pdf_result: Dict[str, str] = await self._pdf_gen.generate_report(
+                    pdf_result: dict[str, str] = await self._pdf_gen.generate_report(
                         report_name, t, req.own_unit, req.this_year
                     )
                     for v in (pdf_result or {}).values():
@@ -89,5 +88,5 @@ class ReportsController:
             if paths:
                 return paths, ("success", "Report generated successfully.")
             return [], ("warning", "No files were generated.")
-        except (ValueError, TypeError, KeyError, OSError, IOError) as e:
+        except (ValueError, TypeError, KeyError, OSError) as e:
             return [], ("danger", f"Error generating report: {e}")

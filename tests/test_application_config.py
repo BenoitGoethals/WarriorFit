@@ -70,9 +70,7 @@ def app_config():
     with (
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
         patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
-        patch.object(
-            ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION
-        ),
+        patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
         patch(
             "warriorfit.config.application_config.create_async_engine",
             return_value=MagicMock(),
@@ -210,9 +208,7 @@ def test_development_env_uses_dev_config():
     with (
         patch.dict(os.environ, {"APP_ENV": "development"}, clear=False),
         patch.object(ApplicationConfig, "_load_yaml_file", return_value=MINIMAL_CONFIG),
-        patch.object(
-            ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION
-        ),
+        patch.object(ApplicationConfig, "_load_version_yaml_file", return_value=MINIMAL_VERSION),
         patch(
             "warriorfit.config.application_config.create_async_engine",
             return_value=MagicMock(),
@@ -230,9 +226,8 @@ def test_production_env_missing_secret_key_raises():
     env = {k: v for k, v in os.environ.items() if k != "WF_SECRET_KEY"}
     env["APP_ENV"] = "production"
 
-    with patch.dict(os.environ, env, clear=True):
-        with pytest.raises(KeyError):
-            ApplicationConfig()
+    with patch.dict(os.environ, env, clear=True), pytest.raises(KeyError):
+        ApplicationConfig()
 
 
 def test_production_env_with_secret_key_and_config_override(tmp_path):

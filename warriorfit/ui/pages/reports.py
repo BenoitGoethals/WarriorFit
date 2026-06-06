@@ -25,9 +25,7 @@ class ReportsPage(Page):
     ) -> None:
         super().__init__()
         self.controller = controller
-        self._status_msg = reactive.Value(
-            ("info", t("reports.click_to_generate"))
-        )
+        self._status_msg = reactive.Value(("info", t("reports.click_to_generate")))
         self._last_paths = reactive.Value([])  # type: ignore[var-annotated]
         self.__logger = logging.getLogger(__name__)
 
@@ -41,7 +39,9 @@ class ReportsPage(Page):
             ui.layout_sidebar(
                 ui.sidebar(
                     ui.input_text(
-                        "report_title", t("reports.report_title_label"), t("reports.fitness_test_report")
+                        "report_title",
+                        t("reports.report_title_label"),
+                        t("reports.fitness_test_report"),
                     ),
                     ui.input_checkbox("own_Unit", t("reports.own_unit"), value=True),
                     ui.input_checkbox("this_year", t("reports.this_year"), value=True),

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import contextlib
 from abc import abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 from shiny import reactive, ui
 
@@ -17,8 +18,8 @@ class BaseTestPage(Page):
 
     def __init__(self):
         super().__init__()
-        self.selected_military: Optional[ServiceMen] = None
-        self.selected_session: Optional[TestSession] = None
+        self.selected_military: ServiceMen | None = None
+        self.selected_session: TestSession | None = None
 
     def refresh(self) -> None:
         """Refresh the page by incrementing the refresh tick."""
@@ -71,9 +72,7 @@ class BaseTestPage(Page):
                 if hasattr(controller, "get_session_by_id"):
                     self.selected_session = await controller.get_session_by_id(int(val))
                 else:
-                    self.selected_session = await controller.get_test_session_by_id(
-                        int(val)
-                    )
+                    self.selected_session = await controller.get_test_session_by_id(int(val))
             except Exception:
                 self.selected_session = None
 
@@ -86,9 +85,7 @@ class BaseTestPage(Page):
             test_sessions = []
 
         items = {
-            str(
-                s.id
-            ): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
+            str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
             for s in (test_sessions or [])
         }
         current = (getattr(input, f"{prefix}_session_id")() or "").strip()
@@ -155,13 +152,11 @@ class BaseTestPage(Page):
         self, session: Any, disable_ids: tuple[str, ...], disabled: bool
     ) -> None:
         """Toggle input disabling via custom message."""
-        try:
+        with contextlib.suppress(Exception):
             await session.send_custom_message(
                 "wf_toggle_disabled",
                 {"ids": list(disable_ids), "disabled": bool(disabled)},
             )
-        except Exception:
-            pass
 
     def set_buttons(self, prefix: str, can_add: bool, can_update: bool) -> None:
         """Set button states."""

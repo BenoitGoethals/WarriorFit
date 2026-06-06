@@ -31,9 +31,7 @@ def _failed_styles(df: pd.DataFrame, columns: list[str]) -> list[StyleInfoBody]:
         col_idx: int = loc
         failed_rows = [i for i, v in enumerate(df[col]) if "failed" in str(v).lower()]
         if failed_rows:
-            styles.append(
-                {"rows": failed_rows, "cols": [col_idx], "style": _FAILED_STYLE}
-            )
+            styles.append({"rows": failed_rows, "cols": [col_idx], "style": _FAILED_STYLE})
     return styles
 
 
@@ -41,9 +39,7 @@ class OwnUnitPage(Page):
     TAB_NAME = "Status Unit"
 
     @inject
-    def __init__(
-        self, controller: OwnUnitController = Provide[Container.own_unit_controller]
-    ):
+    def __init__(self, controller: OwnUnitController = Provide[Container.own_unit_controller]):
         super().__init__()
         self.controller = controller
         self._selected_serial = reactive.Value(None)
@@ -56,18 +52,14 @@ class OwnUnitPage(Page):
         return ui.nav_panel(
             t("nav.status_unit"),
             ui.card(
-                ui.card_header(
-                    t("unit.header").format(unit=self.controller.unit_name)
-                ),
+                ui.card_header(t("unit.header").format(unit=self.controller.unit_name)),
                 ui.input_action_button(
                     "refresh_servicemen",
                     t("common.refresh"),
                     class_="btn btn-secondary btn-sm my-2",
                 ),
                 ui.output_data_frame("servicemen_grid"),
-                ui.input_action_button(
-                    "full_report_unit", t("unit.pdf_btn"), width="150px"
-                ),
+                ui.input_action_button("full_report_unit", t("unit.pdf_btn"), width="150px"),
                 ui.output_ui("download_btn_unit"),
                 ui.br(),
                 full_screen=True,
@@ -163,15 +155,11 @@ class OwnUnitPage(Page):
                         ui.h4(t("unit.test_history").format(serial=serial)),
                         ui.output_data_frame("serviceman_tests_grid"),
                         easy_close=True,
-                        footer=ui.input_action_button(
-                            "close_serviceman_tests", t("common.close")
-                        ),
+                        footer=ui.input_action_button("close_serviceman_tests", t("common.close")),
                     )
                 )
             except Exception:
-                ui.notification_show(
-                    t("unit.load_error"), type="error", duration=2
-                )
+                ui.notification_show(t("unit.load_error"), type="error", duration=2)
 
         @output
         @render.data_frame
