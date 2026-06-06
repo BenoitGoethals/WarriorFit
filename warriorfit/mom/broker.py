@@ -189,7 +189,7 @@ class Broker:
         # 2. Send pending messages
         await self.check_and_send_messages()
 
-    async def send_message(self, test: FitnessTest):
+    async def send_message(self, test: FitnessTest | March):
         """
         Send a message to the message queue.
 
@@ -457,7 +457,7 @@ class Broker:
                                 "last_error": err,
                             },
                         )
-                        await self._send_dead_letter_alert(message_id, attempt_before + 1, err)
+                        await self._send_dead_letter_alert(msg.id, attempt_before + 1, err)
                     else:
                         self._logger.warning(
                             "HR message send failed, scheduled for retry",

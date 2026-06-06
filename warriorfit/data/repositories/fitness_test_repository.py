@@ -720,7 +720,7 @@ class FitnessTestRepository(ABCRepository):
 
     async def update_fitness_test(
         self, fitness_test_id: int, updated_fitness_test: FitnessTest
-    ) -> type[FitnessTest] | None:
+    ) -> FitnessTest | None:
         """
         Updates an existing FitnessTest, handling polymorphic subclasses.
 
@@ -762,7 +762,7 @@ class FitnessTestRepository(ABCRepository):
 
                     await session.flush()
                     await session.refresh(fitness_test)
-                    return fitness_test  # type: ignore[return-value]
+                    return fitness_test
         except IntegrityError as e:
             self._logger.error(
                 "Integrity error updating FitnessTest %d: %s", fitness_test_id, str(e)

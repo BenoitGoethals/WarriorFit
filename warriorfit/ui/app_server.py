@@ -60,7 +60,7 @@ def _register_pages_server(
     }
     servers_by_tab["CalendarEvents"] = calendar_events.server
 
-    mounted: reactive.Value[set[str]] = reactive.Value(set())  # type: ignore[assignment]
+    mounted: reactive.Value[set[str]] = reactive.Value(set())
 
     @reactive.Effect
     def _mount_on_nav_activation():
@@ -79,7 +79,7 @@ def _register_pages_server(
             mounted.set({*mounted.get(), "CalendarEvents"})
 
 
-def _lang_switcher() -> ui.Tag:
+def _lang_switcher() -> Any:
     """
     Creates a language switching UI control.
 

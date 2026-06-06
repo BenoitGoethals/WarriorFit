@@ -128,7 +128,7 @@ class TestMarchTestDto:
         test.service_number = "SVC001"
         test.distance = 30.0
         test.succeeded = True
-        test.datetime_executed = dt
+        test.datetime_executed = dt  # type: ignore[assignment]
         assert MarchTestDto(test).to_dict() == {
             "service_number": "SVC001",
             "distance": 30.0,
@@ -141,7 +141,7 @@ class TestMarchTestDto:
         test.service_number = "SVC002"
         test.distance = 20.0
         test.succeeded = False
-        test.datetime_executed = None
+        test.datetime_executed = None  # type: ignore[assignment]
         assert MarchTestDto(test).to_dict()["datetime_executed"] is None
 
 
@@ -212,7 +212,7 @@ class TestSendMessage:
             test.service_number = "SVC1"
             test.distance = 30.0
             test.succeeded = True
-            test.datetime_executed = datetime(2026, 1, 1)
+            test.datetime_executed = datetime(2026, 1, 1)  # type: ignore[assignment]
             await broker.send_message(test)
             assert broker._msg_queue.qsize() == 1
 
@@ -456,6 +456,7 @@ class TestTrySendToHr:
             broker._send_message_to_hr = AsyncMock(side_effect=RuntimeError("boom"))
             result, err = await broker._try_send_to_hr(_hr_msg())
             assert result is None
+            assert err is not None
             assert "RuntimeError" in err
 
         asyncio.run(_test())
@@ -553,6 +554,7 @@ class TestLifecycle:
             broker.worker = AsyncMock()
             broker.start()
             first_task = broker._worker_task
+            assert first_task is not None
             with caplog.at_level(logging.WARNING):
                 broker.start()
             assert broker._worker_task is first_task
@@ -579,6 +581,7 @@ class TestLifecycle:
             broker.worker = AsyncMock()
             broker.start()
             task = broker._worker_task
+            assert task is not None
             broker.stop()
             assert task.cancelled() or task.cancelling() > 0
 

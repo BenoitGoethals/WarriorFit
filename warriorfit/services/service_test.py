@@ -58,7 +58,7 @@ class ServiceTest(Service):
 
         Raises PermissionError when no privileged user is present.
         """
-        from warriorfit.data.model.db_model import Role
+        from warriorfit.core.role import Role
         from warriorfit.ui.user_store import UserStore
 
         privileged = {Role.ADMIN, Role.PTI, Role.APTI}
@@ -129,7 +129,7 @@ class ServiceTest(Service):
         :return: Returns a boolean indicating whether the fitness test was successfully
             added to the test session.
         """
-        from warriorfit.app import FitnessWarriorApp
+        from warriorfit.core.container import Container
 
         add_test = await self._test_repo.add_fitness_test_to_TestSession(
             fitness_test, test
@@ -146,7 +146,7 @@ class ServiceTest(Service):
                     body = self.build_email_body_functional(military, session, test)  # type: ignore[arg-type]
                 case "combat_test":
                     body = self.build_email_body_combat(test)
-            await FitnessWarriorApp.get_broker().send_message(test)
+            await Container().broker().send_message(test)
             if body:
                 notify = (
                     self._notify_mail if self._notify_mail is not None else NotifyMail()
@@ -177,10 +177,10 @@ class ServiceTest(Service):
 
     async def update_fitness_test(self, param, cp):
         updated = await self._test_repo.update_fitness_test(param, cp)
-        from warriorfit.app import FitnessWarriorApp
+        from warriorfit.core.container import Container
 
-        await FitnessWarriorApp.get_broker().send_message(updated)
         if updated:
+            await Container().broker().send_message(updated)
             await self.add_audit_log(
                 details=f"Fitness test {cp.serial_number}  {cp.type} updated in test session {param}",
                 action="update",

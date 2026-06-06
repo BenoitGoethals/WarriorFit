@@ -117,7 +117,7 @@ class ServiceMarch(Service):
         :return: The newly added march instance.
         :rtype: March
         """
-        from warriorfit.app import FitnessWarriorApp
+        from warriorfit.core.container import Container
 
         march = await self.__repo.add_march(march)  # type: ignore[assignment]
         sm = await self.be_mil_service.get_servicemen_by_serial(
@@ -126,7 +126,7 @@ class ServiceMarch(Service):
 
         body = self.build_email_body_march(march, sm)  # type: ignore[arg-type]
 
-        await FitnessWarriorApp.get_broker().send_message(march)
+        await Container().broker().send_message(march)
         if body:
             notify = (
                 self._notify_mail if self._notify_mail is not None else NotifyMail()
