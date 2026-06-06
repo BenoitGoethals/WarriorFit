@@ -1,6 +1,8 @@
 # Python
 from __future__ import annotations
 
+from typing import Final
+
 import pandas as pd
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
@@ -13,6 +15,7 @@ from warriorfit.ui.pages.page import Page
 
 class IndTestShowPage(Page):
     TAB_NAME = "Individual"
+    _NO_SVC_KEY: Final[str] = "individual.no_serviceman"
 
     @inject
     def __init__(
@@ -22,7 +25,7 @@ class IndTestShowPage(Page):
         super().__init__()
         self.controller = controller
         self.serial = reactive.Value("")
-        self.mil_info = reactive.Value(t("individual.no_serviceman"))
+        self.mil_info = reactive.Value(t(self._NO_SVC_KEY))
         self.tests_df = reactive.Value(pd.DataFrame())
         self.report_path = reactive.Value(None)
 
@@ -111,7 +114,7 @@ class IndTestShowPage(Page):
                 else:
                     status.set(t("common.report_failed"))
             else:
-                status.set(t("individual.no_serviceman"))
+                status.set(t(self._NO_SVC_KEY))
 
         @output
         @render.ui
@@ -138,7 +141,7 @@ class IndTestShowPage(Page):
             s = (input.ind_serial() or "").strip()
             if not s:
                 status.set(t("individual.no_serial"))
-                self.mil_info.set(t("individual.no_serviceman"))
+                self.mil_info.set(t(self._NO_SVC_KEY))
                 self.tests_df.set(pd.DataFrame())
                 return
             try:

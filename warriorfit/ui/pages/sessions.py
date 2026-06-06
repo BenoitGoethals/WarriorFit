@@ -17,7 +17,8 @@ class SessionsPage(Page):
     SESSION_TYPES = [r.name for r in TypeFitnessTest]
     ROLES = [r.name for r in Role]
 
-    NO_SELECTION_MESSAGE = "No row selected"
+    NO_SELECTION_MESSAGE = "common.no_row_selected"
+    _DATE_KEY = "sessions.date"
 
     @inject
     def __init__(
@@ -49,7 +50,7 @@ class SessionsPage(Page):
                 ui.card(
                     ui.card_header(t("sessions.edit_header")),
                     ui.input_select("se_serial", t("sessions.pti_serial"), choices=[]),
-                    ui.input_date("se_date", t("sessions.date")),
+                    ui.input_date("se_date", t(self._DATE_KEY)),
                     ui.input_text(
                         "se_time",
                         t("sessions.time"),
@@ -154,7 +155,7 @@ class SessionsPage(Page):
 
         async def _clear_form():
             await _populate_pti_choices()
-            ui.update_date("se_date", label=t("sessions.date"), value=None)
+            ui.update_date("se_date", label=t(self._DATE_KEY), value=None)
             ui.update_text("se_time", value="09:00")
             ui.update_select("se_type", choices=self.SESSION_TYPES)
             ui.update_checkbox("se_canceled", value=False)
@@ -218,7 +219,7 @@ class SessionsPage(Page):
                 date_value = start_dt.date()
             except Exception:
                 date_value = None
-            ui.update_date("se_date", label=t("sessions.date"), value=date_value)
+            ui.update_date("se_date", label=t(self._DATE_KEY), value=date_value)
             ui.update_text(
                 "se_time",
                 value=(

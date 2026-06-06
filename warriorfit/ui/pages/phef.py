@@ -26,7 +26,8 @@ class PhefFormData:
 
 class PhefPage(BaseTestPage):
     TAB_NAME: Final[str] = "PHEF Tests"
-    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
+    NO_SELECTION_MESSAGE: Final[str] = "common.no_row_selected"
+    _SCORE_KEY: Final[str] = "phef.score"
 
     # These IDs are disabled until the user confirms a valid serial.
     _DISABLE_IDS: Final[tuple[str, ...]] = (
@@ -92,7 +93,7 @@ class PhefPage(BaseTestPage):
                                 t("phef.side_bridge_r"),
                                 placeholder="e.g., 2:30",
                             ),
-                            ui.div(t("phef.score"), ui.output_ui("ph_side_bridge_r_score")),
+                            ui.div(t(self._SCORE_KEY), ui.output_ui("ph_side_bridge_r_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
@@ -101,7 +102,7 @@ class PhefPage(BaseTestPage):
                                 t("phef.side_bridge_l"),
                                 placeholder="e.g., 2:30",
                             ),
-                            ui.div(t("phef.score"), ui.output_ui("ph_side_bridge_l_score")),
+                            ui.div(t(self._SCORE_KEY), ui.output_ui("ph_side_bridge_l_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
@@ -110,7 +111,7 @@ class PhefPage(BaseTestPage):
                                 t("phef.run_2400"),
                                 placeholder="e.g., 10:45",
                             ),
-                            ui.div(t("phef.score"), ui.output_ui("ph_run_2400_score")),
+                            ui.div(t(self._SCORE_KEY), ui.output_ui("ph_run_2400_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
@@ -405,17 +406,17 @@ class PhefPage(BaseTestPage):
         async def _on_row_selected() -> None:
             sel = input.ph_grid_selected_rows()
             if not sel:
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             df = await sessions_phef__data()
             if df is None or df.empty:
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row_idx = sel[0]
             if row_idx < 0 or row_idx >= len(df):
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row = df.iloc[row_idx]

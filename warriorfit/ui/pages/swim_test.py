@@ -23,7 +23,7 @@ class SwimFormData:
 
 class SwimTestPage(BaseTestPage):
     TAB_NAME: Final[str] = "Swimming Tests"
-    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
+    NO_SELECTION_MESSAGE: Final[str] = "common.no_row_selected"
 
     # Disable these inputs until serial is confirmed
     _DISABLE_IDS: Final[tuple[str, ...]] = (
@@ -292,17 +292,17 @@ class SwimTestPage(BaseTestPage):
         async def _on_row_selected() -> None:
             sel = input.swim_grid_selected_rows()
             if not sel:
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             df = await sessions_swim_data()
             if df is None or df.empty:
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row_idx = sel[0]
             if row_idx < 0 or row_idx >= len(df):
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row = df.iloc[row_idx]

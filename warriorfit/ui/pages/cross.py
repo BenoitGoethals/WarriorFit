@@ -31,14 +31,15 @@ class CrossPage(Page):
         self._logger = logging.getLogger(__name__)
         self._last_paths = None
 
-    NO_SELECTION_MESSAGE = "No row selected"
+    NO_SELECTION_MESSAGE = "common.no_row_selected"
+    _CROSS_NAV_KEY = "nav.cross"
 
     def refresh(self):
         pass
 
     def get_ui(self):
         return ui.nav_panel(
-            t("nav.cross"),
+            t(self._CROSS_NAV_KEY),
             ui.h2(t("cross.title")),
             ui.input_action_button(
                 "cross_refresh_btn",
@@ -48,8 +49,8 @@ class CrossPage(Page):
             ui.layout_columns(
                 ui.div(
                     ui.card(
-                        ui.card_header(t("nav.cross")),
-                        ui.input_select("cross_id", t("nav.cross"), choices=[]),
+                        ui.card_header(t(self._CROSS_NAV_KEY)),
+                        ui.input_select("cross_id", t(self._CROSS_NAV_KEY), choices=[]),
                         ui.input_action_button("cross_locker", t("cross.select"), width="150px"),
                         full_screen=False,
                     ),

@@ -19,6 +19,9 @@ from warriorfit.ui.page_registry import PageSpec, get_pages, pages_for_role
 from warriorfit.ui.user_store import UserStore
 
 
+_LOGIN_LANG_BTN_STYLE = "font-size:0.75rem; padding:2px 8px;"
+
+
 class _ServicemanSessionUser:
     """Lightweight shim for serviceman-mode sessions."""
 
@@ -409,19 +412,19 @@ def make_server(
                         "lang_en",
                         "EN",
                         class_="btn btn-outline-secondary btn-sm me-1",
-                        style="font-size:0.75rem; padding:2px 8px;",
+                        style=_LOGIN_LANG_BTN_STYLE,
                     ),
                     ui.input_action_button(
                         "lang_nl",
                         "NL",
                         class_="btn btn-outline-secondary btn-sm me-1",
-                        style="font-size:0.75rem; padding:2px 8px;",
+                        style=_LOGIN_LANG_BTN_STYLE,
                     ),
                     ui.input_action_button(
                         "lang_fr",
                         "FR",
                         class_="btn btn-outline-secondary btn-sm",
-                        style="font-size:0.75rem; padding:2px 8px;",
+                        style=_LOGIN_LANG_BTN_STYLE,
                     ),
                     style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;",
                 ),

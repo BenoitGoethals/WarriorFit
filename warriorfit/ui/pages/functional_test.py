@@ -26,7 +26,8 @@ class FunctionalFormData:
 
 class FunctionalPage(BaseTestPage):
     TAB_NAME: Final[str] = "Functional Tests"
-    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
+    NO_SELECTION_MESSAGE: Final[str] = "common.no_row_selected"
+    _RESULT_KEY: Final[str] = "functional.result"
 
     # Disable these inputs until serial is confirmed
     _DISABLE_IDS: Final[tuple[str, ...]] = (
@@ -96,7 +97,7 @@ class FunctionalPage(BaseTestPage):
                                 "functional_push_ups", t("functional.pushups"), value=0, min=0
                             ),
                             ui.div(
-                                t("functional.result"), ui.output_ui("functional_push_ups_score")
+                                t(self._RESULT_KEY), ui.output_ui("functional_push_ups_score")
                             ),
                             col_widths=(8, 4),
                         ),
@@ -105,7 +106,7 @@ class FunctionalPage(BaseTestPage):
                                 "functional_sit_ups", t("functional.situps"), value=0, min=0
                             ),
                             ui.div(
-                                t("functional.result"), ui.output_ui("functional_sit_ups_score")
+                                t(self._RESULT_KEY), ui.output_ui("functional_sit_ups_score")
                             ),
                             col_widths=(8, 4),
                         ),
@@ -114,12 +115,12 @@ class FunctionalPage(BaseTestPage):
                                 "functional_pull_ups", t("functional.pullups"), value=0, min=0
                             ),
                             ui.div(
-                                t("functional.result"), ui.output_ui("functional_pull_ups_score")
+                                t(self._RESULT_KEY), ui.output_ui("functional_pull_ups_score")
                             ),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
-                            ui.div(t("functional.result"), ui.output_ui("functional_total_score")),
+                            ui.div(t(self._RESULT_KEY), ui.output_ui("functional_total_score")),
                             col_widths=(12,),
                         ),
                         ui.br(),
@@ -453,17 +454,17 @@ class FunctionalPage(BaseTestPage):
         async def _on_row_selected() -> None:
             sel = input.functional_grid_selected_rows()
             if not sel:
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             df = await sessions_functional_data()
             if df is None or df.empty:
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row_idx = sel[0]
             if row_idx < 0 or row_idx >= len(df):
-                status.set(t("common.no_row_selected"))
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row = df.iloc[row_idx]

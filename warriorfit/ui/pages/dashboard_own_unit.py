@@ -137,6 +137,8 @@ class DashboardOwnUnitPage(Page):
         )
 
     def server(self, input: Any, output: Any, session: Any) -> None:
+        _total_tests = t("dashboard.total_tests")
+        _no_chart = t("dashboard.no_chart")
         refresh_tick = reactive.Value(0)
         self.refresh_on_nav(input, self.TAB_NAME, refresh_tick)
 
@@ -210,22 +212,22 @@ class DashboardOwnUnitPage(Page):
         )
         _register_stats_output(
             output_id="own_unit_phef_stats",
-            total_text=t("dashboard.total_tests"),
+            total_text=_total_tests,
             fetcher=self.controller.phef_stats,
         )
         _register_stats_output(
             output_id="own_unit_combat_stats",
-            total_text=t("dashboard.total_tests"),
+            total_text=_total_tests,
             fetcher=self.controller.combat_stats,
         )
         _register_stats_output(
             output_id="own_unit_swimming_stats",
-            total_text=t("dashboard.total_tests"),
+            total_text=_total_tests,
             fetcher=self.controller.swimming_stats,
         )
         _register_stats_output(
             output_id="own_unit_march_stats",
-            total_text=t("dashboard.total_tests"),
+            total_text=_total_tests,
             fetcher=self.controller.march_stats,
         )
 
@@ -233,14 +235,14 @@ class DashboardOwnUnitPage(Page):
         _register_plotly_html_output(
             output_id="own_unit_pass_fail_chart",
             fetcher=self.controller.pass_fail_bar_html,
-            empty_msg=t("dashboard.no_chart"),
-            non_div_msg=t("dashboard.no_chart"),
+            empty_msg=_no_chart,
+            non_div_msg=_no_chart,
         )
         _register_plotly_html_output(
             output_id="own_unit_phef_score_histogram",
             fetcher=self.controller.phef_hist_html,  # type: ignore[arg-type]
             empty_msg=t("dashboard.no_phef_data"),
-            non_div_msg=t("dashboard.no_chart"),
+            non_div_msg=_no_chart,
         )
 
         # Broker / HR System health card.
