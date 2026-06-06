@@ -43,4 +43,7 @@ broker:
   # Exponential back-off bounds (seconds): delay = min(base * 2**(attempt-1), max).
   base_backoff_s: 5
   max_backoff_s: 600
+  # Email address that receives an alert when a message is moved to dead-letter.
+  # Leave empty to disable dead-letter email alerts.
+  alert_email: "server_warning@albatros.be"
 

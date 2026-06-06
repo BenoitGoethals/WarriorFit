@@ -1,4 +1,4 @@
-# WarriorFit Cross/Running Event System
+# (out of scope) WarriorFit Cross/Running Event System
 
 ## Goal
 
@@ -19,23 +19,33 @@ The Cross/Running Event system is a **three-component architecture** for timing 
 
 ## System Architecture
 
-```
-┌─────────────────────┐        REST API        ┌──────────────────────┐
-│   Flet Client       │◄──────────────────────►│   FastAPI Backend    │
-│  (PTI on field)     │   JWT-authenticated    │  /api/cross/...      │
-│                     │   HTTP/HTTPS           │  /api/runners/...    │
-└─────────────────────┘                        └──────────┬───────────┘
-                                                          │
-                                                    Shared PostgreSQL
-                                                    (Cross, Runner tables)
-                                                           │
-                                                ┌──────────▼───────────┐
-                                                │  WarriorFit (Shiny)  │
-                                                │  CrossRepository     │
-                                                │  ServiceCross        │
-                                                │  Cross Planning page │
-                                                │  Cross Statistics    │
-                                                └──────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Field["On-Site (Field)"]
+        Flet["Flet Client<br/>PTI mobile / desktop"]
+    end
+
+    subgraph Cloud["Backend Services"]
+        API["FastAPI Backend<br/>/api/cross/...<br/>/api/runners/..."]
+        DB[(PostgreSQL<br/>Cross · Runner)]
+    end
+
+    subgraph Base["WarriorFit (Shiny)"]
+        WF["CrossRepository · ServiceCross<br/>Cross Planning · Cross Statistics"]
+    end
+
+    Flet <-- "REST · JWT · HTTPS" --> API
+    API --- DB
+    WF --- DB
+
+    classDef client fill:#e8eaf6,stroke:#3949ab,color:#1a237e;
+    classDef api fill:#fff3e0,stroke:#ef6c00,color:#e65100;
+    classDef db fill:#fce4ec,stroke:#ad1457,color:#880e4f;
+    classDef app fill:#e0f2f1,stroke:#00695c,color:#004d40;
+    class Flet client
+    class API api
+    class DB db
+    class WF app
 ```
 
 ### Overview Screenshots
@@ -82,17 +92,16 @@ The Flet client communicates with the FastAPI backend over HTTPS. Authentication
 
 ### Authentication Flow
 
-```
-Flet Client                          FastAPI Backend
-    │                                      │
-    │── POST /auth/login ─────────────────►│
-    │   {username, password}               │
-    │                                      │
-    │◄── {access_token, token_type} ───────│
-    │                                      │
-    │── GET /api/cross/  ─────────────────►│
-    │   Authorization: Bearer <token>      │
-    │◄── [Cross session list] ─────────────│
+```mermaid
+sequenceDiagram
+    autonumber
+    participant F as Flet Client
+    participant B as FastAPI Backend
+
+    F->>B: POST /auth/login<br/>{username, password}
+    B-->>F: {access_token, token_type}
+    F->>B: GET /api/cross/<br/>Authorization: Bearer <token>
+    B-->>F: [Cross session list]
 ```
 
 ### Key API Endpoints (FastAPI Backend)
@@ -113,17 +122,27 @@ Flet Client                          FastAPI Backend
 
 WarriorFit accesses the cross data directly via its async SQLAlchemy stack. No HTTP hop is needed — it queries the shared database.
 
-```
-WarriorFit (Shiny)
-    │
-    ├── CrossPlanningController   →  ServiceCross  →  CrossRepository  →  PostgreSQL
-    │   (create/edit/delete cross sessions)
-    │
-    ├── CrossController           →  ServiceCross  →  CrossRepository  →  PostgreSQL
-    │   (enter/update/delete runner results)
-    │
-    └── CrossStaticsController    →  ServiceCross  →  CrossRepository  →  PostgreSQL
-        (Top 10 rankings per distance)
+```mermaid
+flowchart LR
+    UI["WarriorFit Shiny UI"]
+    UI --> CPC["CrossPlanningController<br/><i>session CRUD</i>"]
+    UI --> CC["CrossController<br/><i>runner results CRUD</i>"]
+    UI --> CSC["CrossStaticsController<br/><i>Top 10 rankings</i>"]
+
+    CPC --> S[ServiceCross]
+    CC  --> S
+    CSC --> S
+    S --> R[CrossRepository]
+    R --> PG[(PostgreSQL)]
+
+    classDef ctrl fill:#ede7f6,stroke:#5e35b1,color:#311b92;
+    classDef svc  fill:#e0f7fa,stroke:#00838f,color:#006064;
+    classDef repo fill:#fff3e0,stroke:#ef6c00,color:#e65100;
+    classDef db   fill:#fce4ec,stroke:#ad1457,color:#880e4f;
+    class CPC,CC,CSC ctrl
+    class S svc
+    class R repo
+    class PG db
 ```
 
 Relevant WarriorFit source files:
@@ -143,26 +162,32 @@ Relevant WarriorFit source files:
 
 ## End-to-End Workflow
 
-```
-1. PTI creates cross session in WarriorFit (Cross Planning page)
-      └─► stored in PostgreSQL via CrossRepository
+```mermaid
+sequenceDiagram
+    autonumber
+    actor PTI as PTI
+    participant WF as WarriorFit (Shiny)
+    participant DB as PostgreSQL
+    participant Flet as Flet Client
+    participant API as FastAPI Backend
 
-2. PTI opens Flet client on-site (mobile or desktop)
-      └─► authenticates with FastAPI backend (JWT)
-
-3. Flet client fetches cross sessions from FastAPI backend
-      └─► GET /api/cross/  →  FastAPI reads same PostgreSQL
-
-4. PTI selects the session and starts timing runners
-
-5. For each runner finishing:
-      ├─► PTI enters serial number and finish time
-      └─► POST /api/runners/  →  FastAPI persists to PostgreSQL
-
-6. Back at base, WarriorFit automatically shows updated results
-      └─► CrossController reads from same PostgreSQL
-
-7. PTI views top-10 statistics in WarriorFit (Cross Statistics page)
+    PTI->>WF: Create cross session (Cross Planning)
+    WF->>DB: CrossRepository.save()
+    PTI->>Flet: Open client on-site
+    Flet->>API: POST /auth/login (JWT)
+    Flet->>API: GET /api/cross/
+    API->>DB: SELECT cross sessions
+    API-->>Flet: session list
+    PTI->>Flet: Select session, start timing
+    loop For each finishing runner
+        PTI->>Flet: serial + finish time
+        Flet->>API: POST /api/runners/
+        API->>DB: INSERT runner result
+    end
+    PTI->>WF: View results / Top 10
+    WF->>DB: read via CrossController / CrossStaticsController
+    DB-->>WF: results
+    WF-->>PTI: ranking + statistics
 ```
 
 ---

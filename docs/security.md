@@ -1,6 +1,6 @@
 # Security Documentation — WarriorFit
 
-> Last reviewed: 2026-03-19
+> Last reviewed: 2026-05-10
 
 ## Table of Contents
 1. [Authentication Flow](#authentication-flow)
@@ -10,57 +10,34 @@
 5. [Session Management](#session-management)
 6. [Rate Limiting](#rate-limiting)
 7. [Audit Logging](#audit-logging)
-8. [OWASP Top 10 Assessment](#owasp-top-10-assessment)
-9. [Open Issues](#open-issues)
+8. [MOM API (FastAPI) Authentication](#mom-api-fastapi-authentication)
+9. [OWASP Top 10 Assessment](#owasp-top-10-assessment)
+10. [Open Issues](#open-issues)
 
 ---
 
 ## Authentication Flow
 
-```
-User loads app
-      │
-      ▼
-login_dialog() triggered (app.py)
-      │
-      ├── APP_ENV == "development" → inject synthetic ADMIN user, skip auth entirely
-      │
-      └── production / test
-             │
-             ▼
-         Modal login form (username + password)
-             │
-             ▼ input.handle_login event
-         Username lowercased
-             │
-             ▼
-         LoginRateLimiter.is_locked(username)
-             │ locked → display lockout message, abort
-             │
-             ▼
-         Read client IP (X-Forwarded-For → client.host fallback)
-             │
-             ▼
-         UserService.check_user(username, password)
-           └── UserRepository.check_user()
-                 └── SELECT User WHERE username = ? (parameterized ORM)
-                       └── await Auth.verify_password(plain, stored_hash)
-                             └── argon2.PasswordHasher.verify() via asyncio.to_thread()
-             │
-             ├── FAIL ──► LoginRateLimiter.record_failure()
-             │            audit_log: action="login_failed", ip=client_ip, user_id=NULL
-             │            display remaining attempts or lockout message
-             │
-             └── SUCCESS
-                   │
-                   ├── user.is_active == False → abort with message
-                   │
-                   ▼
-               LoginRateLimiter.reset(username)
-               UserStore.set_user(user)         ← singleton process-wide store
-               session.user = user              ← per-session Shiny object
-               audit_log: action="login", ip=client_ip, user_id=user.id
-               Modal dismissed — navbar rebuilt for user's role
+```mermaid
+flowchart TD
+    Start([User loads app]) --> LD["login_dialog() — app.py"]
+    LD --> EnvCheck{APP_ENV}
+    EnvCheck -- "development" --> DevBypass[/"Inject synthetic ADMIN<br/>auth skipped"/]:::warn
+    EnvCheck -- "production / test" --> Modal["Modal login form<br/>(username + password)"]
+    Modal --> Lower["Username lowercased<br/>handle_login event"]
+    Lower --> RL{"LoginRateLimiter<br/>is_locked?"}
+    RL -- yes --> Lock[/"Display lockout msg<br/>abort"/]:::fail
+    RL -- no --> IP["Read client IP<br/>(X-Forwarded-For → client.host)"]
+    IP --> Check["UserService.check_user()<br/>→ UserRepository (ORM)<br/>→ Auth.verify_password()<br/>→ argon2 via asyncio.to_thread"]
+    Check --> Result{result}
+    Result -- FAIL --> Fail["LoginRateLimiter.record_failure()<br/>audit_log: login_failed<br/>show remaining attempts"]:::fail
+    Result -- SUCCESS --> Active{user.is_active}
+    Active -- false --> Abort[/abort with message/]:::fail
+    Active -- true --> Win["LoginRateLimiter.reset()<br/>UserStore.set_user(user) <i>per-session</i><br/>session.user = user<br/>audit_log: login<br/>navbar rebuilt for role"]:::ok
+
+    classDef ok fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+    classDef fail fill:#ffebee,stroke:#c62828,color:#b71c1c;
+    classDef warn fill:#fff8e1,stroke:#f9a825,color:#5d4037;
 ```
 
 ---
@@ -173,7 +150,7 @@ Enforced at creation and password-change via `UserManagementController.validate_
 | Property           | Detail                                                                          |
 |--------------------|---------------------------------------------------------------------------------|
 | Session store      | Shiny server-side session object (`session.user`)                               |
-| Global user store  | `UserStore` singleton — one value per process                                   |
+| Per-session user store | `UserStore` (since 2026-05-10, PR #217) — backed by the active Shiny session via `get_current_session()`; no longer a process-wide singleton |
 | Inactivity timeout | 10 minutes (`time.time() - ts >= 600`, polled every 5 s)                        |
 | Activity tracking  | JS events: `click`, `keydown`, `mousemove`, `scroll`, `touchstart`, `touchmove`, `visibilitychange` |
 | Logout             | Clears `session.user`, JS `location.reload()` after 100 ms                     |
@@ -181,16 +158,13 @@ Enforced at creation and password-change via `UserManagementController.validate_
 
 ### Auto-logout Flow
 
-```
-reactive.invalidate_later(5)  ← every 5 seconds
-      │
-      ▼
-time.time() - last_activity >= 600 ?
-      │ yes
-      ▼
-_clear_session_user()
-ui.notification_show("logged out due to inactivity")
-location.reload()
+```mermaid
+flowchart TD
+    Tick["reactive.invalidate_later(5)<br/><i>every 5 seconds</i>"] --> Q{"time.time()<br/>− last_activity ≥ 600?"}
+    Q -- no --> Tick
+    Q -- yes --> Clear["_clear_session_user()<br/>ui.notification_show('logged out')<br/>location.reload()"]:::warn
+
+    classDef warn fill:#fff8e1,stroke:#f9a825,color:#5d4037;
 ```
 
 ---
@@ -247,15 +221,40 @@ audit_logs
 
 ---
 
+## MOM API (FastAPI) Authentication
+
+The Message-Oriented Middleware ingestion endpoint (`warriorfit/mom/hr_fatapi_dummy.py`)
+exposes `/api/v1/phef/test` for the HR system to push PHEF test results.
+
+| Property        | Detail                                                                                  |
+|-----------------|-----------------------------------------------------------------------------------------|
+| Auth scheme     | API key — `X-API-Key` header (`fastapi.security.APIKeyHeader`)                          |
+| Expected key    | `WF_MOM_API_KEY` environment variable (read at request time)                            |
+| Comparison      | `hmac.compare_digest()` — constant-time, no timing oracle                               |
+| Fail-closed     | If `WF_MOM_API_KEY` is unset or empty, all requests are rejected with `401`             |
+| CORS origins    | Configurable via `WF_MOM_CORS_ORIGINS` (comma-separated). Empty → no cross-origin allowed |
+| CORS methods    | Restricted to `POST` only                                                               |
+| CORS headers    | Restricted to `Content-Type`, `X-API-Key`                                               |
+| Deploy guard    | `deploy-test.sh` / `deploy-prod.sh` refuse to start without `WF_MOM_API_KEY` set        |
+
+> **Rotation:** rotate `WF_MOM_API_KEY` by updating the env on both the MOM container
+> and the HR pusher, then redeploying. There is no overlap window — schedule a brief
+> downtime or push from a single instance during the swap.
+
+---
+
 ## OWASP Top 10 Assessment
 
 ### A01 — Broken Access Control
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | UI-only enforcement | Medium | `app.py:296` | `_pages_for_role()` filters which panels are rendered; no server-side guard on reactive handlers. A WebSocket-level adversary could invoke handlers for pages they are not authorized to see. |
-| 2 | `UserStore` singleton | Low | `ui/user_store.py` | One value per process. In standard single-worker Shiny deployment this is acceptable; concurrent sessions in the same process would share the same singleton. |
-| 3 | Dev auto-login bypass | Medium | `app.py:559` | `APP_ENV=development` auto-injects a synthetic ADMIN session with no credentials and no hostname/key guard. If set accidentally on a production host, authentication is completely bypassed. |
+| 1 | UI-only enforcement on most pages | Medium | `ui/page_registry.py`, `ui/app_server.py` | `FitnessWarriorApp._pages_for_role()` filters panels by role at navbar build time; no server-side guard on most reactive handlers. A WebSocket-level adversary could invoke handlers for pages they are not authorized to see. Server-side guards now exist for high-impact mutations (see #4). |
+| 2 | `UserStore` per-session | Resolved | `ui/user_store.py` | Previously a process-global Singleton — leaked auth state between concurrent sessions and was not cleared on logout. Now backed by the active Shiny session (`get_current_session()`) so isolation and teardown are handled per session. Fixed in PR #217 (2026-05-10). |
+| 3 | Dev auto-login bypass | Medium | `ui/app_server.py` | `APP_ENV=development` auto-injects a synthetic ADMIN session with no credentials and no hostname/key guard. If set accidentally on a production host, authentication is completely bypassed. |
+| 4 | Server-side guard on test mutations | Resolved | `services/service_test.py` | `_assert_can_modify_tests()` enforces role on `delete_fitness_test_from_test_session()` so navbar-level RBAC cannot be bypassed via crafted reactive inputs (IDOR class fix, 2026-05-10). |
+| 5 | GUEST scope reduced | Resolved | `ui/page_registry.py` | GUEST role removed from "Status Unit" and "Individual" pages — guests can no longer enumerate arbitrary servicemen. Welcome remains the only landing page for GUEST. |
+| 6 | MOM ingestion endpoint authenticated | Resolved | `mom/hr_fatapi_dummy.py` | `/api/v1/phef/test` was previously unauthenticated. Now requires `X-API-Key` matching `WF_MOM_API_KEY` (constant-time compare, fail-closed). CORS methods/headers restricted; origins configurable via `WF_MOM_CORS_ORIGINS`. Fixed 2026-05-10. |
 
 ### A02 — Cryptographic Failures
 
@@ -278,13 +277,14 @@ audit_logs
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
 | 1 | Reversible passwords eliminated | Resolved | — | `hash_password()` is one-way Argon2id. No admin recovery mechanism. |
-| 2 | Dev auto-login (see A01-3) | Medium | `app.py:559` | Covered above. |
+| 2 | Dev auto-login (see A01-3) | Medium | `ui/app_server.py` | Covered above. |
+| 3 | Shared mutable user state | Resolved | `ui/user_store.py` | `UserStore` is now per-session — concurrent users no longer overwrite each other's identity (see A01-2). |
 
 ### A05 — Security Misconfiguration
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | No TLS on PostgreSQL connection | Medium | `config/appliccation_config.py:202` | `create_async_engine()` builds the connection URL without `ssl=True` or `sslmode=require`. Database traffic is unencrypted in transit. |
+| 1 | TLS on PostgreSQL connection | Resolved | `config/application_config.py:_build_db_ssl` | `db.ssl` config (`disable`/`prefer`/`require`/`verify-ca`/`verify-full`) drives `connect_args["ssl"]` on `create_async_engine()`. Production uses `verify-full` with CA at `/etc/WarriorFit/pg-ca.pem`. Dev/test default `prefer`. |
 | 2 | `WF_SECRET_KEY` at build time | Low | `Dockerfile:17` | `ARG WF_SECRET_KEY` could bake the secret into an image layer if provided at `docker build` time. Must only be passed via `docker run -e`. |
 | 3 | Config not bundled in image | Info | `Dockerfile` | `/etc/WarriorFit/config.yml` must be volume-mounted. Intentional design; must be in the deployment runbook. |
 
@@ -316,11 +316,12 @@ audit_logs
 
 | # | Finding | Severity | File | Detail |
 |---|---------|----------|------|--------|
-| 1 | Failed logins persisted | Resolved | `app.py:634` | `login_failed` events written to `audit_logs` with client IP. |
-| 2 | Real client IP captured | Resolved | `app.py:606` | `X-Forwarded-For` header read first, falls back to `session.http_conn.client.host`. |
-| 3 | `audit_logs.user_id` nullable | Resolved | `data/model/db_model.py:41` | Migration `a1b2c3d4e5f6` drops NOT NULL — unauthenticated events can be logged. |
-| 4 | Logout not audited | Low | `app.py:670,749` | Manual logout and inactivity auto-logout do not write to `audit_logs`. Session end events cannot be reconstructed forensically. |
-| 5 | CRUD operations missing client IP | Low | `services/service.py:46` | `add_audit_log()` does not receive a client IP for CRUD calls (user create/update/delete). Only login events carry the real IP. |
+| 1 | Failed logins persisted | Resolved | `ui/app_server.py` | `login_failed` events written to `audit_logs` with client IP. |
+| 2 | Real client IP captured | Resolved | `ui/app_server.py` | `X-Forwarded-For` header read first, falls back to `session.http_conn.client.host`. |
+| 3 | `audit_logs.user_id` nullable | Resolved | `data/model/db_model.py` | Migration `a1b2c3d4e5f6` drops NOT NULL — unauthenticated events can be logged. |
+| 4 | Logout not audited | Low | `ui/app_server.py` | Manual logout (`_on_logout_button_click`) and inactivity auto-logout do not write to `audit_logs`. Session end events cannot be reconstructed forensically. |
+| 5 | CRUD operations missing client IP | Low | `services/service.py` | `add_audit_log()` does not receive a client IP for CRUD calls (user create/update/delete). Only login events carry the real IP. |
+| 6 | MOM endpoint access not audited | Low | `mom/hr_fatapi_dummy.py` | Successful and rejected `X-API-Key` requests to `/api/v1/phef/test` are not written to `audit_logs`. Consider mirroring login_failed semantics for repeated 401s. |
 
 ### A10 — Server-Side Request Forgery (SSRF)
 
@@ -335,7 +336,6 @@ audit_logs
 
 | Priority | Severity | OWASP | Issue | Recommended Fix |
 |----------|----------|-------|-------|-----------------|
-| P1 | Medium | A05 | No TLS on PostgreSQL connection | Add `ssl=True` (or `connect_args={"ssl": ssl_ctx}`) to `create_async_engine()` |
 | P1 | Medium | A07 | Rate limiter is in-memory only | Replace with Redis-backed or DB counter |
 | P1 | Medium | A01 | Dev auto-login has no guard | Add a hostname or secret-presence check before activating dev bypass |
 | P1 | Medium | A10 | HTTP request to HR URL has no timeout | Add `aiohttp.ClientTimeout(total=5)` to `_check_http_status()` |
@@ -343,6 +343,7 @@ audit_logs
 | P1 | Low | A02 | Legacy bcrypt/Fernet values still in DB | Run `update_passwords.sql`; find accounts with `password_hash NOT LIKE '$argon2id$%'` and force password reset |
 | P2 | Low | A09 | Logout events not audited | Add `audit_log` call in `_on_logout_button_click()` and `_auto_logout_timer()` |
 | P2 | Low | A09 | CRUD operations missing client IP | Thread client IP through `add_audit_log()` calls for user management actions |
+| P2 | Low | A09 | MOM endpoint access not audited | Log 401s and successful pushes from `/api/v1/phef/test` to `audit_logs` |
 | P2 | Low | A06 | Unused dependency `python-jose` | Remove from `pyproject.toml` |
 | P3 | Low | A07 | No MFA | Integrate TOTP (e.g. `pyotp`) for ADMIN accounts at minimum |
 | P3 | Low | A07 | No password expiry | Add `password_changed_at` column; enforce rotation in `validate()` |

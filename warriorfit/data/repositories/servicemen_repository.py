@@ -18,11 +18,10 @@ class ServicemenRepository(ABCRepository):
         """
         session = None
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    service_men = await session.add(service_men)  # type: ignore[func-returns-value]
-                    await session.refresh(service_men)
-                    return service_men
+            async with self.SessionLocal() as session, session.begin():
+                service_men = await session.add(service_men)  # type: ignore[func-returns-value]
+                await session.refresh(service_men)
+                return service_men
         except SQLAlchemyError:
             self._logger.exception("Failed to create serviceman")
             if session is not None:
@@ -34,26 +33,21 @@ class ServicemenRepository(ABCRepository):
         Get serviceman by primary key id.
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    res = await session.execute(
-                        select(ServiceMen).where(ServiceMen.id == serviceman_id)
-                    )
-                    return res.scalar_one_or_none()
+            async with self.SessionLocal() as session, session.begin():
+                res = await session.execute(
+                    select(ServiceMen).where(ServiceMen.id == serviceman_id)
+                )
+                return res.scalar_one_or_none()
         except SQLAlchemyError as e:
             self._logger.exception(e)
             return None
 
-    async def get_by_service_number(
-        self, service_number: str, lazy=True
-    ) -> ServiceMen | None:
+    async def get_by_service_number(self, service_number: str, lazy=True) -> ServiceMen | None:
         """
         Get a single serviceman by unique service number.
         """
         if lazy:
-            query = select(ServiceMen).where(
-                ServiceMen.service_number == service_number
-            )
+            query = select(ServiceMen).where(ServiceMen.service_number == service_number)
         else:
             query = (
                 select(ServiceMen)
@@ -94,23 +88,22 @@ class ServicemenRepository(ABCRepository):
         """
         session = None
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    service_men_update = await session.execute(
-                        select(ServiceMen).where(ServiceMen.id == service_men.id)
-                    )
-                    service_men_to_update = service_men_update.scalar_one_or_none()
-                    if service_men_to_update is None:
-                        return None
-                    service_men_to_update.last_name = service_men.last_name
-                    service_men_to_update.first_name = service_men.first_name
-                    service_men_to_update.service_number = service_men.service_number
-                    service_men_to_update.rank = service_men.rank
-                    service_men_to_update.age = service_men.age  # type: ignore[misc]
-                    service_men_to_update.gender = service_men.gender
-                    service_men_to_update.unit_id = service_men.unit_id
-                    await session.commit()
-                    return service_men_to_update
+            async with self.SessionLocal() as session, session.begin():
+                service_men_update = await session.execute(
+                    select(ServiceMen).where(ServiceMen.id == service_men.id)
+                )
+                service_men_to_update = service_men_update.scalar_one_or_none()
+                if service_men_to_update is None:
+                    return None
+                service_men_to_update.last_name = service_men.last_name
+                service_men_to_update.first_name = service_men.first_name
+                service_men_to_update.service_number = service_men.service_number
+                service_men_to_update.rank = service_men.rank
+                service_men_to_update.age = service_men.age  # type: ignore[misc]
+                service_men_to_update.gender = service_men.gender
+                service_men_to_update.unit_id = service_men.unit_id
+                await session.commit()
+                return service_men_to_update
         except SQLAlchemyError as e:
             self._logger.exception(e)
             if session is not None:
@@ -123,11 +116,10 @@ class ServicemenRepository(ABCRepository):
         """
         session = None
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    result = await session.execute(
-                        sa_delete(ServiceMen).where(ServiceMen.id == serviceman_id)
-                    )
+            async with self.SessionLocal() as session, session.begin():
+                result = await session.execute(
+                    sa_delete(ServiceMen).where(ServiceMen.id == serviceman_id)
+                )
             return bool(getattr(result, "rowcount", 0))
         except SQLAlchemyError:
             self._logger.exception("Failed to delete serviceman id=%s", serviceman_id)
@@ -151,10 +143,9 @@ class ServicemenRepository(ABCRepository):
         :raises SQLAlchemyError: If there is an error during the database operation.
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    res = await session.execute(select(Unit).where(Unit.id == id))
-                    return res.scalar_one_or_none()
+            async with self.SessionLocal() as session, session.begin():
+                res = await session.execute(select(Unit).where(Unit.id == id))
+                return res.scalar_one_or_none()
         except SQLAlchemyError as e:
             self._logger.exception(e)
             return None
@@ -174,11 +165,10 @@ class ServicemenRepository(ABCRepository):
         :rtype: bool
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    session.add(unit)
-                    await session.commit()
-                    return True
+            async with self.SessionLocal() as session, session.begin():
+                session.add(unit)
+                await session.commit()
+                return True
         except SQLAlchemyError as e:
             session.rollback()  # type: ignore[unused-coroutine]
             self._logger.exception(e)
@@ -196,10 +186,9 @@ class ServicemenRepository(ABCRepository):
         :rtype: list[Unit] | None
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    res = await session.execute(select(Unit))
-                    return res.scalars().all()
+            async with self.SessionLocal() as session, session.begin():
+                res = await session.execute(select(Unit))
+                return res.scalars().all()
         except SQLAlchemyError as e:
             self._logger.exception(e)
             return None

@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from warriorfit.data.model.db_model import ServiceMen
 from warriorfit.services.military_service import MilitaryService
@@ -26,9 +25,7 @@ class MarchController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceMarch()
-        self.be_mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
         self._logger = logging.getLogger(__name__)
 
     async def get_all_march(self):
@@ -81,7 +78,7 @@ class MarchController:
         """
         return await self._service.delete_march(current_id)
 
-    async def search_military(self, serial_nr: str) -> Optional[ServiceMen]:
+    async def search_military(self, serial_nr: str) -> ServiceMen | None:
         """
         Searches for a serviceman in the military database using a given serial number.
 
@@ -98,6 +95,4 @@ class MarchController:
         return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def get_march_is_unique(self, service_number, distance, datetime_executed):
-        return await self._service.get_march_is_unique(
-            service_number, distance, datetime_executed
-        )
+        return await self._service.get_march_is_unique(service_number, distance, datetime_executed)

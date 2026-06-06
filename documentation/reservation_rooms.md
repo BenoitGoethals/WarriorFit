@@ -1,4 +1,4 @@
-# Epic: Reserve Room
+# (out of scope) Epic: Reserve Room
 
 **As a** PTI, ADMIN  
 **I want to** reserve rooms for activities  

@@ -1,7 +1,8 @@
 import csv
 import os
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, List, Optional
+from typing import Any
 
 from warriorfit.services.generator import GeneratorReport, _output_dir
 from warriorfit.services.report_type import ReportType
@@ -24,7 +25,9 @@ class ReportGeneratorCsv(GeneratorReport):
     """
 
     def __init__(self, military_service=None, service_test=None, config=None):
-        super().__init__(military_service=military_service, service_test=service_test, config=config)
+        super().__init__(
+            military_service=military_service, service_test=service_test, config=config
+        )
 
     async def generate_report(
         self, report_name: str, report_type: ReportType, own_unit: bool, this_year: bool
@@ -46,9 +49,7 @@ class ReportGeneratorCsv(GeneratorReport):
         if report_type is ReportType.PHEF:
             return await self.generate_phef_report(report_name, own_unit, this_year)
         elif report_type is ReportType.FUNCTIONAL:
-            return await self.generate_functional_report(
-                report_name, own_unit, this_year
-            )
+            return await self.generate_functional_report(report_name, own_unit, this_year)
         elif report_type is ReportType.COMBAT:
             return await self.generate_combat_report(report_name, own_unit, this_year)
         elif report_type is ReportType.SWIMMING:
@@ -66,12 +67,12 @@ class ReportGeneratorCsv(GeneratorReport):
 
     def _build_csv(
         self,
-        rows: List[dict],
+        rows: list[dict],
         report_name: str,
         file_suffix: str,
-        headers: List[str],
-        row_builder: Callable[[dict], List[Any]],
-    ) -> Optional[str]:
+        headers: list[str],
+        row_builder: Callable[[dict], list[Any]],
+    ) -> str | None:
         """
         Builds a CSV file from the provided data rows, headers, and a row builder function.
         Generates a filename based on the specified report name, file suffix, and the current
@@ -101,9 +102,7 @@ class ReportGeneratorCsv(GeneratorReport):
                 writer.writerow(row_builder(r))
         return output_path
 
-    async def generate_phef_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_phef_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
         Generates a Performance-based Health Evaluation Framework (PHEF) report. The report
         includes two categories: passed and failed results, formatted into CSV files based
@@ -122,7 +121,7 @@ class ReportGeneratorCsv(GeneratorReport):
         try:
             headers, passed, failed = await self.calculate_score(own_unit, this_year)
 
-            def row_builder(r: dict) -> List[Any]:
+            def row_builder(r: dict) -> list[Any]:
                 return [
                     (
                         "-"
@@ -139,20 +138,14 @@ class ReportGeneratorCsv(GeneratorReport):
                     self._fmt_time(r["side_l_s"]),
                 ]
 
-            failed_path = self._build_csv(
-                failed, report_name, "phef_failed", headers, row_builder
-            )
-            passed_path = self._build_csv(
-                passed, report_name, "phef_passed", headers, row_builder
-            )
+            failed_path = self._build_csv(failed, report_name, "phef_failed", headers, row_builder)
+            passed_path = self._build_csv(passed, report_name, "phef_passed", headers, row_builder)
             return {"failed": failed_path, "passed": passed_path}
-        except (OSError, IOError, ValueError) as e:
+        except (OSError, ValueError) as e:
             self._logger.error("Error generating PHEF report: %s", e)
             return None
 
-    async def generate_functional_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_functional_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
         Generates a functional report based on the given parameters. The method calculates the
         functional scores for different sessions and creates separate CSV files for failed and
@@ -167,11 +160,9 @@ class ReportGeneratorCsv(GeneratorReport):
         :rtype: Dict[str, str]
 
         """
-        failed, headers, passed = await self.calculate_functional_score(
-            own_unit, this_year
-        )
+        failed, headers, passed = await self.calculate_functional_score(own_unit, this_year)
 
-        def row_builder(r: dict) -> List[Any]:
+        def row_builder(r: dict) -> list[Any]:
             return [
                 (
                     "-"
@@ -193,9 +184,7 @@ class ReportGeneratorCsv(GeneratorReport):
         )
         return {"failed": failed_path, "passed": passed_path}
 
-    async def generate_combat_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_combat_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
         Asynchronously generates a combat report based on given parameters and computes the
         results of passed and failed combat scores. The method processes the data, formats it
@@ -216,7 +205,7 @@ class ReportGeneratorCsv(GeneratorReport):
         """
         failed, headers, passed = await self.calculate_combat_score(own_unit, this_year)
 
-        def row_builder(r: dict) -> List[Any]:
+        def row_builder(r: dict) -> list[Any]:
             return [
                 (
                     "-"
@@ -230,20 +219,14 @@ class ReportGeneratorCsv(GeneratorReport):
                 r["result"],
             ]
 
-        failed_path = self._build_csv(
-            failed, report_name, "combat_failed", headers, row_builder
-        )
-        passed_path = self._build_csv(
-            passed, report_name, "combat_passed", headers, row_builder
-        )
+        failed_path = self._build_csv(failed, report_name, "combat_failed", headers, row_builder)
+        passed_path = self._build_csv(passed, report_name, "combat_passed", headers, row_builder)
         return {"failed": failed_path, "passed": passed_path}
 
-    async def generate_swimming_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_swimming_report(self, report_name: str, own_unit: bool, this_year: bool):
         failed, headers, passed = await self.calculate_swim_score(own_unit, this_year)
 
-        def row_builder(r: dict) -> List[Any]:
+        def row_builder(r: dict) -> list[Any]:
             return [
                 (
                     "-"
@@ -254,12 +237,8 @@ class ReportGeneratorCsv(GeneratorReport):
                 r["result"],
             ]
 
-        failed_path = self._build_csv(
-            failed, report_name, "swimming_failed", headers, row_builder
-        )
-        passed_path = self._build_csv(
-            passed, report_name, "swimming_passed", headers, row_builder
-        )
+        failed_path = self._build_csv(failed, report_name, "swimming_failed", headers, row_builder)
+        passed_path = self._build_csv(passed, report_name, "swimming_passed", headers, row_builder)
         return {"failed": failed_path, "passed": passed_path}
 
 

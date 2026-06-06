@@ -6,81 +6,81 @@
 
 ## Tijdlijn
 
-```
-sep 2025                                                          apr 2026
- │                                                                    │
- ├──── Fase 1 ────┼────── Fase 2  ──────┼───── Fase 3 ──────┼─ Fase 4 ┤
- │   Prototype    │  Functionele groei  │  Architecturele   │Hardening│
- │   ~50 commits  │  ~250 commits       │  refactor         │& DevOps │
- │                │                     │  ~300 commits     │~346 com.│
- │                │                     │                   │         │
- sep          okt │              dec    │              feb  │    apr  │
-                  ▼                     ▼                   ▼
-             Eerste business        DI container          CI/CD &
-             logic extractie        & layering            Docker prod
+```mermaid
+gantt
+    title WarriorFit — Ontwikkeltijdlijn (sep 2025 → apr 2026)
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %Y
+
+    section Fases
+    Fase 1 · Prototype (~50 commits)              :p1, 2025-09-01, 2025-10-31
+    Fase 2 · Functionele groei (~250 commits)     :p2, 2025-10-15, 2025-12-15
+    Fase 3 · Architecturele refactor (~300 c.)    :p3, 2025-12-01, 2026-02-15
+    Fase 4 · Hardening & DevOps (~346 c.)         :p4, 2026-02-01, 2026-04-30
+
+    section Mijlpalen
+    Business-logic extractie    :milestone, 2025-10-31, 0d
+    DI container & layering     :milestone, 2025-12-15, 0d
+    CI/CD & Docker prod         :milestone, 2026-02-28, 0d
 ```
 
 ## Complexiteitsgroei
 
+```mermaid
+xychart-beta
+    title "Architecturele complexiteit doorheen de tijd"
+    x-axis ["sep '25", "okt '25", "nov '25", "dec '25", "jan '26", "feb '26", "mrt '26", "apr '26"]
+    y-axis "Complexiteit (relatief)" 0 --> 10
+    line [1, 2, 3, 5, 6, 8, 9, 10]
+    bar  [1, 2, 3, 5, 6, 8, 9, 10]
 ```
-Complexiteit
-     ▲
-     │                                              ┌─────────────┐
- hoog│                              ┌───────────────┤  Fase 4     │
-     │                              │   Fase 3      │  Hardening  │
-     │                              │   Layered DI  │  CI/CD      │
-     │              ┌───────────────┘               └─────────────┘
-middel              │   Fase 2
-     │              │   Features &
-     │              │   Calculators
-     │──────────────┘
- laag│  Fase 1
-     │  Prototype
-     │  Monoliet
-     └──────────────────────────────────────────────────────────▶ Tijd
-      sep 2025    okt       dec       feb 2026      apr
-```
+
+| Fase | Periode | Complexiteit | Architectuur |
+|---|---|---|---|
+| 1 — Prototype | sep–okt 2025 | laag | Monoliet |
+| 2 — Features & Calculators | okt–dec 2025 | middel | Emerging layers |
+| 3 — Layered DI | dec 2025–feb 2026 | hoog | DI container |
+| 4 — Hardening & CI/CD | feb–apr 2026 | hoog | Productie-klaar |
 
 ## Architectuurevolutie
 
-```
- FASE 1                    FASE 2                    FASE 3 & 4
- ──────                    ──────                    ──────────
+```mermaid
+flowchart TB
+    subgraph F1["FASE 1 — Prototype"]
+        direction TB
+        F1U[Shiny Pages] --> F1S["DBService<br/><i>god-class</i>"] --> F1DB[(PostgreSQL)]
+    end
 
- ┌──────────┐              ┌──────────┐              ┌──────────────┐
- │  Shiny   │              │  Shiny   │              │  Shiny Pages │
- │  Pages   │              │  Pages   │              │  (RBAC)      │
- └────┬─────┘              └────┬─────┘              └──────┬───────┘
-      │                         │                           │
-      │ direct                  │                    ┌──────▼───────┐
-      │                    ┌────▼─────┐              │ Controllers  │
-      │                    │PhefCalc  │              └──────┬───────┘
-      │                    │ExtService│                     │
-      │                    └────┬─────┘              ┌──────▼───────┐
-      │                         │                    │  Services    │
- ┌────▼─────┐              ┌────▼─────┐              │  + Broker    │
- │DBService │              │DBService │              │  + Mail      │
- │(god-class│              │(uitgebr.)│              └──────┬───────┘
- └────┬─────┘              └────┬─────┘                     │
-      │                         │                    ┌──────▼───────┐
- ┌────▼─────┐              ┌────▼─────┐              │ Repositories │
- │PostgreSQL│              │PostgreSQL│              │ (async)      │
- └──────────┘              └──────────┘              └──────┬───────┘
-                                                            │
-                                                     ┌──────▼───────┐
-                                                     │  ORM Models  │
-                                                     │  (polymorf)  │
-                                                     └──────┬───────┘
-                                                            │
-                                                     ┌──────▼───────┐
-                                                     │  PostgreSQL  │
-                                                     └──────────────┘
+    subgraph F2["FASE 2 — Functionele groei"]
+        direction TB
+        F2U[Shiny Pages] --> F2C["PhefCalc<br/>ExtService"]
+        F2U --> F2S["DBService<br/><i>uitgebreid</i>"]
+        F2C --> F2S
+        F2S --> F2DB[(PostgreSQL)]
+    end
 
-                                                    + DI Container
-                                                    + CI/CD pipeline
-                                                    + Docker
-                                                    + MkDocs
+    subgraph F34["FASE 3 & 4 — Layered + DevOps"]
+        direction TB
+        F3U["Shiny Pages (RBAC)"] --> F3C[Controllers]
+        F3C --> F3S["Services<br/>+ Broker · + Mail"]
+        F3S --> F3R["Repositories (async)"]
+        F3R --> F3M["ORM Models<br/><i>polymorf</i>"]
+        F3M --> F3DB[(PostgreSQL)]
+    end
+
+    F1 --> F2 --> F34
+
+    classDef ui   fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
+    classDef svc  fill:#e0f7fa,stroke:#00838f,color:#006064;
+    classDef repo fill:#fff3e0,stroke:#ef6c00,color:#e65100;
+    classDef db   fill:#fce4ec,stroke:#ad1457,color:#880e4f;
+    class F1U,F2U,F3U ui
+    class F1S,F2S,F2C,F3C,F3S svc
+    class F3R,F3M repo
+    class F1DB,F2DB,F3DB db
 ```
+
+> Fase 3 & 4 brengen bovendien: **DI Container · CI/CD pipeline · Docker · MkDocs**.
 
 ---
 

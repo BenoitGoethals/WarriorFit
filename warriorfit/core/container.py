@@ -18,6 +18,7 @@ from warriorfit.services.be_mil_service import BEMILService
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.mail_service import MailService
 from warriorfit.services.military_service import MilitaryService
+from warriorfit.services.notify_mail import NotifyMail
 from warriorfit.services.report_generator_csv import ReportGeneratorCsv
 from warriorfit.services.report_generator_pdf import ReportGeneratorPdf
 from warriorfit.services.reserve_fitness_room_service import ReserveFitnessRoomService
@@ -57,14 +58,13 @@ from warriorfit.ui.controllers.servicemen_overview_controller import (
 )
 from warriorfit.ui.controllers.session_controller import SessionsController
 from warriorfit.ui.controllers.setting_controller import SettingsController
-from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
-from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
 from warriorfit.ui.controllers.status_application_controller import (
     StatusApplicationController,
 )
+from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
+from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.controllers.usermanagement_controller import UserManagementController
-from warriorfit.services.notify_mail import NotifyMail
 
 
 class Container(containers.DeclarativeContainer):
@@ -165,14 +165,6 @@ class Container(containers.DeclarativeContainer):
         be_mil_service=be_mil_service,
     )
 
-    # Message Queue / Broker
-    broker = providers.Singleton(
-        Broker,
-        mom_repository=mom_repository,
-        be_mil_service=be_mil_service,
-        config=config,
-    )
-
     # Mail Service
     mail_service = providers.Singleton(
         MailService,
@@ -184,6 +176,15 @@ class Container(containers.DeclarativeContainer):
         NotifyMail,
         mail_service=mail_service,
         config=config,
+    )
+
+    # Message Queue / Broker
+    broker = providers.Singleton(
+        Broker,
+        mom_repository=mom_repository,
+        be_mil_service=be_mil_service,
+        config=config,
+        notify_mail=notify_mail,
     )
 
     # Application Services (with repository injection)
@@ -306,15 +307,11 @@ class Container(containers.DeclarativeContainer):
     functional_controller = providers.Singleton(
         FunctionalController, service=test_service, mil_service=military_service
     )
-    cross_planning_controller = providers.Singleton(
-        CrossPlanningController, service=cross_service
-    )
+    cross_planning_controller = providers.Singleton(CrossPlanningController, service=cross_service)
     auditlog_events_controller = providers.Singleton(
         AuditLogEventsController, user_service=user_service
     )
-    status_log_user_controller = providers.Singleton(
-        StatusLogUserController, service=test_service
-    )
+    status_log_user_controller = providers.Singleton(StatusLogUserController, service=test_service)
     status_tests_controller = providers.Singleton(
         StatusTestsController,
         mil_service=military_service,

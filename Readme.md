@@ -6,7 +6,7 @@
 
 **Academic Year:** 2025–2026
 
-**Project Status:** In Progress
+**Project Status:** Final phase — security hardened, GDPR-compliant, preparing for delivery
 
 **Project Type:** Software Engineering
 
@@ -74,11 +74,32 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   gender split per distance, chronological trends, podium frequency, data-quality flags (unmatched serials, never-raced);
   best/avg/median now broken down per distance (no more meaningless 5K+10K aggregation), top-N deduplicated by serial,
   full mypy clean across the codebase
+* 2026-04-27 : broker hardening — exponential back-off on retries, batch-send support, dead-letter queue for permanently failed messages (PR #211);
+  transactional outbox pattern documented
+* 2026-04-27 : military UI theme — Rajdhani + JetBrains Mono fonts, olive-drab / khaki / amber colour system applied across all pages;
+  Dashboard redesigned with side-by-side charts and a Broker / HR System health card
+* 2026-04-30 : NIST CSF 2.0 compliance self-assessment added; PostgreSQL SSL/TLS enabled with `db.ssl_root_cert` certificate validation (file-existence check at startup)
+* 2026-04-30 : comprehensive unit tests for Broker module — DTO mappings, lifecycle management, messaging logic
 * 2026-05-01 : code quality refactor — fixed 5 filename typos (`appliccation_config`, `usermangement`, `mom_repositor`, `cross_plannig_controller`, `StatusApplicationController`);
   split 1 023-line `app.py` monolith into `page_registry.py`, `app_server.py`, and a thin entry-point `app.py`;
   moved `notify_mail.py` from `ui/pages/` to `services/`;
   corrected navbar label "Psychical Tests" → "Physical Tests";
   applied `@inject` + `Provide[Container.xxx]` throughout the full application — `make_server()`, all service/broker/controller method-level instantiations replaced with injected instance variables
+* 2026-05-01 : added core repository docs — detailed `ARCHITECTURE.md`, `ASSETS.md`, `CODEOWNERS`, `LICENSE`; added `WarriorFit_Presentation.pptx`
+* 2026-05-10 : security hardening pass —
+  authenticate MOM ingestion endpoint (`/api/v1/phef/test`) with `X-API-Key` (`WF_MOM_API_KEY`, constant-time compare, fail-closed),
+  lock down CORS (methods/headers restricted, origins via `WF_MOM_CORS_ORIGINS`),
+  require `WF_MOM_API_KEY` in `deploy-test.sh` / `deploy-prod.sh`,
+  fix IDOR on test deletes by adding server-side role guard `_assert_can_modify_tests()` in `services/service_test.py`,
+  drop GUEST role from "Status Unit" and "Individual" pages,
+  scope `UserStore` to the active Shiny session (PR #217) — no more cross-session identity leak;
+  see [SECURITY.md](SECURITY.md) for the updated OWASP Top 10 assessment
+* 2026-05-31 : broker dead-letter email alerts — `Broker` emails an operator when a message exhausts its retries
+  (`broker_alert_email` config key, `NotifyMail` injected via DI); expanded page/class docstrings across `ui` and `pages`
+* 2026-06-05 : internationalization (i18n) — new `warriorfit/i18n/` module with per-session `LanguageStore`,
+  `t()` translation helper, and EN/NL/FR catalogs (~498 keys each); all pages and navbar migrated to translation keys
+* 2026-06-06 : navbar redesign — language switcher converted from three off-screen EN/NL/FR buttons to a single
+  dropdown (`lang_select`); `Status Unit`, `Individual`, `Reports` moved under the `Physical Tests` menu; empty navbar-brand glyph removed
 
 
 
@@ -95,85 +116,89 @@ https://youtu.be/wZveSgpKTf8
 
 ## Code Evolution
 
-**946 commits** over ~7 months (Sep 2025 – Apr 2026) — currently ~21,800 lines of Python.
+**1 012 commits** over ~8 months (Sep 2025 – May 2026) — currently ~25,800 lines of Python.
 
 ### Timeline
 
-```
-Sep 2025                                                              Apr 2026
- │                                                                        │
- ├──── Phase 1  ───┼────── Phase 2  ─────┼────── Phase 3  ─────┼─Phase 4─ ┤
- │   Prototype     │  Feature growth     │  Architectural      │Hardening │
- │   ~50 commits   │  ~250 commits       │  refactor           │& DevOps  │
- │                 │                     │  ~300 commits       │~346 com. │ 
- │                 │                     │                     │          │
- Sep          Oct  │              Dec    │              Feb    │    Apr   │
-                   ▼                     ▼                     ▼
-             First business        DI container          CI/CD &
-             logic extraction      & layering            Docker prod
+```mermaid
+gantt
+    title WarriorFit — Development Timeline (Sep 2025 → May 2026)
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %Y
+
+    section Phases
+    Phase 1 · Prototype (~50 commits)            :p1, 2025-09-01, 2025-10-31
+    Phase 2 · Feature growth (~250 commits)      :p2, 2025-10-15, 2025-12-15
+    Phase 3 · Architectural refactor (~300 c.)   :p3, 2025-12-01, 2026-02-15
+    Phase 4 · Hardening & DevOps (~346 c.)       :p4, 2026-02-01, 2026-04-30
+    Phase 5 · Security & Finalization (~66 c.)   :p5, 2026-04-25, 2026-05-31
+
+    section Milestones
+    Business-logic extraction   :milestone, 2025-10-31, 0d
+    DI container & layering     :milestone, 2025-12-15, 0d
+    CI/CD & Docker prod         :milestone, 2026-02-28, 0d
+    GDPR + security hardened    :milestone, 2026-05-10, 0d
 ```
 
 ### Complexity Growth
 
+```mermaid
+xychart-beta
+    title "Architectural complexity over time"
+    x-axis ["Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26", "May '26"]
+    y-axis "Complexity (relative)" 0 --> 10
+    line [1, 2, 3, 5, 6, 8, 9, 10, 10]
+    bar  [1, 2, 3, 5, 6, 8, 9, 10, 10]
 ```
-Complexity
-     ▲
-     │                                              ┌─────────────┐
- high│                              ┌───────────────┤  Phase 4    │
-     │                              │   Phase 3     │  Hardening  │
-     │                              │   Layered DI  │  CI/CD      │
-     │              ┌───────────────┘               └─────────────┘
-  mid│              │   Phase 2
-     │              │   Features &
-     │              │   Calculators
-     │──────────────┘
-  low│  Phase 1
-     │  Prototype
-     │  Monolith
-     └──────────────────────────────────────────────────────────▶ Time
-      Sep 2025    Oct       Dec       Feb 2026      Apr
-```
+
+| Phase | Period | Complexity | Architecture |
+|---|---|---|---|
+| 1 — Prototype | Sep–Oct 2025 | low | Monolith |
+| 2 — Features & Calculators | Oct–Dec 2025 | mid | Emerging layers |
+| 3 — Layered DI | Dec 2025–Feb 2026 | high | DI container |
+| 4 — Hardening & CI/CD | Feb–Apr 2026 | high | Production-ready |
+| 5 — Security & Finalization | Apr–May 2026 | high | OWASP-hardened, GDPR-compliant |
 
 ### Architecture Evolution
 
-```
- PHASE 1                   PHASE 2                   PHASE 3 & 4
- ───────                   ───────                   ───────────
+```mermaid
+flowchart TB
+    subgraph P1["PHASE 1 — Prototype"]
+        direction TB
+        P1U[Shiny Pages] --> P1S["DBService<br/><i>god-class</i>"] --> P1DB[(PostgreSQL)]
+    end
 
- ┌──────────┐              ┌──────────┐              ┌──────────────┐
- │  Shiny   │              │  Shiny   │              │  Shiny Pages │
- │  Pages   │              │  Pages   │              │  (RBAC)      │
- └────┬─────┘              └────┬─────┘              └──────┬───────┘
-      │                         │                           │
-      │ direct                  │                    ┌──────▼───────┐
-      │                    ┌────▼─────┐              │ Controllers  │
-      │                    │PhefCalc  │              └──────┬───────┘
-      │                    │ExtService│                     │
-      │                    └────┬─────┘              ┌──────▼───────┐
-      │                         │                    │  Services    │
- ┌────▼─────┐              ┌────▼─────┐              │  + Broker    │
- │DBService │              │DBService │              │  + Mail      │
- │(god-class)│             │(extended)│              └──────┬───────┘
- └────┬─────┘              └────┬─────┘                     │
-      │                         │                    ┌──────▼───────┐
- ┌────▼─────┐              ┌────▼─────┐              │ Repositories │
- │PostgreSQL│              │PostgreSQL│              │ (async)      │
- └──────────┘              └──────────┘              └──────┬───────┘
-                                                           │
-                                                    ┌──────▼───────┐
-                                                    │  ORM Models  │
-                                                    │ (polymorphic)│
-                                                    └──────┬───────┘
-                                                           │
-                                                    ┌──────▼───────┐
-                                                    │  PostgreSQL  │
-                                                    └──────────────┘
+    subgraph P2["PHASE 2 — Feature growth"]
+        direction TB
+        P2U[Shiny Pages] --> P2C["PhefCalc<br/>ExtService"]
+        P2U --> P2S["DBService<br/><i>extended</i>"]
+        P2C --> P2S
+        P2S --> P2DB[(PostgreSQL)]
+    end
 
-                                                    + DI Container
-                                                    + CI/CD pipeline
-                                                    + Docker
-                                                    + MkDocs
+    subgraph P34["PHASE 3 & 4 — Layered + DevOps"]
+        direction TB
+        P3U["Shiny Pages (RBAC)"] --> P3C[Controllers]
+        P3C --> P3S["Services<br/>+ Broker · + Mail"]
+        P3S --> P3R["Repositories (async)"]
+        P3R --> P3M["ORM Models<br/><i>polymorphic</i>"]
+        P3M --> P3DB[(PostgreSQL)]
+    end
+
+    P1 --> P2 --> P34
+
+    classDef ui   fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
+    classDef svc  fill:#e0f7fa,stroke:#00838f,color:#006064;
+    classDef repo fill:#fff3e0,stroke:#ef6c00,color:#e65100;
+    classDef db   fill:#fce4ec,stroke:#ad1457,color:#880e4f;
+    class P1U,P2U,P3U ui
+    class P1S,P2S,P2C,P3C,P3S svc
+    class P3R,P3M repo
+    class P1DB,P2DB,P3DB db
 ```
+
+> Phase 3 & 4 also bring: **DI Container · CI/CD pipeline · Docker · MkDocs**.
+> Phase 5 adds: **OWASP hardening · GDPR compliance · NIST CSF 2.0 · PostgreSQL TLS · military UI theme**.
 
 ### Phase 1: Prototype (Sep–Oct 2025) — commits 1–~50
 
@@ -224,20 +249,33 @@ Complexity
 - Type annotations across the entire codebase
 - PR workflow via GitHub (merge requests, code review)
 
+### Phase 5: Security & Finalization (Apr–May 2026) — commits ~946–1 012
+
+**Complexity: high | Architecture: OWASP-hardened, GDPR-compliant**
+
+- GDPR compliance: serviceman consent table, Privacy self-service page (Art. 7/15/20), data-retention service
+- NIST CSF 2.0 self-assessment; PostgreSQL SSL/TLS with certificate validation
+- OWASP hardening: authenticated MOM endpoint (`X-API-Key`), IDOR fix on test deletes, GUEST role scope reduction, `UserStore` scoped per Shiny session (PR #217)
+- Military UI theme: Rajdhani + JetBrains Mono fonts, olive-drab / khaki / amber colour system
+- Broker resilience: exponential back-off, batch send, dead-letter queue; comprehensive unit tests
+- Dashboard redesign: side-by-side charts, Broker / HR System health card
+- Core docs added: `ARCHITECTURE.md`, `ASSETS.md`, `CODEOWNERS`, `LICENSE`
+
 ### Evolution Summary
 
 | Aspect | Start | Now |
 |---|---|---|
 | **Structure** | Flat files | 7+ packages, layered |
-| **DI** | None | `DeclarativeContainer` |
+| **DI** |  | `DeclarativeContainer` |
 | **DB access** | God-class `DBService` | Repository pattern, async |
 | **Business logic** | Inside UI pages | Calculators, Services, Controllers |
-| **Auth** | Simple login | RBAC with 6 roles |
-| **Testing** | None | Pytest with DB isolation |
-| **CI/CD** | None | GitHub Actions, Docker |
-| **Docs** | None | MkDocs site |
+| **Auth** | Simple login | RBAC with 6 roles, OWASP-hardened |
+| **Testing** |  | Pytest with DB isolation + Broker unit tests |
+| **CI/CD** |  | GitHub Actions, Docker |
+| **Docs** |  | MkDocs site, ARCHITECTURE.md, DPIA, Privacy Policy |
+| **Compliance** |  | GDPR (Art. 7/15/20), NIST CSF 2.0, PostgreSQL TLS |
 
-The pattern is classic and healthy: **working prototype → add features → architectural restructuring → harden for production**. The biggest leap in maturity was the introduction of dependency injection and the layered architecture pattern — transforming it from a "script that works" into a maintainable application.
+The pattern is classic and healthy: **working prototype → add features → architectural restructuring → harden for production → compliance & security**. The biggest leaps in maturity were the introduction of dependency injection (Phase 3) and the OWASP/GDPR hardening pass (Phase 5) — transforming it from a "script that works" into a production-ready, security-audited application.
 
 ---
 
@@ -245,8 +283,7 @@ The pattern is classic and healthy: **working prototype → add features → arc
 The main goals of this project are:
 * To develop a comprehensive fitness military management application
 * To integrate data collection, statistical analysis, and reporting capabilities tailored for military fitness standards
-* Cross (running event) management (out of scope)
-* Reservation of rooms (out of scope)
+
 * To integrate with existing Defence systems (HRM)
 * To integrate with existing Defence systems (SIMULATOR)
 
@@ -282,6 +319,7 @@ The project documentation is structured in different documents:
 21. * **Compliance / GDPR**:
     * [Privacy Policy](documentation/compliance/PRIVACY_POLICY.md) (Done)
     * [Data Protection Impact Assessment (DPIA)](documentation/compliance/DPIA.md) (Done)
+22. * [Sprint Analysis](documentation/sprint_analysis.md) (Done) — Scrum velocity, burndown, epic delivery timeline
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
@@ -306,9 +344,10 @@ if you want to see the project in action, you can check  :
 * Enhancements and bug fixes
 * Testing and validation
 
-### **Phase 4 — Testing & Validation (April 2026)**
+### **Phase 4 — Testing & Validation (April–May 2026)** (Done)
 
 * Acceptance testing and bug fixing
+* Security hardening (OWASP Top 10, GDPR, NIST CSF 2.0)
 
 ### **Phase 5 — Delivery & Demo (Jun 2026)**
 
@@ -324,7 +363,7 @@ https://github.com/users/BenoitGoethals/projects/20
 
 ## 4. SOR structuur
 
-![land-nl.png](documentation/land-nl.png)
+<img alt="land-nl.png" height="400" src="documentation/land-nl.png" width="800"/>
 
 
  ## Licence

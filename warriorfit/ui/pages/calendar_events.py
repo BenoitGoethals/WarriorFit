@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional
+from typing import Any
 
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, ui
@@ -24,9 +24,7 @@ class CalendarPage(Page):
     @inject
     def __init__(
         self,
-        controller: CalendarEventsController = Provide[
-            Container.calendar_events_controller
-        ],
+        controller: CalendarEventsController = Provide[Container.calendar_events_controller],
     ) -> None:
         super().__init__()
         self._refresh_counter = reactive.Value(0)
@@ -131,7 +129,7 @@ class CalendarPage(Page):
                 await shiny_calendar_call_js_func(session, "my_calendar", js_func)
 
 
-_page_instance: Optional[CalendarPage] = None
+_page_instance: CalendarPage | None = None
 
 
 def _get_page() -> CalendarPage:

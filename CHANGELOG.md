@@ -5,6 +5,57 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-06-06] - Internationalization (EN/NL/FR) and navbar redesign
+
+### Added
+- **i18n module** (`warriorfit/i18n/`) — per-session language support with three locales:
+  - `LanguageStore` — per-Shiny-session language accessor (`get_language()` / `set_language()`),
+    backed by the active session, mirroring `UserStore`; supported langs `("en", "nl", "fr")`,
+    default `en`
+  - `translator.py` — `t()` translation helper resolving keys against the active locale
+  - Translation catalogs `en.json`, `nl.json`, `fr.json` (~498 keys each) covering all UI strings
+  - All pages, navbar groups, and controls migrated from hardcoded text to `t("...")` keys
+
+### Changed
+- **Language switcher redesigned as a dropdown** — the three off-screen `EN | NL | FR` action
+  buttons replaced with a single compact `ui.input_select` (`lang_select`) in the navbar; a single
+  reactive handler replaces the three per-language handlers. Dark-themed and vertically aligned to
+  the navbar via `.wf-lang-select` CSS.
+- **Navbar menu reorganized** — `Status Unit`, `Individual`, and `Reports` moved from top-level
+  nav items into the `Physical Tests` dropdown group.
+- **Empty navbar-brand glyph removed** — dropped the `.navbar-brand::before` `▌` block that
+  rendered with no brand text.
+
+---
+
+## [2026-05-31] - Broker dead-letter email alerts
+
+### Added
+- **Dead-letter email alerts** — `Broker` now emails an operator when a message exhausts its
+  retries:
+  - new `broker_alert_email` property and config key in `ApplicationConfig` / `config.yml`
+  - `NotifyMail` injected into `Broker` via the DI container for failure notifications
+- Expanded class- and method-level docstrings across `ui`, `pages`, and `app_server`.
+
+---
+
+## [2026-05-10] - Security hardening: MOM auth, IDOR fix, GUEST scope, session isolation (PRs #214, #217)
+
+### Security
+- **MOM ingestion endpoint authenticated** — `/api/v1/phef/test` now requires `X-API-Key: <WF_MOM_API_KEY>` header (constant-time compare via `hmac.compare_digest`, fail-closed on missing or incorrect key)
+- **CORS locked down** — allowed HTTP methods and headers restricted to minimum required; allowed origins configurable via `WF_MOM_CORS_ORIGINS` environment variable
+- **IDOR fix on test deletes** — server-side role guard `_assert_can_modify_tests()` added in `services/service_test.py`; delete operations now verify the caller's role before acting on any record
+- **GUEST role scope reduced** — GUEST removed from allowed-roles list for "Status Unit" and "Individual" pages; only authenticated operational roles retain access
+- **`UserStore` scoped per Shiny session** (PR #217) — eliminates cross-session identity leak; each browser session gets its own `UserStore` instance, no shared mutable state between concurrent users
+
+### Changed
+- `deploy-test.sh` and `deploy-prod.sh` fail-fast if `WF_MOM_API_KEY` is not set in the environment
+
+### Docs
+- `SECURITY.md` updated with revised OWASP Top 10 assessment reflecting all fixes above
+
+---
+
 ## [2026-05-01] - Code quality refactor: naming fixes, app.py split, full DI wiring
 
 ### Changed
@@ -44,6 +95,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   has no UI concern and was incorrectly placed in the pages layer.
 - Broker unit tests updated to use `broker._mom_repo = mock_repo` instead of patching the now-removed
   `MomRepository()` call sites inside `_process_cycle` methods.
+
+---
+
+## [2026-04-30] - NIST CSF 2.0, PostgreSQL TLS, Broker unit tests, core docs
+
+### Security
+- **NIST CSF 2.0 self-assessment** added (`documentation/compliance/NIST_CSF.md`) — covers Identify, Protect, Detect, Respond, Recover functions with current control mapping
+- **PostgreSQL SSL/TLS** enabled in `ApplicationConfig`; `db.ssl_root_cert` file path validated at startup — raises `FileNotFoundError` immediately if the certificate file is absent (fail-closed)
+- Updated `documentation/compliance/` docs to reflect TLS configuration and revised control baseline
+
+### Added
+- **Comprehensive Broker unit tests** (`tests/test_broker.py`) — DTO mapping assertions, lifecycle management (start/stop/restart), retry counter increments, dead-letter promotion, batch-send flow
+- Core repository files: detailed `ARCHITECTURE.md`, `ASSETS.md` (asset inventory), `CODEOWNERS`, `LICENSE`
+
+---
+
+## [2026-04-27] - Military UI theme & Dashboard redesign
+
+### Added
+- **Military UI theme** — Rajdhani (headings) + JetBrains Mono (code/data) fonts; olive-drab / khaki / amber colour system applied globally via `warriorfit/www/custom.css`; no white text on dark surfaces — amber accent used throughout
+- **Dashboard redesign** — side-by-side Plotly charts (PHEF results + cross times); new "Broker / HR System" health card showing MOM connectivity status and last-heartbeat timestamp
+- `value_box` cards use consistent navy/amber styling with visible text on all contrast levels
 
 ---
 

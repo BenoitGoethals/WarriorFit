@@ -50,11 +50,12 @@ Strongest function. RBAC, modern hashing, parameterized ORM, TLS planned.
 | PR.AT — Awareness & Training | None | — | No documented developer security training |
 | PR.DS — Data Security | Good | Argon2id at rest for credentials; `audit_logs` table; TLS to PostgreSQL (`verify-full` in prod via `db.ssl`); GDPR retention windows declared explicitly per environment in YAML | No field-level encryption for PII at rest |
 | PR.PS — Platform Security | Good | Dockerized deploy, secrets via env (`WF_SECRET_KEY`), pre-commit hooks, ruff/mypy/black in CI | Image not signed (A08); base image patch cadence not documented |
-| PR.IR — Technology Infrastructure Resilience | Partial | Async broker with outbox + retry + dead-letter (`warriorfit/mom/broker.py`) | No documented HA/DR posture; single-process `UserStore` singleton |
+| PR.IR — Technology Infrastructure Resilience | Partial | Async broker with outbox + retry + dead-letter (`warriorfit/mom/broker.py`); `UserStore` now per Shiny session (PR #217) | No documented HA/DR posture |
 
 **Priority gaps:** persistent rate limiter, dev-mode guard, MFA for ADMIN, image signing.
 
 **Resolved 2026-04-30:** TLS to PostgreSQL (`db.ssl=verify-full` in prod).
+**Resolved 2026-05-10:** MOM API authenticated (`X-API-Key` / `WF_MOM_API_KEY`, fail-closed); IDOR guard on test deletes (`services/service_test.py`); `UserStore` scoped per Shiny session; GUEST role no longer reaches "Status Unit" / "Individual" pages.
 
 ## DETECT (DE)
 

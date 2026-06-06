@@ -86,6 +86,7 @@ class ApplicationConfig(metaclass=Singleton):
             "base_backoff_s": 5,
             "max_backoff_s": 600,
         }
+        self.__broker_alert_email: str = ""
         self.load_config()
 
     @property
@@ -156,6 +157,10 @@ class ApplicationConfig(metaclass=Singleton):
         return int(self.__broker["max_backoff_s"])
 
     @property
+    def broker_alert_email(self) -> str:
+        return self.__broker_alert_email
+
+    @property
     def mail_server(self) -> SmtpConfig:
         assert self._settings_data is not None
         if not self._settings_data.mail_server:
@@ -184,9 +189,7 @@ class ApplicationConfig(metaclass=Singleton):
         config = self._load_yaml_file()
         version_config = self._load_version_yaml_file()
         if not config:
-            raise ValueError(
-                f"Configuration file is empty or not found: {self.config_path}"
-            )
+            raise ValueError(f"Configuration file is empty or not found: {self.config_path}")
 
         self._settings_data = SettingsData(
             db_host=config["db"]["host"],
@@ -218,6 +221,7 @@ class ApplicationConfig(metaclass=Singleton):
         for key in self.__broker:
             if key in broker_cfg:
                 self.__broker[key] = int(broker_cfg[key])
+        self.__broker_alert_email = str(broker_cfg.get("alert_email") or "")
 
         self.__config_db = self._setup_database_connection()
 
@@ -226,24 +230,24 @@ class ApplicationConfig(metaclass=Singleton):
         Load YAML data from the configuration file.
         """
         try:
-            with open(self.config_path, "r", encoding="utf-8") as file:
+            with open(self.config_path, encoding="utf-8") as file:
                 return yaml.safe_load(file)
         except FileNotFoundError:
-            raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
+            raise FileNotFoundError(f"Configuration file not found: {self.config_path}") from None
         except yaml.YAMLError as error:
-            raise ValueError(f"Error parsing YAML file: {error}")
+            raise ValueError(f"Error parsing YAML file: {error}") from error
 
     def _load_version_yaml_file(self) -> Any:
         """
         Load YAML data from the configuration file.
         """
         try:
-            with open(self.config_path_version, "r", encoding="utf-8") as file:
+            with open(self.config_path_version, encoding="utf-8") as file:
                 return yaml.safe_load(file)
         except FileNotFoundError:
-            raise FileNotFoundError(f"version file not found: {self.config_path}")
+            raise FileNotFoundError(f"version file not found: {self.config_path}") from None
         except yaml.YAMLError as error:
-            raise ValueError(f"Error parsing YAML file: {error}")
+            raise ValueError(f"Error parsing YAML file: {error}") from error
 
     @staticmethod
     def _ensure_directory(path: str) -> str:
@@ -327,9 +331,7 @@ class ApplicationConfig(metaclass=Singleton):
             "path": {"pdf_path": config.pdf_path},
             "unit": {"name": config.own_unit},
             "version": (
-                {"number": self.__version[0], "status": self.__version[1]}
-                if self.__version
-                else {}
+                {"number": self.__version[0], "status": self.__version[1]} if self.__version else {}
             ),
         }
         with open(self.config_path, "w", encoding="utf-8") as file:

@@ -15,8 +15,8 @@ from warriorfit.data.model.db_model import (
 from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
-from warriorfit.services.service import Service
 from warriorfit.services.notify_mail import NotifyMail
+from warriorfit.services.service import Service
 
 
 class ServiceTest(Service):
@@ -49,6 +49,24 @@ class ServiceTest(Service):
         )
         self._notify_mail = notify_mail
 
+    @staticmethod
+    def _assert_can_modify_tests() -> None:
+        """Defense-in-depth: verify the current session user holds a role
+        permitted to mutate fitness test data. The page-level RBAC already
+        hides the relevant UI, but server-side reactive inputs can still be
+        invoked by anyone with a session, so we re-check here.
+
+        Raises PermissionError when no privileged user is present.
+        """
+        from warriorfit.core.role import Role
+        from warriorfit.ui.user_store import UserStore
+
+        privileged = {Role.ADMIN, Role.PTI, Role.APTI}
+        user = UserStore.get_user()
+        role = getattr(user, "role", None)
+        if role not in privileged:
+            raise PermissionError("Current user is not authorized to modify fitness tests")
+
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)
 
@@ -70,9 +88,7 @@ class ServiceTest(Service):
         return await self._test_repo.get_all_combat_swimming_test(id)
 
     async def get_all_test_sessions_type_fitness_test(self, type_test, this_year=True):
-        return await self._test_repo.get_all_test_sessions_type_fitness_test(
-            type_test, this_year
-        )
+        return await self._test_repo.get_all_test_sessions_type_fitness_test(type_test, this_year)
 
     async def get_all_test_sessions_type_fitness_test_for_service_men(
         self, serial: str, type_test, this_year=True
@@ -109,11 +125,9 @@ class ServiceTest(Service):
         :return: Returns a boolean indicating whether the fitness test was successfully
             added to the test session.
         """
-        from warriorfit.app import FitnessWarriorApp
+        from warriorfit.core.container import Container
 
-        add_test = await self._test_repo.add_fitness_test_to_TestSession(
-            fitness_test, test
-        )
+        add_test = await self._test_repo.add_fitness_test_to_TestSession(fitness_test, test)
         body = ""
         if add_test or military is None or military.unit is None:
             match test.type:
@@ -126,11 +140,9 @@ class ServiceTest(Service):
                     body = self.build_email_body_functional(military, session, test)  # type: ignore[arg-type]
                 case "combat_test":
                     body = self.build_email_body_combat(test)
-            await FitnessWarriorApp.get_broker().send_message(test)
+            await Container().broker().send_message(test)
             if body:
-                notify = (
-                    self._notify_mail if self._notify_mail is not None else NotifyMail()
-                )
+                notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
                 await notify.send_mail(
                     body=body,
                     subject="Result Test",
@@ -144,9 +156,8 @@ class ServiceTest(Service):
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
-        deleted = await self._test_repo.delete_fitness_test_from_test_session(
-            param, param1
-        )
+        self._assert_can_modify_tests()
+        deleted = await self._test_repo.delete_fitness_test_from_test_session(param, param1)
         if deleted:
             await self.add_audit_log(
                 details=f"Fitness test {param1} deleted from test session {param}",
@@ -156,10 +167,10 @@ class ServiceTest(Service):
 
     async def update_fitness_test(self, param, cp):
         updated = await self._test_repo.update_fitness_test(param, cp)
-        from warriorfit.app import FitnessWarriorApp
+        from warriorfit.core.container import Container
 
-        await FitnessWarriorApp.get_broker().send_message(updated)
         if updated:
+            await Container().broker().send_message(updated)
             await self.add_audit_log(
                 details=f"Fitness test {cp.serial_number}  {cp.type} updated in test session {param}",
                 action="update",
@@ -189,9 +200,7 @@ class ServiceTest(Service):
     async def delete_test_session(self, sel_id):
         deleted = await self._test_repo.delete_test_session(sel_id)
         if deleted:
-            await self.add_audit_log(
-                details=f"Test session {sel_id} deleted", action="delete"
-            )
+            await self.add_audit_log(details=f"Test session {sel_id} deleted", action="delete")
         return deleted
 
     async def get_all_pti(self):

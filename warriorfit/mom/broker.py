@@ -1,9 +1,10 @@
-import asyncio
+import asyncio  # noqa: I001
 import json
 import logging
 from datetime import datetime
 
 from warriorfit.config.application_config import ApplicationConfig
+from warriorfit.services.notify_mail import NotifyMail
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
@@ -41,18 +42,16 @@ class Broker:
         mom_repository: MomRepository = None,
         be_mil_service: BEMILService = None,
         config: ApplicationConfig = None,
+        notify_mail: NotifyMail = None,
     ):
-        self._mom_repo = (
-            mom_repository if mom_repository is not None else MomRepository()
-        )
+        self._mom_repo = mom_repository if mom_repository is not None else MomRepository()
         self._logger = logging.getLogger(__name__)
         self.running = False
         self._worker_task = None
         self._msg_queue = asyncio.Queue()  # type: ignore[var-annotated]
-        self._be_mil_service = (
-            be_mil_service if be_mil_service is not None else BEMILService()
-        )
+        self._be_mil_service = be_mil_service if be_mil_service is not None else BEMILService()
         self._config = config if config is not None else ApplicationConfig()
+        self._notify_mail = notify_mail
         # Outbox tunables — read from config, fall back to safe defaults.
         # poll_interval: how often the worker wakes up (seconds).
         # batch_size:    how many due messages we attempt to send per cycle.
@@ -91,7 +90,7 @@ class Broker:
             except asyncio.CancelledError:
                 self._logger.info("Worker task cancelled, shutting down gracefully")
                 break
-            except (OSError, IOError, ConnectionError) as e:
+            except (OSError, ConnectionError) as e:
                 self._logger.error(
                     f"Network or I/O error in worker loop: {type(e).__name__}",
                     exc_info=True,
@@ -103,7 +102,7 @@ class Broker:
                     exc_info=True,
                     extra={"error_type": type(e).__name__, "error_message": str(e)},
                 )
-            except asyncio.TimeoutError as e:
+            except TimeoutError as e:
                 self._logger.error(
                     f"Timeout in worker loop: {type(e).__name__}",
                     exc_info=True,
@@ -135,9 +134,18 @@ class Broker:
             repo = self._mom_repo
             messages_processed = 0
             while not self._msg_queue.empty():
+                msg = None
                 try:
                     msg = self._msg_queue.get_nowait()
-                    await repo.add_hr_message(msg)
+                    saved = await repo.add_hr_message(msg)
+                    if saved is None:
+                        # Repository swallowed an integrity/DB error — re-queue
+                        await self._msg_queue.put(msg)
+                        self._logger.warning(
+                            "add_hr_message returned None; message re-queued for next cycle",
+                            extra={"queue_size": self._msg_queue.qsize()},
+                        )
+                        break
                     messages_processed += 1
                     self._logger.debug(
                         "Message saved to database",
@@ -153,12 +161,15 @@ class Broker:
                         extra={
                             "error_type": "AttributeError",
                             "error_message": str(e),
-                            "message_type": type(msg).__name__,
+                            "message_type": type(msg).__name__ if msg else "unknown",
                         },
                     )
-                except (OSError, IOError) as e:
+                except OSError as e:
+                    # DB unreachable — put the message back so it survives the cycle
+                    if msg is not None:
+                        await self._msg_queue.put(msg)
                     self._logger.error(
-                        f"Database I/O error while saving message: {type(e).__name__}",
+                        f"Database I/O error while saving message: {type(e).__name__}; message re-queued",
                         exc_info=True,
                         extra={
                             "error_type": type(e).__name__,
@@ -166,6 +177,7 @@ class Broker:
                             "queue_size": self._msg_queue.qsize(),
                         },
                     )
+                    break  # stop draining; wait for next cycle
                 except (ValueError, TypeError) as e:
                     self._logger.error(
                         f"Invalid data type or value in message: {type(e).__name__}",
@@ -186,7 +198,7 @@ class Broker:
         # 2. Send pending messages
         await self.check_and_send_messages()
 
-    async def send_message(self, test: FitnessTest):
+    async def send_message(self, test: FitnessTest | March):
         """
         Send a message to the message queue.
 
@@ -228,9 +240,7 @@ class Broker:
                 )
                 return
 
-            hr_m = HrMessage(
-                message=json.dumps(dto.to_dict()), datetime_created=datetime.now()
-            )
+            hr_m = HrMessage(message=json.dumps(dto.to_dict()), datetime_created=datetime.now())
             await self._msg_queue.put(hr_m)
             self._logger.debug(
                 f"Message queued for {test_type}",
@@ -261,7 +271,7 @@ class Broker:
                     "test_type": test_type,
                 },
             )
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._logger.error(
                 f"Queue operation error: {type(e).__name__}",
                 exc_info=True,
@@ -272,9 +282,7 @@ class Broker:
                 },
             )
 
-    async def _try_send_to_hr(
-        self, message_hr: HrMessage
-    ) -> tuple[dict | None, str | None]:
+    async def _try_send_to_hr(self, message_hr: HrMessage) -> tuple[dict | None, str | None]:
         """
         Internal wrapper around `_send_message_to_hr` that returns a structured
         (result, error_reason) tuple so the caller can record the failure
@@ -291,9 +299,7 @@ class Broker:
             return result, None
         except asyncio.CancelledError:
             raise
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 — last-resort guard, broker must never die
+        except Exception as e:  # noqa: BLE001 — last-resort guard, broker must never die
             self._logger.error(
                 "Unexpected exception during HR send",
                 exc_info=True,
@@ -323,7 +329,9 @@ class Broker:
         """
         message_id = getattr(message_hr, "id", None)
         try:
-            message = Message(content=message_hr.message)
+            raw = message_hr.message
+            content = json.loads(raw) if isinstance(raw, str) else raw
+            message = Message(content=content)
             self._logger.debug(
                 "Sending message to HR service",
                 extra={"message_id": message_id, "hr_url": self._config.hr_url},
@@ -334,7 +342,7 @@ class Broker:
                 extra={"message_id": message_id, "response": result},
             )
             return result
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             self._logger.error(
                 "Timeout while sending message to HR service",
                 exc_info=True,
@@ -367,14 +375,12 @@ class Broker:
                     "error_message": str(e),
                     "message_id": message_id,
                     "message_content": (
-                        message_hr.message[:200]
-                        if hasattr(message_hr, "message")
-                        else None
+                        message_hr.message[:200] if hasattr(message_hr, "message") else None
                     ),
                 },
             )
             return None
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._logger.error(
                 f"Network I/O error sending message to HR: {type(e).__name__}",
                 exc_info=True,
@@ -454,6 +460,7 @@ class Broker:
                                 "last_error": err,
                             },
                         )
+                        await self._send_dead_letter_alert(msg.id, attempt_before + 1, err)
                     else:
                         self._logger.warning(
                             "HR message send failed, scheduled for retry",
@@ -469,7 +476,7 @@ class Broker:
                 exc_info=True,
                 extra={"error_type": "AttributeError", "error_message": str(e)},
             )
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._logger.error(
                 f"Database I/O error in check_and_send_messages: {type(e).__name__}",
                 exc_info=True,
@@ -495,9 +502,7 @@ class Broker:
                     extra={"task_id": id(self._worker_task)},
                 )
             except RuntimeError as e:
-                error_msg = (
-                    "Could not start Broker worker. No running event loop found."
-                )
+                error_msg = "Could not start Broker worker. No running event loop found."
                 print(f"⚠️ Warning: {error_msg}")
                 self._logger.error(
                     error_msg,
@@ -506,6 +511,29 @@ class Broker:
                 )
         else:
             self._logger.warning("Broker start() called but worker is already running")
+
+    async def _send_dead_letter_alert(
+        self, message_id: int, attempts: int, last_error: str | None
+    ) -> None:
+        alert_email = getattr(self._config, "broker_alert_email", "")
+        if not self._notify_mail or not alert_email:
+            return
+        subject = f"[WarriorFit] Dead-letter: HR-bericht {message_id} kan niet worden verzonden"
+        body = (
+            f"<p>Bericht <strong>ID {message_id}</strong> heeft "
+            f"<strong>{attempts} pogingen</strong> uitgeput en is naar "
+            f"<strong>dead-letter</strong> verplaatst.</p>"
+            f"<p><strong>Laatste fout:</strong> {last_error or 'onbekend'}</p>"
+            f"<p>Actie vereist:<br>"
+            f"&nbsp;&bull; Controleer de verbinding met het HR-systeem.<br>"
+            f"&nbsp;&bull; Reset de rij in <code>hr_messages</code> "
+            f"(<code>dead_letter = false</code>, <code>attempt_count = 0</code>) "
+            f"wanneer het HR-systeem weer beschikbaar is.</p>"
+        )
+        try:
+            await self._notify_mail.send_mail(to=alert_email, subject=subject, body=body)
+        except Exception as exc:  # noqa: BLE001
+            self._logger.error("Failed to send dead-letter alert email: %s", exc)
 
     def stop(self):
         """Stop Service"""
@@ -564,7 +592,7 @@ class CombatTestDto:
 class CombatSwimTestDto:
     def __init__(self, test: CombatSwimmingTest):
         self.serial_number = test.serial_number
-        self.swim_passed = test.swim_paased
+        self.swim_passed = test.swim_passed
 
     def to_dict(self) -> dict:
         return {

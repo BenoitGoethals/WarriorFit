@@ -6,6 +6,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.usermanagement_controller import (
     UserForm,
     UserManagementController,
@@ -16,13 +17,12 @@ from warriorfit.ui.pages.page import Page
 class UserManagementPage(Page):
     COLUMN_SERIAL = "Serial"
     NO_SELECTION_MESSAGE = "No row selected"
+    TAB_NAME = "User Management"
 
     @inject
     def __init__(
         self,
-        controller: UserManagementController = Provide[
-            Container.usermanagement_controller
-        ],
+        controller: UserManagementController = Provide[Container.usermanagement_controller],
     ) -> None:
         super().__init__()
         self.controller = controller
@@ -35,13 +35,13 @@ class UserManagementPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "User Management",
+            t("nav.user_management"),
             ui.div(
                 ui.div(
-                    ui.h2("👥 User Management"),
+                    ui.h2(t("user_mgmt.title")),
                     ui.input_action_button(
                         "um_refresh_btn",
-                        "🔄 Refresh",
+                        t("common.refresh"),
                         class_="btn btn-outline-secondary btn-sm",
                     ),
                     class_="d-flex align-items-center gap-3 mb-3",
@@ -52,7 +52,7 @@ class UserManagementPage(Page):
                         ui.card_header(
                             ui.div(
                                 ui.tags.span("👥", class_="me-2"),
-                                "Users",
+                                t("user_mgmt.users"),
                                 class_="fw-semibold",
                             )
                         ),
@@ -64,54 +64,54 @@ class UserManagementPage(Page):
                         ui.card_header(
                             ui.div(
                                 ui.tags.span("✏️", class_="me-2"),
-                                "Create / Edit User",
+                                t("user_mgmt.create_edit"),
                                 class_="fw-semibold",
                             ),
                             class_="bg-primary text-white",
                         ),
                         # Section: Lookup
                         ui.div(
-                            ui.div("Lookup", class_="wf-section-label"),
+                            ui.div(t("user_mgmt.lookup"), class_="wf-section-label"),
                             ui.div(
-                                ui.input_text("um_serial", "Serial Number"),
+                                ui.input_text("um_serial", t("user_mgmt.serial_number")),
                                 class_="wf-serial-input",
                             ),
                             ui.input_action_button(
                                 "um_serial_search_btn",
-                                "🔍 Search own Unit",
+                                t("user_mgmt.search_own_unit"),
                                 class_="btn btn-info btn-sm w-100 mt-1",
                             ),
                             class_="wf-sidebar-section",
                         ),
                         # Section: User details
                         ui.div(
-                            ui.div("User Details", class_="wf-section-label"),
-                            ui.input_text("um_username", "Username"),
-                            Page.input_password_with_toggle("um_password", "Password"),
-                            ui.input_text("um_email", "Email"),
+                            ui.div(t("user_mgmt.user_details"), class_="wf-section-label"),
+                            ui.input_text("um_username", t("user_mgmt.username")),
+                            Page.input_password_with_toggle("um_password", t("user_mgmt.password")),
+                            ui.input_text("um_email", t("user_mgmt.email")),
                             ui.input_select(
                                 "um_role",
-                                "Role",
+                                t("user_mgmt.role"),
                                 choices=self.controller.role_choices(),
                             ),
                             ui.div(
-                                ui.input_checkbox("um_is_active", "Active"),
+                                ui.input_checkbox("um_is_active", t("user_mgmt.active")),
                                 class_="mt-2",
                             ),
                             class_="wf-sidebar-section",
                         ),
                         # Section: Actions
                         ui.div(
-                            ui.div("Actions", class_="wf-section-label"),
+                            ui.div(t("user_mgmt.actions"), class_="wf-section-label"),
                             ui.div(
                                 ui.input_action_button(
                                     "um_create_btn",
-                                    "➕ Create",
+                                    t("user_mgmt.create"),
                                     class_="btn btn-primary btn-sm flex-fill",
                                 ),
                                 ui.input_action_button(
                                     "um_update_btn",
-                                    "💾 Update",
+                                    t("user_mgmt.update"),
                                     class_="btn btn-warning btn-sm flex-fill",
                                 ),
                                 class_="d-flex gap-2 mb-2",
@@ -119,12 +119,12 @@ class UserManagementPage(Page):
                             ui.div(
                                 ui.input_action_button(
                                     "um_clear_btn",
-                                    "🗑 Clear",
+                                    t("user_mgmt.clear"),
                                     class_="btn btn-outline-secondary btn-sm flex-fill",
                                 ),
                                 ui.input_action_button(
                                     "um_delete_btn",
-                                    "❌ Delete",
+                                    t("user_mgmt.delete"),
                                     class_="btn btn-danger btn-sm flex-fill",
                                 ),
                                 class_="d-flex gap-2",
@@ -147,6 +147,7 @@ class UserManagementPage(Page):
                 ),
                 class_="container-fluid p-3",
             ),
+            value=self.TAB_NAME,
         )
 
     def _read_form(self, input_form) -> UserForm:
@@ -200,9 +201,7 @@ class UserManagementPage(Page):
         @render.data_frame
         async def um_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.um_serial_search_grid_selected_rows)
@@ -214,9 +213,7 @@ class UserManagementPage(Page):
                     row_idx = indices[0]
                     row = df.iloc[row_idx]
                     ui.update_text("um_serial", value=str(row["service_number"]))
-                    ui.update_text(
-                        "um_username", value=row["first_name"] + row["last_name"]
-                    )
+                    ui.update_text("um_username", value=row["first_name"] + row["last_name"])
                     ui.update_text("um_email", value=row["mail"])
 
                     ui.modal_remove()
@@ -268,9 +265,7 @@ class UserManagementPage(Page):
             if to_drop:
                 df = df.drop(columns=to_drop)
 
-            return render.DataGrid(
-                df, filters=True, selection_mode="rows", width="100%"
-            )
+            return render.DataGrid(df, filters=True, selection_mode="rows", width="100%")
 
         @output
         @render.text
@@ -306,9 +301,7 @@ class UserManagementPage(Page):
                     "email": row.get("Email", ""),
                     "role": row.get("Role", ""),
                     "is_active": (
-                        bool(row.get("Active"))
-                        if pd.notna(row.get("Active"))
-                        else False
+                        bool(row.get("Active")) if pd.notna(row.get("Active")) else False
                     ),
                 },
             )
@@ -325,9 +318,7 @@ class UserManagementPage(Page):
             created = await self.controller.create_user(form)
             if created:
                 self.status.set(f"Created user '{form.serial}'.")
-                ui.notification_show(
-                    f"User '{form.serial}' created.", type="message", duration=3
-                )
+                ui.notification_show(f"User '{form.serial}' created.", type="message", duration=3)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 self._clear_form(session)
             else:
@@ -347,16 +338,12 @@ class UserManagementPage(Page):
             if not ok:
                 self.status.set(msg)
                 return
-            updated = await self.controller.update_user(
-                int(self.selected_id.get()), form
-            )
+            updated = await self.controller.update_user(int(self.selected_id.get()), form)
             if not updated:
                 self.status.set("Failed to update user.")
                 return
             self.status.set(f"Updated user '{form.serial}'.")
-            ui.notification_show(
-                f"User '{form.serial}' updated.", type="message", duration=3
-            )
+            ui.notification_show(f"User '{form.serial}' updated.", type="message", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self._clear_form(session)
 
@@ -372,9 +359,7 @@ class UserManagementPage(Page):
                 self.status.set(f"No user found with serial '{sel_serial}'.")
                 return
             self.status.set(f"Deleted user '{sel_serial}'.")
-            ui.notification_show(
-                f"User '{sel_serial}' deleted.", type="warning", duration=3
-            )
+            ui.notification_show(f"User '{sel_serial}' deleted.", type="warning", duration=3)
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             self.selected_serial.set(None)
             self._clear_form(session)

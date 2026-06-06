@@ -11,23 +11,28 @@ The `Broker` class is the core component of the WarriorFit messaging middleware 
 
 ## Data Flow
 
-```
-Controller saves test
-        │
-        ▼
-send_message(test)          converts ORM object → DTO → JSON → HrMessage
-        │
-        ▼
-asyncio.Queue               in-memory buffer (fast, not persistent)
-        │
-        │  every poll_interval_s seconds
-        ▼
-_process_cycle()
-  ├─ STEP 1  drain queue → hr_messages table (DB)
-  └─ STEP 2  check_and_send_messages()
-                  │
-                  ├─ success  → delete row
-                  └─ failure  → mark_failure()  (retry or dead-letter)
+```mermaid
+flowchart TD
+    A[Controller saves test] --> B["send_message(test)<br/>ORM → DTO → JSON → HrMessage"]
+    B --> C[asyncio.Queue<br/><i>in-memory buffer</i>]
+    C -- "every poll_interval_s" --> D["_process_cycle()"]
+    D --> E["STEP 1<br/>drain queue → hr_messages table"]
+    D --> F["STEP 2<br/>check_and_send_messages()"]
+    F --> G{result}
+    G -- success --> H[delete row]
+    G -- failure --> I["mark_failure()<br/>retry / dead-letter"]
+    I -- "max attempts reached" --> J["_send_dead_letter_alert()<br/>email via NotifyMail"]
+
+    classDef store fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
+    classDef action fill:#fff8e1,stroke:#f9a825,color:#5d4037;
+    classDef ok fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+    classDef fail fill:#ffebee,stroke:#c62828,color:#b71c1c;
+    classDef alert fill:#fce4ec,stroke:#880e4f,color:#4a148c;
+    class C,E store
+    class B,D,F action
+    class H ok
+    class I fail
+    class J alert
 ```
 
 ## Supported Test Types
@@ -74,6 +79,7 @@ All values are read from `ApplicationConfig` at startup with safe defaults:
 | `broker_max_attempts` | `10` | Attempts before dead-letter |
 | `broker_base_backoff_s` | `5` | Minimum back-off (seconds) |
 | `broker_max_backoff_s` | `600` | Maximum back-off (seconds) |
+| `broker_alert_email` | `""` | Address that receives dead-letter alert emails (disabled when empty) |
 
 ## Key Methods
 
@@ -87,6 +93,17 @@ All values are read from `ApplicationConfig` at startup with safe defaults:
 | `check_and_send_messages()` | Fetches a batch of due rows, sends to HR, deletes successes, records failures |
 | `_try_send_to_hr(msg)` | Wraps `_send_message_to_hr` and returns a `(result, error_reason)` tuple |
 | `_send_message_to_hr(msg)` | Calls `BEMILService.sent_hr_message_to_hr()` and handles transport exceptions |
+| `_send_dead_letter_alert(message_id, attempts, last_error)` | Sends an HTML alert email via `NotifyMail` when a message is moved to dead-letter; no-ops when `broker_alert_email` is empty or `NotifyMail` is not wired |
+
+## Dead-Letter Alerts
+
+When a message exhausts `max_attempts` and is flipped to `dead_letter = true`, `_send_dead_letter_alert()` fires an HTML email to `broker_alert_email` containing:
+
+- The failed `message_id` and the total attempt count.
+- The `last_error` string recorded by `mark_failure()`.
+- Remediation instructions (check HR connectivity; reset the row in `hr_messages` once the system is back).
+
+The alert is best-effort: a failure to send the email is logged but does not affect broker operation.
 
 ## Why Two Stages?
 

@@ -97,11 +97,6 @@ h1, h2, h3, h4, h5, h6,
   text-transform: uppercase !important;
   color: var(--wf-accent) !important;
 }
-.navbar-brand::before {
-  content: "▌";
-  color: var(--wf-primary-light);
-  margin-right: 0.55rem;
-}
 
 .navbar .nav-link,
 .bslib-page-navbar .nav-link {

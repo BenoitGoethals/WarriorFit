@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Docker container deployment script for WarriorFit API - TEST
-# Usage: WF_SECRET_KEY=<secret> ./deploy-test.sh
+# Usage: WF_SECRET_KEY=<secret> WF_MOM_API_KEY=<key> ./deploy-test.sh
 
 set -e  # Exit on error
 
@@ -17,8 +17,12 @@ echo ""
 # Require secret key to be set in the environment
 if [ -z "${WF_SECRET_KEY}" ]; then
     echo "ERROR: WF_SECRET_KEY environment variable is not set."
-    echo "Usage: WF_SECRET_KEY=<secret> ./deploy-test.sh"
+    echo "Usage: WF_SECRET_KEY=<secret> WF_MOM_API_KEY=<key> ./deploy-test.sh"
     exit 1
+fi
+
+if [ -z "${WF_MOM_API_KEY}" ]; then
+    echo "WARNING: WF_MOM_API_KEY is not set. The MOM /api/v1/phef/test endpoint will stay locked (401)."
 fi
 
 # 1. List all containers
@@ -56,9 +60,10 @@ echo ""
 echo "Step 5: Starting test container '${CONTAINER_NAME}'..."
 sudo docker run -d \
     --restart on-failure \
+    --network host \
     --name "${CONTAINER_NAME}" \
-    -p "${PORT_MAPPING}" \
     -e WF_SECRET_KEY="${WF_SECRET_KEY}" \
+    -e WF_MOM_API_KEY="${WF_MOM_API_KEY}" \
     -e APP_ENV="${APP_ENV}" \
     -e APP_PORT="${APP_PORT}" \
     -v /etc/WarriorFit/config_test.yml:/etc/WarriorFit/config.yml \

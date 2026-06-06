@@ -1,16 +1,40 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any
 
 from warriorfit.data.model.db_model import Role  # type: ignore[attr-defined]
 
 
 @dataclass(frozen=True)
 class PageSpec:
-    """Page definition: UI/server factories and the roles that may access it."""
+    """
+    Defines the PageSpec class which represents specifications and configurations for a page
+    in a system or application.
+
+    This class provides attributes to configure the UI factory, server factory, allowed roles,
+    and information about the page's tab and group. The class is immutable due to the frozen=True
+    dataclass decorator, ensuring the integrity of its instances.
+
+    :ivar tab: Represents the name of the tab where the page belongs.
+    :type tab: str
+    :ivar group: Specifies the group to which the page belongs, such as "root", "Physical
+                 Tests", "Cross/Runs", "Admin", or "About".
+    :type group: str
+    :ivar ui_factory: A callable responsible for generating the UI component for the page. It
+                      takes no arguments and returns an optional UI component.
+    :type ui_factory: Callable[[], Optional[Any]]
+    :ivar server_factory: A callable responsible for creating the server logic for the page,
+                          accepting three arguments. It can also be None if no server-side
+                          logic is needed for the page.
+    :type server_factory: Callable[[Any, Any, Any], Any] | None
+    :ivar allowed_roles: A set of roles that are allowed to access the page. This ensures that only
+                         permitted roles can interact with the page's functionalities.
+    :type allowed_roles: set[Role]
+    """
 
     tab: str
     group: str  # "root" | "Physical Tests" | "Cross/Runs" | "Admin" | "About"
-    ui_factory: Callable[[], Optional[Any]]
+    ui_factory: Callable[[], Any | None]
     server_factory: Callable[[Any, Any, Any], Any] | None
     allowed_roles: set[Role]
 
@@ -71,21 +95,21 @@ def get_pages() -> list[PageSpec]:
         ),
         PageSpec(
             tab="Status Unit",
-            group="root",
+            group="Physical Tests",
             ui_factory=own_unit.get_ui,
             server_factory=own_unit.server,
-            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST},
+            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
         ),
         PageSpec(
             tab="Individual",
-            group="root",
+            group="Physical Tests",
             ui_factory=ind_test_show.get_ui,
             server_factory=ind_test_show.server,
-            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI, Role.GUEST},
+            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
         ),
         PageSpec(
             tab="Reports",
-            group="root",
+            group="Physical Tests",
             ui_factory=reports.get_ui,
             server_factory=reports.server,
             allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
@@ -237,7 +261,7 @@ def get_pages() -> list[PageSpec]:
     ]
 
 
-def pages_for_role(role: Optional[Role]) -> list[PageSpec]:
+def pages_for_role(role: Role | None) -> list[PageSpec]:
     if role is None:
         return []
     return [p for p in get_pages() if role in p.allowed_roles]

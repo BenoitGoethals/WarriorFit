@@ -32,7 +32,7 @@ def _setup_logger() -> None:
     config_path = project_root / "warriorfit" / "config" / "logging_configuration.yml"
     if config_path.exists():
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 config = yaml.safe_load(f)
             logging.config.dictConfig(config)
         except (yaml.YAMLError, KeyError, ValueError) as e:

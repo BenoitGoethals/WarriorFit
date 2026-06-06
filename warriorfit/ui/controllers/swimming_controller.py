@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -24,13 +24,11 @@ class SwimmingController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceTest()
-        self.be_mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self.be_mil_service = mil_service if mil_service is not None else MilitaryService()
 
     # ----- Validation -----
     @staticmethod
-    def validate_form(data: Dict[str, Any]) -> tuple[bool, Dict[str, Any] | str]:
+    def validate_form(data: dict[str, Any]) -> tuple[bool, dict[str, Any] | str]:
         """
         Validates the provided form data for required and optional fields.
 
@@ -64,14 +62,12 @@ class SwimmingController:
         :return: A list of all test sessions of type `SWIMMING`.
         :rtype: list
         """
-        return await self._service.get_all_test_sessions_type_fitness_test(
-            TypeFitnessTest.SWIMMING
-        )
+        return await self._service.get_all_test_sessions_type_fitness_test(TypeFitnessTest.SWIMMING)
 
-    async def get_session_by_id(self, session_id: int) -> Optional[TestSession]:
+    async def get_session_by_id(self, session_id: int) -> TestSession | None:
         return await self._service.get_test_session_by_id(int(session_id))
 
-    async def search_military(self, serialnr: str) -> Optional[ServiceMen]:
+    async def search_military(self, serialnr: str) -> ServiceMen | None:
         serial = (serialnr or "").strip()
         if not serial:
             return None
@@ -92,9 +88,7 @@ class SwimmingController:
             - "Result": Indicates whether the test result was "PASSED" or "FAILED".
         """
         try:
-            swim_tests = await self._service.get_all_combat_swimming_test(
-                int(session_id)
-            )
+            swim_tests = await self._service.get_all_combat_swimming_test(int(session_id))
             rows = []
             for r in swim_tests or []:
                 sm = await self.be_mil_service.get_servicemen_by_serial(r.serial_number)
@@ -105,9 +99,7 @@ class SwimmingController:
                         "ID": r.id,
                         "Serial": r.serial_number,
                         "Name": f"{sm.first_name} {sm.last_name}",
-                        "Result": (
-                            "PASSED" if getattr(r, "swim_paased", False) else "FAILED"
-                        ),
+                        "Result": ("PASSED" if getattr(r, "swim_paased", False) else "FAILED"),
                     }
                 )
             return pd.DataFrame(rows)
@@ -144,10 +136,10 @@ class SwimmingController:
     async def add_swim(
         self,
         session_id: int,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         session: TestSession,
         military: ServiceMen,
-    ) -> Optional[CombatSwimmingTest]:
+    ) -> CombatSwimmingTest | None:
         """
         Add a combat swimming test to a test session.
 
@@ -170,9 +162,7 @@ class SwimmingController:
             int(session_id), st, session=session, military=military
         )
 
-    async def update_swim(
-        self, swim_id: int, payload: Dict[str, Any]
-    ) -> Optional[CombatSwimmingTest]:
+    async def update_swim(self, swim_id: int, payload: dict[str, Any]) -> CombatSwimmingTest | None:
         """
         Updates a swimming test record with the given information. This method asynchronously updates
         a swim test record, utilizing the provided swim test ID and payload data. The operation integrates

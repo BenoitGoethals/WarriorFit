@@ -1,7 +1,9 @@
+import contextlib
 import logging
 import os
 import time
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from dependency_injector.wiring import Provide, inject
 from shiny import render, ui
@@ -10,18 +12,18 @@ from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.container import Container
 from warriorfit.data.model.db_model import Role  # type: ignore[attr-defined]
 from warriorfit.data.repositories.servicemen_repository import ServicemenRepository
+from warriorfit.i18n import LanguageStore, t
 from warriorfit.security.rate_limiter import login_rate_limiter
 from warriorfit.services.service_user import UserService
 from warriorfit.ui.page_registry import PageSpec, get_pages, pages_for_role
 from warriorfit.ui.user_store import UserStore
 
 
-class _ServicemanSessionUser:
-    """Lightweight shim for serviceman-mode sessions.
+_LOGIN_LANG_BTN_STYLE = "font-size:0.75rem; padding:2px 8px;"
 
-    Mirrors the subset of User attributes that the rest of the app reads from
-    UserStore / session.user.
-    """
+
+class _ServicemanSessionUser:
+    """Lightweight shim for serviceman-mode sessions."""
 
     def __init__(self, mil: Any) -> None:
         self.id = None
@@ -36,7 +38,6 @@ def build_app_ui() -> Any:
     return ui.page_fillable(
         ui.tags.head(
             ui.tags.link(rel="stylesheet", href="custom.css"),
-            # Military theme overrides (loaded second so it wins).
             ui.tags.link(rel="stylesheet", href="military.css"),
         ),
         ui.output_ui("main_content_container"),
@@ -57,17 +58,15 @@ def _register_pages_server(
     output: Any,
     session: Any,
 ) -> None:
-    """Mount each page's server function the first time its tab is activated."""
-    from shiny import reactive
+    from shiny import reactive  # noqa: I001
     from warriorfit.ui.pages import calendar_events
 
     servers_by_tab: dict[str, Callable[[Any, Any, Any], Any]] = {
         p.tab: p.server_factory for p in get_pages() if p.server_factory is not None
     }
-    # Calendar server lives outside the navbar (modal trigger).
     servers_by_tab["CalendarEvents"] = calendar_events.server
 
-    mounted: reactive.Value[set[str]] = reactive.Value(set())  # type: ignore[assignment]
+    mounted: reactive.Value[set[str]] = reactive.Value(set())
 
     @reactive.Effect
     def _mount_on_nav_activation():
@@ -86,16 +85,44 @@ def _register_pages_server(
             mounted.set({*mounted.get(), "CalendarEvents"})
 
 
+def _lang_switcher() -> Any:
+    """
+    Creates a language switching UI control.
+
+    This function generates a navigation control component that includes a dropdown
+    menu for selecting a language. The menu allows users to choose between English ('EN'),
+    Dutch ('NL'), and French ('FR'). The currently selected language is dynamically fetched
+    from the LanguageStore. The entire control is styled to display flexibly and align
+    its items to the center.
+
+    :return: A navigation control UI component that provides a language selection interface
+    :rtype: ui.Tag
+    """
+    return ui.nav_control(
+        ui.div(
+            ui.input_select(
+                "lang_select",
+                label=None,
+                choices={"en": "EN", "nl": "NL", "fr": "FR"},
+                selected=LanguageStore.get_language(),
+                width="auto",
+            ),
+            class_="wf-lang-select",
+            style="display:flex; align-items:center;",
+        )
+    )
+
+
 @inject
 def make_server(
     user_service: UserService = Provide[Container.user_service],
     servicemen_repository: ServicemenRepository = Provide[Container.servicemen_repository],
     config: ApplicationConfig = Provide[Container.config],
 ) -> Callable[[Any, Any, Any], None]:
-    """Return the Shiny server function. Dependencies are resolved by the DI container."""
 
     def server(input: Any, output: Any, session: Any) -> None:
         from shiny import reactive
+
         from warriorfit.ui.pages import calendar_events
 
         _register_pages_server(input, output, session)
@@ -103,20 +130,50 @@ def make_server(
         status_text: reactive.Value[str] = reactive.Value("")
         login_user_text: reactive.Value[str] = reactive.Value("")
         nav_version: reactive.Value[int] = reactive.Value(0)
+        lang_version: reactive.Value[int] = reactive.Value(0)
 
         # ── Session helpers ──────────────────────────────────────────────────
 
-        def _get_session_user() -> Optional[Any]:
+        def _get_session_user() -> Any | None:
             return getattr(session, "user", None)
 
         def _set_session_user(user: Any) -> None:
-            setattr(session, "user", user)
+            session.user = user
 
         def _clear_session_user() -> None:
             if hasattr(session, "user"):
                 delattr(session, "user")
             if hasattr(session, "login_mode"):
                 delattr(session, "login_mode")
+
+        # ── Language switcher handlers ────────────────────────────────────────
+
+        def _change_lang(lang: str) -> None:
+            LanguageStore.set_language(lang)
+            lang_version.set(lang_version.get() + 1)
+            nav_version.set(nav_version.get() + 1)
+
+        @reactive.Effect
+        @reactive.event(input.lang_select)
+        def _set_lang_from_select() -> None:
+            lang = input.lang_select()
+            if lang and lang != LanguageStore.get_language():
+                _change_lang(lang)
+
+        @reactive.Effect
+        @reactive.event(input.lang_en)
+        def _set_lang_en() -> None:
+            _change_lang("en")
+
+        @reactive.Effect
+        @reactive.event(input.lang_nl)
+        def _set_lang_nl() -> None:
+            _change_lang("nl")
+
+        @reactive.Effect
+        @reactive.event(input.lang_fr)
+        def _set_lang_fr() -> None:
+            _change_lang("fr")
 
         # ── Calendar panel ───────────────────────────────────────────────────
 
@@ -151,17 +208,21 @@ def make_server(
 
         # ── Navbar builder ───────────────────────────────────────────────────
 
-        def _safe_panel(panel: Optional[Any]) -> Optional[ui.Tag]:
+        _GROUP_LABELS: dict[str, str] = {
+            "Physical Tests": "nav.group.physical_tests",
+            "Cross/Runs": "nav.group.cross_runs",
+            "Admin": "nav.group.admin",
+            "About": "nav.group.about",
+        }
+
+        def _safe_panel(panel: Any | None) -> ui.Tag | None:
             return panel if panel is not None else None
 
-        def _build_menu(
-            group: str, role_pages: list[PageSpec]
-        ) -> Optional[ui.Tag]:
-            children = [
-                _safe_panel(p.ui_factory()) for p in role_pages if p.group == group
-            ]
+        def _build_menu(group: str, role_pages: list[PageSpec]) -> ui.Tag | None:
+            children = [_safe_panel(p.ui_factory()) for p in role_pages if p.group == group]
             children = [c for c in children if c is not None]
-            return ui.nav_menu(group, *children) if children else None  # type: ignore[arg-type, return-value]
+            label = t(_GROUP_LABELS.get(group, group))
+            return ui.nav_menu(label, *children) if children else None  # type: ignore[arg-type, return-value]
 
         def _build_navbar() -> Any:
             user = _get_session_user()
@@ -181,7 +242,6 @@ def make_server(
                 if about_menu is not None:
                     nav_items.append(about_menu)
             else:
-                # Insert "Physical Tests" menu right after Dashboard.
                 physical_menu = _build_menu("Physical Tests", role_pages)
                 physical_inserted = False
                 for p in role_pages:
@@ -204,7 +264,6 @@ def make_server(
                 if about_menu is not None:
                     nav_items.append(about_menu)
 
-            # Global controls
             nav_items.append(ui.nav_spacer())
             nav_items.append(
                 ui.nav_control(
@@ -224,7 +283,7 @@ def make_server(
                     ui.nav_control(
                         ui.input_action_button(
                             "open_personal_calendar_modal_global",
-                            "📅 My Calendar",
+                            t("common.my_calendar"),
                             class_="btn btn-outline-secondary btn-sm",
                             style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
                         )
@@ -234,7 +293,7 @@ def make_server(
                     ui.nav_control(
                         ui.input_action_button(
                             "open_calendar_modal_global",
-                            "📅 Unit Calendar",
+                            t("common.unit_calendar"),
                             class_="btn btn-outline-secondary btn-sm",
                             style="color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);",
                         )
@@ -244,7 +303,7 @@ def make_server(
                 ui.nav_control(
                     ui.input_action_button(
                         "logout_btn",
-                        "Sign Out",
+                        t("common.sign_out"),
                         class_="btn btn-sm",
                         style=(
                             "background:rgba(255,255,255,0.12);"
@@ -254,6 +313,7 @@ def make_server(
                     )
                 )
             )
+            nav_items.append(_lang_switcher())
 
             nav_items = [i for i in nav_items if i is not None]
             return ui.page_navbar(*nav_items, id="main_nav")
@@ -266,10 +326,10 @@ def make_server(
             if show_calendar.get():
                 return ui.div(
                     ui.div(
-                        ui.h3("📅 Calendar"),
+                        ui.h3(t("common.calendar_title")),
                         ui.input_action_button(
                             "close_calendar",
-                            "✕ Close",
+                            t("common.close_btn"),
                             class_="btn btn-outline-secondary btn-sm",
                         ),
                         class_="wf-calendar-panel-header",
@@ -280,10 +340,10 @@ def make_server(
             elif show_personal_calendar.get():
                 return ui.div(
                     ui.div(
-                        ui.h3("📅 Personal Calendar"),
+                        ui.h3(t("common.personal_calendar")),
                         ui.input_action_button(
                             "close_personal_calendar",
-                            "✕ Close",
+                            t("common.close_btn"),
                             class_="btn btn-outline-secondary btn-sm",
                         ),
                         class_="wf-calendar-panel-header",
@@ -330,6 +390,8 @@ def make_server(
 
         @reactive.Effect
         async def login_dialog() -> None:
+            _ = lang_version.get()  # rebuild on language change
+
             app_env = os.getenv("APP_ENV", "")
 
             if app_env == "development":
@@ -346,64 +408,87 @@ def make_server(
                     )
                     UserStore.set_user(dev_user)
                     _set_session_user(dev_user)
-                    login_user_text.set(
-                        f"User: admin  Role: {Role.ADMIN}  Unit: {config.own_unit}"
-                    )
+                    login_user_text.set(f"User: admin  Role: {Role.ADMIN}  Unit: {config.own_unit}")
                     nav_version.set(nav_version.get() + 1)
                 return
 
+            if _get_session_user() is not None:
+                return  # already logged in — don't re-show the modal
+
             status_text.set("")
+
+            # Translations for dynamic JS labels
+            lbl_username = t("login.username")
+            lbl_service = t("login.service_number")
+            ph_username = t("login.username_placeholder")
+            ph_service = t("login.service_number_placeholder")
+
+            _cur_lang = LanguageStore.get_language()
+
+            def _lang_btn(code: str, label: str, extra_class: str = "") -> Any:
+                active = "btn-secondary" if _cur_lang == code else "btn-outline-secondary"
+                return ui.input_action_button(
+                    f"lang_{code}",
+                    label,
+                    class_=f"btn {active} btn-sm {extra_class}",
+                    style=_LOGIN_LANG_BTN_STYLE,
+                )
+
             login = ui.div(
+                # Language switcher inside the login modal
                 ui.div(
-                    ui.div("⚔️ WarriorFit", class_="wf-login-logo"),
-                    ui.div(
-                        "Physical Training Management System",
-                        class_="wf-login-subtitle",
-                    ),
+                    _lang_btn("en", "EN", "me-1"),
+                    _lang_btn("nl", "NL", "me-1"),
+                    _lang_btn("fr", "FR"),
+                    style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;",
+                ),
+                ui.div(
+                    ui.div(t("login.logo"), class_="wf-login-logo"),
+                    ui.div(t("login.subtitle"), class_="wf-login-subtitle"),
                     ui.input_radio_buttons(
                         "login_mode",
-                        "Login as",
+                        t("login.as"),
                         choices={
-                            "application": "Application user (admin, PTI, ...)",
-                            "serviceman": "Serviceman (view my own results only)",
+                            "application": t("login.mode.application"),
+                            "serviceman": t("login.mode.serviceman"),
                         },
                         selected="application",
                         inline=False,
                     ),
+                    ui.tags.label(lbl_username, for_="username_login", class_="form-label"),
+                    ui.input_text("username_login", None, placeholder=ph_username),
                     ui.tags.label(
-                        "Username", for_="username_login", class_="form-label"
-                    ),
-                    ui.input_text(
-                        "username_login", None, placeholder="Enter username"
-                    ),
-                    ui.tags.label(
-                        "Password", for_="password_login", class_="form-label mt-2"
+                        t("login.password"), for_="password_login", class_="form-label mt-2"
                     ),
                     ui.input_password(
-                        "password_login", None, placeholder="Enter password"
+                        "password_login", None, placeholder=t("login.password_placeholder")
                     ),
                     ui.tags.script(
-                        """
-                        (function() {
-                            function updateLoginLabels() {
-                                const mode = $('input[name="login_mode"]:checked').val();
-                                const usernameLabel = $('label[for="username_login"]');
-                                const usernameInput = $('#username_login');
-                                if (mode === 'serviceman') {
-                                    usernameLabel.text('Service number');
-                                    usernameInput.attr('placeholder', 'Enter service number');
-                                } else {
-                                    usernameLabel.text('Username');
-                                    usernameInput.attr('placeholder', 'Enter username');
-                                }
-                            }
+                        f"""
+                        (function() {{
+                            var _lbl_username = {lbl_username!r};
+                            var _lbl_service  = {lbl_service!r};
+                            var _ph_username  = {ph_username!r};
+                            var _ph_service   = {ph_service!r};
+                            function updateLoginLabels() {{
+                                var mode = $('input[name="login_mode"]:checked').val();
+                                var usernameLabel = $('label[for="username_login"]');
+                                var usernameInput = $('#username_login');
+                                if (mode === 'serviceman') {{
+                                    usernameLabel.text(_lbl_service);
+                                    usernameInput.attr('placeholder', _ph_service);
+                                }} else {{
+                                    usernameLabel.text(_lbl_username);
+                                    usernameInput.attr('placeholder', _ph_username);
+                                }}
+                            }}
                             $(document).on('change', 'input[name="login_mode"]', updateLoginLabels);
                             setTimeout(updateLoginLabels, 0);
-                        })();
+                        }})();
                         """
                     ),
                     ui.input_action_button(
-                        "handle_login", "Sign In", class_="btn btn-primary w-100 mt-3"
+                        "handle_login", t("common.sign_in"), class_="btn btn-primary w-100 mt-3"
                     ),
                     ui.output_ui("login_status_ui"),
                     class_="wf-login-card",
@@ -423,9 +508,7 @@ def make_server(
             locked, seconds_left = login_rate_limiter.is_locked(username_login)
             if locked:
                 minutes = (seconds_left + 59) // 60
-                status_text.set(
-                    f"Too many failed attempts. Try again in {minutes} minute(s)."
-                )
+                status_text.set(t("login.error.locked").format(minutes=minutes))
                 return
 
             client = getattr(session.http_conn, "client", None)
@@ -439,20 +522,17 @@ def make_server(
             try:
                 mode = (input.login_mode() or "application").strip()
 
-                # TODO: serviceman mode currently skips password verification.
-                # Proper serviceman auth (SSO or dedicated credentials) is
-                # tracked as a GDPR/security follow-up item.
                 if mode == "serviceman":
                     service_number = (input.username_login() or "").strip()
                     mil = await servicemen_repository.get_by_service_number(
                         service_number, lazy=False
                     )
                     if mil is None:
-                        status_text.set("Unknown service number.")
+                        status_text.set(t("login.error.unknown_service"))
                         return
                     shim_user = _ServicemanSessionUser(mil)
                     login_rate_limiter.reset(service_number)
-                    setattr(session, "login_mode", mode)
+                    session.login_mode = mode
                     UserStore.set_user(shim_user)  # type: ignore[arg-type]
                     await user_service.add_audit_log(
                         f"Serviceman {service_number} logged in (password skipped — TODO)",
@@ -473,11 +553,9 @@ def make_server(
                 if await user_service.check_user(username_login, password_login):
                     user = await user_service.get_user_by_username(username_login)
                     if user.is_active is False:
-                        status_text.set(
-                            "Your account is disabled. Please contact your administrator."
-                        )
+                        status_text.set(t("login.error.account_disabled"))
                         return
-                    setattr(session, "login_mode", mode)
+                    session.login_mode = mode
                     login_rate_limiter.reset(username_login)
                     UserStore.set_user(user)
                     await user_service.add_audit_log(
@@ -487,8 +565,7 @@ def make_server(
                     )
                     _set_session_user(user)
                     login_user_text.set(
-                        f"User: {username_login}  Role: {user.role}"
-                        f"  Unit: {config.own_unit}"
+                        f"User: {username_login}  Role: {user.role}" f"  Unit: {config.own_unit}"
                     )
                     status_text.set("")
                     ui.modal_remove()
@@ -504,17 +581,13 @@ def make_server(
                     locked, seconds_left = login_rate_limiter.is_locked(username_login)
                     if locked:
                         minutes = (seconds_left + 59) // 60
-                        status_text.set(
-                            f"Too many failed attempts. Account locked for {minutes} minute(s)."
-                        )
+                        status_text.set(t("login.error.account_locked").format(minutes=minutes))
                     else:
                         left = login_rate_limiter.attempts_remaining(username_login)
-                        status_text.set(
-                            f"Invalid username or password. {left} attempt(s) remaining."
-                        )
+                        status_text.set(t("login.error.invalid").format(left=left))
             except (ValueError, TypeError, AttributeError) as e:
                 logging.getLogger(__name__).error("Login error: %s", e)
-                status_text.set("An error occurred while logging in. Please try again.")
+                status_text.set(t("login.error.general"))
 
         # ── Logout handler ───────────────────────────────────────────────────
 
@@ -527,21 +600,17 @@ def make_server(
             if clicks and clicks > 0:
                 current_user = _get_session_user()
                 if current_user is not None:
-                    try:
+                    with contextlib.suppress(Exception):
                         await user_service.add_audit_log(
                             f"User {current_user.username} logged out",
                             "logout",
                         )
-                    except Exception:
-                        pass
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
-                ui.notification_show("You have been logged out.", type="message")
+                ui.notification_show(t("logout.notification"), type="message")
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
         # ── Activity tracking & auto-logout ──────────────────────────────────
@@ -573,40 +642,33 @@ def make_server(
 
         @reactive.Effect
         def _reset_on_nav_or_login() -> None:
-            try:
+            with contextlib.suppress(AttributeError, KeyError):
                 _ = input.main_nav()
-            except (AttributeError, KeyError):
-                pass
             _ = nav_version.get()
             last_activity.set(time.time())
 
         @reactive.Effect
         async def _auto_logout_timer() -> None:
-            """Auto-logout after 10 minutes of inactivity (fires every 5 seconds)."""
             reactive.invalidate_later(5)
             user = _get_session_user()
             if not user:
                 return
             ts = last_activity.get() or time.time()
             if time.time() - ts >= 600:
-                try:
+                with contextlib.suppress(Exception):
                     await user_service.add_audit_log(
                         f"User {user.username} auto-logged out after 10min inactivity",
                         "logout_inactivity",
                     )
-                except Exception:
-                    pass
                 _clear_session_user()
                 ui.update_navs("main_nav", selected="Dashboard")
                 ui.notification_show(
-                    "You were logged out due to 10 minutes of inactivity.",
+                    t("logout.inactivity"),
                     type="warning",
                 )
                 ui.insert_ui(
                     selector="body",
-                    ui=ui.tags.script(
-                        "setTimeout(function(){ location.reload(); }, 100);"
-                    ),
+                    ui=ui.tags.script("setTimeout(function(){ location.reload(); }, 100);"),
                 )
 
     return server

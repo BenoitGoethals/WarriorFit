@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 from datetime import date
@@ -45,14 +46,11 @@ class BEMILService:
         serviceman_data = schema.model_dump(exclude_none=True)
 
         if "gender" in serviceman_data and isinstance(serviceman_data["gender"], str):
-            try:
+            with contextlib.suppress(ValueError):
                 serviceman_data["gender"] = Gender(serviceman_data["gender"])
-            except ValueError:
-                pass
 
-        if "unit" in data and isinstance(data["unit"], dict):
-            if "unit_id" not in serviceman_data:
-                serviceman_data["unit_id"] = data["unit"].get("id")
+        if "unit" in data and isinstance(data["unit"], dict) and "unit_id" not in serviceman_data:
+            serviceman_data["unit_id"] = data["unit"].get("id")
 
         valid_fields = {
             "id",
@@ -121,29 +119,42 @@ class BEMILService:
 
         This method utilizes the ``httpx.AsyncClient`` to send a POST request to
         the HR messages endpoint. The message is serialized to JSON before being
-        sent, and the response is then returned after ensuring the request completes
-        successfully. Logging is performed for the serialized message.
-
-        :param message: The message object to be sent to the HR system. It must
-            implement a ``to_dict()`` method to allow JSON serialization.
-        :type message: Message
-        :return: The JSON response returned by the HR system.
-        :rtype: dict
-        :raises httpx.HTTPStatusError: If the HTTP request results in an error response.
+        sent, and the response is then returned after ensuring the request
+        completes successfully.
         """
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self.BASE_URL + "/hrmessages",
-                json=message.to_dict(),
-                headers={
-                    "accept": "application/json",
-                    "Content-Type": "application/json",
-                    "X-API-Key": self.API_KEY,
-                },
+        payload = message.to_dict()
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.BASE_URL + "/hrmessages",
+                    json=payload,
+                    headers={
+                        "accept": "application/json",
+                        "Content-Type": "application/json",
+                        "X-API-Key": self.API_KEY,
+                    },
+                )
+
+                self.__logger.info(json.dumps(payload, indent=2))
+                response.raise_for_status()
+
+            return response.json()
+
+        except httpx.HTTPStatusError as e:
+            self.__logger.error(
+                "HR API returned an error status %s: %s",
+                e.response.status_code,
+                e.response.text,
             )
-            self.__logger.info(json.dumps(message.to_dict(), indent=2))
-            response.raise_for_status()
-        return response.json()
+            raise
+
+        except httpx.RequestError as e:
+            self.__logger.error(
+                "Failed to send message to HR API: %s",
+                e,
+            )
+            raise
 
 
 if __name__ == "__main__":
