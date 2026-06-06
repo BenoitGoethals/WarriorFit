@@ -16,12 +16,6 @@ from warriorfit.services.service_user import UserService
 from warriorfit.ui.page_registry import PageSpec, get_pages, pages_for_role
 from warriorfit.ui.user_store import UserStore
 
-_LANG_BTN_STYLE = (
-    "color:rgba(255,255,255,0.85); border-color:rgba(255,255,255,0.3);"
-    " font-size:0.7rem; padding:2px 6px;"
-)
-
-
 class _ServicemanSessionUser:
     """Lightweight shim for serviceman-mode sessions."""
 
@@ -86,25 +80,29 @@ def _register_pages_server(
 
 
 def _lang_switcher() -> ui.Tag:
-    """Three compact language buttons EN | NL | FR."""
+    """
+    Creates a language switching UI control.
+
+    This function generates a navigation control component that includes a dropdown
+    menu for selecting a language. The menu allows users to choose between English ('EN'),
+    Dutch ('NL'), and French ('FR'). The currently selected language is dynamically fetched
+    from the LanguageStore. The entire control is styled to display flexibly and align
+    its items to the center.
+
+    :return: A navigation control UI component that provides a language selection interface
+    :rtype: ui.Tag
+    """
     return ui.nav_control(
         ui.div(
-            ui.input_action_button(
-                "lang_en", "EN",
-                class_="btn btn-outline-secondary btn-sm me-1",
-                style=_LANG_BTN_STYLE,
+            ui.input_select(
+                "lang_select",
+                label=None,
+                choices={"en": "EN", "nl": "NL", "fr": "FR"},
+                selected=LanguageStore.get_language(),
+                width="auto",
             ),
-            ui.input_action_button(
-                "lang_nl", "NL",
-                class_="btn btn-outline-secondary btn-sm me-1",
-                style=_LANG_BTN_STYLE,
-            ),
-            ui.input_action_button(
-                "lang_fr", "FR",
-                class_="btn btn-outline-secondary btn-sm",
-                style=_LANG_BTN_STYLE,
-            ),
-            style="display:flex; align-items:center; gap:2px;",
+            class_="wf-lang-select",
+            style="display:flex; align-items:center;",
         )
     )
 
@@ -150,19 +148,11 @@ def make_server(
             nav_version.set(nav_version.get() + 1)
 
         @reactive.Effect
-        @reactive.event(input.lang_en)
-        def _set_lang_en() -> None:
-            _change_lang("en")
-
-        @reactive.Effect
-        @reactive.event(input.lang_nl)
-        def _set_lang_nl() -> None:
-            _change_lang("nl")
-
-        @reactive.Effect
-        @reactive.event(input.lang_fr)
-        def _set_lang_fr() -> None:
-            _change_lang("fr")
+        @reactive.event(input.lang_select)
+        def _set_lang_from_select() -> None:
+            lang = input.lang_select()
+            if lang and lang != LanguageStore.get_language():
+                _change_lang(lang)
 
         # ── Calendar panel ───────────────────────────────────────────────────
 
