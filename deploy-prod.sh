@@ -7,9 +7,8 @@ set -e  # Exit on error
 
 CONTAINER_NAME="warriorfit-app"
 IMAGE_NAME="warriorfit-app:prod"
-PORT_MAPPING="8500:8000"
 APP_ENV="production"
-APP_PORT="8000"
+APP_PORT="8500"
 
 echo "=== WarriorFit Production Deployment ==="
 echo ""
