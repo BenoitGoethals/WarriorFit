@@ -94,6 +94,12 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   drop GUEST role from "Status Unit" and "Individual" pages,
   scope `UserStore` to the active Shiny session (PR #217) — no more cross-session identity leak;
   see [SECURITY.md](SECURITY.md) for the updated OWASP Top 10 assessment
+* 2026-05-31 : broker dead-letter email alerts — `Broker` emails an operator when a message exhausts its retries
+  (`broker_alert_email` config key, `NotifyMail` injected via DI); expanded page/class docstrings across `ui` and `pages`
+* 2026-06-05 : internationalization (i18n) — new `warriorfit/i18n/` module with per-session `LanguageStore`,
+  `t()` translation helper, and EN/NL/FR catalogs (~498 keys each); all pages and navbar migrated to translation keys
+* 2026-06-06 : navbar redesign — language switcher converted from three off-screen EN/NL/FR buttons to a single
+  dropdown (`lang_select`); `Status Unit`, `Individual`, `Reports` moved under the `Physical Tests` menu; empty navbar-brand glyph removed
 
 
 

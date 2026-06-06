@@ -5,6 +5,40 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-06-06] - Internationalization (EN/NL/FR) and navbar redesign
+
+### Added
+- **i18n module** (`warriorfit/i18n/`) — per-session language support with three locales:
+  - `LanguageStore` — per-Shiny-session language accessor (`get_language()` / `set_language()`),
+    backed by the active session, mirroring `UserStore`; supported langs `("en", "nl", "fr")`,
+    default `en`
+  - `translator.py` — `t()` translation helper resolving keys against the active locale
+  - Translation catalogs `en.json`, `nl.json`, `fr.json` (~498 keys each) covering all UI strings
+  - All pages, navbar groups, and controls migrated from hardcoded text to `t("...")` keys
+
+### Changed
+- **Language switcher redesigned as a dropdown** — the three off-screen `EN | NL | FR` action
+  buttons replaced with a single compact `ui.input_select` (`lang_select`) in the navbar; a single
+  reactive handler replaces the three per-language handlers. Dark-themed and vertically aligned to
+  the navbar via `.wf-lang-select` CSS.
+- **Navbar menu reorganized** — `Status Unit`, `Individual`, and `Reports` moved from top-level
+  nav items into the `Physical Tests` dropdown group.
+- **Empty navbar-brand glyph removed** — dropped the `.navbar-brand::before` `▌` block that
+  rendered with no brand text.
+
+---
+
+## [2026-05-31] - Broker dead-letter email alerts
+
+### Added
+- **Dead-letter email alerts** — `Broker` now emails an operator when a message exhausts its
+  retries:
+  - new `broker_alert_email` property and config key in `ApplicationConfig` / `config.yml`
+  - `NotifyMail` injected into `Broker` via the DI container for failure notifications
+- Expanded class- and method-level docstrings across `ui`, `pages`, and `app_server`.
+
+---
+
 ## [2026-05-10] - Security hardening: MOM auth, IDOR fix, GUEST scope, session isolation (PRs #214, #217)
 
 ### Security
