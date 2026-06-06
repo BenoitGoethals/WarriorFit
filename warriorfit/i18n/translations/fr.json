@@ -101,6 +101,8 @@
   "welcome.please_login": "Veuillez vous connecter pour accéder au système.",
   "welcome.upcoming_sessions": "📅 Sessions de tests à venir",
   "welcome.refresh": "🔄 Actualiser",
+  "welcome.version": "Version : {version}  Date : {date}",
+  "welcome.version_unknown": "Version : -  Date : -",
 
   "progress.title": "Ma Progression aux Tests",
   "progress.this_year": "Cette année",

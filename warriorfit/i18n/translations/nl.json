@@ -101,6 +101,8 @@
   "welcome.please_login": "Meld u aan om toegang te krijgen tot het systeem.",
   "welcome.upcoming_sessions": "📅 Komende Testsessies",
   "welcome.refresh": "🔄 Vernieuwen",
+  "welcome.version": "Versie : {version}  Datum : {date}",
+  "welcome.version_unknown": "Versie : -  Datum : -",
 
   "progress.title": "Mijn Testvoortgang",
   "progress.this_year": "Dit jaar",

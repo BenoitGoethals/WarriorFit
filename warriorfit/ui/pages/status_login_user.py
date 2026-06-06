@@ -95,8 +95,8 @@ class StatusLoginUser(Page):
         def version_header():
             v = self._config.version
             if v is None:
-                return "Version : -  Date : -"
-            return f"Version : {v[0]}  Date :{v[2]}"
+                return t("welcome.version_unknown")
+            return t("welcome.version").format(version=v[0], date=v[2])
 
         @render.text
         def welcome_subheader():
