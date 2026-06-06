@@ -1,6 +1,7 @@
 import os
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -42,10 +43,10 @@ class ReportGeneratorPdf(GeneratorReport):
         service_test=None,
         config=None,
     ):
-        super().__init__(military_service=military_service, service_test=service_test, config=config)
-        self._cross_service = (
-            cross_service if cross_service is not None else ServiceCross()
+        super().__init__(
+            military_service=military_service, service_test=service_test, config=config
         )
+        self._cross_service = cross_service if cross_service is not None else ServiceCross()
         self._report_generators = {
             ReportType.PHEF: self.generate_phef_report,
             ReportType.FUNCTIONAL: self.generate_functional_report,
@@ -95,7 +96,7 @@ class ReportGeneratorPdf(GeneratorReport):
             self._build_runner_row,
         )
 
-    async def _fetch_runner_details(self, runners) -> List[dict]:
+    async def _fetch_runner_details(self, runners) -> list[dict]:
         """Fetches and builds runner detail dictionaries from runner objects."""
         rows = []
         for runner in runners:
@@ -116,7 +117,7 @@ class ReportGeneratorPdf(GeneratorReport):
         return rows
 
     @staticmethod
-    def _sort_and_rank_runners(rows: List[dict]) -> List[dict]:
+    def _sort_and_rank_runners(rows: list[dict]) -> list[dict]:
         """Sorts runners by time and assigns ranking order."""
         sorted_rows = sorted(
             rows,
@@ -129,7 +130,7 @@ class ReportGeneratorPdf(GeneratorReport):
             row["order"] = idx
         return sorted_rows
 
-    def _build_runner_row(self, runner: dict) -> List[Any]:
+    def _build_runner_row(self, runner: dict) -> list[Any]:
         """Builds a table row from runner dictionary."""
         return [
             runner["order"],
@@ -231,7 +232,7 @@ class ReportGeneratorPdf(GeneratorReport):
                 "reportlab is required to generate PDF. Install it with 'uv add reportlab'."
             ) from e
 
-    def _create_table_style(self, deps: Dict):
+    def _create_table_style(self, deps: dict):
         """Creates a standardized table style for PDF reports."""
         return deps["TableStyle"](
             [
@@ -247,13 +248,13 @@ class ReportGeneratorPdf(GeneratorReport):
 
     def _build_pdf(
         self,
-        rows: List[dict],
+        rows: list[dict],
         report_name: str,
         title: str,
         file_suffix: str,
-        headers: List[str],
-        row_builder: Callable[[dict], List[Any]],
-    ) -> Optional[str]:
+        headers: list[str],
+        row_builder: Callable[[dict], list[Any]],
+    ) -> str | None:
         """Builds a PDF file from structured data with standardized formatting."""
         if not rows:
             return None
@@ -290,13 +291,11 @@ class ReportGeneratorPdf(GeneratorReport):
         self._logger.info("Generating PDF: %s", output_path)
         return output_path
 
-    def _build_report_row_with_date(self, r: dict, *fields) -> List[Any]:
+    def _build_report_row_with_date(self, r: dict, *fields) -> list[Any]:
         """Helper to build report rows that start with a date field."""
         return [self._fmt_date(r["session_date"])] + list(fields)
 
-    async def generate_phef_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_phef_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
         Generates a PHEF (Performance Health Evaluation Framework) report containing the
         details of passed and failed tests as two separate PDF files.
@@ -308,7 +307,7 @@ class ReportGeneratorPdf(GeneratorReport):
         """
         headers, passed, failed = await self.calculate_score(own_unit, this_year)
 
-        def row_builder(r: dict) -> List[Any]:
+        def row_builder(r: dict) -> list[Any]:
             return [
                 self._fmt_date(r["session_date"]),
                 r["serial"],
@@ -325,9 +324,7 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "PHEF", passed, failed, headers, row_builder
         )
 
-    async def generate_functional_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_functional_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
         Generates a functional report based on passed and failed test data.
 
@@ -336,11 +333,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :param this_year: Flag indicating whether to filter data for the current year.
         :return: A dictionary containing file paths to the generated failed and passed reports.
         """
-        failed, headers, passed = await self.calculate_functional_score(
-            own_unit, this_year
-        )
+        failed, headers, passed = await self.calculate_functional_score(own_unit, this_year)
 
-        def row_builder(r: dict) -> List[Any]:
+        def row_builder(r: dict) -> list[Any]:
             return [
                 self._fmt_date(r["session_date"]),
                 r["serial"],
@@ -354,9 +349,7 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "Functional", passed, failed, headers, row_builder
         )
 
-    async def generate_combat_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_combat_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
         Generates a combat report by calculating combat scores, segregating data into
         failed and passed records, and exporting the results to PDF files.
@@ -377,7 +370,7 @@ class ReportGeneratorPdf(GeneratorReport):
             "Result",
         ]
 
-        def row_builder(r: dict) -> List[Any]:
+        def row_builder(r: dict) -> list[Any]:
             return [
                 self._fmt_date(r["session_date"]),
                 r["serial"],
@@ -391,9 +384,7 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "Combat", passed, failed, headers, row_builder
         )
 
-    async def generate_swimming_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_swimming_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
         Generates a swimming test report in PDF format for failed and passed tests.
 
@@ -404,7 +395,7 @@ class ReportGeneratorPdf(GeneratorReport):
         """
         failed, headers, passed = await self.calculate_swim_score(own_unit, this_year)
 
-        def row_builder(r: dict) -> List[Any]:
+        def row_builder(r: dict) -> list[Any]:
             return [
                 self._fmt_date(r["session_date"]),
                 r["serial"],
@@ -419,11 +410,11 @@ class ReportGeneratorPdf(GeneratorReport):
         self,
         report_name: str,
         test_type: str,
-        passed: List[dict],
-        failed: List[dict],
-        headers: List[str],
-        row_builder: Callable[[dict], List[Any]],
-    ) -> Dict[str, Optional[str]]:
+        passed: list[dict],
+        failed: list[dict],
+        headers: list[str],
+        row_builder: Callable[[dict], list[Any]],
+    ) -> dict[str, str | None]:
         """
         Generates both passed and failed PDF reports for a given test type.
 
@@ -461,9 +452,7 @@ class ReportGeneratorPdf(GeneratorReport):
         :param serial_number: A string representing the serviceman's serial number.
         :return: The file path to the generated PDF report as a string.
         """
-        return await self._generate_individual_report(
-            serial_number, current_year_only=False
-        )
+        return await self._generate_individual_report(serial_number, current_year_only=False)
 
     async def generate_ind_report_current_year(self, serial_number: str):
         """
@@ -473,13 +462,9 @@ class ReportGeneratorPdf(GeneratorReport):
         :param serial_number: A string representing the serviceman's serial number.
         :return: The file path to the generated PDF report as a string.
         """
-        return await self._generate_individual_report(
-            serial_number, current_year_only=True
-        )
+        return await self._generate_individual_report(serial_number, current_year_only=True)
 
-    async def _generate_individual_report(
-        self, serial_number: str, current_year_only: bool
-    ):
+    async def _generate_individual_report(self, serial_number: str, current_year_only: bool):
         """
         Core method to generate individual reports with or without year filtering.
 
@@ -488,9 +473,7 @@ class ReportGeneratorPdf(GeneratorReport):
         :return: Path to generated PDF file.
         """
         current_year = datetime.now().year
-        serviceman = await self.be_mil_service.get_servicemen_by_serial(
-            serial_number, lazy=False
-        )
+        serviceman = await self.be_mil_service.get_servicemen_by_serial(serial_number, lazy=False)
 
         deps = self._ensure_pdf_deps()
         year_suffix = f"_{current_year}" if current_year_only else ""
@@ -524,7 +507,7 @@ class ReportGeneratorPdf(GeneratorReport):
         self._logger.info("Generating PDF: %s", output_path)
         return output_path
 
-    def _build_serviceman_info(self, serviceman, styles, deps) -> List:
+    def _build_serviceman_info(self, serviceman, styles, deps) -> list:
         """Builds serviceman information paragraph for PDF."""
         return [
             deps["Paragraph"](
@@ -536,9 +519,7 @@ class ReportGeneratorPdf(GeneratorReport):
             )
         ]
 
-    def _add_test_tables_to_story(
-        self, story: List, data_df: pd.DataFrame, deps: Dict, styles
-    ):
+    def _add_test_tables_to_story(self, story: list, data_df: pd.DataFrame, deps: dict, styles):
         """Adds all test type tables to the PDF story."""
         test_configs = [
             (
@@ -576,12 +557,12 @@ class ReportGeneratorPdf(GeneratorReport):
 
     def _process_table(
         self,
-        story: List,
+        story: list,
         title: str,
         data,
-        headers: List[str],
+        headers: list[str],
         row_mapper: Callable,
-        deps: Dict,
+        deps: dict,
         styles,
     ):
         """Processes and adds a single test type table to the story."""
@@ -630,7 +611,7 @@ class ReportGeneratorPdf(GeneratorReport):
         filtered = df[df["Type"] == t_type]
         return filtered.to_dict("records")
 
-    def _phef_mapper(self, r: dict) -> List[Any]:
+    def _phef_mapper(self, r: dict) -> list[Any]:
         """Maps PHEF test record to table row."""
         return [
             r.get("Date", "-"),
@@ -641,7 +622,7 @@ class ReportGeneratorPdf(GeneratorReport):
         ]
 
     @staticmethod
-    def _func_mapper(r: dict) -> List[Any]:
+    def _func_mapper(r: dict) -> list[Any]:
         """Maps Functional test record to table row."""
         return [
             r.get("Date", "-"),
@@ -651,7 +632,7 @@ class ReportGeneratorPdf(GeneratorReport):
             str(r.get("Total", "-")),
         ]
 
-    def _combat_mapper(self, r: dict) -> List[Any]:
+    def _combat_mapper(self, r: dict) -> list[Any]:
         """Maps Combat test record to table row."""
         return [
             r.get("Date", "-"),
@@ -660,11 +641,11 @@ class ReportGeneratorPdf(GeneratorReport):
             r.get("Obs_scores", "-"),
         ]
 
-    def _swim_mapper(self, r: dict) -> List[Any]:
+    def _swim_mapper(self, r: dict) -> list[Any]:
         """Maps Swimming test record to table row."""
         return [r.get("Date", "-"), self._fmt_pass_fail(r.get("Result", "-"))]
 
-    def _mars_mapper(self, r: dict) -> List[Any]:
+    def _mars_mapper(self, r: dict) -> list[Any]:
         """Maps Mars test record to table row."""
         return [
             r.get("Date", "-"),
@@ -672,7 +653,7 @@ class ReportGeneratorPdf(GeneratorReport):
             self._fmt_pass_fail(r.get("Result", "-")),
         ]
 
-    def _create_test_results_table(self, df: pd.DataFrame, deps: Dict):
+    def _create_test_results_table(self, df: pd.DataFrame, deps: dict):
         """Creates a table with test results for unit members."""
         headers = [
             "Rank",

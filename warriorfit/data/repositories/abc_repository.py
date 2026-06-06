@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -124,9 +123,7 @@ class ABCRepository:
                 self._logger.error("Failed to create audit log: %s", e)
                 return None
 
-    async def get_all_audit_logs(
-        self, limit: Optional[int] = None, offset: int = 0
-    ) -> List[AuditLog]:
+    async def get_all_audit_logs(self, limit: int | None = None, offset: int = 0) -> list[AuditLog]:
         """
         Returns all AuditLog entries ordered by created_at desc.
         Optional pagination via limit/offset.
@@ -157,11 +154,10 @@ class ABCRepository:
         :rtype: list[AuditLog]
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    query = select(AuditLog)
-                    results = await self.fetch_and_log(query, "audit_logs")
-                    return results if results else []
+            async with self.SessionLocal() as session, session.begin():
+                query = select(AuditLog)
+                results = await self.fetch_and_log(query, "audit_logs")
+                return results if results else []
         except SQLAlchemyError as e:
             self._logger.error("Error fetching audit logs: %s", e)
             return []

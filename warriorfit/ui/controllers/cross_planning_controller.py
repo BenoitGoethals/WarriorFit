@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict, Optional
 
 from warriorfit.data.model.db_model import Cross
 from warriorfit.services.service_cross import ServiceCross
@@ -60,7 +59,7 @@ class CrossPlanningController:
         # Ensure we return the actual dict, not a coroutine or None
         return await self.get_cross_view(cross.id)
 
-    async def list_crosses(self) -> list[Dict]:
+    async def list_crosses(self) -> list[dict]:
         """
         Asynchronously retrieves a list of crosses and returns it in a formatted manner. The crosses
         are first sorted by `datetime_start` in descending order, and then by `id` in descending
@@ -95,7 +94,7 @@ class CrossPlanningController:
         executed: bool | None = None,
         description: str | None = None,
         distance: int | None = None,
-    ) -> Dict:
+    ) -> dict:
         """
         Updates the details of a specified cross. This method allows modifying attributes
         such as the start time, execution status, description, or distance of the cross,
@@ -152,7 +151,7 @@ class CrossPlanningController:
             raise ValueError(f"Cross {cross_id} not found")
         return cross
 
-    async def get_cross_view(self, cross_id: int) -> Dict:
+    async def get_cross_view(self, cross_id: int) -> dict:
         """
         Asynchronously retrieves a detailed view of a cross entity, including its ID,
         start datetime, execution status, description, and distance.
@@ -178,11 +177,11 @@ class CrossPlanningController:
         self,
         cross_id: int,
         *,
-        datetime_start: Optional[datetime] = None,
-        executed: Optional[bool] = None,
-        description: Optional[str] = None,
-        distance: Optional[float] = None,
-    ) -> Dict:
+        datetime_start: datetime | None = None,
+        executed: bool | None = None,
+        description: str | None = None,
+        distance: float | None = None,
+    ) -> dict:
         """
         Set the details of a cross by updating its attributes with the provided values
         and returning its updated view representation.

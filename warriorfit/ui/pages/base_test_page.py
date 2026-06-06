@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import contextlib
 from abc import abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 from shiny import reactive, ui
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
+from warriorfit.i18n import t
 from warriorfit.ui.pages.page import Page
 
 
@@ -16,8 +18,8 @@ class BaseTestPage(Page):
 
     def __init__(self):
         super().__init__()
-        self.selected_military: Optional[ServiceMen] = None
-        self.selected_session: Optional[TestSession] = None
+        self.selected_military: ServiceMen | None = None
+        self.selected_session: TestSession | None = None
 
     def refresh(self) -> None:
         """Refresh the page by incrementing the refresh tick."""
@@ -54,9 +56,9 @@ class BaseTestPage(Page):
             await self._clear_form_hook(input, session)
             self.selected_session = None
             if not val:
-                status.set("Select a session.")
+                status.set(t("common.select_session"))
                 return
-            status.set("Session selected. Confirm a serial to enter results.")
+            status.set(t("common.session_selected_confirm"))
 
         @reactive.Effect
         @reactive.event(getattr(input, f"{prefix}_session_id"))
@@ -70,9 +72,7 @@ class BaseTestPage(Page):
                 if hasattr(controller, "get_session_by_id"):
                     self.selected_session = await controller.get_session_by_id(int(val))
                 else:
-                    self.selected_session = await controller.get_test_session_by_id(
-                        int(val)
-                    )
+                    self.selected_session = await controller.get_test_session_by_id(int(val))
             except Exception:
                 self.selected_session = None
 
@@ -85,9 +85,7 @@ class BaseTestPage(Page):
             test_sessions = []
 
         items = {
-            str(
-                s.id
-            ): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
+            str(s.id): f"{s.datetime_start.strftime('%Y-%m-%d %H:%M')} {s.type_test.name}"
             for s in (test_sessions or [])
         }
         current = (getattr(input, f"{prefix}_session_id")() or "").strip()
@@ -120,12 +118,12 @@ class BaseTestPage(Page):
         prefix = self.get_prefix()
 
         if not (selected_session_id.get() or "").strip():
-            status.set("Select a session first.")
+            status.set(t("common.select_session_first"))
             return False
 
         serial = (getattr(input, f"{prefix}_serialnr")() or "").strip()
         if not serial:
-            status.set("Enter a serial number.")
+            status.set(t("common.enter_serial"))
             await self._clear_form_hook(input, session)
             return False
 
@@ -136,15 +134,15 @@ class BaseTestPage(Page):
 
         self.selected_military = val
         if val is None:
-            military_text.set("Not found")
-            status.set("Serial not found.")
+            military_text.set(t("common.not_found"))
+            status.set(t("common.serial_not_found"))
             return False
 
         military_text.set(
             f"{val.rank} {val.service_number} {val.first_name} {val.last_name} "
-            f"{val.gender} {val.age_from_birthdate()} years old"
+            f"{val.gender} {val.age_from_birthdate()} {t('common.years_old')}"
         )
-        status.set("Serial confirmed. Enter results.")
+        status.set(t("common.serial_confirmed"))
         return True
 
     # -------------------------
@@ -154,13 +152,11 @@ class BaseTestPage(Page):
         self, session: Any, disable_ids: tuple[str, ...], disabled: bool
     ) -> None:
         """Toggle input disabling via custom message."""
-        try:
+        with contextlib.suppress(Exception):
             await session.send_custom_message(
                 "wf_toggle_disabled",
                 {"ids": list(disable_ids), "disabled": bool(disabled)},
             )
-        except Exception:
-            pass
 
     def set_buttons(self, prefix: str, can_add: bool, can_update: bool) -> None:
         """Set button states."""
@@ -172,14 +168,14 @@ class BaseTestPage(Page):
     ) -> bool:
         """Check if session is selected. Returns True if valid."""
         if not (selected_session_id.get() or "").strip():
-            status.set("Select a session first.")
+            status.set(t("common.select_session_first"))
             return False
         return True
 
     def require_military_selected(self, status: reactive.Value) -> bool:
         """Check if military is selected. Returns True if valid."""
         if self.selected_military is None:
-            status.set("Confirm a valid serial first.")
+            status.set(t("common.confirm_valid_serial"))
             return False
         return True
 

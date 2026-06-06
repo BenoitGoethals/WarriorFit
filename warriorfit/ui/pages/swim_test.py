@@ -9,6 +9,7 @@ from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
 
@@ -22,7 +23,7 @@ class SwimFormData:
 
 class SwimTestPage(BaseTestPage):
     TAB_NAME: Final[str] = "Swimming Tests"
-    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
+    NO_SELECTION_MESSAGE: Final[str] = "common.no_row_selected"
 
     # Disable these inputs until serial is confirmed
     _DISABLE_IDS: Final[tuple[str, ...]] = (
@@ -45,73 +46,71 @@ class SwimTestPage(BaseTestPage):
 
     def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
-            self.TAB_NAME,
+            t("nav.swimming_tests"),
             # One JS custom message handler to toggle input disabling (no repeated script injection).
             ui.tags.script(self.toggle_disabled_registered_func),
-            ui.h2("🏊 Swimming Tests"),
+            ui.h2(t("swim.title")),
             ui.input_action_button(
-                "swim_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+                "swim_refresh_btn", t("common.refresh"), class_="btn btn-secondary btn-sm my-2"
             ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
-                        ui.card_header("Session"),
-                        ui.input_select("swim_session_id", "Session", choices=[]),
+                        ui.card_header(t("common.session")),
+                        ui.input_select("swim_session_id", t("common.session"), choices=[]),
                         full_screen=False,
                     ),
                     ui.card(
                         ui.div(
                             ui.input_text(
                                 "swim_serialnr",
-                                "Serial Number",
-                                placeholder="Service Number",
+                                t("common.serial_number"),
+                                placeholder=t("common.service_number"),
                             ),
                             ui.input_action_button(
                                 "swim_serial_search_btn",
-                                "🔍 Search own Unit",
+                                t("common.search_own_unit"),
                                 class_="btn-info btn-sm",
                                 style="margin-top: 5px;",
                             ),
                         ),
                         ui.input_action_button(
                             "swim_search",
-                            "✅ Confirm Serial",
+                            t("common.confirm_serial"),
                             class_="btn btn-primary btn-sm",
                             width="200px",
                         ),
                         ui.output_text("swim_military"),
                         ui.layout_columns(
-                            ui.input_checkbox(
-                                "swim_passed", "Swimming Test Passed", value=False
-                            ),
-                            ui.div("Status:", ui.output_ui("swim_status_display")),
+                            ui.input_checkbox("swim_passed", t("swim.passed_label"), value=False),
+                            ui.div(t("swim.status"), ui.output_ui("swim_status_display")),
                             col_widths=(8, 4),
                         ),
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button(
                                 "swim_add_btn",
-                                "Add",
+                                t("common.add"),
                                 disabled=True,
                                 width="150px",
                                 class_="btn-primary w-100",
                             ),
                             ui.input_action_button(
                                 "swim_update_btn",
-                                "Update",
+                                t("common.update"),
                                 disabled=True,
                                 width="150px",
                                 class_="btn-warning w-100",
                             ),
                             ui.input_action_button(
                                 "swim_clear_btn",
-                                "Clear Form",
+                                t("common.clear_form"),
                                 width="150px",
                                 class_="btn-secondary w-100",
                             ),
                             ui.input_action_button(
                                 "swim_delete_btn",
-                                "Delete Selected",
+                                t("common.delete_selected"),
                                 class_="btn-danger w-100",
                             ),
                             col_widths=(4,),
@@ -122,21 +121,20 @@ class SwimTestPage(BaseTestPage):
                     ),
                 ),
                 ui.card(
-                    ui.card_header(
-                        "Swimming Tests (includes members outside own unit)"
-                    ),
+                    ui.card_header(t("swim.table_header")),
                     ui.output_data_frame("swim_grid"),
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input: Any, output: Any, session: Any) -> None:
         self.refresh_on_nav(input, self.TAB_NAME)
 
-        status = reactive.Value("Ready.")
-        military_text = reactive.Value("No selection")
+        status = reactive.Value(t("common.ready"))
+        military_text = reactive.Value(t("common.no_selection"))
 
         selected_session_id = reactive.Value("")
         selected_swim_id = reactive.Value("")
@@ -214,12 +212,10 @@ class SwimTestPage(BaseTestPage):
             _ = self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
-            status.set("Ready.")
+            status.set(t("common.ready"))
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -232,7 +228,7 @@ class SwimTestPage(BaseTestPage):
 
             serial = (input.swim_serialnr() or "").strip()
             if not serial:
-                status.set("Enter a serial number.")
+                status.set(t("common.enter_serial"))
                 await _clear_form()
                 return
 
@@ -243,16 +239,14 @@ class SwimTestPage(BaseTestPage):
 
             self.selected_military = val
             if val is None:
-                military_text.set("Not found")
-                status.set("Serial not found.")
+                military_text.set(t("common.not_found"))
+                status.set(t("common.serial_not_found"))
                 await _toggle_inputs(disabled=True)
                 _set_buttons(can_add=False, can_update=False)
                 return
 
-            military_text.set(
-                f"{val.rank} {val.service_number} {val.first_name} {val.last_name}"
-            )
-            status.set("Serial confirmed. Set result and save.")
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
+            status.set(t("common.serial_confirmed"))
             await _toggle_inputs(disabled=False)
             _set_buttons(can_add=True, can_update=True)
 
@@ -298,17 +292,17 @@ class SwimTestPage(BaseTestPage):
         async def _on_row_selected() -> None:
             sel = input.swim_grid_selected_rows()
             if not sel:
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             df = await sessions_swim_data()
             if df is None or df.empty:
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row_idx = sel[0]
             if row_idx < 0 or row_idx >= len(df):
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row = df.iloc[row_idx]
@@ -333,11 +327,7 @@ class SwimTestPage(BaseTestPage):
                 self.selected_military = None
 
             await _toggle_inputs(disabled=(self.selected_military is None))
-            status.set(
-                f"Selected Swimming Test: {serial}"
-                if serial
-                else "Selected Swimming Test."
-            )
+            status.set(f"Selected Swimming Test: {serial}" if serial else "Selected Swimming Test.")
 
         # ----------------------------
         # CRUD
@@ -374,16 +364,16 @@ class SwimTestPage(BaseTestPage):
             )
             if not added:
                 status.set(
-                    f"Failed to add Swimming test for {payload['serialnr']} in session {payload['id']}."
+                    t("swim.failed_add").format(serial=payload["serialnr"], session=payload["id"])
                 )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(
-                f"Added Swimming test for {payload['serialnr']} in session {payload['id']}."
+                t("swim.added_status").format(serial=payload["serialnr"], session=payload["id"])
             )
             ui.notification_show(
-                f"Swimming test added for {payload['serialnr']}.",
+                t("swim.added").format(serial=payload["serialnr"]),
                 type="message",
                 duration=3,
             )
@@ -397,7 +387,7 @@ class SwimTestPage(BaseTestPage):
 
             swim_id_raw = (selected_swim_id.get() or "").strip()
             if not swim_id_raw:
-                status.set("Select a row to update.")
+                status.set(t("common.select_row_to_update"))
                 return
 
             form = _read_form()
@@ -420,13 +410,13 @@ class SwimTestPage(BaseTestPage):
 
             updated = await self.controller.update_swim(int(swim_id_raw), payload)
             if not updated:
-                status.set(f"Failed to update Swimming test for {payload['serialnr']}.")
+                status.set(t("swim.failed_update").format(serial=payload["serialnr"]))
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(f"Updated Swimming test for {payload['serialnr']}.")
+            status.set(t("swim.updated_status").format(serial=payload["serialnr"]))
             ui.notification_show(
-                f"Swimming test updated for {payload['serialnr']}.",
+                t("swim.updated").format(serial=payload["serialnr"]),
                 type="message",
                 duration=3,
             )
@@ -438,17 +428,17 @@ class SwimTestPage(BaseTestPage):
             sess_id_raw = (input.swim_session_id() or "").strip()
             swim_id_raw = (selected_swim_id.get() or "").strip()
             if not sess_id_raw or not swim_id_raw:
-                status.set("Select a row to delete.")
+                status.set(t("common.select_row_to_delete"))
                 return
 
             ok = await self.controller.delete_swim(int(sess_id_raw), int(swim_id_raw))
             if not ok:
-                status.set("Failed to delete selected Swimming record.")
+                status.set(t("swim.failed_delete"))
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set("Swimming test deleted successfully.")
-            ui.notification_show("Swimming test deleted.", type="warning", duration=3)
+            status.set(t("swim.deleted_success"))
+            ui.notification_show(t("swim.deleted"), type="warning", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -460,7 +450,7 @@ class SwimTestPage(BaseTestPage):
         @reactive.event(input.swim_clear_btn)
         async def _on_clear() -> None:
             await _clear_form()
-            status.set("Form cleared.")
+            status.set(t("common.form_cleared"))
 
         # Serial number search modal
         @reactive.Effect
@@ -468,7 +458,7 @@ class SwimTestPage(BaseTestPage):
         async def _open_serial_search_modal() -> None:
             modal_content = ui.modal(
                 ui.card(
-                    ui.card_header("Select Serial Number"),
+                    ui.card_header(t("common.select_serial_number")),
                     ui.output_data_frame("swim_serial_search_grid"),
                     full_screen=False,
                 ),
@@ -481,9 +471,7 @@ class SwimTestPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -501,9 +489,7 @@ class SwimTestPage(BaseTestPage):
         @render.data_frame
         async def swim_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.swim_serial_search_grid_selected_rows)

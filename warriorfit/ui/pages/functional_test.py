@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Final, Optional
+from typing import Any, Final
 
 import pandas as pd
 from dependency_injector.wiring import Provide, inject
@@ -9,6 +9,7 @@ from shiny import reactive, render, ui
 from shiny.ui._navs import NavPanel
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.logic.Functional_calculator import FunctionalCalculator
 from warriorfit.ui.controllers.functional_controller import FunctionalController
 from warriorfit.ui.pages.base_test_page import BaseTestPage
@@ -25,7 +26,8 @@ class FunctionalFormData:
 
 class FunctionalPage(BaseTestPage):
     TAB_NAME: Final[str] = "Functional Tests"
-    NO_SELECTION_MESSAGE: Final[str] = "No row selected"
+    NO_SELECTION_MESSAGE: Final[str] = "common.no_row_selected"
+    _RESULT_KEY: Final[str] = "functional.result"
 
     # Disable these inputs until serial is confirmed
     _DISABLE_IDS: Final[tuple[str, ...]] = (
@@ -53,97 +55,99 @@ class FunctionalPage(BaseTestPage):
 
     def get_ui(self) -> NavPanel:  # type: ignore[override]
         return ui.nav_panel(
-            self.TAB_NAME,
+            t("nav.functional_tests"),
             # Register ONE JS handler (avoid repeated ui.insert_ui script injection smells)
             ui.tags.script(self.toggle_disabled_registered_func),
-            ui.h2("🧪 Functional Tests"),
+            ui.h2(t("functional.title")),
             ui.input_action_button(
                 "functional_refresh_btn",
-                "🔄 Refresh",
+                t("common.refresh"),
                 class_="btn btn-secondary btn-sm my-2",
             ),
             ui.layout_columns(
                 ui.div(
                     ui.card(
-                        ui.card_header("Session"),
-                        ui.input_select("functional_session_id", "Session", choices=[]),
+                        ui.card_header(t("common.session")),
+                        ui.input_select("functional_session_id", t("common.session"), choices=[]),
                         full_screen=False,
                     ),
                     ui.card(
                         ui.div(
                             ui.input_text(
                                 "functional_serialnr",
-                                "Serial Number",
-                                placeholder="Service Number",
+                                t("common.serial_number"),
+                                placeholder=t("common.service_number"),
                             ),
                             ui.input_action_button(
                                 "functional_serial_search_btn",
-                                "🔍 Search own Unit",
+                                t("common.search_own_unit"),
                                 class_="btn-info btn-sm",
                                 style="margin-top: 5px;",
                             ),
                         ),
                         ui.input_action_button(
                             "functional_search",
-                            "✅ Confirm Serial",
+                            t("common.confirm_serial"),
                             class_="btn btn-primary btn-sm",
                             width="200px",
                         ),
                         ui.output_text("functional_military"),
                         ui.layout_columns(
                             ui.input_numeric(
-                                "functional_push_ups", "Push-ups", value=0, min=0
+                                "functional_push_ups", t("functional.pushups"), value=0, min=0
                             ),
                             ui.div(
-                                "Score :", ui.output_ui("functional_push_ups_score")
+                                t(self._RESULT_KEY), ui.output_ui("functional_push_ups_score")
                             ),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
                             ui.input_numeric(
-                                "functional_sit_ups", "Sit-ups", value=0, min=0
+                                "functional_sit_ups", t("functional.situps"), value=0, min=0
                             ),
-                            ui.div("Score :", ui.output_ui("functional_sit_ups_score")),
+                            ui.div(
+                                t(self._RESULT_KEY), ui.output_ui("functional_sit_ups_score")
+                            ),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
                             ui.input_numeric(
-                                "functional_pull_ups", "Pull-ups", value=0, min=0
+                                "functional_pull_ups", t("functional.pullups"), value=0, min=0
                             ),
                             ui.div(
-                                "Score :", ui.output_ui("functional_pull_ups_score")
+                                t(self._RESULT_KEY), ui.output_ui("functional_pull_ups_score")
                             ),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
-                            ui.div("Result:", ui.output_ui("functional_total_score")),
+                            ui.div(t(self._RESULT_KEY), ui.output_ui("functional_total_score")),
                             col_widths=(12,),
                         ),
                         ui.br(),
                         ui.layout_columns(
                             ui.input_action_button(
                                 "functional_add_btn",
-                                "Add",
+                                t("common.add"),
                                 disabled=True,
                                 width="150px",
                                 class_="btn-primary w-100",
                             ),
                             ui.input_action_button(
                                 "functional_update_btn",
-                                "Update",
+                                t("common.update"),
                                 disabled=True,
                                 width="150px",
                                 class_="btn-warning w-100",
                             ),
                             ui.input_action_button(
                                 "functional_clear_btn",
-                                "Clear Form",
+                                t("common.clear_form"),
                                 width="150px",
                                 class_="btn-secondary w-100",
                             ),
                             ui.input_action_button(
                                 "functional_delete_btn",
-                                "Delete Selected",
+                                t("common.delete_selected"),
                                 class_="btn-danger w-100",
                             ),
                             col_widths=(4,),
@@ -154,21 +158,20 @@ class FunctionalPage(BaseTestPage):
                     ),
                 ),
                 ui.card(
-                    ui.card_header(
-                        "Functional Tests: This list shows not only members of own Unit"
-                    ),
+                    ui.card_header(t("functional.table_header")),
                     ui.output_data_frame("functional_grid"),
                     full_screen=False,
                 ),
                 col_widths=(4, 8),
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input: Any, output: Any, session: Any) -> None:
         self.refresh_on_nav(input, self.TAB_NAME)
 
-        status = reactive.Value("Ready.")
-        military_text = reactive.Value("No selection")
+        status = reactive.Value(t("common.ready"))
+        military_text = reactive.Value(t("common.no_selection"))
 
         selected_session_id = reactive.Value("")
         selected_functional_id = reactive.Value("")
@@ -234,7 +237,7 @@ class FunctionalPage(BaseTestPage):
                 pass
             return ui.span(text, style=f"color: {color}; font-weight: 600;")
 
-        def _calc_score_pushups(reps: int) -> Optional[int]:
+        def _calc_score_pushups(reps: int) -> int | None:
             if self.selected_military is None:
                 return None
             return int(
@@ -245,7 +248,7 @@ class FunctionalPage(BaseTestPage):
                 )
             )
 
-        def _calc_score_situps(reps: int) -> Optional[int]:
+        def _calc_score_situps(reps: int) -> int | None:
             if self.selected_military is None:
                 return None
             return int(
@@ -256,7 +259,7 @@ class FunctionalPage(BaseTestPage):
                 )
             )
 
-        def _calc_score_pullups(reps: int) -> Optional[int]:
+        def _calc_score_pullups(reps: int) -> int | None:
             if self.selected_military is None:
                 return None
             return int(
@@ -314,9 +317,7 @@ class FunctionalPage(BaseTestPage):
             if self.selected_military is None:
                 return ui.span("")
             try:
-                passed = _passes_total(
-                    int(push_val.get()), int(sit_val.get()), int(pull_val.get())
-                )
+                passed = _passes_total(int(push_val.get()), int(sit_val.get()), int(pull_val.get()))
                 return ui.span(
                     "PASSED" if passed else "FAILED",
                     style=(
@@ -363,12 +364,10 @@ class FunctionalPage(BaseTestPage):
             _ = self.refresh_tick.get()
             await _refresh_session_choices()
             await _clear_form()
-            status.set("Ready.")
+            status.set(t("common.ready"))
 
         # Setup session management using base class
-        self.setup_session_management(
-            input, session, selected_session_id, status, self.controller
-        )
+        self.setup_session_management(input, session, selected_session_id, status, self.controller)
 
         # ----------------------------
         # Search military / unlock inputs
@@ -381,7 +380,7 @@ class FunctionalPage(BaseTestPage):
 
             serial = (input.functional_serialnr() or "").strip()
             if not serial:
-                status.set("Enter a serial number.")
+                status.set(t("common.enter_serial"))
                 await _clear_form()
                 return
 
@@ -392,16 +391,14 @@ class FunctionalPage(BaseTestPage):
 
             self.selected_military = val
             if val is None:
-                military_text.set("Not found")
-                status.set("Serial not found.")
+                military_text.set(t("common.not_found"))
+                status.set(t("common.serial_not_found"))
                 await self.toggle_inputs(session, self._DISABLE_IDS, disabled=True)
                 self.set_buttons(self.get_prefix(), can_add=False, can_update=False)
                 return
 
-            military_text.set(
-                f"{val.rank} {val.service_number} {val.first_name} {val.last_name}"
-            )
-            status.set("Serial confirmed. Enter results.")
+            military_text.set(f"{val.rank} {val.service_number} {val.first_name} {val.last_name}")
+            status.set(t("common.serial_confirmed"))
             await self.toggle_inputs(session, self._DISABLE_IDS, disabled=False)
             self.set_buttons(self.get_prefix(), can_add=True, can_update=True)
 
@@ -457,17 +454,17 @@ class FunctionalPage(BaseTestPage):
         async def _on_row_selected() -> None:
             sel = input.functional_grid_selected_rows()
             if not sel:
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             df = await sessions_functional_data()
             if df is None or df.empty:
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row_idx = sel[0]
             if row_idx < 0 or row_idx >= len(df):
-                status.set(self.NO_SELECTION_MESSAGE)
+                status.set(t(self.NO_SELECTION_MESSAGE))
                 return
 
             row = df.iloc[row_idx]
@@ -510,9 +507,7 @@ class FunctionalPage(BaseTestPage):
                 session, self._DISABLE_IDS, disabled=(self.selected_military is None)
             )
             status.set(
-                f"Selected Functional Test: {serial}"
-                if serial
-                else "Selected Functional Test."
+                f"Selected Functional Test: {serial}" if serial else "Selected Functional Test."
             )
 
         # ----------------------------
@@ -556,16 +551,18 @@ class FunctionalPage(BaseTestPage):
             )
             if not added:
                 status.set(
-                    f"Failed to add Functional test for {record['serialnr']} in session {record['id']}."
+                    t("functional.failed_add").format(
+                        serial=record["serialnr"], session=record["id"]
+                    )
                 )
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(
-                f"Added Functional test for {record['serialnr']} in session {record['id']}."
+                t("functional.added_status").format(serial=record["serialnr"], session=record["id"])
             )
             ui.notification_show(
-                f"Functional test added for {record['serialnr']}.",
+                t("functional.added").format(serial=record["serialnr"]),
                 type="message",
                 duration=3,
             )
@@ -581,7 +578,7 @@ class FunctionalPage(BaseTestPage):
 
             functional_id_raw = (selected_functional_id.get() or "").strip()
             if not functional_id_raw:
-                status.set("Select a row to update.")
+                status.set(t("common.select_row_to_update"))
                 return
 
             form = _read_form()
@@ -606,19 +603,15 @@ class FunctionalPage(BaseTestPage):
                 "pull_ups": res["pull_ups"],  # type: ignore[index]
             }
 
-            updated = await self.controller.update_functional(
-                int(functional_id_raw), payload
-            )
+            updated = await self.controller.update_functional(int(functional_id_raw), payload)
             if not updated:
-                status.set(
-                    f"Failed to update Functional test for {payload['serialnr']}."
-                )
+                status.set(t("functional.failed_update").format(serial=payload["serialnr"]))
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set(f"Updated Functional test for {payload['serialnr']}.")
+            status.set(t("functional.updated_status").format(serial=payload["serialnr"]))
             ui.notification_show(
-                f"Functional test updated for {payload['serialnr']}.",
+                t("functional.updated").format(serial=payload["serialnr"]),
                 type="message",
                 duration=3,
             )
@@ -630,19 +623,17 @@ class FunctionalPage(BaseTestPage):
             sess_id_raw = (input.functional_session_id() or "").strip()
             functional_id_raw = (selected_functional_id.get() or "").strip()
             if not sess_id_raw or not functional_id_raw:
-                status.set("Select a row to delete.")
+                status.set(t("common.select_row_to_delete"))
                 return
 
-            ok = await self.controller.delete_functional(
-                int(sess_id_raw), int(functional_id_raw)
-            )
+            ok = await self.controller.delete_functional(int(sess_id_raw), int(functional_id_raw))
             if not ok:
-                status.set("Failed to delete selected Functional record.")
+                status.set(t("functional.failed_delete"))
                 return
 
             self.refresh_tick.set(self.refresh_tick.get() + 1)
-            status.set("Functional test deleted successfully.")
-            ui.notification_show("Functional test deleted.", type="warning", duration=3)
+            status.set(t("functional.deleted_success"))
+            ui.notification_show(t("functional.deleted"), type="warning", duration=3)
             await _clear_form()
 
         @reactive.Effect
@@ -654,7 +645,7 @@ class FunctionalPage(BaseTestPage):
         @reactive.event(input.functional_clear_btn)
         async def _on_clear() -> None:
             await _clear_form()
-            status.set("Form cleared.")
+            status.set(t("common.form_cleared"))
 
         # Serial number search modal
         @reactive.Effect
@@ -662,7 +653,7 @@ class FunctionalPage(BaseTestPage):
         async def _open_serial_search_modal() -> None:
             modal_content = ui.modal(
                 ui.card(
-                    ui.card_header("Select Serial Number"),
+                    ui.card_header(t("common.select_serial_number")),
                     ui.output_data_frame("functional_serial_search_grid"),
                     full_screen=False,
                 ),
@@ -675,9 +666,7 @@ class FunctionalPage(BaseTestPage):
         async def get_all_servicemen_df() -> pd.DataFrame:
             servicemen = await self.controller.be_mil_service.get_all_service_men()
             if not servicemen:
-                return pd.DataFrame(
-                    columns=["service_number", "first_name", "last_name", "gender"]
-                )
+                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
 
             df = pd.DataFrame(
                 [
@@ -695,9 +684,7 @@ class FunctionalPage(BaseTestPage):
         @render.data_frame
         async def functional_serial_search_grid():
             df = await get_all_servicemen_df()
-            return render.DataGrid(
-                df, selection_mode="rows", filters=True, width="100%"
-            )
+            return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 
         @reactive.Effect
         @reactive.event(input.functional_serial_search_grid_selected_rows)
@@ -708,9 +695,7 @@ class FunctionalPage(BaseTestPage):
                 if df is not None and not df.empty:
                     row_idx = indices[0]
                     row = df.iloc[row_idx]
-                    ui.update_text(
-                        "functional_serialnr", value=str(row["service_number"])
-                    )
+                    ui.update_text("functional_serialnr", value=str(row["service_number"]))
                     ui.modal_remove()
 
     async def _clear_form_hook(self, input: Any, session: Any) -> None:

@@ -3,6 +3,7 @@ from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.cross_statics_controller import CrossStaticsController
 from warriorfit.ui.pages.page import Page
 from warriorfit.utils.formaters import Formatter
@@ -12,9 +13,7 @@ class CrossStaticsPage(Page):
     @inject
     def __init__(
         self,
-        controller: CrossStaticsController = Provide[
-            Container.cross_statics_controller
-        ],
+        controller: CrossStaticsController = Provide[Container.cross_statics_controller],
     ):
         super().__init__()
         self._controller = controller
@@ -28,13 +27,13 @@ class CrossStaticsPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Cross Statics",
+            t("nav.cross_statics"),
             ui.div(
-                ui.h2("Cross Statistics"),
+                ui.h2(t("cross_stats.title")),
                 ui.div(
                     ui.input_action_button(
                         "cs_refresh_btn",
-                        "🔄 Refresh",
+                        t("common.refresh"),
                         class_="btn btn-secondary btn-sm",
                     ),
                     class_="ms-auto",
@@ -44,12 +43,14 @@ class CrossStaticsPage(Page):
             # KPI strip — only distance-agnostic counts here.
             # Time KPIs (best/avg/median) live in the per-distance grid below.
             ui.layout_columns(
-                ui.value_box("Crosses", ui.output_text("kpi_crosses"), theme="primary"),
                 ui.value_box(
-                    "Finishers", ui.output_text("kpi_finishers"), theme="primary"
+                    t("cross_stats.crosses"), ui.output_text("kpi_crosses"), theme="primary"
                 ),
                 ui.value_box(
-                    "Unique runners", ui.output_text("kpi_unique"), theme="primary"
+                    t("cross_stats.finishers"), ui.output_text("kpi_finishers"), theme="primary"
+                ),
+                ui.value_box(
+                    t("cross_stats.unique_runners"), ui.output_text("kpi_unique"), theme="primary"
                 ),
                 col_widths=[4, 4, 4],
             ),
@@ -57,10 +58,10 @@ class CrossStaticsPage(Page):
             ui.navset_card_tab(
                 # ----- Overview -----
                 ui.nav_panel(
-                    "Overview",
+                    t("cross_stats.overview"),
                     ui.card(
                         ui.card_header(
-                            "Best / Avg / Median per distance",
+                            t("cross_stats.best_avg_median"),
                             class_="bg-primary text-white",
                         ),
                         ui.output_data_frame("overview_per_distance_grid"),
@@ -68,13 +69,13 @@ class CrossStaticsPage(Page):
                     ui.layout_columns(
                         ui.card(
                             ui.card_header(
-                                "Gender averages", class_="bg-primary text-white"
+                                t("cross_stats.gender_averages"), class_="bg-primary text-white"
                             ),
                             ui.output_ui("overview_gender"),
                         ),
                         ui.card(
                             ui.card_header(
-                                "Age groups (unique persons)",
+                                t("cross_stats.age_groups"),
                                 class_="bg-primary text-white",
                             ),
                             ui.output_ui("overview_age_group"),
@@ -84,10 +85,10 @@ class CrossStaticsPage(Page):
                 ),
                 # ----- Per cross -----
                 ui.nav_panel(
-                    "Per cross",
+                    t("cross_stats.per_cross"),
                     ui.card(
                         ui.card_header(
-                            "All crosses (most recent first)",
+                            t("cross_stats.all_crosses"),
                             class_="bg-success text-white",
                         ),
                         ui.output_data_frame("per_cross_grid"),
@@ -95,17 +96,17 @@ class CrossStaticsPage(Page):
                 ),
                 # ----- Best 10 -----
                 ui.nav_panel(
-                    "Best 10",
+                    t("cross_stats.best_10"),
                     ui.layout_columns(
                         ui.card(
                             ui.card_header(
-                                "Best 10 — 5 km", class_="bg-success text-white"
+                                t("cross_stats.best_10_5km"), class_="bg-success text-white"
                             ),
                             ui.output_data_frame("best_10_all_grid_5"),
                         ),
                         ui.card(
                             ui.card_header(
-                                "Best 10 — 10 km", class_="bg-success text-white"
+                                t("cross_stats.best_10_10km"), class_="bg-success text-white"
                             ),
                             ui.output_data_frame("best_10_all_grid_10"),
                         ),
@@ -114,18 +115,18 @@ class CrossStaticsPage(Page):
                 ),
                 # ----- Demographics -----
                 ui.nav_panel(
-                    "Demographics",
+                    t("cross_stats.demographics"),
                     ui.layout_columns(
                         ui.card(
                             ui.card_header(
-                                "Best per age group × distance",
+                                t("cross_stats.best_per_age"),
                                 class_="bg-info text-white",
                             ),
                             ui.output_data_frame("age_distance_best_grid"),
                         ),
                         ui.card(
                             ui.card_header(
-                                "Avg per age group × distance",
+                                t("cross_stats.avg_per_age"),
                                 class_="bg-info text-white",
                             ),
                             ui.output_data_frame("age_distance_avg_grid"),
@@ -133,18 +134,16 @@ class CrossStaticsPage(Page):
                         col_widths=[6, 6],
                     ),
                     ui.card(
-                        ui.card_header(
-                            "Gender split per distance", class_="bg-info text-white"
-                        ),
+                        ui.card_header(t("cross_stats.gender_split"), class_="bg-info text-white"),
                         ui.output_data_frame("gender_distance_grid"),
                     ),
                 ),
                 # ----- Runners -----
                 ui.nav_panel(
-                    "Runners",
+                    t("cross_stats.runners"),
                     ui.card(
                         ui.card_header(
-                            "Per-runner aggregates (PB, races, avg pace, improvement)",
+                            t("cross_stats.per_runner"),
                             class_="bg-success text-white",
                         ),
                         ui.output_data_frame("per_runner_grid"),
@@ -212,6 +211,7 @@ class CrossStaticsPage(Page):
                     ),
                 ),
             ),
+            value="Cross Statics",
         )
 
     # ----------------------------
@@ -220,7 +220,7 @@ class CrossStaticsPage(Page):
 
     def server(self, input, output, session):
         self.refresh_tick = reactive.Value(0)
-        self.refresh_on_nav(input, "Cross Statistics", self.refresh_tick)
+        self.refresh_on_nav(input, "Cross Statics", self.refresh_tick)
 
         @reactive.Effect
         async def _init():
@@ -275,9 +275,7 @@ class CrossStaticsPage(Page):
                         "Gap",
                     ]
                 )
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         @output
         @render.ui
@@ -318,9 +316,7 @@ class CrossStaticsPage(Page):
                         "age",
                     ]
                 )
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         @output
         @render.data_frame
@@ -339,9 +335,7 @@ class CrossStaticsPage(Page):
                         "age",
                     ]
                 )
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         # ----- Per-cross -----
 
@@ -352,9 +346,7 @@ class CrossStaticsPage(Page):
             df = await self._controller.per_cross_df()
             if df.empty:
                 df = pd.DataFrame(columns=["Cross", "Date", "Dist (km)", "Finishers"])
-            return render.DataGrid(
-                df, filters=True, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=True, selection_mode="none", width="100%")
 
         # ----- Demographics -----
 
@@ -365,9 +357,7 @@ class CrossStaticsPage(Page):
             df = await self._controller.age_distance_best_df()
             if df.empty:
                 df = pd.DataFrame(columns=["Age group", "Dist (km)", "Best"])
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         @output
         @render.data_frame
@@ -376,9 +366,7 @@ class CrossStaticsPage(Page):
             df = await self._controller.age_distance_avg_df()
             if df.empty:
                 df = pd.DataFrame(columns=["Age group", "Dist (km)", "Avg"])
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         @output
         @render.data_frame
@@ -387,9 +375,7 @@ class CrossStaticsPage(Page):
             df = await self._controller.gender_distance_df()
             if df.empty:
                 df = pd.DataFrame(columns=["Gender", "Dist (km)", "Avg", "Finishers"])
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         # ----- Runners -----
 
@@ -399,12 +385,8 @@ class CrossStaticsPage(Page):
             _ = self.refresh_tick.get()
             df = await self._controller.per_runner_df()
             if df.empty:
-                df = pd.DataFrame(
-                    columns=["Serial", "Name", "Races", "PB", "Avg", "Pace", "Δ avg"]
-                )
-            return render.DataGrid(
-                df, filters=True, selection_mode="none", width="100%"
-            )
+                df = pd.DataFrame(columns=["Serial", "Name", "Races", "PB", "Avg", "Pace", "Δ avg"])
+            return render.DataGrid(df, filters=True, selection_mode="none", width="100%")
 
         # ----- Trends -----
 
@@ -415,9 +397,7 @@ class CrossStaticsPage(Page):
             df = await self._controller.trends_df()
             if df.empty:
                 df = pd.DataFrame(columns=["Date", "Dist (km)", "Avg"])
-            return render.DataGrid(
-                df, filters=False, selection_mode="none", width="100%"
-            )
+            return render.DataGrid(df, filters=False, selection_mode="none", width="100%")
 
         # ----- Podium -----
 
@@ -427,12 +407,8 @@ class CrossStaticsPage(Page):
             _ = self.refresh_tick.get()
             df = await self._controller.podium_df()
             if df.empty:
-                df = pd.DataFrame(
-                    columns=["Serial", "Name", "Podiums", "🥇", "🥈", "🥉"]
-                )
-            return render.DataGrid(
-                df, filters=True, selection_mode="none", width="100%"
-            )
+                df = pd.DataFrame(columns=["Serial", "Name", "Podiums", "🥇", "🥈", "🥉"])
+            return render.DataGrid(df, filters=True, selection_mode="none", width="100%")
 
         # ----- Data quality -----
 

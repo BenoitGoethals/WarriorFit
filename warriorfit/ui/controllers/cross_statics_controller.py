@@ -32,9 +32,7 @@ class CrossStaticsController:
         mil_service: MilitaryService = None,
     ) -> None:
         self._service = service if service is not None else ServiceCross()
-        self._mil_service = (
-            mil_service if mil_service is not None else MilitaryService()
-        )
+        self._mil_service = mil_service if mil_service is not None else MilitaryService()
         self._stats: tuple | None = None
         self._ext: dict[str, Any] | None = None
 
@@ -145,9 +143,7 @@ class CrossStaticsController:
         df["worst_time"] = df["worst_time"].apply(Formatter.format_time)
         df["gap_time"] = df["gap_time"].apply(Formatter.format_time)
         df["std_time"] = df["std_time"].round(1)
-        df["avg_pace"] = df["avg_pace"].apply(
-            lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-"
-        )
+        df["avg_pace"] = df["avg_pace"].apply(lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-")
         df = df.rename(
             columns={
                 "cross_id": "Cross",
@@ -182,9 +178,7 @@ class CrossStaticsController:
             return df
         df["personal_best"] = df["personal_best"].apply(Formatter.format_time)
         df["avg_time"] = df["avg_time"].apply(Formatter.format_time)
-        df["avg_pace"] = df["avg_pace"].apply(
-            lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-"
-        )
+        df["avg_pace"] = df["avg_pace"].apply(lambda v: f"{v:.1f} s/km" if pd.notna(v) else "-")
         if "avg_improvement" in df.columns:
             df["avg_improvement"] = df["avg_improvement"].apply(
                 lambda v: f"{v:+.1f} s" if pd.notna(v) else "-"
@@ -400,10 +394,8 @@ class CrossStaticsController:
             for rank_idx, runner in enumerate(value, start=1):
                 if runner.serial_number is None:
                     continue
-                service_men: ServiceMen | None = (
-                    await self._mil_service.get_servicemen_by_serial(
-                        runner.serial_number
-                    )
+                service_men: ServiceMen | None = await self._mil_service.get_servicemen_by_serial(
+                    runner.serial_number
                 )
                 if service_men:
                     data_p.append(

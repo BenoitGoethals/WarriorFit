@@ -1,7 +1,6 @@
 import logging
 import os
 from abc import ABC
-from typing import List
 
 from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
@@ -26,7 +25,7 @@ def _output_dir(config: ApplicationConfig = None) -> str:
         return os.getcwd()
 
 
-class GeneratorReport(ABC):
+class GeneratorReport(ABC):  # noqa: B024  # base class, subclassed not instantiated
     """
     Handles the generation of various fitness test reports, including calculations of
     scores for physical fitness tests, functional tests, combat tests, and swimming tests.
@@ -79,23 +78,18 @@ class GeneratorReport(ABC):
                  and failed participants.
         :rtype: Tuple[List[str], List[dict], List[dict]]
         """
-        failed: List[dict] = []
-        passed: List[dict] = []
-        sessions: List[TestSession] = (
-            await self._service.get_all_test_sessions_type_fitness_test(
-                TypeFitnessTest.PHEF, this_year=this_year
-            )
+        failed: list[dict] = []
+        passed: list[dict] = []
+        sessions: list[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.PHEF, this_year=this_year
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                self._config.own_unit
-            )
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(self._config.own_unit)
         for sess in sessions or []:
-            phef_tests: List[PhefTest] = await self._service.get_all_phef(sess.id)
+            phef_tests: list[PhefTest] = await self._service.get_all_phef(sess.id)
             for test in phef_tests or []:
-                if own_unit:
-                    if test.serial_number not in [s.service_number for s in mils]:
-                        continue
+                if own_unit and test.serial_number not in [s.service_number for s in mils]:
+                    continue
                 sm = await self.be_mil_service.get_servicemen_by_serial(
                     test.serial_number or "",
                     lazy=False,
@@ -166,26 +160,19 @@ class GeneratorReport(ABC):
             test results.
         :rtype: tuple
         """
-        failed: List[dict] = []
-        passed: List[dict] = []
+        failed: list[dict] = []
+        passed: list[dict] = []
 
-        sessions: List[TestSession] = (
-            await self._service.get_all_test_sessions_type_fitness_test(
-                TypeFitnessTest.PHEF, this_year=this_year
-            )
+        sessions: list[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.PHEF, this_year=this_year
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                self._config.own_unit
-            )
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(self._config.own_unit)
         for sess in sessions or []:
-            tests: List[FunctionalTest] = await self._service.get_all_functional_test(
-                sess.id
-            )
+            tests: list[FunctionalTest] = await self._service.get_all_functional_test(sess.id)
             for t in tests or []:
-                if own_unit:
-                    if t.serial_number not in [s.service_number for s in mils]:
-                        continue
+                if own_unit and t.serial_number not in [s.service_number for s in mils]:
+                    continue
                 pu = getattr(t, "push_ups", 0) or 0
                 su = getattr(t, "sit_ups", 0) or 0
                 plu = getattr(t, "pull_ups", 0) or 0
@@ -230,26 +217,19 @@ class GeneratorReport(ABC):
             - headers: A list of strings defining the column headers for the test results.
             - passed: A list of dictionaries with details of individuals who passed the combat test.
         """
-        failed: List[dict] = []
-        passed: List[dict] = []
+        failed: list[dict] = []
+        passed: list[dict] = []
 
-        sessions: List[TestSession] = (
-            await self._service.get_all_test_sessions_type_fitness_test(
-                TypeFitnessTest.COMBAT, this_year=this_year
-            )
+        sessions: list[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.COMBAT, this_year=this_year
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                self._config.own_unit
-            )
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(self._config.own_unit)
         for sess in sessions or []:
-            tests: List[CombatTestParatrooper] = (
-                await self._service.get_all_combat_test(sess.id)
-            )
+            tests: list[CombatTestParatrooper] = await self._service.get_all_combat_test(sess.id)
             for t in tests or []:
-                if own_unit:
-                    if t.serial_number not in [s.service_number for s in mils]:
-                        continue
+                if own_unit and t.serial_number not in [s.service_number for s in mils]:
+                    continue
                 rope = bool(getattr(t, "rope_passed", False))
                 obstacle = bool(getattr(t, "obstacle_passed", False))
                 run_s = int(getattr(t, "running_time", 0) or 0)
@@ -288,25 +268,20 @@ class GeneratorReport(ABC):
         :return: A tuple containing failed test cases, column headers, and passed test cases
         :rtype: Tuple[List[dict], List[str], List[dict]]
         """
-        failed: List[dict] = []
-        passed: List[dict] = []
-        sessions: List[TestSession] = (
-            await self._service.get_all_test_sessions_type_fitness_test(
-                TypeFitnessTest.SWIMMING, this_year=this_year
-            )
+        failed: list[dict] = []
+        passed: list[dict] = []
+        sessions: list[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.SWIMMING, this_year=this_year
         )
         if own_unit:
-            mils = await self.be_mil_service.get_all_be_mil_from_unit(
-                self._config.own_unit
-            )
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(self._config.own_unit)
         for sess in sessions or []:
-            tests: List[CombatSwimmingTest] = (
-                await self._service.get_all_combat_swimming_test(sess.id)
+            tests: list[CombatSwimmingTest] = await self._service.get_all_combat_swimming_test(
+                sess.id
             )
             for t in tests or []:
-                if own_unit:
-                    if t.serial_number not in [s.service_number for s in mils]:
-                        continue
+                if own_unit and t.serial_number not in [s.service_number for s in mils]:
+                    continue
                 ok = bool(getattr(t, "swim_paased", False))
                 row = {
                     "session_date": getattr(sess, "datetime_start", None),

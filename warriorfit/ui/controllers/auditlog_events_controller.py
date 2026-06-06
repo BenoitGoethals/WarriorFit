@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import pandas as pd
 
@@ -36,19 +36,15 @@ class AuditLogEventsController:
                  column headers.
         :rtype: pd.DataFrame
         """
-        logs: List[Any] = await self._service.get_audit_logs()
-        users: List[User] = await self._service.get_all_users()
+        logs: list[Any] = await self._service.get_audit_logs()
+        users: list[User] = await self._service.get_all_users()
 
         if not logs:
             return pd.DataFrame(columns=["User", "Action", "Details", "IP", "Created"])
-        rows: List[Dict[str, Any]] = []
+        rows: list[dict[str, Any]] = []
         for log_entry in logs:
             user = next(
-                (
-                    user
-                    for user in users
-                    if user.id == getattr(log_entry, "user_id", None)
-                ),
+                (user for user in users if user.id == getattr(log_entry, "user_id", None)),
                 None,
             )
             if user is not None:

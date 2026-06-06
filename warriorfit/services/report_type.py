@@ -1,5 +1,4 @@
 import enum
-from typing import Optional
 
 
 class ReportType(enum.Enum):
@@ -27,7 +26,7 @@ class ReportType(enum.Enum):
     SWIMMING = 4
 
     @staticmethod
-    def from_str(test_type: Optional[str]) -> "ReportType":
+    def from_str(test_type: str | None) -> "ReportType":
         """
         Parses a given string to determine the corresponding `ReportType` enumeration value.
 

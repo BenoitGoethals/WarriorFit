@@ -7,18 +7,19 @@ from shiny import reactive, render, ui
 from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.container import Container
 from warriorfit.core.role import Role
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
 from warriorfit.ui.pages.page import Page
 from warriorfit.ui.user_store import UserStore
 
 
 class StatusLoginUser(Page):
+    TAB_NAME = "Welcome"
+
     @inject
     def __init__(
         self,
-        controller: StatusLogUserController = Provide[
-            Container.status_log_user_controller
-        ],
+        controller: StatusLogUserController = Provide[Container.status_log_user_controller],
         config: ApplicationConfig = Provide[Container.config],
     ):
         super().__init__()
@@ -30,7 +31,7 @@ class StatusLoginUser(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Welcome",
+            t("nav.welcome"),
             ui.div(
                 ui.row(
                     ui.column(
@@ -55,12 +56,13 @@ class StatusLoginUser(Page):
                 ),
                 ui.input_action_button(
                     "wl_refresh_btn",
-                    "🔄 Refresh",
+                    t("welcome.refresh"),
                     class_="btn btn-secondary btn-sm my-2",
                 ),
                 ui.output_ui("pti_dashboard_section"),
                 class_="container-fluid p-4",
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
@@ -86,22 +88,22 @@ class StatusLoginUser(Page):
         def welcome_header():
             user = UserStore.get_user()
             if user:
-                return f"Welcome back, {user.username}!"
-            return "Welcome to WarriorFit."
+                return t("welcome.back").format(username=user.username)
+            return t("welcome.generic")
 
         @render.text
         def version_header():
             v = self._config.version
             if v is None:
-                return "Version : -  Date : -"
-            return f"Version : {v[0]}  Date :{v[2]}"
+                return t("welcome.version_unknown")
+            return t("welcome.version").format(version=v[0], date=v[2])
 
         @render.text
         def welcome_subheader():
             user = UserStore.get_user()
             if user:
-                return f"Logged in as {user.role} | {user.email}"
-            return "Please log in to access the system."
+                return t("welcome.logged_in").format(role=user.role, email=user.email)
+            return t("welcome.please_login")
 
         @render.ui
         def pti_dashboard_section():
@@ -116,7 +118,7 @@ class StatusLoginUser(Page):
                             ui.card_header(
                                 ui.div(
                                     ui.span(
-                                        "📅 Upcoming Test Sessions",
+                                        t("welcome.upcoming_sessions"),
                                         class_="fs-5 fw-bold",
                                     ),
                                     class_="d-flex align-items-center",
@@ -137,9 +139,7 @@ class StatusLoginUser(Page):
         async def sessions_grid():
             self.refresh_tick.get()
             df = await self.controller.get_upcoming_session(UserStore.get_user().serial_number)  # type: ignore[arg-type, union-attr]
-            return render.DataGrid(
-                df, width="100%", filters=True, selection_mode="none"
-            )
+            return render.DataGrid(df, width="100%", filters=True, selection_mode="none")
 
 
 _page = None

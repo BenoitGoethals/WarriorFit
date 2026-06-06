@@ -9,6 +9,7 @@ from shiny import reactive, render, ui
 from shiny.render._data_frame_utils._types import StyleInfoBody
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.pages.page import Page
 
@@ -30,17 +31,15 @@ def _failed_styles(df: pd.DataFrame, columns: list[str]) -> list[StyleInfoBody]:
         col_idx: int = loc
         failed_rows = [i for i, v in enumerate(df[col]) if "failed" in str(v).lower()]
         if failed_rows:
-            styles.append(
-                {"rows": failed_rows, "cols": [col_idx], "style": _FAILED_STYLE}
-            )
+            styles.append({"rows": failed_rows, "cols": [col_idx], "style": _FAILED_STYLE})
     return styles
 
 
 class OwnUnitPage(Page):
+    TAB_NAME = "Status Unit"
+
     @inject
-    def __init__(
-        self, controller: OwnUnitController = Provide[Container.own_unit_controller]
-    ):
+    def __init__(self, controller: OwnUnitController = Provide[Container.own_unit_controller]):
         super().__init__()
         self.controller = controller
         self._selected_serial = reactive.Value(None)
@@ -51,29 +50,26 @@ class OwnUnitPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Status Unit",
+            t("nav.status_unit"),
             ui.card(
-                ui.card_header(
-                    f"Servicemen - {self.controller.unit_name} Status PHEF, COMBAT, SWIMMING"
-                ),
+                ui.card_header(t("unit.header").format(unit=self.controller.unit_name)),
                 ui.input_action_button(
                     "refresh_servicemen",
-                    "🔄 Refresh",
+                    t("common.refresh"),
                     class_="btn btn-secondary btn-sm my-2",
                 ),
                 ui.output_data_frame("servicemen_grid"),
-                ui.input_action_button(
-                    "full_report_unit", "Pdf Satus Unit", width="150px"
-                ),
+                ui.input_action_button("full_report_unit", t("unit.pdf_btn"), width="150px"),
                 ui.output_ui("download_btn_unit"),
                 ui.br(),
                 full_screen=True,
             ),
+            value=self.TAB_NAME,
         )
 
     def server(self, input, output, session):
         self.refresh_tick = reactive.Value(0)
-        self.refresh_on_nav(input, "Status Unit", self.refresh_tick)
+        self.refresh_on_nav(input, self.TAB_NAME, self.refresh_tick)
 
         status_report_unit = reactive.Value("")
 
@@ -81,17 +77,17 @@ class OwnUnitPage(Page):
         @reactive.event(input.full_report_unit)
         async def full_report_unit():
             self.report_path.set(None)
-            status_report_unit.set("Generating report...")
+            status_report_unit.set(t("unit.generating"))
             output_path = (
                 await self.controller._report_generator_pdf.generate_total_report_current_year_own_unit()
             )
             if output_path:
                 self.report_path.set(output_path)
-                status_report_unit.set("Full report generated.")
+                status_report_unit.set(t("unit.report_generated"))
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 ui.notification_show("Report generated", type="message", duration=2)
             else:
-                status_report_unit.set("Failed to generate report.")
+                status_report_unit.set(t("unit.report_failed"))
 
         @output
         @render.ui
@@ -100,7 +96,7 @@ class OwnUnitPage(Page):
                 ui.update_action_button("full_report_unit", disabled=True)
                 return ui.download_button(
                     "download_generated_report_unit",
-                    "Download PDF",
+                    t("unit.download_pdf"),
                     width="150px",
                     class_="btn-success",
                 )
@@ -156,18 +152,14 @@ class OwnUnitPage(Page):
 
                 ui.modal_show(
                     ui.modal(
-                        ui.h4(f"Executed Fitness Tests — {serial}"),
+                        ui.h4(t("unit.test_history").format(serial=serial)),
                         ui.output_data_frame("serviceman_tests_grid"),
                         easy_close=True,
-                        footer=ui.input_action_button(
-                            "close_serviceman_tests", "Close"
-                        ),
+                        footer=ui.input_action_button("close_serviceman_tests", t("common.close")),
                     )
                 )
             except Exception:
-                ui.notification_show(
-                    "Error loading serviceman tests", type="error", duration=2
-                )
+                ui.notification_show(t("unit.load_error"), type="error", duration=2)
 
         @output
         @render.data_frame

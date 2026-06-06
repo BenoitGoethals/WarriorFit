@@ -1,7 +1,5 @@
 """Consent service for GDPR Art. 7 / Art. 9 explicit consent tracking."""
 
-from typing import List, Optional
-
 from warriorfit.data.model.db_model import UserConsent
 from warriorfit.data.repositories.consent_repository import ConsentRepository
 from warriorfit.services.service import Service
@@ -29,17 +27,15 @@ class ConsentService(Service):
     ):
         super().__init__(user_repository=user_repository, config=config)
         self._consent_repo = (
-            consent_repository
-            if consent_repository is not None
-            else ConsentRepository()
+            consent_repository if consent_repository is not None else ConsentRepository()
         )
 
     async def grant(
         self,
         service_number: str,
         consent_type: str,
-        ip_address: Optional[str] = None,
-    ) -> Optional[UserConsent]:
+        ip_address: str | None = None,
+    ) -> UserConsent | None:
         version = CURRENT_CONSENT_VERSIONS[consent_type]
         record = await self._consent_repo.record_consent(
             service_number=service_number,
@@ -56,7 +52,7 @@ class ConsentService(Service):
         return record
 
     async def withdraw(
-        self, service_number: str, consent_type: str, ip_address: Optional[str] = None
+        self, service_number: str, consent_type: str, ip_address: str | None = None
     ) -> bool:
         version = CURRENT_CONSENT_VERSIONS[consent_type]
         ok = await self._consent_repo.withdraw_consent(
@@ -77,5 +73,5 @@ class ConsentService(Service):
         )
         return record is not None
 
-    async def list_for_serviceman(self, service_number: str) -> List[UserConsent]:
+    async def list_for_serviceman(self, service_number: str) -> list[UserConsent]:
         return await self._consent_repo.list_for_serviceman(service_number)

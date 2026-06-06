@@ -44,16 +44,12 @@ class Broker:
         config: ApplicationConfig = None,
         notify_mail: NotifyMail = None,
     ):
-        self._mom_repo = (
-            mom_repository if mom_repository is not None else MomRepository()
-        )
+        self._mom_repo = mom_repository if mom_repository is not None else MomRepository()
         self._logger = logging.getLogger(__name__)
         self.running = False
         self._worker_task = None
         self._msg_queue = asyncio.Queue()  # type: ignore[var-annotated]
-        self._be_mil_service = (
-            be_mil_service if be_mil_service is not None else BEMILService()
-        )
+        self._be_mil_service = be_mil_service if be_mil_service is not None else BEMILService()
         self._config = config if config is not None else ApplicationConfig()
         self._notify_mail = notify_mail
         # Outbox tunables — read from config, fall back to safe defaults.
@@ -94,7 +90,7 @@ class Broker:
             except asyncio.CancelledError:
                 self._logger.info("Worker task cancelled, shutting down gracefully")
                 break
-            except (OSError, IOError, ConnectionError) as e:
+            except (OSError, ConnectionError) as e:
                 self._logger.error(
                     f"Network or I/O error in worker loop: {type(e).__name__}",
                     exc_info=True,
@@ -106,7 +102,7 @@ class Broker:
                     exc_info=True,
                     extra={"error_type": type(e).__name__, "error_message": str(e)},
                 )
-            except asyncio.TimeoutError as e:
+            except TimeoutError as e:
                 self._logger.error(
                     f"Timeout in worker loop: {type(e).__name__}",
                     exc_info=True,
@@ -159,7 +155,7 @@ class Broker:
                             "message_type": type(msg).__name__,
                         },
                     )
-                except (OSError, IOError) as e:
+                except OSError as e:
                     self._logger.error(
                         f"Database I/O error while saving message: {type(e).__name__}",
                         exc_info=True,
@@ -189,7 +185,7 @@ class Broker:
         # 2. Send pending messages
         await self.check_and_send_messages()
 
-    async def send_message(self, test: FitnessTest):
+    async def send_message(self, test: FitnessTest | March):
         """
         Send a message to the message queue.
 
@@ -231,9 +227,7 @@ class Broker:
                 )
                 return
 
-            hr_m = HrMessage(
-                message=json.dumps(dto.to_dict()), datetime_created=datetime.now()
-            )
+            hr_m = HrMessage(message=json.dumps(dto.to_dict()), datetime_created=datetime.now())
             await self._msg_queue.put(hr_m)
             self._logger.debug(
                 f"Message queued for {test_type}",
@@ -264,7 +258,7 @@ class Broker:
                     "test_type": test_type,
                 },
             )
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._logger.error(
                 f"Queue operation error: {type(e).__name__}",
                 exc_info=True,
@@ -275,9 +269,7 @@ class Broker:
                 },
             )
 
-    async def _try_send_to_hr(
-        self, message_hr: HrMessage
-    ) -> tuple[dict | None, str | None]:
+    async def _try_send_to_hr(self, message_hr: HrMessage) -> tuple[dict | None, str | None]:
         """
         Internal wrapper around `_send_message_to_hr` that returns a structured
         (result, error_reason) tuple so the caller can record the failure
@@ -294,9 +286,7 @@ class Broker:
             return result, None
         except asyncio.CancelledError:
             raise
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 — last-resort guard, broker must never die
+        except Exception as e:  # noqa: BLE001 — last-resort guard, broker must never die
             self._logger.error(
                 "Unexpected exception during HR send",
                 exc_info=True,
@@ -337,7 +327,7 @@ class Broker:
                 extra={"message_id": message_id, "response": result},
             )
             return result
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             self._logger.error(
                 "Timeout while sending message to HR service",
                 exc_info=True,
@@ -370,14 +360,12 @@ class Broker:
                     "error_message": str(e),
                     "message_id": message_id,
                     "message_content": (
-                        message_hr.message[:200]
-                        if hasattr(message_hr, "message")
-                        else None
+                        message_hr.message[:200] if hasattr(message_hr, "message") else None
                     ),
                 },
             )
             return None
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._logger.error(
                 f"Network I/O error sending message to HR: {type(e).__name__}",
                 exc_info=True,
@@ -457,7 +445,7 @@ class Broker:
                                 "last_error": err,
                             },
                         )
-                        await self._send_dead_letter_alert(message_id, attempt_before + 1, err)
+                        await self._send_dead_letter_alert(msg.id, attempt_before + 1, err)
                     else:
                         self._logger.warning(
                             "HR message send failed, scheduled for retry",
@@ -473,7 +461,7 @@ class Broker:
                 exc_info=True,
                 extra={"error_type": "AttributeError", "error_message": str(e)},
             )
-        except (OSError, IOError) as e:
+        except OSError as e:
             self._logger.error(
                 f"Database I/O error in check_and_send_messages: {type(e).__name__}",
                 exc_info=True,
@@ -499,9 +487,7 @@ class Broker:
                     extra={"task_id": id(self._worker_task)},
                 )
             except RuntimeError as e:
-                error_msg = (
-                    "Could not start Broker worker. No running event loop found."
-                )
+                error_msg = "Could not start Broker worker. No running event loop found."
                 print(f"⚠️ Warning: {error_msg}")
                 self._logger.error(
                     error_msg,

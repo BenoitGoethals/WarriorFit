@@ -1,8 +1,6 @@
 # Python
 from __future__ import annotations
 
-from typing import Tuple
-
 from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.config.settings_data import SettingsData
 
@@ -41,7 +39,7 @@ class SettingsController:
         self._config.load_config()
         return self._config.settings_data  # type: ignore[return-value]
 
-    def save(self, data: SettingsData) -> Tuple[bool, str]:
+    def save(self, data: SettingsData) -> tuple[bool, str]:
         """
         Saves the given configuration data to the application configuration.
 
@@ -56,5 +54,5 @@ class SettingsController:
             self._config.save_config(data)
             self._config.load_config()
             return True, "Configuration saved successfully."
-        except (OSError, IOError, ValueError, KeyError) as e:
+        except (OSError, ValueError, KeyError) as e:
             return False, f"Failed to save configuration: {e}"

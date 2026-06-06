@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 import pandas as pd
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
 
 from warriorfit.core.container import Container
+from warriorfit.i18n import t
 from warriorfit.ui.controllers.cross_planning_controller import CrossPlanningController
 from warriorfit.ui.pages.page import Page
 
@@ -16,9 +17,7 @@ class CrossPlanningPage(Page):
     @inject
     def __init__(
         self,
-        controller: CrossPlanningController = Provide[
-            Container.cross_planning_controller
-        ],
+        controller: CrossPlanningController = Provide[Container.cross_planning_controller],
     ):
         super().__init__()
         self._controller = controller
@@ -31,48 +30,52 @@ class CrossPlanningPage(Page):
 
     def get_ui(self):
         return ui.nav_panel(
-            "Cross Planning",
-            ui.h2("🏃 Cross Planning"),
+            t("nav.cross_planning"),
+            ui.h2(t("cross_plan.title")),
             ui.input_action_button(
-                "cr_refresh_btn", "🔄 Refresh", class_="btn btn-secondary btn-sm my-2"
+                "cr_refresh_btn", t("common.refresh"), class_="btn btn-secondary btn-sm my-2"
             ),
             ui.layout_columns(
                 ui.card(
-                    ui.card_header("Cross Form"),
-                    ui.input_date("cr_date", "Date"),
+                    ui.card_header(t("cross_plan.cross_form")),
+                    ui.input_date("cr_date", t("cross_plan.date")),
                     ui.input_text(
                         "cr_time",
-                        "Pick a time:",
+                        t("cross_plan.pick_time"),
                         placeholder="Select a time",
                         value="09:30",
                     ),
                     ui.output_text_verbatim("show_time"),
-                    ui.input_numeric("cr_distance", "Distance", value=5, min=0),
-                    ui.input_checkbox("cr_executed", "Executed", value=False),
-                    ui.input_text("cr_desc", "Description", placeholder="Optional"),
+                    ui.input_numeric("cr_distance", t("cross_plan.distance"), value=5, min=0),
+                    ui.input_checkbox("cr_executed", t("cross_plan.executed"), value=False),
+                    ui.input_text(
+                        "cr_desc",
+                        t("cross_plan.description"),
+                        placeholder=t("cross_plan.optional"),
+                    ),
                     ui.br(),
                     ui.layout_columns(
                         ui.input_action_button(
                             "cr_add_btn",
-                            "Add",
+                            t("cross_plan.add"),
                             width="120px",
                             class_="btn-primary w-100",
                         ),
                         ui.input_action_button(
                             "cr_update_btn",
-                            "Update",
+                            t("cross_plan.update"),
                             width="120px",
                             class_="btn-warning w-100",
                         ),
                         ui.input_action_button(
                             "cr_clear_btn",
-                            "Clear",
+                            t("cross_plan.clear"),
                             width="120px",
                             class_="btn-secondary w-100",
                         ),
                         ui.input_action_button(
                             "cr_delete_btn",
-                            "Delete Selected",
+                            t("cross_plan.delete_selected"),
                             width="170px",
                             class_="btn-danger w-100",
                         ),
@@ -82,7 +85,7 @@ class CrossPlanningPage(Page):
                     full_screen=False,
                 ),
                 ui.card(
-                    ui.card_header("Crosses"),
+                    ui.card_header(t("cross_plan.crosses")),
                     ui.layout_columns(
                         ui.output_data_frame("cr_grid"),
                     ),
@@ -90,6 +93,7 @@ class CrossPlanningPage(Page):
                 ),
                 col_widths=(4, 8),
             ),
+            value="Cross Planning",
         )
 
     # ---------------------------
@@ -97,7 +101,7 @@ class CrossPlanningPage(Page):
     # ---------------------------
 
     @staticmethod
-    def _to_datetime(date_str: str | None, time_str: str | None) -> Optional[datetime]:
+    def _to_datetime(date_str: str | None, time_str: str | None) -> datetime | None:
         if not date_str:
             return None
         try:
@@ -109,12 +113,12 @@ class CrossPlanningPage(Page):
             return None
 
     @staticmethod
-    def _format_dt(dt: Optional[datetime]) -> str:
+    def _format_dt(dt: datetime | None) -> str:
         if not dt:
             return ""
         return dt.strftime("%Y-%m-%d %H:%M")
 
-    def _read_form(self, input) -> Dict[str, Any]:
+    def _read_form(self, input) -> dict[str, Any]:
         date_val = input.cr_date()
         time_val = input.cr_time()
         dt = self._to_datetime(date_val, time_val)
@@ -125,16 +129,14 @@ class CrossPlanningPage(Page):
             "description": (input.cr_desc() or "").strip(),
         }
 
-    def _write_form(self, session, rec: Dict[str, Any]) -> None:
-        dt: Optional[datetime] = rec.get("datetime_start")
+    def _write_form(self, session, rec: dict[str, Any]) -> None:
+        dt: datetime | None = rec.get("datetime_start")
         date_val = dt.strftime("%Y-%m-%d") if dt else ""
         time_val = dt.strftime("%H:%M") if dt else ""
         session.send_input_message("cr_date", {"value": date_val})
         session.send_input_message("cr_time", {"value": time_val})
         session.send_input_message("cr_distance", {"value": rec.get("distance", 0)})
-        session.send_input_message(
-            "cr_executed", {"value": bool(rec.get("executed", False))}
-        )
+        session.send_input_message("cr_executed", {"value": bool(rec.get("executed", False))})
         session.send_input_message("cr_desc", {"value": rec.get("description", "")})
 
     def _clear_form(self, session) -> None:
@@ -149,7 +151,7 @@ class CrossPlanningPage(Page):
     # ---------------------------
 
     def server(self, input, output, session):
-        status = reactive.Value("Ready.")
+        status = reactive.Value(t("common.ready"))
 
         @output
         @render.text
@@ -180,9 +182,7 @@ class CrossPlanningPage(Page):
             df = (
                 pd.DataFrame(data)
                 if data
-                else pd.DataFrame(
-                    columns=["ID", "Start", "Executed", "Description", "Distance"]
-                )
+                else pd.DataFrame(columns=["ID", "Start", "Executed", "Description", "Distance"])
             )
             df = df.sort_values(by=["Start"], kind="stable").reset_index(drop=True)
             return df
@@ -262,9 +262,7 @@ class CrossPlanningPage(Page):
 
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{detail['id']} created.")
-                ui.notification_show(
-                    f"Cross #{detail['id']} created.", type="message", duration=3
-                )
+                ui.notification_show(f"Cross #{detail['id']} created.", type="message", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Add failed: {e}")
                 ui.notification_show(f"Add failed: {e}", type="error", duration=3)
@@ -291,9 +289,7 @@ class CrossPlanningPage(Page):
                 self._write_form(session, detail)
                 self.refresh_tick.set(self.refresh_tick.get() + 1)
                 status.set(f"Cross #{sel} updated.")
-                ui.notification_show(
-                    f"Cross #{sel} updated.", type="message", duration=3
-                )
+                ui.notification_show(f"Cross #{sel} updated.", type="message", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Update failed: {e}")
                 ui.notification_show(f"Update failed: {e}", type="error", duration=3)
@@ -319,9 +315,7 @@ class CrossPlanningPage(Page):
                 self._clear_form(session)
                 self.selected_cross_id.set("")
                 status.set(f"Cross #{cross_id} deleted.")
-                ui.notification_show(
-                    f"Cross #{cross_id} deleted.", type="warning", duration=3
-                )
+                ui.notification_show(f"Cross #{cross_id} deleted.", type="warning", duration=3)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 status.set(f"Delete failed: {e}")
                 ui.notification_show(f"Delete failed: {e}", type="error", duration=3)

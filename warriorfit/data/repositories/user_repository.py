@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 
 from sqlalchemy import delete, or_, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,7 +13,7 @@ class UserRepository(ABCRepository):
     def __init__(self, config=None):
         super().__init__(config=config)
 
-    async def add_user(self, user: User) -> Optional[User]:
+    async def add_user(self, user: User) -> User | None:
         """
         Adds a new user to the database asynchronously.
 
@@ -35,14 +35,10 @@ class UserRepository(ABCRepository):
                 await session.refresh(user)
                 return user
         except IntegrityError as e:
-            self._logger.error(
-                "Integrity error adding user %s: %s", user.username, str(e)
-            )
+            self._logger.error("Integrity error adding user %s: %s", user.username, str(e))
             return None
         except SQLAlchemyError as e:
-            self._logger.error(
-                "Database error adding user %s: %s", user.username, str(e)
-            )
+            self._logger.error("Database error adding user %s: %s", user.username, str(e))
             return None
 
     async def user_mail_exist(self, mail: str) -> bool:
@@ -58,7 +54,7 @@ class UserRepository(ABCRepository):
         results = await self.fetch_and_log(query, "user")
         return results is not None
 
-    async def get_user_by_id(self, id_unique: int) -> Optional[User]:
+    async def get_user_by_id(self, id_unique: int) -> User | None:
         """
         Retrieve a user by their unique identifier.
 
@@ -75,7 +71,7 @@ class UserRepository(ABCRepository):
         results = await self.fetch_and_log(query, "user")
         return results[0] if results else None
 
-    async def get_user_by_username(self, username: str) -> Optional[User]:
+    async def get_user_by_username(self, username: str) -> User | None:
         """
         Fetches a user from the database by their username.
 
@@ -88,7 +84,7 @@ class UserRepository(ABCRepository):
         results = await self.fetch_and_log(query, "user")
         return results[0] if results else None
 
-    async def get_all_users(self) -> List[User]:
+    async def get_all_users(self) -> list[User]:
         """
         Fetches all users from the database.
 
@@ -111,21 +107,20 @@ class UserRepository(ABCRepository):
         :rtype: Optional[User]
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    existing_user = await session.get(User, id)
-                    if not existing_user:
-                        self._logger.error("User with ID %d not found.", id)
-                        return None
-                    existing_user.username = user.username
-                    existing_user.password_hash = user.password_hash
-                    existing_user.email = user.email
-                    existing_user.role = user.role
-                    existing_user.serial_number = user.serial_number
-                    existing_user.is_active = user.is_active
-                    await session.flush()
-                    await session.refresh(existing_user)
-                    return existing_user
+            async with self.SessionLocal() as session, session.begin():
+                existing_user = await session.get(User, id)
+                if not existing_user:
+                    self._logger.error("User with ID %d not found.", id)
+                    return None
+                existing_user.username = user.username
+                existing_user.password_hash = user.password_hash
+                existing_user.email = user.email
+                existing_user.role = user.role
+                existing_user.serial_number = user.serial_number
+                existing_user.is_active = user.is_active
+                await session.flush()
+                await session.refresh(existing_user)
+                return existing_user
         except IntegrityError as e:
             self._logger.error("Integrity error updating user %d: %s", id, str(e))
             return None
@@ -141,10 +136,9 @@ class UserRepository(ABCRepository):
         """
         query = delete(User)
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    await session.execute(query)
-                    await session.commit()
+            async with self.SessionLocal() as session, session.begin():
+                await session.execute(query)
+                await session.commit()
             self._logger.info("All users deleted successfully.")
         except SQLAlchemyError as e:
             self._logger.error("Error deleting all users: %s", e)
@@ -171,9 +165,7 @@ class UserRepository(ABCRepository):
                     self._logger.error("User '%s' has no password set.", user_name)
                     return False
                 if await Auth.verify_password(plain_password, user.password_hash):
-                    self._logger.info(
-                        "User '%s' authenticated successfully.", user_name
-                    )
+                    self._logger.info("User '%s' authenticated successfully.", user_name)
                     return True
                 self._logger.info("Password mismatch for user '%s'.", user_name)
                 return False
@@ -191,20 +183,17 @@ class UserRepository(ABCRepository):
         :rtype: bool
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    query = delete(User).where(User.id == id)
-                    result = await session.execute(query)
-                    if result.rowcount == 0:
-                        self._logger.error("No user found with ID %d.", id)
-                        return False
-                    await session.commit()
+            async with self.SessionLocal() as session, session.begin():
+                query = delete(User).where(User.id == id)
+                result = await session.execute(query)
+                if result.rowcount == 0:
+                    self._logger.error("No user found with ID %d.", id)
+                    return False
+                await session.commit()
             self._logger.info("User with ID %d deleted successfully.", id)
             return True
         except SQLAlchemyError as e:
-            self._logger.error(
-                "Database error deleting user with ID %d: %s", id, str(e)
-            )
+            self._logger.error("Database error deleting user with ID %d: %s", id, str(e))
             return False
 
     async def serial_exists(self, serial: str) -> bool:
@@ -249,16 +238,13 @@ class UserRepository(ABCRepository):
         :rtype: bool
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    query = delete(User).where(User.serial_number == selected_serial)
-                    result = await session.execute(query)
-                    if result.rowcount == 0:
-                        self._logger.error(
-                            "No user found with serial %s.", selected_serial
-                        )
-                        return False
-                    return True
+            async with self.SessionLocal() as session, session.begin():
+                query = delete(User).where(User.serial_number == selected_serial)
+                result = await session.execute(query)
+                if result.rowcount == 0:
+                    self._logger.error("No user found with serial %s.", selected_serial)
+                    return False
+                return True
         except SQLAlchemyError as e:
             self._logger.error(
                 "Database error deleting user with serial %s: %s",
@@ -284,26 +270,23 @@ class UserRepository(ABCRepository):
         :raises SQLAlchemyError: If a generic SQLAlchemy error occurs during the update process.
         """
         try:
-            async with self.SessionLocal() as session:
-                async with session.begin():
-                    existing_user = (
-                        await session.execute(
-                            select(User).where(User.serial_number == user.serial_number)
-                        )
-                    ).scalar_one_or_none()
-                    if not existing_user:
-                        self._logger.error(
-                            "User with serial number %s not found.", user.serial_number
-                        )
-                        return None
-                    existing_user.username = user.username
-                    existing_user.password_hash = user.password_hash
-                    existing_user.email = user.email
-                    existing_user.role = user.role
-                    existing_user.serial_number = user.serial_number
-                    await session.flush()
-                    await session.refresh(existing_user)
-                    return existing_user
+            async with self.SessionLocal() as session, session.begin():
+                existing_user = (
+                    await session.execute(
+                        select(User).where(User.serial_number == user.serial_number)
+                    )
+                ).scalar_one_or_none()
+                if not existing_user:
+                    self._logger.error("User with serial number %s not found.", user.serial_number)
+                    return None
+                existing_user.username = user.username
+                existing_user.password_hash = user.password_hash
+                existing_user.email = user.email
+                existing_user.role = user.role
+                existing_user.serial_number = user.serial_number
+                await session.flush()
+                await session.refresh(existing_user)
+                return existing_user
 
         except IntegrityError as e:
             self._logger.error("Integrity error updating user %s: %s", id, str(e))
