@@ -412,6 +412,9 @@ def make_server(
                     nav_version.set(nav_version.get() + 1)
                 return
 
+            if _get_session_user() is not None:
+                return  # already logged in — don't re-show the modal
+
             status_text.set("")
 
             # Translations for dynamic JS labels
