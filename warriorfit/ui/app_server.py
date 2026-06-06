@@ -160,6 +160,21 @@ def make_server(
             if lang and lang != LanguageStore.get_language():
                 _change_lang(lang)
 
+        @reactive.Effect
+        @reactive.event(input.lang_en)
+        def _set_lang_en() -> None:
+            _change_lang("en")
+
+        @reactive.Effect
+        @reactive.event(input.lang_nl)
+        def _set_lang_nl() -> None:
+            _change_lang("nl")
+
+        @reactive.Effect
+        @reactive.event(input.lang_fr)
+        def _set_lang_fr() -> None:
+            _change_lang("fr")
+
         # ── Calendar panel ───────────────────────────────────────────────────
 
         show_calendar: reactive.Value[bool] = reactive.Value(False)
@@ -405,27 +420,23 @@ def make_server(
             ph_username = t("login.username_placeholder")
             ph_service = t("login.service_number_placeholder")
 
+            _cur_lang = LanguageStore.get_language()
+
+            def _lang_btn(code: str, label: str, extra_class: str = "") -> Any:
+                active = "btn-secondary" if _cur_lang == code else "btn-outline-secondary"
+                return ui.input_action_button(
+                    f"lang_{code}",
+                    label,
+                    class_=f"btn {active} btn-sm {extra_class}",
+                    style=_LOGIN_LANG_BTN_STYLE,
+                )
+
             login = ui.div(
                 # Language switcher inside the login modal
                 ui.div(
-                    ui.input_action_button(
-                        "lang_en",
-                        "EN",
-                        class_="btn btn-outline-secondary btn-sm me-1",
-                        style=_LOGIN_LANG_BTN_STYLE,
-                    ),
-                    ui.input_action_button(
-                        "lang_nl",
-                        "NL",
-                        class_="btn btn-outline-secondary btn-sm me-1",
-                        style=_LOGIN_LANG_BTN_STYLE,
-                    ),
-                    ui.input_action_button(
-                        "lang_fr",
-                        "FR",
-                        class_="btn btn-outline-secondary btn-sm",
-                        style=_LOGIN_LANG_BTN_STYLE,
-                    ),
+                    _lang_btn("en", "EN", "me-1"),
+                    _lang_btn("nl", "NL", "me-1"),
+                    _lang_btn("fr", "FR"),
                     style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;",
                 ),
                 ui.div(
