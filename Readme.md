@@ -320,6 +320,8 @@ The project documentation is structured in different documents:
     * [Privacy Policy](documentation/compliance/PRIVACY_POLICY.md) (Done)
     * [Data Protection Impact Assessment (DPIA)](documentation/compliance/DPIA.md) (Done)
 22. * [Sprint Analysis](documentation/sprint_analysis.md) (Done) — Scrum velocity, burndown, epic delivery timeline
+23. * [Adding a New Test Type](documentation/ADD_NEW_TEST_TYPE.md) (Done) — step-by-step guide + diagrams for introducing a new fitness test type
+24. * [Internationalization (i18n)](docs/i18n.md) (Done) — how the EN/NL/FR translation layer and live language switching work
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0
