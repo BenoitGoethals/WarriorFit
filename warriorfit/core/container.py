@@ -8,7 +8,6 @@ from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.repositories.consent_repository import ConsentRepository
 from warriorfit.data.repositories.cross_repository import CrossRepository
 from warriorfit.data.repositories.fitness_test_repository import FitnessTestRepository
-from warriorfit.data.repositories.hierarchy_repository import HierarchyRepository
 from warriorfit.data.repositories.march_repository import MarchRepository
 from warriorfit.data.repositories.mom_repository import MomRepository
 from warriorfit.data.repositories.reservation_repository import ReservationRepository
@@ -17,7 +16,6 @@ from warriorfit.data.repositories.user_repository import UserRepository
 from warriorfit.mom.broker import Broker
 from warriorfit.services.be_mil_service import BEMILService
 from warriorfit.services.data_collector import DataCollector
-from warriorfit.services.hierarchy_service import HierarchyService
 from warriorfit.services.mail_service import MailService
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.notify_mail import NotifyMail
@@ -155,11 +153,6 @@ class Container(containers.DeclarativeContainer):
         config=config,
     )
 
-    hierarchy_repository = providers.Singleton(
-        HierarchyRepository,
-        config=config,
-    )
-
     # External Services
     be_mil_service = providers.Singleton(
         BEMILService,
@@ -257,11 +250,6 @@ class Container(containers.DeclarativeContainer):
         RetentionService,
         user_repository=user_repository,
         config=config,
-    )
-
-    hierarchy_service = providers.Singleton(
-        HierarchyService,
-        repo=hierarchy_repository,
     )
 
     # Data Collector
