@@ -269,7 +269,7 @@ class CombatController:
         """
         return await self._service.get_test_session_by_id(param)
 
-    def validate_form(dself, data: dict[str, Any]) -> tuple[bool, dict[str, Any] | str]:
+    def validate_form(self, data: dict[str, Any]) -> tuple[bool, dict[str, Any] | str]:
         """
         Validates combat form data and normalizes it for storage.
 
