@@ -229,7 +229,7 @@ class PhefController:
         if df.empty:
             return df
 
-        def _num(v: str, denom: float) -> float | None:
+        def _num(v: str) -> float | None:
             try:
                 return float(str(v).split("/")[0])
             except Exception:
@@ -243,10 +243,10 @@ class PhefController:
                 sr = row.get("Sidebridge R Score")
                 st = row.get("Sidebridge L Score")
                 rtr = row.get("Running Score")
-                n = _num(s, 100.0)  # type: ignore[arg-type]
-                r = _num(sr, 20.0)  # type: ignore[arg-type]
-                t = _num(st, 20.0)  # type: ignore[arg-type]
-                rs = _num(rtr, 20.0)  # type: ignore[arg-type]
+                n = _num(s)  # type: ignore[arg-type]
+                r = _num(sr)  # type: ignore[arg-type]
+                t = _num(st)  # type: ignore[arg-type]
+                rs = _num(rtr)  # type: ignore[arg-type]
                 if n is None or r is None or t is None or rs is None:
                     return s  # type: ignore[return-value]
                 return f"🟥 {s}" if rs < 10 or (r + t) < 20 else f"🟩 {s}"
@@ -257,7 +257,7 @@ class PhefController:
             if col in out.columns:
 
                 def _fmt_sc(s: str):
-                    n = _num(s, 20.0)
+                    n = _num(s)
                     if n is None:
                         return s
                     return f"🟥 {s}" if n < 10 else f"🟩 {s}"
