@@ -6,6 +6,7 @@ import contextlib
 from abc import abstractmethod
 from typing import Any
 
+import pandas as pd
 from shiny import reactive, ui
 
 from warriorfit.data.model.db_model import ServiceMen, TestSession
@@ -99,34 +100,53 @@ class BaseTestPage(Page):
     # Serial Number Search
     # -------------------------
     # NOTE: Due to Shiny's @output decorator limitations, each page must implement
-    # its own serial search modal. This is documented but not extracted to avoid
-    # decorator registration issues.
+    # its own serial search modal (the @render.data_frame grid and selection
+    # @reactive.event must register with page-specific input IDs). The data-loading
+    # logic below has no decorator dependency, so it is shared here.
+    async def fetch_all_servicemen_df(self, controller: Any) -> pd.DataFrame:
+        """Build a DataFrame of all servicemen for the serial-search grid.
+
+        Returns columns: service_number, first_name, last_name, gender — sorted
+        by service_number. Returns an empty (but correctly-columned) DataFrame
+        when there are no servicemen.
+        """
+        servicemen = await controller.be_mil_service.get_all_service_men()
+        if not servicemen:
+            return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
+
+        df = pd.DataFrame(
+            [
+                {
+                    "service_number": s.service_number,
+                    "first_name": s.first_name,
+                    "last_name": s.last_name,
+                    "gender": s.gender,
+                }
+                for s in servicemen
+            ]
+        )
+        return df.sort_values(by=["service_number"])
 
     # -------------------------
     # Military Search
     # -------------------------
-    async def search_and_confirm_military(
+    async def search_set_military(
         self,
-        input: Any,
-        session: Any,
         controller: Any,
+        serial: str,
         military_text: reactive.Value,
         status: reactive.Value,
-        selected_session_id: reactive.Value,
-    ) -> bool:
-        """Search and confirm military selection. Returns True if successful."""
-        prefix = self.get_prefix()
+    ) -> ServiceMen | None:
+        """Resolve a serviceman by serial and update ``selected_military``.
 
-        if not (selected_session_id.get() or "").strip():
-            status.set(t("common.select_session_first"))
-            return False
+        Performs the controller lookup (swallowing errors), stores the result on
+        ``self.selected_military``, and on a miss sets the not-found ``military_text``
+        and ``status`` messages. Returns the serviceman, or ``None`` when not found.
 
-        serial = (getattr(input, f"{prefix}_serialnr")() or "").strip()
-        if not serial:
-            status.set(t("common.enter_serial"))
-            await self._clear_form_hook(input, session)
-            return False
-
+        The caller remains responsible for the page-specific confirmed-state
+        presentation (military text format, input toggling, button enabling), which
+        differs between pages.
+        """
         try:
             val = await controller.search_military(serial)
         except Exception:
@@ -136,14 +156,7 @@ class BaseTestPage(Page):
         if val is None:
             military_text.set(t("common.not_found"))
             status.set(t("common.serial_not_found"))
-            return False
-
-        military_text.set(
-            f"{val.rank} {val.service_number} {val.first_name} {val.last_name} "
-            f"{val.gender} {val.age_from_birthdate()} {t('common.years_old')}"
-        )
-        status.set(t("common.serial_confirmed"))
-        return True
+        return val
 
     # -------------------------
     # UI State Helpers
