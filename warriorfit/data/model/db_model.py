@@ -19,6 +19,7 @@ from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from warriorfit.core.Gender import Gender
+from warriorfit.core.echelon import Echelon
 from warriorfit.core.rank_enum import Rank
 from warriorfit.core.role import Role
 from warriorfit.core.type_fitness_test import TypeFitnessTest
@@ -457,6 +458,34 @@ class HrMessage(Base):
     next_retry_at: Mapped[datetime | None] = mapped_column(TIMESTAMP, nullable=True)
     dead_letter: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     last_error: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+
+class HierarchyNode(Base):
+    __tablename__ = "hierarchy_nodes"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    echelon: Mapped[str] = mapped_column(String(20), nullable=False)
+    callsign: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    establishment_strength: Mapped[int | None] = mapped_column(nullable=True)
+    role: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("hierarchy_nodes.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+
+    children: Mapped[list["HierarchyNode"]] = relationship(
+        "HierarchyNode",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+    )
+    parent: Mapped["HierarchyNode | None"] = relationship(
+        "HierarchyNode",
+        back_populates="children",
+        remote_side="HierarchyNode.id",
+    )
+
+    def __repr__(self) -> str:
+        return f"HierarchyNode(id={self.id}, name='{self.name}', echelon='{self.echelon}')"
 
 
 class Room(Base):

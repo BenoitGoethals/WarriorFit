@@ -1,0 +1,569 @@
+{
+  "name": "3 PARA",
+  "echelon": "BATTALION",
+  "callsign": "3 PARA",
+  "establishment_strength": 623,
+  "role": "3de Parachutistenbataljon / 3ème Bataillon de Parachutistes — Para-Commando Brigade, Tielen",
+  "children": [
+    {
+      "name": "BN HQ",
+      "echelon": "STAFF",
+      "callsign": "BN ZERO",
+      "establishment_strength": 28,
+      "role": "Battalion Headquarters — command, staff branches S1-S5",
+      "children": [
+        {
+          "name": "S1 (Personnel)",
+          "echelon": "SECTION",
+          "callsign": "S1",
+          "establishment_strength": 4,
+          "role": "Personnel administration, strength accounting, casualty reporting"
+        },
+        {
+          "name": "S2 (Intelligence)",
+          "echelon": "SECTION",
+          "callsign": "S2",
+          "establishment_strength": 4,
+          "role": "Intelligence collection, analysis and dissemination"
+        },
+        {
+          "name": "S3 (Operations)",
+          "echelon": "SECTION",
+          "callsign": "S3",
+          "establishment_strength": 6,
+          "role": "Operational planning, training coordination, battle rhythm"
+        },
+        {
+          "name": "S4 (Logistics)",
+          "echelon": "SECTION",
+          "callsign": "S4",
+          "establishment_strength": 5,
+          "role": "Supply, transport, maintenance, materiel management"
+        },
+        {
+          "name": "S5 (Plans & CIMIC)",
+          "echelon": "SECTION",
+          "callsign": "S5",
+          "establishment_strength": 3,
+          "role": "Long-range planning, civil-military cooperation"
+        },
+        {
+          "name": "Signal Platoon",
+          "echelon": "PLATOON",
+          "callsign": "BN SIGS",
+          "establishment_strength": 6,
+          "role": "Battalion communications — voice, data, crypto"
+        }
+      ]
+    },
+    {
+      "name": "HQ Company",
+      "echelon": "COMPANY",
+      "callsign": "ZERO ALPHA",
+      "establishment_strength": 95,
+      "role": "Staf- en Ondersteuningscompagnie — administrative and combat-service support",
+      "children": [
+        {
+          "name": "Company HQ",
+          "echelon": "STAFF",
+          "callsign": "ZERO ALPHA HQ",
+          "establishment_strength": 8,
+          "role": "OC (CPT), CSM (ADJ), company administration"
+        },
+        {
+          "name": "Medical Platoon",
+          "echelon": "PLATOON",
+          "callsign": "MED PLT",
+          "establishment_strength": 18,
+          "role": "Battalion medical support — Role 1 treatment, CASEVAC",
+          "children": [
+            {
+              "name": "Medical Section 1",
+              "echelon": "SECTION",
+              "callsign": "MED 1",
+              "establishment_strength": 8,
+              "role": "Forward medical team — primary care and stabilisation"
+            },
+            {
+              "name": "Medical Section 2",
+              "echelon": "SECTION",
+              "callsign": "MED 2",
+              "establishment_strength": 8,
+              "role": "Forward medical team — primary care and stabilisation"
+            }
+          ]
+        },
+        {
+          "name": "Pioneer Platoon",
+          "echelon": "PLATOON",
+          "callsign": "PION PLT",
+          "establishment_strength": 24,
+          "role": "Combat engineering — obstacle breaching, route clearance, demolitions",
+          "children": [
+            {
+              "name": "Pioneer Section 1",
+              "echelon": "SECTION",
+              "callsign": "PION 1",
+              "establishment_strength": 9,
+              "role": "Breaching, demolitions, minefield clearance"
+            },
+            {
+              "name": "Pioneer Section 2",
+              "echelon": "SECTION",
+              "callsign": "PION 2",
+              "establishment_strength": 9,
+              "role": "Breaching, demolitions, minefield clearance"
+            }
+          ]
+        },
+        {
+          "name": "JTAC Platoon",
+          "echelon": "PLATOON",
+          "callsign": "JTAC PLT",
+          "establishment_strength": 12,
+          "role": "Joint Terminal Attack Control — close air support, attack helicopters",
+          "children": [
+            {
+              "name": "JTAC Section",
+              "echelon": "SECTION",
+              "callsign": "JTAC 1",
+              "establishment_strength": 6,
+              "role": "Qualified JTACs for CAS, CSAR and ISTAR integration"
+            }
+          ]
+        },
+        {
+          "name": "NBC Section",
+          "echelon": "SECTION",
+          "callsign": "NBC",
+          "establishment_strength": 8,
+          "role": "Nuclear, biological, chemical and radiological defence"
+        }
+      ]
+    },
+    {
+      "name": "Alpha Company",
+      "echelon": "COMPANY",
+      "callsign": "ONE ZERO",
+      "establishment_strength": 110,
+      "role": "A Cie — rifle company, airborne assault and parachute operations",
+      "children": [
+        {
+          "name": "Company HQ",
+          "echelon": "STAFF",
+          "callsign": "ONE ZERO HQ",
+          "establishment_strength": 8,
+          "role": "OC (CPT), 2IC (LT), CSM (ADJ), company fire support coordinator"
+        },
+        {
+          "name": "Platoon 11",
+          "echelon": "PLATOON",
+          "callsign": "ONE ONE",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "ONE ONE ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "ONE ONE BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "ONE ONE CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        },
+        {
+          "name": "Platoon 12",
+          "echelon": "PLATOON",
+          "callsign": "ONE TWO",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "ONE TWO ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "ONE TWO BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "ONE TWO CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        },
+        {
+          "name": "Platoon 13",
+          "echelon": "PLATOON",
+          "callsign": "ONE THREE",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "ONE THREE ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "ONE THREE BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "ONE THREE CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bravo Company",
+      "echelon": "COMPANY",
+      "callsign": "TWO ZERO",
+      "establishment_strength": 110,
+      "role": "B Cie — rifle company, airborne assault and parachute operations",
+      "children": [
+        {
+          "name": "Company HQ",
+          "echelon": "STAFF",
+          "callsign": "TWO ZERO HQ",
+          "establishment_strength": 8,
+          "role": "OC (CPT), 2IC (LT), CSM (ADJ), company fire support coordinator"
+        },
+        {
+          "name": "Platoon 21",
+          "echelon": "PLATOON",
+          "callsign": "TWO ONE",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "TWO ONE ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "TWO ONE BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "TWO ONE CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        },
+        {
+          "name": "Platoon 22",
+          "echelon": "PLATOON",
+          "callsign": "TWO TWO",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "TWO TWO ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "TWO TWO BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "TWO TWO CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        },
+        {
+          "name": "Platoon 23",
+          "echelon": "PLATOON",
+          "callsign": "TWO THREE",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "TWO THREE ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "TWO THREE BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "TWO THREE CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Charlie Company",
+      "echelon": "COMPANY",
+      "callsign": "THREE ZERO",
+      "establishment_strength": 110,
+      "role": "C Cie — rifle company, airborne assault and parachute operations",
+      "children": [
+        {
+          "name": "Company HQ",
+          "echelon": "STAFF",
+          "callsign": "THREE ZERO HQ",
+          "establishment_strength": 8,
+          "role": "OC (CPT), 2IC (LT), CSM (ADJ), company fire support coordinator"
+        },
+        {
+          "name": "Platoon 31",
+          "echelon": "PLATOON",
+          "callsign": "THREE ONE",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "THREE ONE ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "THREE ONE BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "THREE ONE CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        },
+        {
+          "name": "Platoon 32",
+          "echelon": "PLATOON",
+          "callsign": "THREE TWO",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "THREE TWO ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "THREE TWO BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "THREE TWO CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        },
+        {
+          "name": "Platoon 33",
+          "echelon": "PLATOON",
+          "callsign": "THREE THREE",
+          "establishment_strength": 34,
+          "role": "Rifle platoon — close combat, airborne insertion",
+          "children": [
+            {
+              "name": "Section 1",
+              "echelon": "SECTION",
+              "callsign": "THREE THREE ALPHA",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 2",
+              "echelon": "SECTION",
+              "callsign": "THREE THREE BRAVO",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            },
+            {
+              "name": "Section 3",
+              "echelon": "SECTION",
+              "callsign": "THREE THREE CHARLIE",
+              "establishment_strength": 9,
+              "role": "Rifle section — fire and manoeuvre"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support Company",
+      "echelon": "COMPANY",
+      "callsign": "FOUR ZERO",
+      "establishment_strength": 120,
+      "role": "Spt Cie — heavy weapons, anti-armour, reconnaissance and fire support",
+      "children": [
+        {
+          "name": "Company HQ",
+          "echelon": "STAFF",
+          "callsign": "FOUR ZERO HQ",
+          "establishment_strength": 8,
+          "role": "OC (CPT), 2IC (LT), CSM (ADJ)"
+        },
+        {
+          "name": "Mortar Platoon",
+          "echelon": "PLATOON",
+          "callsign": "MOR PLT",
+          "establishment_strength": 36,
+          "role": "Indirect fire support — 81mm M252 mortars, battalion fire support",
+          "children": [
+            {
+              "name": "Mortar Section 1",
+              "echelon": "SECTION",
+              "callsign": "MOR 1",
+              "establishment_strength": 10,
+              "role": "2× 81mm M252 mortar barrels — HE, smoke, illumination"
+            },
+            {
+              "name": "Mortar Section 2",
+              "echelon": "SECTION",
+              "callsign": "MOR 2",
+              "establishment_strength": 10,
+              "role": "2× 81mm M252 mortar barrels — HE, smoke, illumination"
+            },
+            {
+              "name": "Mortar Section 3",
+              "echelon": "SECTION",
+              "callsign": "MOR 3",
+              "establishment_strength": 10,
+              "role": "2× 81mm M252 mortar barrels — HE, smoke, illumination"
+            }
+          ]
+        },
+        {
+          "name": "Anti-Tank Platoon",
+          "echelon": "PLATOON",
+          "callsign": "AT PLT",
+          "establishment_strength": 36,
+          "role": "Anti-armour — Eryx close-range ATGM and PILAS light AT",
+          "children": [
+            {
+              "name": "Anti-Tank Section 1",
+              "echelon": "SECTION",
+              "callsign": "AT 1",
+              "establishment_strength": 9,
+              "role": "3× Eryx ATGM teams — anti-armour within 600 m"
+            },
+            {
+              "name": "Anti-Tank Section 2",
+              "echelon": "SECTION",
+              "callsign": "AT 2",
+              "establishment_strength": 9,
+              "role": "3× Eryx ATGM teams — anti-armour within 600 m"
+            },
+            {
+              "name": "Anti-Tank Section 3",
+              "echelon": "SECTION",
+              "callsign": "AT 3",
+              "establishment_strength": 9,
+              "role": "3× Eryx ATGM teams — anti-armour within 600 m"
+            }
+          ]
+        },
+        {
+          "name": "Reconnaissance Platoon",
+          "echelon": "PLATOON",
+          "callsign": "RECON PLT",
+          "establishment_strength": 30,
+          "role": "Close reconnaissance, screen, surveillance — airborne qualified scouts",
+          "children": [
+            {
+              "name": "Recon Section 1",
+              "echelon": "SECTION",
+              "callsign": "RECON 1",
+              "establishment_strength": 8,
+              "role": "2-man patrol teams — observation, route recon"
+            },
+            {
+              "name": "Recon Section 2",
+              "echelon": "SECTION",
+              "callsign": "RECON 2",
+              "establishment_strength": 8,
+              "role": "2-man patrol teams — observation, route recon"
+            },
+            {
+              "name": "Recon Section 3",
+              "echelon": "SECTION",
+              "callsign": "RECON 3",
+              "establishment_strength": 8,
+              "role": "2-man patrol teams — observation, route recon"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
