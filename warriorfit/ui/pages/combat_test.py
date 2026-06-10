@@ -277,15 +277,8 @@ class CombatPage(BaseTestPage):
                 await _clear_form()
                 return
 
-            try:
-                val = await self.controller.search_military(serial)
-            except Exception:
-                val = None
-
-            self.selected_military = val
+            val = await self.search_set_military(self.controller, serial, military_text, status)
             if val is None:
-                military_text.set(t("common.not_found"))
-                status.set(t("common.serial_not_found"))
                 await _toggle_inputs(disabled=True)
                 _set_buttons(can_add=False, can_update=False)
                 return
@@ -548,22 +541,7 @@ class CombatPage(BaseTestPage):
 
         @reactive.calc
         async def get_all_servicemen_df() -> pd.DataFrame:
-            servicemen = await self.controller.be_mil_service.get_all_service_men()
-            if not servicemen:
-                return pd.DataFrame(columns=["service_number", "first_name", "last_name", "gender"])
-
-            df = pd.DataFrame(
-                [
-                    {
-                        "service_number": s.service_number,
-                        "first_name": s.first_name,
-                        "last_name": s.last_name,
-                        "gender": s.gender,
-                    }
-                    for s in servicemen
-                ]
-            )
-            return df.sort_values(by=["service_number"])
+            return await self.fetch_all_servicemen_df(self.controller)
 
         @render.data_frame
         async def combat_serial_search_grid():
