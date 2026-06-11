@@ -74,16 +74,12 @@ class ReportsController:
                     csv_result: dict[str, str] = await self._csv_gen.generate_report(
                         report_name, t, req.own_unit, req.this_year
                     )
-                    for v in (csv_result or {}).values():
-                        if v:
-                            paths.append(v)
+                    paths.extend(v for v in (csv_result or {}).values() if v)
                 if req.format in ("pdf", "both"):
                     pdf_result: dict[str, str] = await self._pdf_gen.generate_report(
                         report_name, t, req.own_unit, req.this_year
                     )
-                    for v in (pdf_result or {}).values():
-                        if v:
-                            paths.append(v)
+                    paths.extend(v for v in (pdf_result or {}).values() if v)
 
             if paths:
                 return paths, ("success", "Report generated successfully.")

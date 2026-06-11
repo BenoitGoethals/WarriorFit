@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 from datetime import datetime
 from typing import Any
 
@@ -299,7 +298,7 @@ class DashboardOwnUnitController:
         """
         try:
             snap = await self._mom_repo.outbox_health_summary()
-        except Exception as e:  # noqa: BLE001 — defensive; dashboard must never crash
+        except Exception as e:
             return {
                 "status": "unknown",
                 "badge_label": "Unknown",
@@ -502,85 +501,3 @@ class DashboardOwnUnitController:
         fig.add_vline(x=50, line_dash="dash", line_color="red", annotation_text="Pass Threshold")
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_phef_hist")
 
-    async def failed_phef_df(self) -> pd.DataFrame:
-        tests: list[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
-        rows = []
-        for t in tests:
-            total = 0
-            passed = False
-            with contextlib.suppress(AttributeError, TypeError, KeyError):
-                total, passed = await self.phef_total_score(t)  # type: ignore[assignment]
-            if passed:
-                rows.append(
-                    {
-                        "Type": "PHEF",
-                        "Serial": t.serial_number,
-                        "Reason": f"Total {total:.1f} < 50",
-                    }
-                )
-        return pd.DataFrame(rows)
-
-    async def failed_all_df(self) -> pd.DataFrame:
-        rows = []
-
-        for t in await self._tests_for_unit(TypeFitnessTest.PHEF):
-            try:
-                score, passed = await self.phef_total_score(t)
-            except (AttributeError, TypeError, KeyError):
-                passed = False
-            if passed:
-                rows.append(
-                    {
-                        "Type": "PHEF",
-                        "Serial": t.serial_number,
-                        "Reason": f"Passed {passed:.1f}",
-                    }
-                )
-
-        for t in await self._tests_for_unit(TypeFitnessTest.COMBAT):
-            rope = bool(getattr(t, "rope_passed", False))
-            obst = bool(getattr(t, "obstacle_passed", False))
-            run_s = int(getattr(t, "running_time", 0) or 0)
-            passed = rope and obst and run_s <= 7200
-            if not passed:
-                reason_parts = []
-                if not rope:
-                    reason_parts.append("Rope")
-                if not obst:
-                    reason_parts.append("Obstacle")
-                if run_s > 7200:
-                    reason_parts.append(f"Run {run_s}s > 7200s")
-                rows.append(
-                    {
-                        "Type": "Combat",
-                        "Serial": t.serial_number,
-                        "Reason": ", ".join(reason_parts) or "Failed",
-                    }
-                )
-
-        for t in await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL):
-            total = (
-                int(getattr(t, "push_ups", 0) or 0)
-                + int(getattr(t, "sit_ups", 0) or 0)
-                + int(getattr(t, "pull_ups", 0) or 0)
-            )
-            if total < 50:
-                rows.append(
-                    {
-                        "Type": "Functional",
-                        "Serial": t.serial_number,
-                        "Reason": f"Total {total} < 50",
-                    }
-                )
-
-        for t in await self._tests_for_unit(TypeFitnessTest.SWIMMING):
-            if not bool(getattr(t, "swim_paased", False)):
-                rows.append(
-                    {
-                        "Type": "Swimming",
-                        "Serial": t.serial_number,
-                        "Reason": "Not passed",
-                    }
-                )
-
-        return pd.DataFrame(rows)

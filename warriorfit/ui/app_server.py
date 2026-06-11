@@ -18,7 +18,6 @@ from warriorfit.services.service_user import UserService
 from warriorfit.ui.page_registry import PageSpec, get_pages, pages_for_role
 from warriorfit.ui.user_store import UserStore
 
-
 _LOGIN_LANG_BTN_STYLE = "font-size:0.75rem; padding:2px 8px;"
 
 
@@ -58,7 +57,8 @@ def _register_pages_server(
     output: Any,
     session: Any,
 ) -> None:
-    from shiny import reactive  # noqa: I001
+    from shiny import reactive
+
     from warriorfit.ui.pages import calendar_events
 
     servers_by_tab: dict[str, Callable[[Any, Any, Any], Any]] = {
@@ -235,9 +235,9 @@ def make_server(
             if mode == "serviceman":
                 allowed_tabs = {"My Progress", "About", "Privacy"}
                 restricted = [p for p in role_pages if p.tab in allowed_tabs]
-                for p in restricted:
-                    if p.group == "root":
-                        nav_items.append(_safe_panel(p.ui_factory()))
+                nav_items.extend(
+                    _safe_panel(p.ui_factory()) for p in restricted if p.group == "root"
+                )
                 about_menu = _build_menu("About", restricted)
                 if about_menu is not None:
                     nav_items.append(about_menu)

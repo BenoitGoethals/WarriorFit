@@ -87,8 +87,8 @@ class ABCRepository:
         self,
         user_id: int,
         action: str,
-        details: dict | str = None,  # type: ignore[assignment]
-        ip_address: str = None,
+        details: dict | str | None = None,
+        ip_address: str | None = None,
     ):
         """
         Creates an audit log entry in the database. The function records the provided data

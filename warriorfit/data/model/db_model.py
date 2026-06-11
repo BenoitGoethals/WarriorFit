@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import ClassVar
 
 from sqlalchemy import (
     Boolean,
@@ -120,7 +121,7 @@ class FitnessTest(Base):
         foreign_keys=[serial_number],
     )
 
-    __mapper_args__ = {
+    __mapper_args__: ClassVar[dict] = {
         "polymorphic_identity": "fitness_test",
         "polymorphic_on": type,
     }
@@ -140,7 +141,7 @@ class PhefTest(FitnessTest):
     sideBridge_r: Mapped[float] = mapped_column(Float, nullable=False)
     sideBridge_l: Mapped[float] = mapped_column(Float, nullable=False)
 
-    __mapper_args__ = {"polymorphic_identity": "phef_test"}
+    __mapper_args__: ClassVar[dict] = {"polymorphic_identity": "phef_test"}
 
     def __repr__(self) -> str:
         return (
@@ -163,7 +164,7 @@ class FunctionalTest(FitnessTest):
     sit_ups: Mapped[int] = mapped_column(nullable=False)
     pull_ups: Mapped[int] = mapped_column(nullable=False)
 
-    __mapper_args__ = {"polymorphic_identity": "functional_test"}
+    __mapper_args__: ClassVar[dict] = {"polymorphic_identity": "functional_test"}
 
     def __repr__(self) -> str:
         return (
@@ -186,7 +187,7 @@ class CombatTestParatrooper(FitnessTest):
     obstacle_passed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     rope_passed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    __mapper_args__ = {"polymorphic_identity": "combat_test"}
+    __mapper_args__: ClassVar[dict] = {"polymorphic_identity": "combat_test"}
 
     def __repr__(self) -> str:
         return (
@@ -207,7 +208,7 @@ class CombatSwimmingTest(FitnessTest):
     id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
     swim_paased: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    __mapper_args__ = {"polymorphic_identity": "combat_swimming_test"}
+    __mapper_args__: ClassVar[dict] = {"polymorphic_identity": "combat_swimming_test"}
 
     def __repr__(self) -> str:
         return f"<CombatSwimmingTest(id={self.id}, swim_paased={self.swim_paased})>"

@@ -1,7 +1,7 @@
 import os
 from collections.abc import Callable
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import pandas as pd
 
@@ -26,7 +26,7 @@ class ReportGeneratorPdf(GeneratorReport):
     """
 
     # PDF Table Style Constants
-    _TABLE_STYLE_CONFIG = [
+    _TABLE_STYLE_CONFIG: ClassVar[list[tuple]] = [
         ("BACKGROUND", (0, 0), (-1, 0)),  # Header background
         ("TEXTCOLOR", (0, 0), (-1, 0)),  # Header text color
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
@@ -293,7 +293,7 @@ class ReportGeneratorPdf(GeneratorReport):
 
     def _build_report_row_with_date(self, r: dict, *fields) -> list[Any]:
         """Helper to build report rows that start with a date field."""
-        return [self._fmt_date(r["session_date"])] + list(fields)
+        return [self._fmt_date(r["session_date"]), *fields]
 
     async def generate_phef_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
@@ -670,7 +670,7 @@ class ReportGeneratorPdf(GeneratorReport):
             if h not in df_mapped.columns:
                 df_mapped[h] = "-"
         data_rows = df_mapped[headers].fillna("-").astype(str).values.tolist()
-        table_data = [headers] + data_rows
+        table_data = [headers, *data_rows]
         table = deps["Table"](table_data, repeatRows=1)
         table.setStyle(self._create_table_style(deps))
         return table
