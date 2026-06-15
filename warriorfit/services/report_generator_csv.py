@@ -54,6 +54,8 @@ class ReportGeneratorCsv(GeneratorReport):
             return await self.generate_combat_report(report_name, own_unit, this_year)
         elif report_type is ReportType.SWIMMING:
             return await self.generate_swimming_report(report_name, own_unit, this_year)
+        elif report_type is ReportType.MFFT_EVAL:
+            return await self.generate_mfft_eval_report(report_name, own_unit, this_year)
         else:
             raise ValueError("Invalid report type")
 
@@ -239,6 +241,42 @@ class ReportGeneratorCsv(GeneratorReport):
 
         failed_path = self._build_csv(failed, report_name, "swimming_failed", headers, row_builder)
         passed_path = self._build_csv(passed, report_name, "swimming_passed", headers, row_builder)
+        return {"failed": failed_path, "passed": passed_path}
+
+    async def generate_mfft_eval_report(
+        self, report_name: str, own_unit: bool, this_year: bool
+    ):
+        """Generate CSV pass/fail reports for the MFFT Eval test."""
+        failed, headers, passed = await self.calculate_mfft_eval_score(own_unit, this_year)
+
+        def row_builder(r: dict) -> list[Any]:
+            return [
+                (
+                    "-"
+                    if r["session_date"] is None
+                    else r["session_date"].strftime("%Y-%m-%d %H:%M")
+                ),
+                r["serial"],
+                r["cluster"],
+                r["pull_ups"],
+                r["burpees"],
+                r["farmer_m"],
+                r["push_ups"],
+                r["drag_m"],
+                r["sandbag_m"],
+                self._fmt_time(r["run_s"]),
+                self._fmt_time(r["swim_s"]),
+                r["overall"],
+                r["tier"],
+                r["result"],
+            ]
+
+        failed_path = self._build_csv(
+            failed, report_name, "mfft_eval_failed", headers, row_builder
+        )
+        passed_path = self._build_csv(
+            passed, report_name, "mfft_eval_passed", headers, row_builder
+        )
         return {"failed": failed_path, "passed": passed_path}
 
 

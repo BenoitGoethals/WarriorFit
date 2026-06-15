@@ -11,6 +11,7 @@ from warriorfit.data.model.db_model import (
     FunctionalTest,
     HrMessage,
     March,
+    MfftEvalTest,
     PhefTest,
 )
 from warriorfit.data.repositories.mom_repository import MomRepository
@@ -229,6 +230,8 @@ class Broker:
                 dto = MarchTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, FunctionalTest):
                 dto = FunctionalTestDto(test)  # type: ignore[assignment]
+            elif isinstance(test, MfftEvalTest):
+                dto = MfftEvalTestDto(test)  # type: ignore[assignment]
 
             if dto is None:
                 self._logger.warning(
@@ -632,6 +635,32 @@ class FunctionalTestDto:
             "push_ups": self.push_ups,
             "sit_ups": self.sit_ups,
             "pull_ups": self.pull_ups,
+        }
+
+
+class MfftEvalTestDto:
+    def __init__(self, test: MfftEvalTest):
+        self.serial_number = test.serial_number
+        self.pull_ups = test.pull_ups
+        self.burpees_step_over = test.burpees_step_over
+        self.farmer_walk_m = test.farmer_walk_m
+        self.push_ups_release = test.push_ups_release
+        self.casualty_drag_m = test.casualty_drag_m
+        self.sandbag_carry_m = test.sandbag_carry_m
+        self.combat_run_seconds = test.combat_run_seconds
+        self.combat_swim_seconds = test.combat_swim_seconds
+
+    def to_dict(self) -> dict:
+        return {
+            "serial_number": self.serial_number,
+            "pull_ups": self.pull_ups,
+            "burpees_step_over": self.burpees_step_over,
+            "farmer_walk_m": self.farmer_walk_m,
+            "push_ups_release": self.push_ups_release,
+            "casualty_drag_m": self.casualty_drag_m,
+            "sandbag_carry_m": self.sandbag_carry_m,
+            "combat_run_seconds": self.combat_run_seconds,
+            "combat_swim_seconds": self.combat_swim_seconds,
         }
 
 

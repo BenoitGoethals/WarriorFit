@@ -8,6 +8,7 @@ from warriorfit.data.model.db_model import (
     CombatTestParatrooper,
     FitnessTest,
     FunctionalTest,
+    MfftEvalTest,
     PhefTest,
     ServiceMen,
     TestSession,
@@ -69,6 +70,15 @@ class ServiceTest(Service):
 
     async def get_all_combat_test(self, id):
         return await self._test_repo.get_all_combat_test(id)
+
+    async def get_all_mfft_eval(self, id):
+        return await self._test_repo.get_all_mfft_eval(id)
+
+    async def get_all_mfft_eval_mil(self, service_number) -> list[MfftEvalTest]:
+        return await self._test_repo.get_all_mfft_eval_from_mil(
+            service_number,
+            current_year=True,
+        )
 
     async def get_all_functional_test(self, id):
         return await self._test_repo.get_all_functional_test(id)
@@ -140,6 +150,8 @@ class ServiceTest(Service):
                     body = self.build_email_body_functional(military, session, test)  # type: ignore[arg-type]
                 case "combat_test":
                     body = self.build_email_body_combat(test)
+                case "mfft_eval_test":
+                    body = self.build_email_body_mfft_eval(military, session, test)  # type: ignore[arg-type]
             await Container().broker().send_message(test)
             if body:
                 notify = self._notify_mail if self._notify_mail is not None else NotifyMail()
@@ -404,6 +416,46 @@ class ServiceTest(Service):
                </tbody>
            </table>
            """
+
+    def build_email_body_mfft_eval(
+        self,
+        sm: ServiceMen,
+        session: TestSession,
+        test: MfftEvalTest | FitnessTest,
+    ) -> str:
+        assert isinstance(test, MfftEvalTest)
+        from warriorfit.logic.mfft_eval_calculator import MfftEvalCalculator
+
+        age = (
+            sm.age_from_birthdate()
+            if session is None
+            else sm.age_from_birthdate_and_session_date(session.datetime_start)
+        )
+        res = MfftEvalCalculator.evaluate(test, sm.cluster, age, sm.gender)
+        test_date = str(session.datetime_start)[:10] if session else "-"
+        per = res.per_event
+        passed_word = "PASSED" if res.passed else "FAILED"
+        passed_color = "green" if res.passed else "red"
+        return f"""
+            <h2>MFFT Eval Test Results</h2>
+            <p><strong>{sm.rank} {sm.service_number}</strong> -
+               {sm.first_name} {sm.last_name} ({sm.cluster}, age {age})<br>
+               Test date: {test_date}</p>
+            <table border="1" style="border-collapse: collapse;" cellpadding="5">
+              <tr><th>Event</th><th>Result</th><th>Tier</th></tr>
+              <tr><td>1. Pull-up</td><td>{test.pull_ups} reps</td><td>{per[0]}</td></tr>
+              <tr><td>2. Burpees step-over</td><td>{test.burpees_step_over} reps</td><td>{per[1]}</td></tr>
+              <tr><td>3. Farmer walk</td><td>{test.farmer_walk_m} m</td><td>{per[2]}</td></tr>
+              <tr><td>4. Push-up & release</td><td>{test.push_ups_release} reps</td><td>{per[3]}</td></tr>
+              <tr><td>5. Casualty drag</td><td>{test.casualty_drag_m} m</td><td>{per[4]}</td></tr>
+              <tr><td>6. Sandbag carry</td><td>{test.sandbag_carry_m} m</td><td>{per[5]}</td></tr>
+              <tr><td>7. Combat run (4800 m)</td><td>{self.format_seconds(test.combat_run_seconds)}</td><td>{per[6]}</td></tr>
+              <tr><td>8. Combat swim (200 m)</td><td>{self.format_seconds(test.combat_swim_seconds)}</td><td>{per[7]}</td></tr>
+              <tr><th>Overall</th>
+                  <th style="color: {passed_color};">{passed_word}</th>
+                  <th>{res.overall} (tier info: {res.tier_info})</th></tr>
+            </table>
+        """
 
     async def get_all_combat_test_mil(self, service_number):
         return await self._test_repo.get_all_combat_from_mil(

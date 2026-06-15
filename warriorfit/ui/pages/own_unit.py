@@ -123,7 +123,13 @@ class OwnUnitPage(Page):
                 width="100%",
                 styles=_failed_styles(
                     df,
-                    ["Phef status", "Combat status", "Swim status", "March status"],
+                    [
+                        "Phef status",
+                        "Combat status",
+                        "Swim status",
+                        "March status",
+                        "MFFT status",
+                    ],
                 ),
             )
 

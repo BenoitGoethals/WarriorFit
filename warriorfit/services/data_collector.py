@@ -2,7 +2,8 @@ import pandas as pd
 
 from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.core.type_fitness_test import TypeFitnessTest
-from warriorfit.data.model.db_model import PhefTest
+from warriorfit.data.model.db_model import MfftEvalTest, PhefTest
+from warriorfit.logic.mfft_eval_calculator import MfftEvalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
@@ -198,6 +199,35 @@ class DataCollector:
         if mars_rows:
             frames.append(pd.DataFrame.from_records(mars_rows))
 
+        # MFFT Eval (detailed)
+        mfft_rows: list[dict] = []
+        mfft_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.MFFT_EVAL, this_year=current_year
+        )
+        for sess in mfft_sessions or []:
+            for t in sess.fitness_tests or []:
+                if t.serial_number != serial:
+                    continue
+                if mil is None:
+                    continue
+                try:
+                    age = mil.age_from_birthdate_and_session_date(sess.datetime_start)
+                    res = MfftEvalCalculator.evaluate(t, mil.cluster, age, mil.gender)
+                except (AttributeError, TypeError, KeyError, ValueError):
+                    continue
+                mfft_rows.append(
+                    {
+                        "Date": self._fmt_dt(sess.datetime_start),
+                        "Type": "MFFT Eval",
+                        "Cluster": str(mil.cluster),
+                        "Overall": str(res.overall),
+                        "Tier": str(res.tier_info),
+                        "Result": "Passed" if res.passed else "Failed",
+                    }
+                )
+        if mfft_rows:
+            frames.append(pd.DataFrame.from_records(mfft_rows))
+
         # Finalize
         if not frames:
             return self._empty_df(
@@ -360,6 +390,41 @@ class DataCollector:
         if mars_rows:
             frames.append(pd.DataFrame.from_records(mars_rows))
 
+        # MFFT Eval (summary)
+        mfft_rows: list[dict] = []
+        mfft_sessions = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+            serial, TypeFitnessTest.MFFT_EVAL, this_year=current_year
+        )
+        for sess in mfft_sessions or []:
+            for t in sess.fitness_tests or []:
+                if t.serial_number != serial:
+                    continue
+                if mil is None:
+                    continue
+                try:
+                    age = mil.age_from_birthdate_and_session_date(sess.datetime_start)
+                    res = MfftEvalCalculator.evaluate(t, mil.cluster, age, mil.gender)
+                except (AttributeError, TypeError, KeyError, ValueError):
+                    continue
+                details = (
+                    f"PU {t.pull_ups}, Burpees {t.burpees_step_over}, "
+                    f"Farmer {t.farmer_walk_m}m, Push {t.push_ups_release}, "
+                    f"Drag {t.casualty_drag_m}m, Sand {t.sandbag_carry_m}m, "
+                    f"Run {t.combat_run_seconds}s, Swim {t.combat_swim_seconds}s"
+                )
+                mfft_rows.append(
+                    {
+                        "Date": self._fmt_dt(sess.datetime_start),
+                        "Type": "MFFT Eval",
+                        "Details": details,
+                        "Scores": f"Tier {res.tier_info}",
+                        "Total": str(res.overall),
+                        "Result": "🟢 Passed" if res.passed else "🔴 Failed",
+                    }
+                )
+        if mfft_rows:
+            frames.append(pd.DataFrame.from_records(mfft_rows))
+
         if not frames:
             return self._empty_df(columns=["Date", "Type", "Details", "Scores", "Total", "Result"])
 
@@ -455,6 +520,11 @@ class DataCollector:
             data_mars = await self._service_mars.get_march_from_service_men(
                 serial_number=m.service_number, this_year=False
             )
+            data_mfft = (
+                await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                    m.service_number, TypeFitnessTest.MFFT_EVAL
+                )
+            )
 
             if data_phef and data_phef[0].fitness_tests:
                 dt: PhefTest = data_phef[0].fitness_tests[0]
@@ -495,6 +565,21 @@ class DataCollector:
             else:
                 mars_status = "Not Done"
 
+            mfft_status = "Not Done"
+            if data_mfft and data_mfft[0].fitness_tests:
+                mfft_test = data_mfft[0].fitness_tests[0]
+                if isinstance(mfft_test, MfftEvalTest):
+                    try:
+                        age = m.age_from_birthdate_and_session_date(
+                            data_mfft[0].datetime_start
+                        )
+                        res = MfftEvalCalculator.evaluate(
+                            mfft_test, m.cluster, age, m.gender
+                        )
+                        mfft_status = "Passed" if res.passed else "Failed"
+                    except (AttributeError, TypeError, KeyError, ValueError):
+                        mfft_status = "Not Done"
+
             rows.append(
                 {
                     "Rank": m.rank,
@@ -505,6 +590,7 @@ class DataCollector:
                     "Swimming": swim_status,
                     "Functional": func_status,
                     "March": mars_status,
+                    "MFFT": mfft_status,
                 }
             )
 
@@ -518,8 +604,33 @@ class DataCollector:
                     "Combat",
                     "Swimming",
                     "Functional",
-                    "Mars",
+                    "March",
+                    "MFFT",
                 ]
             )
 
         return pd.DataFrame.from_records(rows)
+
+    async def collect_all_mil_from_own_unit_not_executed_mfft_eval(self) -> pd.DataFrame:
+        """List unit members who have no MFFT Eval result on record."""
+        mil_series = await self.be_mil.get_all_be_mil_from_unit(self._config.own_unit)
+        rows: list[dict] = []
+        for m in mil_series:
+            tests = await self._service.get_all_mfft_eval_mil(m.service_number)
+            if not tests:
+                rows.append(
+                    {
+                        "Serial": m.service_number,
+                        "Name": f"{m.first_name} {m.last_name}",
+                        "Gender": m.gender,
+                        "Age": m.age_from_birthdate(),
+                        "Cluster": str(m.cluster),
+                    }
+                )
+        if not rows:
+            return pd.DataFrame(columns=["Serial", "Name", "Gender", "Age", "Cluster"])
+        return (
+            pd.DataFrame.from_records(rows)
+            .sort_values(by=["Name"], kind="stable")
+            .reset_index(drop=True)
+        )

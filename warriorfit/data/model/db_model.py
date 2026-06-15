@@ -19,6 +19,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+from warriorfit.core.cluster import Cluster
 from warriorfit.core.Gender import Gender
 from warriorfit.core.rank_enum import Rank
 from warriorfit.core.role import Role
@@ -217,6 +218,37 @@ class CombatSwimmingTest(FitnessTest):
         return f"CombatSwimmingTest(id={self.id}, swim_paased={self.swim_paased})"
 
 
+class MfftEvalTest(FitnessTest):
+    """MFFT Eval result: 6 EMOM events + 4800 m run + 200 m combat swim."""
+
+    __tablename__ = "mfft_eval_tests"
+
+    id: Mapped[int] = mapped_column(ForeignKey("fitness_tests.id"), primary_key=True)
+    pull_ups: Mapped[int] = mapped_column(nullable=False)
+    burpees_step_over: Mapped[int] = mapped_column(nullable=False)
+    farmer_walk_m: Mapped[int] = mapped_column(nullable=False)
+    push_ups_release: Mapped[int] = mapped_column(nullable=False)
+    casualty_drag_m: Mapped[int] = mapped_column(nullable=False)
+    sandbag_carry_m: Mapped[int] = mapped_column(nullable=False)
+    combat_run_seconds: Mapped[int] = mapped_column(nullable=False)
+    combat_swim_seconds: Mapped[int] = mapped_column(nullable=False)
+
+    __mapper_args__: ClassVar[dict] = {"polymorphic_identity": "mfft_eval_test"}
+
+    def __repr__(self) -> str:
+        return (
+            f"<MfftEvalTest(id={self.id}, pull_ups={self.pull_ups}, "
+            f"burpees={self.burpees_step_over}, farmer_walk_m={self.farmer_walk_m}, "
+            f"push_ups={self.push_ups_release}, casualty_drag_m={self.casualty_drag_m}, "
+            f"sandbag_carry_m={self.sandbag_carry_m}, "
+            f"combat_run_seconds={self.combat_run_seconds}, "
+            f"combat_swim_seconds={self.combat_swim_seconds})>"
+        )
+
+    def __str__(self) -> str:
+        return self.__repr__().strip("<>")
+
+
 class TestSession(Base):
     __tablename__ = "test_sessions"
 
@@ -379,6 +411,18 @@ class ServiceMen(Base):
     @property
     def rank_service_men(self) -> Rank:
         return Rank(self.rank)
+
+    @property
+    def cluster(self) -> Cluster:
+        """Derived MFFT scoring cluster.
+
+        Project-wide rule: every paratrooper is scored on the COMBAT scale,
+        every other member of the unit on the ENABLER scale. The other
+        official MFFT clusters (OPS_SP / TER_SP / NON_DEP) are kept in the
+        ``Cluster`` enum for calculator-level testing but are never assigned
+        to a real serviceman.
+        """
+        return Cluster.COMBAT if self.para else Cluster.ENABLER
 
     @property
     def age(self) -> int:
