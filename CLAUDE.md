@@ -44,7 +44,9 @@ UI (Shiny pages) → Controllers → Services → Repositories → ORM Models
 
 - **Entry point:** `warriorfit/app.py` — initializes DI container, registers pages with role-based access, manages broker lifecycle
 - **DI Container:** `warriorfit/core/container.py` — `DeclarativeContainer` wiring all singletons (repos, services, controllers)
-- **ORM Models:** `warriorfit/data/model/db_model.py` — polymorphic `FitnessTest` base with subtypes (PhefTest, CombatTestParatrooper, FunctionalTest, etc.)
+- **ORM Models:** `warriorfit/data/model/db_model.py` — polymorphic `FitnessTest` base with subtypes (`PhefTest`, `CombatTestParatrooper`, `CombatSwimmingTest`, `FunctionalTest`, `MfftEvalTest`)
+- **Test types (`TypeFitnessTest`)**: `PHEF`, `COMBAT`, `FUNCTIONAL`, `SWIMMING`, `MFFT_EVAL`
+- **MFFT Eval:** 8-event evaluation (6-min EMOM + 4800 m run + 200 m combat swim). Scored against age/gender-neutral COMBAT thresholds (GOLD/SILVER/BRONZE/FIT) or age-bracketed ENABLER thresholds. Cluster is **derived** on `ServiceMen` via the `cluster` `@property`: paratroopers → COMBAT, everyone else → ENABLER. Calculator at `warriorfit/logic/mfft_eval_calculator.py`.
 - **Config:** `warriorfit/config/appliccation_config.py` — Singleton metaclass, loads from `config/config_dev.yml` (dev) or `/etc/WarriorFit/config.yml` (prod)
 
 ### Page Pattern

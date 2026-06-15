@@ -165,3 +165,4 @@ cython_debug/
 
 # Claude Code local artifacts (agent worktrees, settings)
 .claude/
+CLAUDE.md

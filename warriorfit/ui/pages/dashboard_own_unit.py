@@ -99,6 +99,11 @@ class DashboardOwnUnitPage(Page):
                     ui.output_ui("own_unit_march_stats"),
                     class_="text-center",
                 ),
+                ui.card(
+                    ui.card_header(t("dashboard.mfft_tests"), class_="bg-dark text-white"),
+                    ui.output_ui("own_unit_mfft_stats"),
+                    class_="text-center",
+                ),
             ),
             ui.br(),
             # ----- Broker / HR System health row -----
@@ -131,6 +136,16 @@ class DashboardOwnUnitPage(Page):
                     full_screen=True,
                 ),
                 col_widths=[6, 6],
+            ),
+            ui.br(),
+            # ----- MFFT tier breakdown -----
+            ui.layout_columns(
+                ui.card(
+                    ui.card_header(t("dashboard.mfft_tier_chart")),
+                    ui.output_ui("own_unit_mfft_tier_chart"),
+                    full_screen=True,
+                ),
+                col_widths=[12],
             ),
             ui.br(),
             value=self.TAB_NAME,
@@ -230,6 +245,11 @@ class DashboardOwnUnitPage(Page):
             total_text=_total_tests,
             fetcher=self.controller.march_stats,
         )
+        _register_stats_output(
+            output_id="own_unit_mfft_stats",
+            total_text=_total_tests,
+            fetcher=self.controller.mfft_stats,
+        )
 
         # Register charts (same error/empty handling)
         _register_plotly_html_output(
@@ -242,6 +262,12 @@ class DashboardOwnUnitPage(Page):
             output_id="own_unit_phef_score_histogram",
             fetcher=self.controller.phef_hist_html,  # type: ignore[arg-type]
             empty_msg=t("dashboard.no_phef_data"),
+            non_div_msg=_no_chart,
+        )
+        _register_plotly_html_output(
+            output_id="own_unit_mfft_tier_chart",
+            fetcher=self.controller.mfft_tier_bar_html,  # type: ignore[arg-type]
+            empty_msg=t("dashboard.no_mfft_data"),
             non_div_msg=_no_chart,
         )
 

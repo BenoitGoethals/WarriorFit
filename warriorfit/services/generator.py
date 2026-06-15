@@ -8,9 +8,11 @@ from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
     FunctionalTest,
+    MfftEvalTest,
     PhefTest,
     TestSession,
 )
+from warriorfit.logic.mfft_eval_calculator import MfftEvalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_test import ServiceTest
@@ -291,4 +293,78 @@ class GeneratorReport(ABC):  # noqa: B024  # base class, subclassed not instanti
                 (passed if ok else failed).append(row)
 
         headers = ["Date", "Serial", "Result"]
+        return failed, headers, passed
+
+    async def calculate_mfft_eval_score(self, own_unit, this_year):
+        """Aggregate MFFT Eval results for reports.
+
+        For each ``MfftEvalTest`` in the period, runs the calculator against
+        the linked serviceman's cluster/age/gender and classifies as passed
+        or failed (UNFIT overall => failed).
+
+        :return: ``(failed_rows, headers, passed_rows)`` keeping the same
+            tuple shape as the other ``calculate_*_score`` helpers.
+        """
+        failed: list[dict] = []
+        passed: list[dict] = []
+
+        sessions: list[TestSession] = await self._service.get_all_test_sessions_type_fitness_test(
+            TypeFitnessTest.MFFT_EVAL, this_year=this_year
+        )
+        mils = []
+        if own_unit:
+            mils = await self.be_mil_service.get_all_be_mil_from_unit(self._config.own_unit)
+        unit_serials = {s.service_number for s in mils} if own_unit else None
+
+        for sess in sessions or []:
+            tests: list[MfftEvalTest] = await self._service.get_all_mfft_eval(sess.id)
+            for t in tests or []:
+                if unit_serials is not None and t.serial_number not in unit_serials:
+                    continue
+                sm = await self.be_mil_service.get_servicemen_by_serial(
+                    t.serial_number or "",
+                    lazy=False,
+                )
+                if sm is None:
+                    continue
+                try:
+                    age = sm.age_from_birthdate_and_session_date(sess.datetime_start)
+                    res = MfftEvalCalculator.evaluate(t, sm.cluster, age, sm.gender)
+                except (AttributeError, TypeError, KeyError, ValueError):
+                    continue
+
+                row = {
+                    "session_date": getattr(sess, "datetime_start", None),
+                    "serial": getattr(t, "serial_number", ""),
+                    "cluster": str(sm.cluster),
+                    "pull_ups": t.pull_ups,
+                    "burpees": t.burpees_step_over,
+                    "farmer_m": t.farmer_walk_m,
+                    "push_ups": t.push_ups_release,
+                    "drag_m": t.casualty_drag_m,
+                    "sandbag_m": t.sandbag_carry_m,
+                    "run_s": t.combat_run_seconds,
+                    "swim_s": t.combat_swim_seconds,
+                    "overall": str(res.overall),
+                    "tier": str(res.tier_info),
+                    "result": "Passed" if res.passed else "Failed",
+                }
+                (passed if res.passed else failed).append(row)
+
+        headers = [
+            "Date",
+            "Serial",
+            "Cluster",
+            "Pull-ups",
+            "Burpees",
+            "Farmer (m)",
+            "Push-ups",
+            "Drag (m)",
+            "Sandbag (m)",
+            "Run",
+            "Swim",
+            "Overall",
+            "Tier",
+            "Result",
+        ]
         return failed, headers, passed

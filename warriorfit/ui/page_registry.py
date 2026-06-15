@@ -53,6 +53,7 @@ def get_pages() -> list[PageSpec]:
         functional_test,
         ind_test_show,
         march,
+        mfft_eval,
         my_progress,
         own_unit,
         phef,
@@ -66,6 +67,7 @@ def get_pages() -> list[PageSpec]:
         status_login_user,
         status_tests,
         swim_test,
+        test_analytics,
         usermanagement,
     )
 
@@ -141,6 +143,20 @@ def get_pages() -> list[PageSpec]:
             group="Physical Tests",
             ui_factory=combat_test.get_ui,
             server_factory=combat_test.server,
+            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+        ),
+        PageSpec(
+            tab="MFFT Eval",
+            group="Physical Tests",
+            ui_factory=mfft_eval.get_ui,
+            server_factory=mfft_eval.server,
+            allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
+        ),
+        PageSpec(
+            tab="Analytics",
+            group="Physical Tests",
+            ui_factory=test_analytics.get_ui,
+            server_factory=test_analytics.server,
             allowed_roles={Role.ADMIN, Role.PTI, Role.APTI},
         ),
         PageSpec(

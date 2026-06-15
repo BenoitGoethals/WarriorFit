@@ -45,6 +45,7 @@ from warriorfit.ui.controllers.dashboard_own_unit_controller import (
 from warriorfit.ui.controllers.functional_controller import FunctionalController
 from warriorfit.ui.controllers.ind_test_show_controller import IndTestShowController
 from warriorfit.ui.controllers.march_controller import MarchController
+from warriorfit.ui.controllers.mfft_eval_controller import MfftEvalController
 from warriorfit.ui.controllers.my_progress_controller import MyProgressController
 from warriorfit.ui.controllers.own_unit_controller import OwnUnitController
 from warriorfit.ui.controllers.phef_controller import PhefController
@@ -64,6 +65,7 @@ from warriorfit.ui.controllers.status_application_controller import (
 from warriorfit.ui.controllers.status_log_user_controller import StatusLogUserController
 from warriorfit.ui.controllers.status_tests_controller import StatusTestsController
 from warriorfit.ui.controllers.swimming_controller import SwimmingController
+from warriorfit.ui.controllers.test_analytics_controller import TestAnalyticsController
 from warriorfit.ui.controllers.usermanagement_controller import UserManagementController
 
 
@@ -96,6 +98,8 @@ class Container(containers.DeclarativeContainer):
             "warriorfit.ui.pages.swim_test",
             "warriorfit.ui.pages.sessions",
             "warriorfit.ui.pages.combat_test",
+            "warriorfit.ui.pages.mfft_eval",
+            "warriorfit.ui.pages.test_analytics",
             "warriorfit.ui.pages.dashboard_own_unit",
             "warriorfit.ui.pages.reports",
             "warriorfit.ui.pages.status_application",
@@ -330,6 +334,16 @@ class Container(containers.DeclarativeContainer):
     )
     combat_controller = providers.Singleton(
         CombatController, service=test_service, mil_service=military_service
+    )
+    mfft_eval_controller = providers.Singleton(
+        MfftEvalController, service=test_service, mil_service=military_service
+    )
+    test_analytics_controller = providers.Singleton(
+        TestAnalyticsController,
+        test_service=test_service,
+        mil_service=military_service,
+        march_service=march_service,
+        config=config,
     )
     dashboard_own_unit_controller = providers.Singleton(
         DashboardOwnUnitController,

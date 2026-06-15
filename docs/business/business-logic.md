@@ -168,3 +168,43 @@ For all separate tests you must achieve a GO.
 | 3      | 17-21      | 13-16      | 10-12      | 7-9        |
 | 2      | 10-16      | 7-12       | 5-9        | 4-6        |
 | 1      | 1-9        | 1-6        | 1-4        | 1-3        |
+
+---
+
+# 3. Eval MFFT (Military Functional Fitness Test)
+
+The Eval MFFT is the Land Component's new annual functional fitness assessment
+(rolled out in 2026). Every event mirrors a task a soldier may have to
+execute in the field.
+
+## a. Composition — 3 blocks, 8 events
+
+| # | Block | Event | Unit |
+|---|-------|-------|------|
+| 1 | EMOM 6 min | Pull-up | reps |
+| 2 | EMOM 6 min | Burpees step-over | reps |
+| 3 | EMOM 6 min | Kettlebell farmer walk | meters |
+| 4 | EMOM 6 min | Hand & release push-up | reps |
+| 5 | EMOM 6 min | Casualty drag | meters |
+| 6 | EMOM 6 min | Sandbag shoulder carry | meters |
+| 7 | Combat Run | 4 800 m speed-march, timed | seconds |
+| 8 | Combat Swim | 200 m uninterrupted swim + 2 m dive, timed | seconds |
+
+## b. Cluster classification (project rule)
+
+| `para` flag | Cluster | Scoring scale |
+|---|---|---|
+| `True` (paratroopers) | `COMBAT` | 4-tier scale (GOLD / SILVER / BRONZE / FIT) |
+| `False` (everyone else) | `ENABLER` | Single age-bracketed pass threshold |
+
+`ServiceMen.cluster` is a derived `@property`, not a column.
+
+## c. Scoring rules
+
+- **COMBAT**: a tier is validated when ≥ 6 of 8 events reach it AND no event
+  is UNFIT.
+- **ENABLER**: every event must meet the single age-bracketed threshold;
+  any miss is UNFIT.
+- **Invariant**: `passed ⇔ overall != UNFIT` for every cluster.
+
+See `warriorfit/logic/mfft_eval_calculator.py` for the official thresholds.

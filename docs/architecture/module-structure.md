@@ -45,7 +45,7 @@ Handles all persistence-related operations.
 ### 📂 `core` (Domain Domain)
 Stores the fundamental building blocks of the application domain.
 
-*   **Enums**: Defines standard types like `Gender`, `Role`, `FitnessTestType`.
+*   **Enums**: Defines standard types like `Gender`, `Role`, `TypeFitnessTest` (`PHEF`, `COMBAT`, `FUNCTIONAL`, `SWIMMING`, `MFFT_EVAL`), `Cluster` (`COMBAT`, `ENABLER`, `OPS_SP`, `TER_SP`, `NON_DEP`), `MfftLevel` (`GOLD`, `SILVER`, `BRONZE`, `FIT`, `UNFIT`).
 *   **Constants**: Application-wide constant values.
 *   **DTOs (Data Transfer Objects)**: (Optional) Simple classes for passing data between layers without relying on ORM models.
 

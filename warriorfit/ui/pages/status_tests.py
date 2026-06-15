@@ -35,7 +35,21 @@ class StatusTests(Page):
                         unit=self._controller.unit_name,
                     )
                 ),
-                ui.input_action_button("refresh_own_unit_status_grid", t("phef_not_done.refresh")),
+                ui.layout_columns(
+                    ui.input_select(
+                        "status_test_type",
+                        t("phef_not_done.test_type"),
+                        choices={
+                            "PHEF": t("reports.phef_tests"),
+                            "MFFT_EVAL": t("reports.mfft_eval_tests"),
+                        },
+                        selected="PHEF",
+                    ),
+                    ui.input_action_button(
+                        "refresh_own_unit_status_grid", t("phef_not_done.refresh")
+                    ),
+                    col_widths=(6, 6),
+                ),
                 ui.output_data_frame("own_unit_status_grid"),
                 full_screen=False,
             ),
@@ -46,13 +60,16 @@ class StatusTests(Page):
         @reactive.calc
         def _tick():
             input.refresh_own_unit_status_grid()
+            input.status_test_type()
             return self.refresh_tick.get()
 
         @output
         @render.data_frame
         async def own_unit_status_grid():
+            _tick()
+            test_type = (input.status_test_type() or "PHEF").strip()
             try:
-                df = await self._controller.get_data()
+                df = await self._controller.get_data(test_type)
             except (KeyError, TypeError, ValueError, AttributeError) as e:
                 import pandas as pd
 

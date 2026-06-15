@@ -45,6 +45,7 @@ class ReportsController:
                 ReportType.FUNCTIONAL,
                 ReportType.COMBAT,
                 ReportType.SWIMMING,
+                ReportType.MFFT_EVAL,
             ]
         return [ReportType.from_str(test_type)]
 
