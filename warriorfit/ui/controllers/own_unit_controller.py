@@ -10,9 +10,11 @@ from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
     March,
+    MfftEvalTest,
     PhefTest,
     ServiceMen,
 )
+from warriorfit.logic.mfft_eval_calculator import MfftEvalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.data_collector import DataCollector
 from warriorfit.services.military_service import MilitaryService
@@ -70,20 +72,23 @@ class OwnUnitController:
                     "Birthdate",
                     "Para",
                     "Ops Test",
+                    "Cluster",
                     "Phef status",
                     "Combat status",
                     "Swim status",
                     "March status",
+                    "MFFT status",
                 ]
             )
 
         async def build_row(sm: ServiceMen) -> dict[str, Any]:
             # Run all status checks for this serviceman in parallel
-            phef, combat, swim, march = await asyncio.gather(
+            phef, combat, swim, march, mfft = await asyncio.gather(
                 self._is_passed_phef(sm),
                 self._is_passed_combat(sm),
                 self._is_passed_swim(sm),
                 self._is_passed_march(sm),
+                self._is_passed_mfft(sm),
             )
 
             def format_status(val: bool | None) -> str:
@@ -102,10 +107,12 @@ class OwnUnitController:
                 "Birthdate": (sm.birthdate or ""),
                 "Para": bool(sm.para),
                 "Ops Test": bool(sm.ops_test),
+                "Cluster": str(sm.cluster),
                 "Phef status": format_status(phef),
                 "Combat status": format_status(combat),
                 "Swim status": format_status(swim),
                 "March status": format_status(march),
+                "MFFT status": format_status(mfft),
             }
 
         # Process all servicemen rows concurrently
@@ -153,6 +160,30 @@ class OwnUnitController:
         if not mars:
             return None
         return any(x.succeeded for x in mars)
+
+    async def _is_passed_mfft(self, sm: ServiceMen) -> bool | None:
+        """Tri-state MFFT verdict using strict semantics.
+
+        ``None``  -> no MFFT test on record (renders as "Not done")
+        ``False`` -> at least one MFFT test exists and **any** of them failed
+                     (renders as "Failed")
+        ``True``  -> at least one MFFT test exists and **all** of them passed
+                     (renders as "Passed")
+        """
+        tests: list[MfftEvalTest] = await self._service.get_all_mfft_eval_mil(sm.service_number)
+        if not tests:
+            return None
+        age = sm.age_from_birthdate()
+        any_evaluated = False
+        for test in tests:
+            try:
+                res = MfftEvalCalculator.evaluate(test, sm.cluster, age, sm.gender)
+            except (AttributeError, TypeError, KeyError, ValueError):
+                continue
+            any_evaluated = True
+            if not res.passed:
+                return False
+        return True if any_evaluated else None
 
     async def fetch_tests_for_serial_df(self, serial: str | None) -> pd.DataFrame:
         """Fetch test data for a given serial number and format it into a DataFrame."""

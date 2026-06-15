@@ -200,7 +200,52 @@ As a PTI or APTI, your primary tasks are recording fitness tests and managing yo
 
 #### Checking Who Still Needs Testing
 
-Go to **Psychical Tests > PHEF Not Done** to see servicemen who have not completed their PHEF test this year.
+Go to **Psychical Tests > PHEF Not Done** to see servicemen who have not completed their PHEF (or MFFT Eval, via the test-type selector) this year.
+
+## MFFT Eval
+
+The MFFT Eval (Military Functional Fitness Test) is an 8-event annual
+assessment for the Land Component:
+
+1. **Block 1 — EMOM (6 min):** pull-ups, burpees step-over, kettlebell farmer
+   walk, hand-and-release push-ups, casualty drag, sandbag shoulder carry
+2. **Block 2 — Combat Run:** 4 800 m speed-march, timed
+3. **Block 3 — Combat Swim:** 200 m uninterrupted swim + 2 m dive, timed
+
+The page splits the layout in two panels: the **MFFT Eval results grid** fills
+the wide right panel, the **input form** sits as a compact column on the left.
+
+### Recording an MFFT Eval
+
+1. Go to **Psychical Tests → MFFT Eval**.
+2. Pick a session from the dropdown.
+3. Enter the serial number and click **✓** to confirm. The serviceman info
+   line shows their derived cluster (`COMBAT` for paratroopers, otherwise
+   `ENABLER`).
+4. Fill the 6 EMOM event fields, then the Run and Swim times in `mm:ss`.
+   Each input shows a live status badge next to it:
+   - ⚠ red — input invalid (0, non-numeric, malformed time)
+   - ✓ green — input valid, awaiting serial selection
+   - ✓ GOLD / SILVER / BRONZE / FIT / ✗ UNFIT — tier achieved on the
+     COMBAT-equivalent scale
+5. The summary line at the bottom shows `Tier (combat-equivalent)` and
+   `Overall (PASSED / FAILED + cluster tier)`.
+6. Click **Add** to save. **Update** edits the selected row in the grid;
+   **🗑** deletes it.
+
+### Analytics
+
+**Psychical Tests → Analytics** opens a cohort-diagnostic dashboard with five
+charts:
+
+1. **Coverage gauges** — % of the unit who completed each test this year.
+2. **Pass rate per age bracket** — grouped bar across PHEF / Combat /
+   Functional / Swimming / MFFT Eval.
+3. **Monthly pass-rate trend** — line per test type over the calendar year.
+4. **MFFT bottleneck bar** — % of failed MFFT attempts that scored UNFIT on
+   each event. Shows the unit's weak point.
+5. **MFFT per-event histograms** — distribution per event with the GOLD /
+   SILVER / BRONZE / FIT thresholds drawn as dashed lines.
 
 ---
 
@@ -213,7 +258,7 @@ As a Planner, you manage test session scheduling.
 1. Go to **Sessions** (your main page).
 2. Fill in:
    - **Date** and **Time**
-   - **Test type** (PHEF, Combat, Functional, Swimming)
+   - **Test type** (PHEF, Combat, Functional, Swimming, MFFT_EVAL)
    - **PTI serial number** (the instructor running the session)
    - **Description** (optional)
 3. Click **Add**.

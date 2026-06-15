@@ -120,6 +120,8 @@ class SessionsController:
         except Exception:
             ts.type_test = TypeFitnessTest.PHEF
         sess = await self._service.add_test_session(ts)
+        if sess is None:
+            return None
         await self._send_html(
             subject=f"Fitness {ts.type_test.name} session added",
             html_body=self._build_added_html(sess),

@@ -23,7 +23,7 @@ class CalendarEventsController:
         self._service_test = test_service if test_service is not None else ServiceTest()
         self._service_cross = cross_service if cross_service is not None else ServiceCross()
 
-    async def events(self, serial_number_pti: str = None) -> list:
+    async def events(self, serial_number_pti: str | None = None) -> list:
         """
         Asynchronously retrieves and processes event data for fitness tests and cross-training sessions.
         This method categorizes sessions by type, calculates their duration, and formats the event

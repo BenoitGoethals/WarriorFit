@@ -36,5 +36,5 @@ class NotifyMail:
             try:
                 self._mail_service.send_html(**mail_sessions_add)  # type: ignore[arg-type]
             except (OSError, ValueError, TypeError) as e:
-                self.logger.error(f"Error sending email: {str(e)}")
+                self.logger.error(f"Error sending email: {e!s}")
                 return

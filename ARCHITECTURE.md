@@ -62,6 +62,8 @@ warriorfit/
       combat_test.py              # Combat test page
       functional_test.py          # Functional test page
       swim_test.py                # Swimming test page
+      mfft_eval.py                # MFFT Eval page (8-event evaluation)
+      test_analytics.py           # Test Analytics page (cohort diagnostics)
       march.py                    # March page
       cross.py                    # Cross test page
       cross_planning.py           # Cross planning page
@@ -86,6 +88,7 @@ warriorfit/
   logic/
     phef_calculator.py            # PHEF test scoring logic
     Functional_calculator.py      # Functional test scoring logic
+    mfft_eval_calculator.py       # MFFT Eval scoring (8 events × 5 clusters)
     singleton.py                  # Singleton metaclass
   security/
     auth_service.py               # Authentication (bcrypt + JWT setup)
@@ -173,7 +176,7 @@ class Service(ABC):
 
 | Service | Responsibility |
 |---------|---------------|
-| `ServiceTest` | PHEF, functional, combat, swimming test CRUD + session management |
+| `ServiceTest` | PHEF, functional, combat, swimming, MFFT Eval test CRUD + session management |
 | `ServiceCross` | Cross/run events and runner management |
 | `ServiceMarch` | March test management |
 | `UserService` | User CRUD, authentication checks |
@@ -341,7 +344,7 @@ class PageSpec:
 | Group | Tabs | Roles |
 |-------|------|-------|
 | root | Welcome, Dashboard, Status Unit, Individual, Reports, Reserve Room, Sessions | ADMIN, PTI, APTI (varies) |
-| Psychical Tests | PHEF, Combat, Functional, Swimming, March, PHEF Not done, Sessions | ADMIN, PTI, APTI |
+| Psychical Tests | PHEF, Combat, Functional, Swimming, MFFT Eval, Analytics, March, PHEF Not done, Sessions | ADMIN, PTI, APTI |
 | Cross/Runs | Cross Statics, Cross Planning, Cross | ADMIN, PTI, APTI |
 | Admin | Audit Logs, User Management, Settings, Status Application | ADMIN only |
 
@@ -414,7 +417,8 @@ The `Broker` class provides an async message queue for forwarding fitness test r
 | **Dependency Injection** | `dependency-injector` Container with wired pages |
 | **Repository** | `ABCRepository` base with async session management |
 | **Abstract Base Class** | `Page`, `BaseTestPage`, `Service` |
-| **Polymorphic Inheritance** | `FitnessTest` -> PhefTest, FunctionalTest, CombatTest, SwimmingTest (STI via discriminator) |
+| **Polymorphic Inheritance** | `FitnessTest` -> PhefTest, FunctionalTest, CombatTestParatrooper, CombatSwimmingTest, MfftEvalTest (joined-table inheritance via `type` discriminator) |
+| **Derived Cluster** | `ServiceMen.cluster` is a `@property` (not a column): paratroopers → `Cluster.COMBAT`, everyone else → `Cluster.ENABLER`. Used by `MfftEvalCalculator` to pick the scoring scale. |
 | **Observer/Reactive** | Shiny reactive values, effects, and event handlers |
 | **Message Queue** | `Broker` with async worker task for HR message delivery |
 | **DTO** | Test DTOs in `broker.py` for HR API serialization |

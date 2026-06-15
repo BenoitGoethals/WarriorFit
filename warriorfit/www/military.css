@@ -268,6 +268,24 @@ input[type="time"], textarea, select {
   box-shadow: 0 0 0 0.18rem rgba(58, 90, 64, 0.25) !important;
 }
 
+/* Dropdown chevron — make every <select> visually recognisable as a dropdown.
+   custom.css/military.css override `background`, which strips Bootstrap's
+   built-in caret, so we re-inject an SVG chevron on every select element. */
+.form-select, select:not([multiple]):not([size]) {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%233a5a40'%3E%3Cpath d='M3.204 5.5h9.592a.5.5 0 0 1 .39.812L8.39 11.5a.5.5 0 0 1-.78 0L2.814 6.312a.5.5 0 0 1 .39-.812z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 14px 10px !important;
+  padding-right: 2.25rem !important;
+  cursor: pointer !important;
+}
+.form-select:focus, select:not([multiple]):not([size]):focus {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23bfa15a'%3E%3Cpath d='M3.204 5.5h9.592a.5.5 0 0 1 .39.812L8.39 11.5a.5.5 0 0 1-.78 0L2.814 6.312a.5.5 0 0 1 .39-.812z'/%3E%3C/svg%3E") !important;
+}
+
 label, .form-label {
   font-family: var(--mil-display) !important;
   text-transform: uppercase !important;

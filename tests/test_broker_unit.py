@@ -317,7 +317,7 @@ class TestProcessCycle:
                     HrMessage(message=f'{{"i":{i}}}', datetime_created=datetime.now())
                 )
             mock_repo = AsyncMock()
-            mock_repo.add_hr_message = AsyncMock(return_value=None)
+            mock_repo.add_hr_message = AsyncMock(side_effect=lambda m: m)
             broker._mom_repo = mock_repo
             broker.check_and_send_messages = AsyncMock()
 

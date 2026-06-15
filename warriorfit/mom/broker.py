@@ -1,10 +1,9 @@
-import asyncio  # noqa: I001
+import asyncio
 import json
 import logging
 from datetime import datetime
 
 from warriorfit.config.application_config import ApplicationConfig
-from warriorfit.services.notify_mail import NotifyMail
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
@@ -12,11 +11,13 @@ from warriorfit.data.model.db_model import (
     FunctionalTest,
     HrMessage,
     March,
+    MfftEvalTest,
     PhefTest,
 )
 from warriorfit.data.repositories.mom_repository import MomRepository
 from warriorfit.mom.message import Message
 from warriorfit.services.be_mil_service import BEMILService
+from warriorfit.services.notify_mail import NotifyMail
 
 
 class Broker:
@@ -229,6 +230,8 @@ class Broker:
                 dto = MarchTestDto(test)  # type: ignore[assignment]
             elif isinstance(test, FunctionalTest):
                 dto = FunctionalTestDto(test)  # type: ignore[assignment]
+            elif isinstance(test, MfftEvalTest):
+                dto = MfftEvalTestDto(test)  # type: ignore[assignment]
 
             if dto is None:
                 self._logger.warning(
@@ -299,7 +302,7 @@ class Broker:
             return result, None
         except asyncio.CancelledError:
             raise
-        except Exception as e:  # noqa: BLE001 — last-resort guard, broker must never die
+        except Exception as e:
             self._logger.error(
                 "Unexpected exception during HR send",
                 exc_info=True,
@@ -532,7 +535,7 @@ class Broker:
         )
         try:
             await self._notify_mail.send_mail(to=alert_email, subject=subject, body=body)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self._logger.error("Failed to send dead-letter alert email: %s", exc)
 
     def stop(self):
@@ -592,7 +595,7 @@ class CombatTestDto:
 class CombatSwimTestDto:
     def __init__(self, test: CombatSwimmingTest):
         self.serial_number = test.serial_number
-        self.swim_passed = test.swim_passed
+        self.swim_passed = test.swim_paased
 
     def to_dict(self) -> dict:
         return {
@@ -632,6 +635,32 @@ class FunctionalTestDto:
             "push_ups": self.push_ups,
             "sit_ups": self.sit_ups,
             "pull_ups": self.pull_ups,
+        }
+
+
+class MfftEvalTestDto:
+    def __init__(self, test: MfftEvalTest):
+        self.serial_number = test.serial_number
+        self.pull_ups = test.pull_ups
+        self.burpees_step_over = test.burpees_step_over
+        self.farmer_walk_m = test.farmer_walk_m
+        self.push_ups_release = test.push_ups_release
+        self.casualty_drag_m = test.casualty_drag_m
+        self.sandbag_carry_m = test.sandbag_carry_m
+        self.combat_run_seconds = test.combat_run_seconds
+        self.combat_swim_seconds = test.combat_swim_seconds
+
+    def to_dict(self) -> dict:
+        return {
+            "serial_number": self.serial_number,
+            "pull_ups": self.pull_ups,
+            "burpees_step_over": self.burpees_step_over,
+            "farmer_walk_m": self.farmer_walk_m,
+            "push_ups_release": self.push_ups_release,
+            "casualty_drag_m": self.casualty_drag_m,
+            "sandbag_carry_m": self.sandbag_carry_m,
+            "combat_run_seconds": self.combat_run_seconds,
+            "combat_swim_seconds": self.combat_swim_seconds,
         }
 
 

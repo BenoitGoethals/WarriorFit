@@ -1,6 +1,7 @@
 # Python
 # logic/singleton.py
 from abc import ABCMeta
+from typing import ClassVar
 
 
 class Singleton(ABCMeta):
@@ -9,7 +10,7 @@ class Singleton(ABCMeta):
     Compatible with ABC classes by inheriting from ABCMeta.
     """
 
-    _instances: dict[type, object] = {}
+    _instances: ClassVar[dict[type, object]] = {}
 
     def __call__(cls, *args: object, **kwargs: object) -> object:
         if cls not in cls._instances:

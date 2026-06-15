@@ -32,6 +32,13 @@ class StatusTestsController:
         self.data_collector = data_collector if data_collector is not None else DataCollector()
         self.unit_name: str = _config.own_unit
 
-    async def get_data(self) -> pd.DataFrame:
-        data = await DataCollector().collect_all_mil_from_own_unit_not_executed_phefs()
-        return data
+    async def get_data(self, test_type: str = "PHEF") -> pd.DataFrame:
+        """Return the unit members who have not executed `test_type` yet.
+
+        ``test_type`` accepts ``"PHEF"`` (default, backwards-compatible) or
+        ``"MFFT_EVAL"``. Unknown values fall back to PHEF.
+        """
+        kind = (test_type or "PHEF").strip().upper()
+        if kind == "MFFT_EVAL":
+            return await self.data_collector.collect_all_mil_from_own_unit_not_executed_mfft_eval()
+        return await self.data_collector.collect_all_mil_from_own_unit_not_executed_phefs()

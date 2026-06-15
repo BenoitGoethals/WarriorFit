@@ -39,7 +39,7 @@
 
 ## Introduction
 
-WarriorFit is a military physical fitness test digitization platform. It allows units to record, manage, and report on all mandated fitness tests — PHEF, Combat, Functional, Swimming, and March — as well as plan cross-running events and reserve sport facilities.
+WarriorFit is a military physical fitness test digitization platform. It allows units to record, manage, and report on all mandated fitness tests — PHEF, Combat, Functional, Swimming, MFFT Eval, and March — as well as plan cross-running events and reserve sport facilities.
 
 ---
 
@@ -72,7 +72,7 @@ Your role determines which pages and actions are available to you.
 The top navigation bar contains:
 
 - **Root pages**: Welcome, Dashboard, Status Unit, Individual, Reports, Reserve Sport Area
-- **Psychical Tests** menu: PHEF, Combat, Functional, Swimming, March, PHEF Not Done, Sessions
+- **Psychical Tests** menu: PHEF, Combat, Functional, Swimming, MFFT Eval, Analytics, March, PHEF Not Done, Sessions
 - **Cross/Runs** menu: Cross Statistics, Cross Planning, Cross
 - **Admin** menu (admin only): Audit Logs, User Management, Settings, Status Application
 - **Right side**: Your username and role, My Calendar, Unit Calendar, and Sign Out
@@ -95,7 +95,7 @@ As a PTI or APTI, your primary tasks are recording fitness tests and managing yo
 
 1. **Check your upcoming sessions** on the Welcome page.
 2. **Record test results** during a session:
-   - Navigate to the appropriate test page (PHEF, Combat, Functional, Swimming, or March).
+   - Navigate to the appropriate test page (PHEF, Combat, Functional, Swimming, MFFT Eval, or March).
    - Select the test session from the dropdown.
    - Enter the serviceman's serial number (use **Search own Unit** to look up by name).
    - Click **Confirm Serial** to validate.
@@ -165,7 +165,7 @@ As a PTI or APTI, your primary tasks are recording fitness tests and managing yo
 1. Go to **Reports**.
 2. Configure:
    - **Report title**
-   - **Test type** (All, PHEF, Functional, Combat, Swimming)
+   - **Test type** (All, PHEF, Functional, Combat, Swimming, MFFT Eval)
    - **Scope** (Own unit only or all units)
    - **Time period** (This year or all)
    - **Format** (PDF, CSV, or Both)
@@ -192,7 +192,21 @@ As a PTI or APTI, your primary tasks are recording fitness tests and managing yo
 
 #### Checking Who Still Needs Testing
 
-Go to **Psychical Tests > PHEF Not Done** to see servicemen who have not completed their PHEF test this year.
+Go to **Psychical Tests > PHEF Not Done** to see servicemen who have not completed their PHEF (or MFFT Eval, via the test-type selector) this year.
+
+## MFFT Eval
+
+The MFFT Eval (Military Functional Fitness Test) is an 8-event annual
+assessment for the Land Component. See the dedicated MFFT Eval page under
+**Psychical Tests → MFFT Eval** to record results; live per-event tier badges
+appear next to each input as you type. The cluster is derived from the
+soldier's `para` flag (paratroopers → COMBAT scale, others → ENABLER scale).
+
+## Analytics
+
+**Psychical Tests → Analytics** opens a cohort-diagnostic dashboard with
+coverage gauges, pass-rate per age bracket, monthly trend, MFFT bottleneck
+bar, and per-event histograms with tier thresholds.
 
 ---
 
@@ -205,7 +219,7 @@ As a Planner, you manage test session scheduling.
 1. Go to **Sessions** (your main page).
 2. Fill in:
    - **Date** and **Time**
-   - **Test type** (PHEF, Combat, Functional, Swimming)
+   - **Test type** (PHEF, Combat, Functional, Swimming, MFFT_EVAL)
    - **PTI serial number** (the instructor running the session)
    - **Description** (optional)
 3. Click **Add**.

@@ -169,3 +169,81 @@ For all separate tests you must achieve a GO.
 | 3      | 17-21      | 13-16      | 10-12      | 7-9        |
 | 2      | 10-16      | 7-12       | 5-9        | 4-6        |
 | 1      | 1-9        | 1-6        | 1-4        | 1-3        |
+
+---
+
+# 3. Eval MFFT (Military Functional Fitness Test)
+
+The Eval MFFT is the Land Component's new annual functional fitness assessment
+(rolled out in 2026). Unlike the PHEF, which measures aerobic + core capacity in
+isolation, the MFFT is a **task-based** evaluation: every event is modelled
+after a duty a soldier may have to execute in the field.
+
+## a. Composition — 3 blocks, 8 events
+
+| # | Block | Event | Unit |
+|---|-------|-------|------|
+| 1 | EMOM 6 min | Pull-up | reps |
+| 2 | EMOM 6 min | Burpees step-over | reps |
+| 3 | EMOM 6 min | Kettlebell farmer walk | meters |
+| 4 | EMOM 6 min | Hand & release push-up | reps |
+| 5 | EMOM 6 min | Casualty drag | meters |
+| 6 | EMOM 6 min | Sandbag shoulder carry | meters |
+| 7 | Combat Run | 4 800 m speed-march, timed | seconds |
+| 8 | Combat Swim | 200 m uninterrupted swim + 2 m dive, timed | seconds |
+
+Blocks 1 and 2 run back-to-back; Block 3 may be on the same day or a separate
+day at the discretion of the unit PTI.
+
+## b. Cluster classification
+
+Every soldier is assigned an MFFT cluster. Within WarriorFit the cluster is
+**derived from `ServiceMen.para`** (see `db_model.py`):
+
+| `para` flag | Cluster | Scoring scale |
+|---|---|---|
+| `True` (paratroopers) | `COMBAT` | Gender / age neutral, 4 tiers |
+| `False` (everyone else) | `ENABLER` | Gender neutral, age-bracketed pass threshold |
+
+The official MFFT specification defines five clusters (COMBAT, ENABLER,
+OPS_SP, TER_SP, NON_DEP). The `Cluster` enum keeps all five so the calculator
+can score arbitrary input, but only COMBAT and ENABLER are actually issued to
+servicemen.
+
+## c. Scoring — `MfftEvalCalculator`
+
+For **COMBAT** soldiers each event is scored against four tiered thresholds:
+
+| Tier | Pull | Burp | Farm m | Push | Drag m | Sand m | Run | Swim |
+|------|------|------|--------|------|--------|--------|------|------|
+| GOLD | 8 | 12 | 70 | 22 | 35 | 70 | < 30:00 | < 3:00 |
+| SILVER | 6 | 10 | 60 | 20 | 30 | 60 | < 34:00 | < 4:00 |
+| BRONZE | 4 | 8 | 50 | 18 | 25 | 50 | < 39:00 | < 5:00 |
+| FIT | 2 | 6 | 40 | 16 | 20 | 40 | < 44:00 | < 6:00 |
+
+A tier is **validated** when ≥ 6 of 8 events reach it **and** no event scored
+UNFIT (below the FIT threshold).
+
+For **ENABLER** soldiers a single pass threshold per age bracket
+(`<30 / 30-39 / 40-49 / 50+`) replaces the tier system. Every event must meet
+the threshold to pass; otherwise the result is UNFIT.
+
+The calculator also exports `tier_info` — the COMBAT-equivalent tier for every
+soldier — so the dashboard can show "this ENABLER soldier performed at SILVER
+level" without changing the pass/fail verdict.
+
+**Invariant**: `passed ⇔ overall != UNFIT` for every cluster. The grid never
+shows `Overall: UNFIT` with `Result: Passed`.
+
+## d. Reporting & dashboards
+
+- **Status Unit**: each row shows an `MFFT status` column with strict
+  semantics (any failed attempt on record ⇒ Failed; otherwise Passed once at
+  least one attempt cleared the bar).
+- **Dashboard**: tier-distribution bar (count per tier on the COMBAT
+  scale).
+- **Analytics**: MFFT bottleneck bar (which event drags soldiers down) +
+  per-event histograms with tier-threshold reference lines.
+- **CSV / PDF reports**: standard pass / fail split, plus a dedicated MFFT
+  PDF generator in landscape A4 with explicit column widths so the 14-column
+  layout renders cleanly.

@@ -1,7 +1,7 @@
 import os
 from collections.abc import Callable
 from datetime import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import pandas as pd
 
@@ -26,7 +26,7 @@ class ReportGeneratorPdf(GeneratorReport):
     """
 
     # PDF Table Style Constants
-    _TABLE_STYLE_CONFIG = [
+    _TABLE_STYLE_CONFIG: ClassVar[list[tuple]] = [
         ("BACKGROUND", (0, 0), (-1, 0)),  # Header background
         ("TEXTCOLOR", (0, 0), (-1, 0)),  # Header text color
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
@@ -52,6 +52,7 @@ class ReportGeneratorPdf(GeneratorReport):
             ReportType.FUNCTIONAL: self.generate_functional_report,
             ReportType.COMBAT: self.generate_combat_report,
             ReportType.SWIMMING: self.generate_swimming_report,
+            ReportType.MFFT_EVAL: self.generate_mfft_eval_report,
         }
 
     async def generate_report(
@@ -207,8 +208,9 @@ class ReportGeneratorPdf(GeneratorReport):
         """
         try:
             from reportlab.lib import colors
-            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.pagesizes import A4, landscape
             from reportlab.lib.styles import getSampleStyleSheet
+            from reportlab.lib.units import cm
             from reportlab.platypus import (
                 Paragraph,
                 SimpleDocTemplate,
@@ -219,6 +221,8 @@ class ReportGeneratorPdf(GeneratorReport):
 
             return {
                 "A4": A4,
+                "landscape": landscape,
+                "cm": cm,
                 "colors": colors,
                 "getSampleStyleSheet": getSampleStyleSheet,
                 "SimpleDocTemplate": SimpleDocTemplate,
@@ -254,8 +258,16 @@ class ReportGeneratorPdf(GeneratorReport):
         file_suffix: str,
         headers: list[str],
         row_builder: Callable[[dict], list[Any]],
+        *,
+        landscape_page: bool = False,
+        col_widths: list[float] | None = None,
     ) -> str | None:
-        """Builds a PDF file from structured data with standardized formatting."""
+        """Builds a PDF file from structured data with standardized formatting.
+
+        ``landscape_page=True`` rotates the page to landscape A4 (useful when
+        there are many columns). ``col_widths`` lets callers pin column widths
+        in points so wide-column tables don't overlap.
+        """
         if not rows:
             return None
 
@@ -264,27 +276,42 @@ class ReportGeneratorPdf(GeneratorReport):
         file_name = f"{report_name}_{file_suffix}_{timestamp}.pdf"
         output_path = os.path.join(_output_dir(self._config), file_name)
 
-        doc = deps["SimpleDocTemplate"](output_path, pagesize=deps["A4"])
+        page_size = deps["landscape"](deps["A4"]) if landscape_page else deps["A4"]
+        margin = 1.2 * deps["cm"]
+        doc = deps["SimpleDocTemplate"](
+            output_path,
+            pagesize=page_size,
+            leftMargin=margin,
+            rightMargin=margin,
+            topMargin=margin,
+            bottomMargin=margin,
+        )
         styles = deps["getSampleStyleSheet"]()
         story = [
             deps["Paragraph"](title, styles["Title"]),
             deps["Spacer"](1, 12),
         ]
 
-        # Build table data and convert markup strings to Paragraphs
-        data = [headers]
+        # Build table data. For wide tables we wrap header + cell text in
+        # Paragraphs so reportlab honours `col_widths` and wraps content
+        # instead of overflowing into the next column.
+        wide = col_widths is not None
+        header_cells: list[Any] = [
+            deps["Paragraph"](f"<b>{h}</b>", styles["Normal"]) if wide else h
+            for h in headers
+        ]
+        data: list[list[Any]] = [header_cells]
         for r in rows:
             row_data = row_builder(r)
-            # Convert any string with markup to Paragraph for colored text
-            processed_row = []
+            processed_row: list[Any] = []
             for cell in row_data:
-                if isinstance(cell, str) and "<font" in cell:
+                if isinstance(cell, str) and "<font" in cell or wide and isinstance(cell, str):
                     processed_row.append(deps["Paragraph"](cell, styles["Normal"]))
                 else:
                     processed_row.append(cell)
             data.append(processed_row)
 
-        tbl = deps["Table"](data, repeatRows=1)
+        tbl = deps["Table"](data, repeatRows=1, colWidths=col_widths)
         tbl.setStyle(self._create_table_style(deps))
         story.append(tbl)
         doc.build(story)
@@ -293,7 +320,7 @@ class ReportGeneratorPdf(GeneratorReport):
 
     def _build_report_row_with_date(self, r: dict, *fields) -> list[Any]:
         """Helper to build report rows that start with a date field."""
-        return [self._fmt_date(r["session_date"])] + list(fields)
+        return [self._fmt_date(r["session_date"]), *fields]
 
     async def generate_phef_report(self, report_name: str, own_unit: bool, this_year: bool):
         """
@@ -406,6 +433,83 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "Swimming", passed, failed, headers, row_builder
         )
 
+    async def generate_mfft_eval_report(
+        self, report_name: str, own_unit: bool, this_year: bool
+    ):
+        """Generate MFFT Eval PDF reports for failed and passed tests.
+
+        The MFFT table has 14 columns. We render in landscape A4 with
+        explicit column widths so headers and values do not overlap.
+        """
+        failed, _stock_headers, passed = await self.calculate_mfft_eval_score(
+            own_unit, this_year
+        )
+
+        # Shorter labels so each column fits in landscape A4.
+        headers = [
+            "Date",
+            "Serial",
+            "Cluster",
+            "Pull",
+            "Burp",
+            "Farm m",
+            "Push",
+            "Drag m",
+            "Sand m",
+            "Run",
+            "Swim",
+            "Overall",
+            "Tier",
+            "Result",
+        ]
+
+        # Column widths in points. Sum ~ 760pt (fits landscape A4 minus margins).
+        col_widths = [
+            72,  # Date
+            55,  # Serial
+            52,  # Cluster
+            36,  # Pull
+            36,  # Burp
+            44,  # Farm
+            38,  # Push
+            44,  # Drag
+            44,  # Sand
+            44,  # Run
+            44,  # Swim
+            60,  # Overall
+            60,  # Tier
+            78,  # Result (allows "✓ Passed")
+        ]
+
+        def row_builder(r: dict) -> list[Any]:
+            return [
+                self._fmt_date(r["session_date"]),
+                r["serial"],
+                r["cluster"],
+                r["pull_ups"],
+                r["burpees"],
+                r["farmer_m"],
+                r["push_ups"],
+                r["drag_m"],
+                r["sandbag_m"],
+                self._fmt_time(r["run_s"]),
+                self._fmt_time(r["swim_s"]),
+                r["overall"],
+                r["tier"],
+                self._fmt_pass_fail(r["result"]),
+            ]
+
+        return self._generate_pass_fail_reports(
+            report_name,
+            "MFFT_Eval",
+            passed,
+            failed,
+            headers,
+            row_builder,
+            landscape_page=True,
+            col_widths=col_widths,
+        )
+
     def _generate_pass_fail_reports(
         self,
         report_name: str,
@@ -414,6 +518,9 @@ class ReportGeneratorPdf(GeneratorReport):
         failed: list[dict],
         headers: list[str],
         row_builder: Callable[[dict], list[Any]],
+        *,
+        landscape_page: bool = False,
+        col_widths: list[float] | None = None,
     ) -> dict[str, str | None]:
         """
         Generates both passed and failed PDF reports for a given test type.
@@ -424,6 +531,8 @@ class ReportGeneratorPdf(GeneratorReport):
         :param failed: List of failed test records.
         :param headers: Table headers.
         :param row_builder: Function to build rows from records.
+        :param landscape_page: Render the page in landscape orientation.
+        :param col_widths: Explicit per-column widths in points.
         :return: Dictionary with 'passed' and 'failed' file paths.
         """
         failed_path = self._build_pdf(
@@ -433,6 +542,8 @@ class ReportGeneratorPdf(GeneratorReport):
             f"{test_type.lower()}_failed",
             headers,
             row_builder,
+            landscape_page=landscape_page,
+            col_widths=col_widths,
         )
         passed_path = self._build_pdf(
             passed,
@@ -441,6 +552,8 @@ class ReportGeneratorPdf(GeneratorReport):
             f"{test_type.lower()}_passed",
             headers,
             row_builder,
+            landscape_page=landscape_page,
+            col_widths=col_widths,
         )
         return {"failed": failed_path, "passed": passed_path}
 
@@ -542,6 +655,12 @@ class ReportGeneratorPdf(GeneratorReport):
             ),
             ("Swimming Tests", "Swimming", ["Date", "Result"], self._swim_mapper),
             ("Mars Tests", "Mars", ["Date", "Distance", "Result"], self._mars_mapper),
+            (
+                "MFFT Eval",
+                "MFFT Eval",
+                ["Date", "Cluster", "Overall", "Tier", "Result"],
+                self._mfft_mapper,
+            ),
         ]
 
         for title, test_type, headers, mapper in test_configs:
@@ -653,6 +772,16 @@ class ReportGeneratorPdf(GeneratorReport):
             self._fmt_pass_fail(r.get("Result", "-")),
         ]
 
+    def _mfft_mapper(self, r: dict) -> list[Any]:
+        """Maps MFFT Eval test record to table row."""
+        return [
+            r.get("Date", "-"),
+            r.get("Cluster", "-"),
+            r.get("Overall", "-"),
+            r.get("Tier", "-"),
+            self._fmt_pass_fail(r.get("Result", "-")),
+        ]
+
     def _create_test_results_table(self, df: pd.DataFrame, deps: dict):
         """Creates a table with test results for unit members."""
         headers = [
@@ -670,7 +799,7 @@ class ReportGeneratorPdf(GeneratorReport):
             if h not in df_mapped.columns:
                 df_mapped[h] = "-"
         data_rows = df_mapped[headers].fillna("-").astype(str).values.tolist()
-        table_data = [headers] + data_rows
+        table_data = [headers, *data_rows]
         table = deps["Table"](table_data, repeatRows=1)
         table.setStyle(self._create_table_style(deps))
         return table

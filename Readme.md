@@ -107,6 +107,8 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 WarriorFit is a comprehensive fitness and military management application designed to track physical performance, manage personnel data, and generate analytical reports. The system integrates data collection, statistical analysis, and reporting capabilities tailored for military fitness standards.
 Each unit within Defence has a **physical training cell** aimed at preparing soldiers physically for operational deployment.
 Annually, every soldier must complete the **PHEF** (Physical Fitness Evaluation Defence). In addition, combat units carry out **functional** and **combat tests**, while paracommandos must endure additional **combat evaluations**.
+
+Since 2026, the Land Component also runs the **Eval MFFT** ("Military Functional Fitness Test"). It is an 8-event evaluation grouped in 3 blocks — a 6-minute EMOM (pull-ups, burpees step-over, farmer walk, hand-and-release push-ups, casualty drag, sandbag carry), a timed 4 800 m combat run, and a 200 m combat swim. Results are scored against tiered thresholds (GOLD / SILVER / BRONZE / FIT / UNFIT). Each soldier is assigned an MFFT cluster automatically from their `para` flag: paratroopers are scored on the **COMBAT** scale, all other personnel on the **ENABLER** scale.
 Currently, much of this process is manual, leading to inefficiency, errors, and administrative delays.
 
 The system includes user management, test input, calculations, PDF reporting, and email distribution. It is designed for local server deployment within Defense.
@@ -320,6 +322,8 @@ The project documentation is structured in different documents:
     * [Privacy Policy](documentation/compliance/PRIVACY_POLICY.md) (Done)
     * [Data Protection Impact Assessment (DPIA)](documentation/compliance/DPIA.md) (Done)
 22. * [Sprint Analysis](documentation/sprint_analysis.md) (Done) — Scrum velocity, burndown, epic delivery timeline
+23. * [Adding a New Test Type](documentation/ADD_NEW_TEST_TYPE.md) (Done) — step-by-step guide + diagrams for introducing a new fitness test type
+24. * [Internationalization (i18n)](docs/i18n.md) (Done) — how the EN/NL/FR translation layer and live language switching work
 
 if you want to see the project in action, you can check  :
  uvicorn ui.app:app --reload --log-level debug --host 0.0.0.0

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 from datetime import datetime
 from typing import Any
 
@@ -9,16 +8,19 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from warriorfit.config.application_config import ApplicationConfig
+from warriorfit.core.mfft_level import MfftLevel
 from warriorfit.core.type_fitness_test import TypeFitnessTest
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
     FunctionalTest,
     March,
+    MfftEvalTest,
     PhefTest,
     ServiceMen,
 )
 from warriorfit.data.repositories.mom_repository import MomRepository
+from warriorfit.logic.mfft_eval_calculator import MfftEvalCalculator
 from warriorfit.logic.phef_calculator import PhefCalculator
 from warriorfit.services.military_service import MilitaryService
 from warriorfit.services.service_march import ServiceMarch
@@ -162,6 +164,8 @@ class DashboardOwnUnitController:
                     tests = await self._service.get_all_functional_test(sess.id)
                 elif t == TypeFitnessTest.SWIMMING:
                     tests = await self._service.get_all_combat_swimming_test(sess.id)
+                elif t == TypeFitnessTest.MFFT_EVAL:
+                    tests = await self._service.get_all_mfft_eval(sess.id)
                 else:
                     tests = []
                 results.extend(
@@ -268,6 +272,39 @@ class DashboardOwnUnitController:
             "sub_class": "text-info",
         }
 
+    async def _evaluate_mfft(self, test: MfftEvalTest) -> Any | None:
+        """Run the calculator against the serviceman's cluster/age/gender.
+
+        Returns the ``MfftResult`` or ``None`` when the linked serviceman
+        cannot be resolved.
+        """
+        mils = await self._get_all_military_own_unit()
+        sm = mils.get(test.serial_number)  # type: ignore[arg-type]
+        if sm is None:
+            return None
+        try:
+            age = sm.age_from_birthdate()
+            return MfftEvalCalculator.evaluate(test, sm.cluster, age, sm.gender)
+        except (AttributeError, TypeError, KeyError, ValueError):
+            return None
+
+    async def mfft_stats(self) -> dict[str, Any]:
+        """Aggregate MFFT Eval pass rate for the unit."""
+        tests: list[MfftEvalTest] = await self._tests_for_unit(TypeFitnessTest.MFFT_EVAL)
+        total = len(tests)
+        passed = 0
+        for test in tests:
+            res = await self._evaluate_mfft(test)
+            if res is not None and res.passed:
+                passed += 1
+        pass_rate = (passed / total * 100) if total > 0 else 0
+        return {
+            "total": total,
+            "sub_value": f"{pass_rate:.1f}%",
+            "sub_label": "Pass Rate",
+            "sub_class": "text-success",
+        }
+
     async def march_stats(self):
         tests_march: list[March] = await self._march_service.get_all_march_from_unit()
         total_march = len(tests_march)
@@ -299,7 +336,7 @@ class DashboardOwnUnitController:
         """
         try:
             snap = await self._mom_repo.outbox_health_summary()
-        except Exception as e:  # noqa: BLE001 — defensive; dashboard must never crash
+        except Exception as e:
             return {
                 "status": "unknown",
                 "badge_label": "Unknown",
@@ -374,13 +411,14 @@ class DashboardOwnUnitController:
             "Combat": len(await self._tests_for_unit(TypeFitnessTest.COMBAT)),
             "Functional": len(await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL)),
             "Swimming": len(await self._tests_for_unit(TypeFitnessTest.SWIMMING)),
+            "MFFT": len(await self._tests_for_unit(TypeFitnessTest.MFFT_EVAL)),
         }
         data = pd.DataFrame({"Test Type": list(counts.keys()), "Count": list(counts.values())})
         fig = px.pie(
             data,
             values="Count",
             names="Test Type",
-            color_discrete_sequence=["#0d6efd", "#198754", "#ffc107", "#0dcaf0"],
+            color_discrete_sequence=["#0d6efd", "#198754", "#ffc107", "#0dcaf0", "#6f42c1"],
         )
         fig.update_layout(margin=dict(t=0, b=0, l=0, r=0))
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_distribution")
@@ -422,18 +460,27 @@ class DashboardOwnUnitController:
         passed_march: int = len([m for m in march_tests if m.succeeded])
         failed_march: int = len([m for m in march_tests if not m.succeeded])
 
+        mfft_tests: list[MfftEvalTest] = await self._tests_for_unit(TypeFitnessTest.MFFT_EVAL)
+        mfft_pass = 0
+        for mt in mfft_tests:
+            res = await self._evaluate_mfft(mt)
+            if res is not None and res.passed:
+                mfft_pass += 1
+        mfft_fail = len(mfft_tests) - mfft_pass
+
+        labels = ["PHEF", "Combat", "Functional", "Swimming", "March", "MFFT"]
         fig = go.Figure(
             data=[
                 go.Bar(
                     name="Passed",
-                    x=["PHEF", "Combat", "Functional", "Swimming", "March"],
-                    y=[phef_pass, combat_pass, func_pass, swim_pass, passed_march],
+                    x=labels,
+                    y=[phef_pass, combat_pass, func_pass, swim_pass, passed_march, mfft_pass],
                     marker_color="#198754",
                 ),
                 go.Bar(
                     name="Failed",
-                    x=["PHEF", "Combat", "Functional", "Swimming", "March"],
-                    y=[phef_fail, combat_fail, func_fail, swim_fail, failed_march],
+                    x=labels,
+                    y=[phef_fail, combat_fail, func_fail, swim_fail, failed_march, mfft_fail],
                     marker_color="#dc3545",
                 ),
             ]
@@ -463,6 +510,8 @@ class DashboardOwnUnitController:
                 tests = await self._service.get_all_functional_test(sess.id)
             elif sess.type_test == TypeFitnessTest.SWIMMING:
                 tests = await self._service.get_all_combat_swimming_test(sess.id)
+            elif sess.type_test == TypeFitnessTest.MFFT_EVAL:
+                tests = await self._service.get_all_mfft_eval(sess.id)
             if any(getattr(t, "serial_number", None) in serials for t in tests):
                 rows.append(
                     {
@@ -476,6 +525,57 @@ class DashboardOwnUnitController:
             if len(rows) >= 10:
                 break
         return pd.DataFrame(rows)
+
+    async def mfft_tier_bar_html(self) -> str | None:
+        """Bar chart of MFFT Eval COMBAT-equivalent tier counts for the unit.
+
+        Everyone is scored against the COMBAT scale (gender/age neutral) via
+        ``MfftResult.tier_info``, regardless of their actual cluster. Returns
+        ``None`` when there is no MFFT data on record.
+        """
+        tests: list[MfftEvalTest] = await self._tests_for_unit(TypeFitnessTest.MFFT_EVAL)
+        if not tests:
+            return None
+
+        tier_order = (
+            MfftLevel.GOLD,
+            MfftLevel.SILVER,
+            MfftLevel.BRONZE,
+            MfftLevel.FIT,
+            MfftLevel.UNFIT,
+        )
+        tier_colors = {
+            MfftLevel.GOLD: "#d4af37",
+            MfftLevel.SILVER: "#8a8a8a",
+            MfftLevel.BRONZE: "#cd7f32",
+            MfftLevel.FIT: "#198754",
+            MfftLevel.UNFIT: "#dc3545",
+        }
+
+        counts: dict[MfftLevel, int] = dict.fromkeys(tier_order, 0)
+        for test in tests:
+            res = await self._evaluate_mfft(test)
+            if res is None:
+                continue
+            counts[res.tier_info] = counts.get(res.tier_info, 0) + 1
+
+        if sum(counts.values()) == 0:
+            return None
+
+        labels = [str(tier) for tier in tier_order]
+        values = [counts[tier] for tier in tier_order]
+        colors = [tier_colors[tier] for tier in tier_order]
+
+        fig = go.Figure(
+            data=[go.Bar(x=labels, y=values, marker_color=colors)]
+        )
+        fig.update_layout(
+            margin=dict(t=20, b=40, l=40, r=20),
+            xaxis_title="Tier",
+            yaxis_title="Count",
+            showlegend=False,
+        )
+        return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_mfft_tiers")
 
     async def phef_hist_html(self) -> str | None:
         serials = await self.own_unit_serials()
@@ -502,85 +602,3 @@ class DashboardOwnUnitController:
         fig.add_vline(x=50, line_dash="dash", line_color="red", annotation_text="Pass Threshold")
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_phef_hist")
 
-    async def failed_phef_df(self) -> pd.DataFrame:
-        tests: list[PhefTest] = await self._tests_for_unit(TypeFitnessTest.PHEF)
-        rows = []
-        for t in tests:
-            total = 0
-            passed = False
-            with contextlib.suppress(AttributeError, TypeError, KeyError):
-                total, passed = await self.phef_total_score(t)  # type: ignore[assignment]
-            if passed:
-                rows.append(
-                    {
-                        "Type": "PHEF",
-                        "Serial": t.serial_number,
-                        "Reason": f"Total {total:.1f} < 50",
-                    }
-                )
-        return pd.DataFrame(rows)
-
-    async def failed_all_df(self) -> pd.DataFrame:
-        rows = []
-
-        for t in await self._tests_for_unit(TypeFitnessTest.PHEF):
-            try:
-                score, passed = await self.phef_total_score(t)
-            except (AttributeError, TypeError, KeyError):
-                passed = False
-            if passed:
-                rows.append(
-                    {
-                        "Type": "PHEF",
-                        "Serial": t.serial_number,
-                        "Reason": f"Passed {passed:.1f}",
-                    }
-                )
-
-        for t in await self._tests_for_unit(TypeFitnessTest.COMBAT):
-            rope = bool(getattr(t, "rope_passed", False))
-            obst = bool(getattr(t, "obstacle_passed", False))
-            run_s = int(getattr(t, "running_time", 0) or 0)
-            passed = rope and obst and run_s <= 7200
-            if not passed:
-                reason_parts = []
-                if not rope:
-                    reason_parts.append("Rope")
-                if not obst:
-                    reason_parts.append("Obstacle")
-                if run_s > 7200:
-                    reason_parts.append(f"Run {run_s}s > 7200s")
-                rows.append(
-                    {
-                        "Type": "Combat",
-                        "Serial": t.serial_number,
-                        "Reason": ", ".join(reason_parts) or "Failed",
-                    }
-                )
-
-        for t in await self._tests_for_unit(TypeFitnessTest.FUNCTIONAL):
-            total = (
-                int(getattr(t, "push_ups", 0) or 0)
-                + int(getattr(t, "sit_ups", 0) or 0)
-                + int(getattr(t, "pull_ups", 0) or 0)
-            )
-            if total < 50:
-                rows.append(
-                    {
-                        "Type": "Functional",
-                        "Serial": t.serial_number,
-                        "Reason": f"Total {total} < 50",
-                    }
-                )
-
-        for t in await self._tests_for_unit(TypeFitnessTest.SWIMMING):
-            if not bool(getattr(t, "swim_paased", False)):
-                rows.append(
-                    {
-                        "Type": "Swimming",
-                        "Serial": t.serial_number,
-                        "Reason": "Not passed",
-                    }
-                )
-
-        return pd.DataFrame(rows)

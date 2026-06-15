@@ -12,6 +12,7 @@ from warriorfit.data.model.db_model import (
     CombatTestParatrooper,
     FitnessTest,
     FunctionalTest,
+    MfftEvalTest,
     PhefTest,
     TestSession,
     User,
@@ -35,6 +36,9 @@ class FitnessTestRepository(ABCRepository):
         try:
             async with self.SessionLocal() as session, session.begin():
                 session.add(test_session)
+                # Flush so the INSERT runs and the instance becomes persistent;
+                # otherwise refresh() trips on a pending instance.
+                await session.flush()
                 await session.refresh(test_session)
                 return test_session
         except IntegrityError as e:
@@ -222,6 +226,7 @@ class FitnessTestRepository(ABCRepository):
                                 FunctionalTest,
                                 CombatTestParatrooper,
                                 CombatSwimmingTest,
+                                MfftEvalTest,
                             ]
                         )
                     )
@@ -239,6 +244,7 @@ class FitnessTestRepository(ABCRepository):
                                 FunctionalTest,
                                 CombatTestParatrooper,
                                 CombatSwimmingTest,
+                                MfftEvalTest,
                             ]
                         )
                     )
@@ -278,6 +284,7 @@ class FitnessTestRepository(ABCRepository):
                             FunctionalTest,
                             CombatTestParatrooper,
                             CombatSwimmingTest,
+                            MfftEvalTest,
                         ]
                     )
                 )
@@ -294,6 +301,7 @@ class FitnessTestRepository(ABCRepository):
                             FunctionalTest,
                             CombatTestParatrooper,
                             CombatSwimmingTest,
+                            MfftEvalTest,
                         ]
                     )
                 )
@@ -428,6 +436,7 @@ class FitnessTestRepository(ABCRepository):
                                 FunctionalTest,
                                 CombatTestParatrooper,
                                 CombatSwimmingTest,
+                                MfftEvalTest,
                             ]
                         )
                     )
@@ -503,6 +512,7 @@ class FitnessTestRepository(ABCRepository):
                                 FunctionalTest,
                                 CombatTestParatrooper,
                                 CombatSwimmingTest,
+                                MfftEvalTest,
                             ],
                         ),
                         selectinload(FitnessTest.test_sessions),  # type: ignore[attr-defined]
@@ -538,6 +548,7 @@ class FitnessTestRepository(ABCRepository):
                                 FunctionalTest,
                                 CombatTestParatrooper,
                                 CombatSwimmingTest,
+                                MfftEvalTest,
                             ],
                         ),
                         selectinload(FitnessTest.test_sessions),  # type: ignore[attr-defined]
@@ -705,6 +716,7 @@ class FitnessTestRepository(ABCRepository):
                                 FunctionalTest,
                                 CombatTestParatrooper,
                                 CombatSwimmingTest,
+                                MfftEvalTest,
                             ],
                         )
                     ],
@@ -956,6 +968,71 @@ class FitnessTestRepository(ABCRepository):
         except (SQLAlchemyError, Exception) as e:
             self._logger.error(
                 "Error fetching Swimming tests for military unit %s: %s",
+                service_number,
+                str(e),
+            )
+            return []
+
+    async def get_all_mfft_eval(
+        self, session_id: int, current_year: bool = True
+    ) -> list[MfftEvalTest]:
+        """Fetch all MFFT Eval tests linked to a given test session."""
+        try:
+            async with self.SessionLocal() as session, session.begin():
+                if current_year:
+                    end, start = await self.running_year()
+                    query = (
+                        select(TestSession)
+                        .where(TestSession.id == session_id)
+                        .where(TestSession.datetime_start.between(start, end))
+                        .options(selectinload(TestSession.fitness_tests))
+                    )
+                else:
+                    query = (
+                        select(TestSession)
+                        .where(TestSession.id == session_id)
+                        .options(selectinload(TestSession.fitness_tests))
+                    )
+                result = await session.execute(query)
+                test_session = result.unique().scalar_one_or_none()
+                if test_session:
+                    tests = [
+                        t
+                        for t in test_session.fitness_tests
+                        if isinstance(t, MfftEvalTest)
+                    ]
+                    for t in tests:
+                        await session.refresh(t)
+                    return tests
+                return []
+        except SQLAlchemyError as e:
+            self._logger.error("Database error fetching MFFT Eval tests: %s", str(e))
+            return []
+
+    async def get_all_mfft_eval_from_mil(
+        self, service_number: str, current_year: bool = True
+    ) -> list[MfftEvalTest]:
+        """Fetch all MFFT Eval results for a given service number."""
+        try:
+            async with self.SessionLocal() as session, session.begin():
+                if current_year:
+                    end, start = await self.running_year()
+                    query = (
+                        select(MfftEvalTest)
+                        .join(MfftEvalTest.test_sessions)  # type: ignore[attr-defined]
+                        .where(MfftEvalTest.serial_number == service_number)
+                        .where(TestSession.datetime_start.between(start, end))
+                    )
+                else:
+                    query = select(MfftEvalTest).where(
+                        MfftEvalTest.serial_number == service_number
+                    )
+                result = await session.execute(query)
+                tests = result.scalars().all()
+                return list(tests) if tests else []
+        except (SQLAlchemyError, Exception) as e:
+            self._logger.error(
+                "Error fetching MFFT Eval tests for service number %s: %s",
                 service_number,
                 str(e),
             )

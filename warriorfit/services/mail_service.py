@@ -329,11 +329,10 @@ class MailService:
             else f"ORGANIZER:mailto:{organizer_email}"
         )
 
-        attn_lines = []
-        for a in attendees:
-            attn_lines.append(
-                f"ATTENDEE;CN={a};ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:{a}"
-            )
+        attn_lines = [
+            f"ATTENDEE;CN={a};ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:{a}"
+            for a in attendees
+        ]
 
         alarm_block = ""
         if alarm_minutes_before and alarm_minutes_before > 0:

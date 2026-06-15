@@ -516,12 +516,12 @@ class ReserveFitnessRoomPage(Page):
                                 ui.input_select(
                                     "start_time",
                                     t("reserve.start_time"),
-                                    choices=[""] + self.time_slots,
+                                    choices=["", *self.time_slots],
                                 ),
                                 ui.input_select(
                                     "end_time",
                                     t("reserve.end_time"),
-                                    choices=[""] + self.time_slots,
+                                    choices=["", *self.time_slots],
                                 ),
                                 col_widths=[6, 6],
                             ),

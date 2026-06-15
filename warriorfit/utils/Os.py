@@ -58,4 +58,4 @@ class Os:
             s.close()
             return ip
         except OSError as e:
-            raise OSError(f"Failed to get IP address: {str(e)}") from e
+            raise OSError(f"Failed to get IP address: {e!s}") from e

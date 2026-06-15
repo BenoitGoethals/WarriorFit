@@ -24,6 +24,7 @@ class ReportType(enum.Enum):
     FUNCTIONAL = 2
     COMBAT = 3
     SWIMMING = 4
+    MFFT_EVAL = 5
 
     @staticmethod
     def from_str(test_type: str | None) -> "ReportType":
@@ -48,6 +49,7 @@ class ReportType(enum.Enum):
             "FUNCTIONAL": ReportType.FUNCTIONAL,
             "COMBAT": ReportType.COMBAT,
             "SWIMMING": ReportType.SWIMMING,
+            "MFFT_EVAL": ReportType.MFFT_EVAL,
         }
         rt = mapping.get(key)
         if rt is None:

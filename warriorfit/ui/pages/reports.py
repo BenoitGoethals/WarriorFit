@@ -54,6 +54,7 @@ class ReportsPage(Page):
                             "FUNCTIONAL": t("reports.functional_tests"),
                             "COMBAT": t("reports.combat_tests"),
                             "SWIMMING": t("reports.swimming_tests"),
+                            "MFFT_EVAL": t("reports.mfft_eval_tests"),
                         },
                     ),
                     ui.input_select(
