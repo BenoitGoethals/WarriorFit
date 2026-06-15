@@ -100,6 +100,19 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
   `t()` translation helper, and EN/NL/FR catalogs (~498 keys each); all pages and navbar migrated to translation keys
 * 2026-06-06 : navbar redesign — language switcher converted from three off-screen EN/NL/FR buttons to a single
   dropdown (`lang_select`); `Status Unit`, `Individual`, `Reports` moved under the `Physical Tests` menu; empty navbar-brand glyph removed
+* 2026-06-15 : **Eval MFFT** — full implementation of the Land Component's new 8-event functional fitness assessment
+  (PR #227): polymorphic `MfftEvalTest` subtype, `Cluster` + `MfftLevel` enums, `MfftEvalCalculator` with the official
+  threshold matrix (4 COMBAT tiers + age-bracketed ENABLER + age × sex OPS_SP / TER_SP scales) and 30 unit tests
+  covering every cluster + the `passed ⇔ overall != UNFIT` invariant; dedicated MFFT Eval page with live per-event
+  tier badges (✓ GOLD / SILVER / BRONZE / FIT / ✗ UNFIT) and strict input validation; new **Analytics** page under
+  Physical Tests (coverage gauges, pass-rate per age bracket, monthly trend, MFFT bottleneck bar, per-event
+  histograms with tier thresholds); MFFT integrated into Dashboard, Status Unit, Individual / My Progress,
+  Reports (landscape A4 PDF with explicit column widths), and broker DTO dispatch; **`ServiceMen.cluster`
+  refactored to a derived `@property`** (paratroopers → COMBAT, others → ENABLER) with matching migration drop;
+  Alembic migrations `f6a7b8c9d0e1` + `a7b8c9d0e1f2`
+* 2026-06-15 : SQL bootstrap scripts — `create_warriorfit_db.sql` builds the full schema and seeds admin users;
+  `scripts/service_men_202606151518.sql`, `units_202606151523.sql`, `rooms_202606151539.sql` provide a ready-to-load
+  seed dataset for local / staging setups
 
 
 
@@ -118,28 +131,31 @@ https://youtu.be/wZveSgpKTf8
 
 ## Code Evolution
 
-**1 012 commits** over ~8 months (Sep 2025 – May 2026) — currently ~25,800 lines of Python.
+**~1 050 commits** over ~10 months (Sep 2025 – Jun 2026) — currently ~27,500 lines of Python.
 
 ### Timeline
 
 ```mermaid
 gantt
-    title WarriorFit — Development Timeline (Sep 2025 → May 2026)
+    title WarriorFit — Development Timeline (Sep 2025 → Jun 2026)
     dateFormat  YYYY-MM-DD
     axisFormat  %b %Y
 
     section Phases
-    Phase 1 · Prototype (~50 commits)            :p1, 2025-09-01, 2025-10-31
-    Phase 2 · Feature growth (~250 commits)      :p2, 2025-10-15, 2025-12-15
-    Phase 3 · Architectural refactor (~300 c.)   :p3, 2025-12-01, 2026-02-15
-    Phase 4 · Hardening & DevOps (~346 c.)       :p4, 2026-02-01, 2026-04-30
-    Phase 5 · Security & Finalization (~66 c.)   :p5, 2026-04-25, 2026-05-31
+    Phase 1 · Prototype (~50 commits)              :p1, 2025-09-01, 2025-10-31
+    Phase 2 · Feature growth (~250 commits)        :p2, 2025-10-15, 2025-12-15
+    Phase 3 · Architectural refactor (~300 c.)     :p3, 2025-12-01, 2026-02-15
+    Phase 4 · Hardening & DevOps (~346 c.)         :p4, 2026-02-01, 2026-04-30
+    Phase 5 · Security & i18n (~96 c.)             :p5, 2026-04-25, 2026-06-06
+    Phase 6 · MFFT + Analytics (~40 c.)            :p6, 2026-06-07, 2026-06-15
 
     section Milestones
     Business-logic extraction   :milestone, 2025-10-31, 0d
     DI container & layering     :milestone, 2025-12-15, 0d
     CI/CD & Docker prod         :milestone, 2026-02-28, 0d
     GDPR + security hardened    :milestone, 2026-05-10, 0d
+    EN/NL/FR i18n shipped       :milestone, 2026-06-06, 0d
+    Eval MFFT + Analytics       :milestone, 2026-06-15, 0d
 ```
 
 ### Complexity Growth
@@ -147,10 +163,10 @@ gantt
 ```mermaid
 xychart-beta
     title "Architectural complexity over time"
-    x-axis ["Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26", "May '26"]
+    x-axis ["Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26", "Apr '26", "May '26", "Jun '26"]
     y-axis "Complexity (relative)" 0 --> 10
-    line [1, 2, 3, 5, 6, 8, 9, 10, 10]
-    bar  [1, 2, 3, 5, 6, 8, 9, 10, 10]
+    line [1, 2, 3, 5, 6, 8, 9, 10, 10, 10]
+    bar  [1, 2, 3, 5, 6, 8, 9, 10, 10, 10]
 ```
 
 | Phase | Period | Complexity | Architecture |
@@ -159,7 +175,8 @@ xychart-beta
 | 2 — Features & Calculators | Oct–Dec 2025 | mid | Emerging layers |
 | 3 — Layered DI | Dec 2025–Feb 2026 | high | DI container |
 | 4 — Hardening & CI/CD | Feb–Apr 2026 | high | Production-ready |
-| 5 — Security & Finalization | Apr–May 2026 | high | OWASP-hardened, GDPR-compliant |
+| 5 — Security & i18n | Apr–Jun 2026 | high | OWASP-hardened, GDPR-compliant, EN/NL/FR |
+| 6 — MFFT + Analytics | Jun 2026 | high | 5th test type, cohort analytics, derived cluster |
 
 ### Architecture Evolution
 
@@ -187,20 +204,33 @@ flowchart TB
         P3M --> P3DB[(PostgreSQL)]
     end
 
-    P1 --> P2 --> P34
+    subgraph P6["PHASE 6 — MFFT + Analytics"]
+        direction TB
+        P6U["MFFT Eval · Analytics · 5 pages updated"] --> P6C["MfftEvalController<br/>TestAnalyticsController"]
+        P6C --> P6S["ServiceTest (+MFFT)<br/>DataCollector (+MFFT)"]
+        P6S --> P6L["MfftEvalCalculator<br/>(5 clusters · 4 tiers)"]
+        P6L --> P6R["FitnessTestRepository<br/>(+polymorphic MFFT)"]
+        P6R --> P6M["MfftEvalTest<br/>ServiceMen.cluster @property"]
+        P6M --> P6DB[(PostgreSQL)]
+    end
 
-    classDef ui   fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
-    classDef svc  fill:#e0f7fa,stroke:#00838f,color:#006064;
-    classDef repo fill:#fff3e0,stroke:#ef6c00,color:#e65100;
-    classDef db   fill:#fce4ec,stroke:#ad1457,color:#880e4f;
-    class P1U,P2U,P3U ui
-    class P1S,P2S,P2C,P3C,P3S svc
-    class P3R,P3M repo
-    class P1DB,P2DB,P3DB db
+    P1 --> P2 --> P34 --> P6
+
+    classDef ui    fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
+    classDef svc   fill:#e0f7fa,stroke:#00838f,color:#006064;
+    classDef logic fill:#f3e5f5,stroke:#6a1b9a,color:#4a148c;
+    classDef repo  fill:#fff3e0,stroke:#ef6c00,color:#e65100;
+    classDef db    fill:#fce4ec,stroke:#ad1457,color:#880e4f;
+    class P1U,P2U,P3U,P6U ui
+    class P1S,P2S,P2C,P3C,P3S,P6C,P6S svc
+    class P6L logic
+    class P3R,P3M,P6R,P6M repo
+    class P1DB,P2DB,P3DB,P6DB db
 ```
 
 > Phase 3 & 4 also bring: **DI Container · CI/CD pipeline · Docker · MkDocs**.
-> Phase 5 adds: **OWASP hardening · GDPR compliance · NIST CSF 2.0 · PostgreSQL TLS · military UI theme**.
+> Phase 5 adds: **OWASP hardening · GDPR compliance · NIST CSF 2.0 · PostgreSQL TLS · military UI theme · EN/NL/FR i18n**.
+> Phase 6 adds: **MFFT Eval (5th test type, 8 events, 5 clusters) · Analytics page · derived-cluster `@property` · landscape PDF reports**.
 
 ### Phase 1: Prototype (Sep–Oct 2025) — commits 1–~50
 
@@ -251,9 +281,9 @@ flowchart TB
 - Type annotations across the entire codebase
 - PR workflow via GitHub (merge requests, code review)
 
-### Phase 5: Security & Finalization (Apr–May 2026) — commits ~946–1 012
+### Phase 5: Security & i18n (Apr–Jun 2026) — commits ~946–~1 040
 
-**Complexity: high | Architecture: OWASP-hardened, GDPR-compliant**
+**Complexity: high | Architecture: OWASP-hardened, GDPR-compliant, EN/NL/FR**
 
 - GDPR compliance: serviceman consent table, Privacy self-service page (Art. 7/15/20), data-retention service
 - NIST CSF 2.0 self-assessment; PostgreSQL SSL/TLS with certificate validation
@@ -262,6 +292,22 @@ flowchart TB
 - Broker resilience: exponential back-off, batch send, dead-letter queue; comprehensive unit tests
 - Dashboard redesign: side-by-side charts, Broker / HR System health card
 - Core docs added: `ARCHITECTURE.md`, `ASSETS.md`, `CODEOWNERS`, `LICENSE`
+- Internationalization: `warriorfit/i18n/` module, EN/NL/FR catalogs (~498 keys), navbar language switcher dropdown
+
+### Phase 6: MFFT Eval + Analytics (Jun 2026) — commits ~1 040–~1 050
+
+**Complexity: high | Architecture: 5th test type integrated, cohort analytics, derived cluster**
+
+- **MFFT Eval** — Land Component's new 8-event annual evaluation, full implementation (PR #227):
+  - New `MfftEvalTest` polymorphic subtype (8 result columns), `TypeFitnessTest.MFFT_EVAL`, `ReportType.MFFT_EVAL`
+  - `Cluster` (`COMBAT / ENABLER / OPS_SP / TER_SP / NON_DEP`) and `MfftLevel` (`GOLD / SILVER / BRONZE / FIT / UNFIT`) enums
+  - `MfftEvalCalculator` with the official threshold matrix; 30 unit tests (every cluster, every boundary, the `passed ⇔ overall != UNFIT` invariant)
+  - Dedicated MFFT Eval page with live per-event tier badges and strict input validation (rejects 0, non-numeric, malformed `mm:ss`)
+- **Analytics page** (new) — coverage gauges, pass-rate per age bracket, monthly trend, MFFT bottleneck bar, per-event histograms with tier thresholds
+- **Cross-cutting integration** — MFFT surfaced in Dashboard, Status Unit, Individual / My Progress, Reports (CSV + landscape A4 PDF), broker DTO dispatch, Status (Not done) selector
+- **Derived cluster refactor** — `ServiceMen.cluster` migrated from stored column to `@property` (paratroopers → COMBAT, others → ENABLER); zero call-site changes
+- **Bug fix** — `FitnessTestRepository.add_test_session` now flushes before refresh (uncovered by the MFFT enum-mismatch path)
+- SQL bootstrap scripts: full schema + seed data for local / staging setups
 
 ### Evolution Summary
 

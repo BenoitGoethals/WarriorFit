@@ -6,9 +6,9 @@ The point estimates below reflect implementation effort.
 
 ### Total Overview
 
-* **Total epics:** 20
-* **Total stories:** 80
-* **Total story points:** 231
+* **Total epics:** 22
+* **Total stories:** 94
+* **Total story points:** 273
 
 ### Story Point Legend
 
@@ -1740,3 +1740,159 @@ The point estimates below reflect implementation effort.
 * `ConsentRepository.list_all_active`
 * `ServicemenOverviewController.overview_df`
 * `ServicemenOverviewPage` + DI wiring + PageSpec
+
+---
+
+## Epic 21: MFFT Eval (Military Functional Fitness Test) (30 points)
+
+**Epic total:** 30 points
+**Estimated:** 4 sprints
+**Status:** ✅ Done (2026-06-15, PR #227)
+
+The Land Component's new annual 8-event functional fitness assessment. Replaces
+some of the legacy combat evaluations and runs alongside the PHEF. Three
+blocks: 6-minute EMOM (pull-ups, burpees step-over, kettlebell farmer walk,
+hand-and-release push-ups, casualty drag, sandbag shoulder carry), 4 800 m
+combat run, 200 m combat swim with 2 m dive.
+
+| #    | Story                                                  | Points | Priority    |
+| ---- | ------------------------------------------------------ | ------ | ----------- |
+| 21.1 | MFFT data model + polymorphic subtype                  | 5      | Must Have   |
+| 21.2 | MfftEvalCalculator (5 clusters × 4 tiers)              | 5      | Must Have   |
+| 21.3 | MFFT Eval test input page with live tier badges        | 5      | Must Have   |
+| 21.4 | Derived cluster (`para` → COMBAT, else → ENABLER)      | 3      | Must Have   |
+| 21.5 | MFFT in Dashboard / Status Unit / Individual           | 3      | Must Have   |
+| 21.6 | CSV + landscape A4 PDF MFFT reports                    | 3      | Should Have |
+| 21.7 | Broker DTO + HR-sync dispatch                          | 2      | Must Have   |
+| 21.8 | Status (Not done) test-type selector                   | 2      | Should Have |
+| 21.9 | Strict input validation + live error notifications     | 2      | Must Have   |
+
+### Story 21.1: MFFT data model + polymorphic subtype [5 points]
+
+**As** PTI
+**I want** MFFT results stored as a first-class fitness test
+**So that** they integrate cleanly with all existing reports / dashboards
+
+**Acceptance criteria:**
+
+* `MfftEvalTest` is a joined-table subtype of `FitnessTest` with 8 result
+  columns (pull-ups, burpees step-over, farmer walk m, push-ups release,
+  casualty drag m, sandbag carry m, combat run seconds, combat swim seconds)
+* `TypeFitnessTest.MFFT_EVAL` enum member + `ReportType.MFFT_EVAL` enum member
+* `polymorphic_identity = "mfft_eval_test"` + PG enum `typefitnesstest`
+  extended with `'MFFT_EVAL'` (Alembic migration `f6a7b8c9d0e1`)
+* `FitnessTestRepository` polymorphic queries include `MfftEvalTest`
+
+### Story 21.2: MfftEvalCalculator (5 clusters × 4 tiers) [5 points]
+
+**As** PTI / dashboard
+**I want** the official MFFT threshold matrix encoded in code
+**So that** scoring is consistent across every screen and report
+
+**Acceptance criteria:**
+
+* `MfftEvalCalculator.evaluate(test, cluster, age, gender)` returns
+  `MfftResult(per_event, overall, passed, tier_info)`
+* COMBAT cluster: 4 tiers (GOLD / SILVER / BRONZE / FIT); validated when
+  ≥ 6 of 8 events reach the tier AND no event is UNFIT
+* ENABLER / OPS_SP / TER_SP: single age-bracketed (and sex-bracketed for the
+  last two) pass threshold; any event below ⇒ UNFIT overall
+* `tier_info` reports the COMBAT-equivalent tier for every cluster
+* Invariant: `passed ⇔ overall != UNFIT` for every cluster — covered by a
+  parameterised unit test
+* ≥ 25 unit tests total covering every event boundary
+
+### Story 21.3: MFFT Eval test input page with live tier badges [5 points]
+
+**As** PTI
+**I want** a dedicated MFFT Eval input page with immediate feedback per event
+**So that** I see exactly which event a soldier passed or failed as I type
+
+**Acceptance criteria:**
+
+* New page registered under `Physical Tests → MFFT Eval`
+* Compact left-side form (3 / 12 width); MFFT results grid on the right (9 / 12)
+* Session selector, serial confirm, 8 event inputs (6 numeric + 2 mm:ss)
+* Each event input shows a live status badge next to it:
+  - ⚠ red — invalid input
+  - ✓ green — valid, awaiting serial selection
+  - colored tier badge — once a serviceman is selected
+* Summary line shows `Tier (combat-equivalent)` and `Overall (PASSED / FAILED)`
+
+### Story 21.4: Derived cluster (`para` → COMBAT, else → ENABLER) [3 points]
+
+**As** developer
+**I want** the cluster to be derived, not stored
+**So that** the rule has a single source of truth
+
+**Acceptance criteria:**
+
+* `ServiceMen.cluster` is a `@property` returning `Cluster.COMBAT` if
+  `self.para` else `Cluster.ENABLER`
+* Migration `a7b8c9d0e1f2` drops the temporary `cluster` column and its PG
+  enum type
+* All existing call sites work unchanged (transparent attribute access)
+
+### Story 21.5: MFFT in Dashboard / Status Unit / Individual [3 points]
+
+**As** PTI
+**I want** MFFT visible everywhere the other tests are
+**So that** the unit status view reflects all test types
+
+**Acceptance criteria:**
+
+* Dashboard: MFFT stats card + tier-distribution bar (single tier count on
+  COMBAT scale)
+* Status Unit: `Cluster` column + `MFFT status` column with strict semantics
+  (any failed attempt ⇒ Failed)
+* Individual / My Progress: MFFT rows appear in summary, detailed, and PDF
+  outputs
+
+### Story 21.6: CSV + landscape A4 PDF MFFT reports [3 points]
+
+* New `generate_mfft_eval_report` in CSV and PDF generators
+* PDF rendered in landscape A4 with explicit column widths so the
+  14-column table fits cleanly
+* Reports page test-type dropdown includes `MFFT_EVAL`; "all" target
+  includes it too
+
+### Story 21.7: Broker DTO + HR-sync dispatch [2 points]
+
+* `MfftEvalTestDto` added in `warriorfit/mom/broker.py`
+* `Broker.send_message` dispatch extended with an `MfftEvalTest` branch
+
+### Story 21.8: Status (Not done) test-type selector [2 points]
+
+* Status page selector switches between PHEF and MFFT not-executed lists
+* `DataCollector.collect_all_mil_from_own_unit_not_executed_mfft_eval`
+  added
+
+### Story 21.9: Strict input validation + live error notifications [2 points]
+
+* `_parse_int` rejects empty, non-numeric, **and 0**
+* `parse_time_to_seconds` rejects `0`, `0:00`, and malformed strings
+* Add/Update buttons show a red error notification with the failing field
+  message on validation failure
+
+---
+
+## Epic 22: Test Analytics (12 points)
+
+**Epic total:** 12 points
+**Estimated:** 2 sprints
+**Status:** ✅ Done (2026-06-15)
+
+Cohort-level diagnostic dashboard for the unit's test data.
+
+| #    | Story                                            | Points | Priority    |
+| ---- | ------------------------------------------------ | ------ | ----------- |
+| 22.1 | Coverage gauges per test type                    | 2      | Must Have   |
+| 22.2 | Pass rate per age bracket (grouped bar)          | 2      | Must Have   |
+| 22.3 | Monthly pass-rate trend (line per test type)     | 2      | Should Have |
+| 22.4 | MFFT bottleneck bar                              | 3      | Must Have   |
+| 22.5 | MFFT per-event histograms with tier thresholds   | 3      | Should Have |
+
+All five charts live on a dedicated page (`Physical Tests → Analytics`).
+Each chart returns `str | None` so the page can show a polite "No data"
+placeholder when there's nothing to plot. Empty months in the monthly
+trend are skipped (no spurious zero markers).
