@@ -1,10 +1,9 @@
-import asyncio  # noqa: I001
+import asyncio
 import json
 import logging
 from datetime import datetime
 
 from warriorfit.config.application_config import ApplicationConfig
-from warriorfit.services.notify_mail import NotifyMail
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
     CombatTestParatrooper,
@@ -17,6 +16,7 @@ from warriorfit.data.model.db_model import (
 from warriorfit.data.repositories.mom_repository import MomRepository
 from warriorfit.mom.message import Message
 from warriorfit.services.be_mil_service import BEMILService
+from warriorfit.services.notify_mail import NotifyMail
 
 
 class Broker:
@@ -299,7 +299,7 @@ class Broker:
             return result, None
         except asyncio.CancelledError:
             raise
-        except Exception as e:  # noqa: BLE001 — last-resort guard, broker must never die
+        except Exception as e:
             self._logger.error(
                 "Unexpected exception during HR send",
                 exc_info=True,
@@ -532,7 +532,7 @@ class Broker:
         )
         try:
             await self._notify_mail.send_mail(to=alert_email, subject=subject, body=body)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self._logger.error("Failed to send dead-letter alert email: %s", exc)
 
     def stop(self):
@@ -592,7 +592,7 @@ class CombatTestDto:
 class CombatSwimTestDto:
     def __init__(self, test: CombatSwimmingTest):
         self.serial_number = test.serial_number
-        self.swim_passed = test.swim_passed
+        self.swim_passed = test.swim_paased
 
     def to_dict(self) -> dict:
         return {

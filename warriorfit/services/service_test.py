@@ -375,14 +375,14 @@ class ServiceTest(Service):
                <tbody>
                    <tr>
                        <td style="padding: 8px;">Obstacle Course</td>
-                       <td style="padding: 8px;">{str(test.obstacle_passed)}</td>
+                       <td style="padding: 8px;">{test.obstacle_passed!s}</td>
                        <td style="padding: 8px; color: {"green" if test.obstacle_passed else "red"}">
                            {"PASSED" if test.obstacle_passed else "FAILED"}
                        </td>
                    </tr>
                    <tr>
                        <td style="padding: 8px;">Rope Course</td>
-                       <td style="padding: 8px;">{str(test.rope_passed)}</td>
+                       <td style="padding: 8px;">{test.rope_passed!s}</td>
                        <td style="padding: 8px; color: {"green" if test.rope_passed else "red"}">
                            {"PASSED" if test.rope_passed else "FAILED"}
                        </td>

@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from warriorfit.core.Gender import Gender
 
 
@@ -25,7 +27,7 @@ class FunctionalCalculator:
     """
 
     # Pull-ups () data
-    PULLUPS_MEN = {
+    PULLUPS_MEN: ClassVar[dict[str, dict[int, int]]] = {
         "18-27": {
             10: 20,
             9: 18,
@@ -43,7 +45,7 @@ class FunctionalCalculator:
         "48-56": {10: 14, 9: 12, 8: 10, 7: 8, 6: 6, 5: 5, 4: 4, 3: 3, 2: 2, 1: 1},
     }
 
-    PULLUPS_WOMEN = {
+    PULLUPS_WOMEN: ClassVar[dict[str, dict[int, int]]] = {
         "18-27": {10: 12, 9: 10, 8: 8, 7: 6, 6: 5, 5: 4, 4: 3, 3: 2, 2: 1, 1: 0},
         "28-37": {10: 10, 9: 8, 8: 6, 7: 5, 6: 4, 5: 3, 4: 3, 3: 2, 2: 1, 1: 0},
         "38-47": {10: 8, 9: 6, 8: 5, 7: 4, 6: 3, 5: 3, 4: 2, 3: 2, 2: 1, 1: 0},
@@ -51,7 +53,7 @@ class FunctionalCalculator:
     }
 
     # Push-ups () data
-    PUSH_UPS_MEN = {
+    PUSH_UPS_MEN: ClassVar[dict[str, dict[int, int]]] = {
         "18-27": {
             10: 75,
             9: 65,
@@ -102,7 +104,7 @@ class FunctionalCalculator:
         },
     }
 
-    PUSH_UPS_WOMEN = {
+    PUSH_UPS_WOMEN: ClassVar[dict[str, dict[int, int]]] = {
         "18-27": {
             10: 50,
             9: 42,
@@ -143,7 +145,7 @@ class FunctionalCalculator:
     }
 
     # Sit-ups () data
-    SIT_UP_MEN = {
+    SIT_UP_MEN: ClassVar[dict[str, dict[int, int]]] = {
         "18-27": {
             10: 80,
             9: 70,
@@ -194,7 +196,7 @@ class FunctionalCalculator:
         },
     }
 
-    SIT_UP_WOMEN = {
+    SIT_UP_WOMEN: ClassVar[dict[str, dict[int, int]]] = {
         "18-27": {
             10: 70,
             9: 60,

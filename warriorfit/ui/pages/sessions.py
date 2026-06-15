@@ -1,5 +1,5 @@
 import datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from dependency_injector.wiring import Provide, inject
 from shiny import reactive, render, ui
@@ -14,8 +14,8 @@ from warriorfit.ui.pages.page import Page
 
 class SessionsPage(Page):
     TAB_NAME = "Sessions"
-    SESSION_TYPES = [r.name for r in TypeFitnessTest]
-    ROLES = [r.name for r in Role]
+    SESSION_TYPES: ClassVar[list[str]] = [r.name for r in TypeFitnessTest]
+    ROLES: ClassVar[list[str]] = [r.name for r in Role]
 
     NO_SELECTION_MESSAGE = "common.no_row_selected"
     _DATE_KEY = "sessions.date"
@@ -250,7 +250,7 @@ class SessionsPage(Page):
                     status.set(t("sessions.failed_add"))
                     return
             except (KeyError, TypeError, ValueError, AttributeError) as e:
-                status.set(f"Error adding session: {str(e)}")
+                status.set(f"Error adding session: {e!s}")
                 return
             self.refresh_tick.set(self.refresh_tick.get() + 1)
             status.set(t("sessions.added"))

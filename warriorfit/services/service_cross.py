@@ -146,18 +146,18 @@ class ServiceCross(Service):
             except Exception:
                 runners = []
 
-            for r in runners:
-                rows.append(
-                    {
-                        "cross_id": c.id,
-                        "cross_datetime": c.datetime_start,
-                        "cross_description": c.description,
-                        "distance": c.distance,
-                        "serial_number": r.serial_number,
-                        "running_time": r.running_time,
-                        "runner_obj": r,  # keep original objects for output format
-                    }
-                )
+            rows.extend(
+                {
+                    "cross_id": c.id,
+                    "cross_datetime": c.datetime_start,
+                    "cross_description": c.description,
+                    "distance": c.distance,
+                    "serial_number": r.serial_number,
+                    "running_time": r.running_time,
+                    "runner_obj": r,  # keep original objects for output format
+                }
+                for r in runners
+            )
         return pd.DataFrame.from_records(rows)
 
     async def get_cross_stats(self):
@@ -388,7 +388,7 @@ class ServiceCross(Service):
         # ----- Overview (distance-agnostic counts only) -----
         overview = {
             "total_crosses": int(df2["cross_id"].nunique()),
-            "total_finishers": int(len(df2)),
+            "total_finishers": len(df2),
             "unique_runners": int(df2["serial_number"].dropna().nunique()),
         }
 

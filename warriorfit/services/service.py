@@ -50,7 +50,7 @@ class Service(ABC):  # noqa: B024  # base class, subclassed not instantiated
             bind=async_engine, expire_on_commit=False, class_=AsyncSession
         )
 
-    async def add_audit_log(self, details, action, ip_address: str = None):
+    async def add_audit_log(self, details, action, ip_address: str | None = None):
         """
         Add an entry to the audit log with the provided details and action.
 
