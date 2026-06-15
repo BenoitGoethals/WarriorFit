@@ -1,9 +1,9 @@
 # WarriorFit — Scrum Sprint Analysis
 
 **Project:** WarriorFit  
-**Duration:** Sep 2025 – May 2026 (8.5 months · 19 sprints · 2-week cadence)  
+**Duration:** Sep 2025 – Jun 2026 (~10 months · 21 sprints · 2-week cadence)  
 **Team size:** 1 developer  
-**Total delivered:** 231 story points · 1 012 commits · ~25 800 lines of Python
+**Total delivered:** 273 story points · ~1 050 commits · ~27 500 lines of Python
 
 ---
 
@@ -31,7 +31,9 @@
 | 18   | Reports & Export              | 3       | 8      | 2.7          | Should         |
 | 19   | Security & Authentication     | 4       | 7      | 1.8          | Must           |
 | 20   | GDPR / Privacy & Self-Service | 7       | 25     | 3.6          | Must/Should    |
-| **Σ**| **Total**                    | **80**  | **231**| **2.9**      |                |
+| 21   | **MFFT Eval (PR #227)**       | 9       | 30     | 3.3          | Must/Should    |
+| 22   | **Test Analytics**            | 5       | 12     | 2.4          | Must/Should    |
+| **Σ**| **Total**                    | **94**  | **273**| **2.9**      |                |
 
 ### Story Point Legend
 
@@ -43,7 +45,7 @@
 | 5      | 2–3 days        | 20 h        |
 | 8      | 3–5 days        | 32 h        |
 
-**Total estimated effort:** 231 SP → **≈ 720 hours** (avg 3.1 h/SP × 231)
+**Total estimated effort:** 273 SP → **≈ 850 hours** (avg 3.1 h/SP × 273)
 
 ---
 
@@ -52,24 +54,24 @@
 ```mermaid
 xychart-beta
     title "Story Points per Epic"
-    x-axis ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20"]
-    y-axis "Story Points" 0 --> 30
-    bar [18, 15, 18, 10, 7, 12, 13, 28, 5, 15, 12, 5, 8, 5, 5, 8, 5, 8, 7, 25]
+    x-axis ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20", "E21", "E22"]
+    y-axis "Story Points" 0 --> 35
+    bar [18, 15, 18, 10, 7, 12, 13, 28, 5, 15, 12, 5, 8, 5, 5, 8, 5, 8, 7, 25, 30, 12]
 ```
 
-Top 5 largest epics (55 % of total backlog):
+Top 5 largest epics (51 % of total backlog):
 
 | Rank | Epic                         | Points | % of total |
 |:----:|------------------------------|:------:|:----------:|
-| 1    | E8 — Cross & Statistics      | 28     | 12.1 %     |
-| 2    | E20 — GDPR / Privacy         | 25     | 10.8 %     |
-| 3    | E1 — User Management         | 18     | 7.8 %      |
-| 4    | E3 — PHEF Test Input         | 18     | 7.8 %      |
-| 5    | E2 — Test Session Planning   | 15     | 6.5 %      |
+| 1    | **E21 — MFFT Eval**          | 30     | 11.0 %     |
+| 2    | E8 — Cross & Statistics      | 28     | 10.3 %     |
+| 3    | E20 — GDPR / Privacy         | 25     | 9.2 %      |
+| 4    | E1 — User Management         | 18     | 6.6 %      |
+| 5    | E3 — PHEF Test Input         | 18     | 6.6 %      |
 
 ---
 
-## 3. Sprint Planning (19 Sprints)
+## 3. Sprint Planning (21 Sprints)
 
 Sprints are 2 weeks. **Velocity** = story points completed. **Cumulative** = running total delivered.  
 Commit count per sprint is from `git log --oneline` filtered by date.
@@ -95,6 +97,8 @@ Commit count per sprint is from `git log --oneline` filtered by date.
 | S17    | Apr 13 – Apr 26     | 8       | 25 | 213       | GDPR full pass (E20) + Cross Stats redesign (E8.7) |
 | S18    | Apr 27 – May 10     | 31      | 13 | 226       | Broker retry/DLQ, code quality refactor, security hardening (E8, E19) |
 | S19    | May 11 – May 31     | 5       | 5  | 231       | Documentation, NIST CSF 2.0, finalization |
+| S20    | Jun 01 – Jun 14     | 19      | 0  | 231       | **i18n EN/NL/FR** (PR #221), navbar redesign (Status/Individual/Reports moved under Physical Tests), dedupe of serviceman-grid + serial-search across test pages (PR #225), dead-code cleanup in PHEF/Combat controllers (PR #223), type-hint cleanup (PR #226). Cross-cutting refactor sprint — no new epic story closed but high engineering value |
+| S21    | Jun 15 – Jun 28     | 17      | 42 | 273       | **E21 — MFFT Eval** (30 SP, PR #227) — full 8-event test with `MfftEvalCalculator` + 30 unit tests + landscape PDF + dashboard / status / individual / reports integration + derived-cluster refactor (migrations f6a7b8c9d0e1 → a7b8c9d0e1f2). **E22 — Test Analytics** (12 SP) — coverage gauges, pass-rate per age bracket, monthly trend, MFFT bottleneck, per-event histograms. SQL bootstrap scripts. Full doc pass (ARCHITECTURE / business / datamodel / user manual / module structure / evolution / stories / testcases) |
 
 ---
 
@@ -103,21 +107,22 @@ Commit count per sprint is from `git log --oneline` filtered by date.
 ```mermaid
 xychart-beta
     title "Sprint Velocity (Story Points Completed)"
-    x-axis ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19"]
-    y-axis "Story Points" 0 --> 30
-    bar  [10, 13, 18, 10, 24, 20, 20, 15, 5, 10, 8, 5, 7, 3, 13, 7, 25, 13, 5]
-    line [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]
+    x-axis ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19", "S20", "S21"]
+    y-axis "Story Points" 0 --> 45
+    bar  [10, 13, 18, 10, 24, 20, 20, 15, 5, 10, 8, 5, 7, 3, 13, 7, 25, 13, 5, 0, 42]
+    line [13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13]
 ```
 
-> Bars = actual velocity · Line = ideal average (231 SP ÷ 19 sprints = **12.2 SP/sprint**)
+> Bars = actual velocity · Line = ideal average (273 SP ÷ 21 sprints = **13.0 SP/sprint**)
 
 | Metric                  | Value       |
 |-------------------------|-------------|
-| Ideal avg velocity      | 12.2 SP/sprint |
-| Peak velocity (S17)     | 25 SP       |
-| Lowest velocity (S14)   | 3 SP        |
-| Refactor sprint avg     | 4.0 SP (S12–S14) |
-| Feature sprint avg      | 16.4 SP (S1–S11, S15–S19) |
+| Ideal avg velocity      | 13.0 SP/sprint |
+| **Peak velocity (S21)** | **42 SP** — MFFT Eval + Analytics in one sprint |
+| Previous peak (S17)     | 25 SP — GDPR |
+| Lowest velocity (S20)   | 0 SP — pure refactor / i18n sprint |
+| Refactor sprint avg     | 3.0 SP (S12, S14, S20) |
+| Feature sprint avg      | 17.3 SP (S1–S11, S15–S19, S21) |
 
 ---
 
@@ -126,10 +131,10 @@ xychart-beta
 ```mermaid
 xychart-beta
     title "Product Burndown (Remaining Story Points)"
-    x-axis ["Start", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19"]
-    y-axis "Remaining SP" 0 --> 250
-    line [231, 221, 208, 190, 180, 156, 136, 116, 101, 96, 86, 78, 73, 66, 63, 50, 43, 18, 5, 0]
-    line [231, 219, 207, 194, 182, 170, 158, 146, 133, 121, 109, 97, 85, 73, 61, 48, 36, 24, 12, 0]
+    x-axis ["Start", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19", "S20", "S21"]
+    y-axis "Remaining SP" 0 --> 300
+    line [273, 263, 250, 232, 222, 198, 178, 158, 143, 138, 128, 120, 115, 108, 105, 92, 85, 60, 47, 42, 42, 0]
+    line [273, 260, 247, 234, 221, 208, 195, 182, 169, 156, 143, 130, 117, 104, 91, 78, 65, 52, 39, 26, 13, 0]
 ```
 
 > First line = actual remaining · Second line = ideal linear burndown
@@ -138,6 +143,8 @@ xychart-beta
 - Sprint 5 (Oct 27–Nov 9) shows a large drop: 4 epics (Combat/Swim/Functional/March) delivered in one sprint — highest commit density of the project (160 commits)
 - Sprints 12–14 show a flat zone (only 15 SP total): the DI architectural refactor and CI/CD setup consumed engineering capacity without delivering user-facing features
 - Sprint 17 shows a spike recovery: GDPR (Epic 20, 25 SP) closed in a single sprint driven by a regulatory deadline
+- Sprint 20 stays flat: an i18n + cleanup sprint with cross-cutting engineering value but no new epic story closed
+- **Sprint 21 is the steepest drop in the project**: 42 SP closed (MFFT Eval 30 + Analytics 12) in one sprint, driven by the layered architecture which let a brand-new test type reuse 90 % of the existing patterns
 
 ---
 
@@ -183,6 +190,14 @@ gantt
 
     section Compliance
     E20 GDPR / Privacy         :done, e20, 2026-04-13, 2026-04-26
+
+    section i18n & Refactor
+    EN/NL/FR i18n              :done, i18n, 2026-06-01, 2026-06-06
+    Test-page dedupe           :done, dedupe, 2026-06-10, 2026-06-14
+
+    section MFFT & Analytics
+    E21 MFFT Eval              :done, e21, 2026-06-15, 2026-06-15
+    E22 Test Analytics         :done, e22, 2026-06-15, 2026-06-15
 ```
 
 ---
@@ -194,9 +209,9 @@ Commit count is a proxy for engineering effort. Spikes indicate high-intensity d
 ```mermaid
 xychart-beta
     title "Commits per Sprint"
-    x-axis ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19"]
+    x-axis ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19", "S20", "S21"]
     y-axis "Commits" 0 --> 200
-    bar [14, 22, 46, 23, 160, 60, 186, 76, 6, 52, 100, 70, 21, 9, 38, 24, 8, 31, 5]
+    bar [14, 22, 46, 23, 160, 60, 186, 76, 6, 52, 100, 70, 21, 9, 38, 24, 8, 31, 5, 19, 17]
 ```
 
 | Sprint | Commits | Commits/SP | Notes                                       |
@@ -208,6 +223,8 @@ xychart-beta
 | S8     | 76      | 5.1        | Dashboard, Welcome, Audit start             |
 | S14    | 9       | 3.0        | Infrastructure sprint — mostly config/docs  |
 | S17    | 8       | 0.3        | Largest SP sprint with fewest commits — deep GDPR feature work |
+| S20    | 19      | n/a        | i18n + dedupe + cleanup — cross-cutting (PRs #221, #223, #225, #226) |
+| **S21**| **17**  | **0.4**    | **Lowest commits/SP of the project** — 42 SP in 17 commits. Single-author squash workflow on PR #227 + concentrated MFFT delivery |
 
 > **Low commits/SP** = large, complex stories. **High commits/SP** = many small fixes or heavy refactoring.
 
@@ -239,6 +256,8 @@ Each story's estimated effort in developer-hours, cross-referenced against commi
 | E18  | 8  | 24 h       | 26 commits    | As planned — PDF/CSV/ZIP generation |
 | E19  | 7  | 21 h       | 40 commits    | **Over** — security was an ongoing concern across all phases, not a single sprint |
 | E20  | 25 | 75 h       | ~30 commits   | As planned — large but well-scoped GDPR pass |
+| E21  | 30 | 90 h       | ~12 commits   | **Under** — the layered DI architecture made adding a 5th test type cheap; the cluster refactor that bundled in would have been a separate epic before DI |
+| E22  | 12 | 36 h       | ~5 commits    | As planned — Analytics page is a thin wrapper over reusable data-collection helpers |
 
 ---
 
@@ -323,6 +342,26 @@ Each story's estimated effort in developer-hours, cross-referenced against commi
 
 ---
 
+### Phase 6 — i18n + MFFT & Analytics (S20–S21, Jun 2026)
+
+**What went well:**
+- **PR #221** delivered EN / NL / FR coverage across the entire UI (~498 translation keys / language) in a single sprint, including a navbar redesign (Status / Individual / Reports moved under Physical Tests, language dropdown swapped in)
+- Cross-cutting refactor PRs landed cleanly in S20 (`#223` dead code in PHEF/Combat controllers, `#225` dedupe of serviceman-grid + serial-search across test pages, `#226` type-hint cleanup) — sets a clean baseline for the MFFT delivery
+- **PR #227** (MFFT) became the **highest-SP sprint of the project (42 SP)** with the **lowest commits/SP ratio (0.4)** — the layered DI architecture, the polymorphic FitnessTest base, and the reusable PHEF/Combat/Functional page patterns let a 5th test type drop in with minimal copy-paste
+- The MFFT calculator shipped with 30 unit tests + a parameterised "passed ⇔ overall != UNFIT" invariant test, locked across all 5 clusters
+- The `ServiceMen.cluster` refactor (stored column → derived `@property` + Alembic drop migration) ran without touching a single call site — proof that consistent attribute access pays off in refactors
+- Test Analytics page (5 charts) was delivered as a thin wrapper around the data-collection helpers in ~5 commits — pure reuse
+
+**What didn't go well:**
+- Two Alembic migrations were needed to walk back the temporary stored `cluster` column (`f6a7b8c9d0e1` to add, `a7b8c9d0e1f2` to drop) — should have spotted the derivation rule before the first migration
+- A latent bug in `FitnessTestRepository.add_test_session` (missing `flush()` before `refresh()`) only surfaced when the MFFT PG enum was first hit cold — uncovered because no previous test type triggered an INSERT rollback on a fresh session
+- The MFFT PDF report needed two iterations to layout cleanly: first portrait (columns overflowed), then landscape A4 with explicit column widths
+- S20 closed 0 SP from the epic backlog — i18n was not pre-tracked as an epic. Retrospectively should have been Epic 23 (≈ 7 SP) for accounting clarity
+
+**Conclusion:** Sprint 21 validates the long-term investments made in Phases 3-5. A complete new test type with full CRUD + 5-chart analytics dashboard + reports + broker integration + refactor + 30 tests was delivered in one sprint because: layered DI made the dependency graph cheap, the polymorphic `FitnessTest` base accepted the new subtype without consumer changes, and the calculator pattern from PHEF was a direct template. **The biggest lesson is positive: architectural investment compounds — what would have been a 3-sprint epic in Phase 2 was a 1-sprint epic in Phase 6.**
+
+---
+
 ## 10. Definition of Done (DoD)
 
 The following criteria were applied for all user stories:
@@ -338,6 +377,8 @@ The following criteria were applied for all user stories:
 | `mypy --strict` clean                           | Sprint 15    |
 | Role guard enforced server-side                 | Sprint 18    |
 | CHANGELOG entry added                           | Sprint 12    |
+| EN / NL / FR translations updated               | Sprint 20    |
+| Unit tests for new business logic               | Sprint 21    |
 
 ---
 
@@ -365,8 +406,10 @@ The following criteria were applied for all user stories:
 | E18  | ✅ Done    | All 3 stories                                      |
 | E19  | ✅ Done    | All 4 stories; revisited in every phase            |
 | E20  | ✅ Done    | All 7 stories; serviceman login TODO (SSO) noted   |
+| E21  | ✅ Done    | All 9 stories; MFFT Eval shipped via PR #227 (2026-06-15) — 30 unit tests, landscape A4 PDF, cross-cutting integration into Dashboard / Status / Reports / Broker; derived-cluster refactor bundled in |
+| E22  | ✅ Done    | All 5 stories; Test Analytics page with coverage gauges, age-bracket pass rate, monthly trend, MFFT bottleneck + per-event histograms — registered under Physical Tests |
 
-**80 / 80 stories delivered.**
+**94 / 94 stories delivered.**
 
 ---
 
@@ -378,3 +421,7 @@ The following criteria were applied for all user stories:
 | 2 | No admin UI for dead-letter queue management  | E8   | Medium   |
 | 3 | No metrics endpoint (Prometheus / health JSON)| E17  | Low      |
 | 4 | MkDocs site still marked "In Development"     | Docs | Low      |
+| 5 | MFFT scoring matrix is hardcoded in Python — should be configurable per cluster scale revision | E21  | Medium   |
+| 6 | OPS_SP / TER_SP / NON_DEP clusters covered in calculator but unreachable from real `ServiceMen` (derived rule yields only COMBAT or ENABLER) — keep the code paths for spec-completeness or strip? | E21  | Low      |
+| 7 | Test Analytics has no per-soldier drill-down yet; clicking a bar / gauge could open a filtered grid | E22  | Low      |
+| 8 | i18n catalogs not yet covered by a dedicated test (missing-key linter) | i18n | Medium   |
