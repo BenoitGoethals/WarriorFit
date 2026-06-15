@@ -5,6 +5,49 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-06-15] - MFFT Eval, Analytics page, derived cluster
+
+### Added
+- **MFFT Eval test type** — full end-to-end implementation of the new "Military
+  Functional Fitness Test":
+  - `MfftEvalTest` polymorphic subtype on `FitnessTest` (8 result columns:
+    `pull_ups`, `burpees_step_over`, `farmer_walk_m`, `push_ups_release`,
+    `casualty_drag_m`, `sandbag_carry_m`, `combat_run_seconds`, `combat_swim_seconds`)
+  - `Cluster` enum (`COMBAT`, `ENABLER`, `OPS_SP`, `TER_SP`, `NON_DEP`) and
+    `MfftLevel` enum (`GOLD`, `SILVER`, `BRONZE`, `FIT`, `UNFIT`)
+  - `MfftEvalCalculator` (`warriorfit/logic/mfft_eval_calculator.py`) with the
+    official scoring matrix (4 COMBAT tiers + age-bracketed ENABLER scale + age
+    & sex-bracketed OPS_SP / TER_SP scales). 30 unit tests covering every
+    cluster, every event boundary, and the "UNFIT ⇒ not passed" invariant.
+  - New `TypeFitnessTest.MFFT_EVAL` and `ReportType.MFFT_EVAL`
+  - Repository, service, controller and Shiny page (compact right-side form
+    with live per-event tier badges, MFFT results grid on the right pane)
+  - CSV and PDF report generators for MFFT Eval (landscape A4 PDF with
+    explicit column widths so the 14-column layout fits cleanly)
+  - Dashboard, Status Unit, Individual / My Progress, Reports, and Status
+    Not-Done views all updated to surface MFFT alongside the four legacy test
+    types; Status Unit shows MFFT with strict semantics ("any failure ⇒
+    Failed") to avoid hiding regressions behind older passing attempts
+  - Alembic migration `f6a7b8c9d0e1` creates the `mfft_eval_tests` table,
+    extends the `typefitnesstest` enum, and adds the temporary `cluster` column
+
+- **Analytics page** (`warriorfit/ui/pages/test_analytics.py`) under the
+  Physical Tests menu: coverage gauges per test type, pass-rate per age
+  bracket, monthly pass-rate trend, MFFT bottleneck bar and per-event
+  histograms with tier thresholds.
+
+### Changed
+- **`ServiceMen.cluster` is now derived, not stored** — `@property` returning
+  `Cluster.COMBAT` when `para=True`, otherwise `Cluster.ENABLER`. Alembic
+  migration `a7b8c9d0e1f2` drops the temporary column and its PG enum type.
+- **Dashboard MFFT tier chart** — collapsed from a per-cluster stacked bar to
+  a single tier-count bar on the COMBAT-equivalent scale.
+- **`FitnessTestRepository.add_test_session`** — explicit `await session.flush()`
+  before `refresh()` so a fresh `TestSession` becomes persistent (the previous
+  pattern raised "Instance is not persistent" on the first DB error).
+
+---
+
 ## [2026-06-06] - Internationalization (EN/NL/FR) and navbar redesign
 
 ### Added
