@@ -15,10 +15,18 @@ from warriorfit.services.service_test import ServiceTest
 
 
 class MfftEvalController:
-    """Controller for the MFFT Eval Shiny page.
+    """
+    Controller responsible for handling operations related to the MFFT (Military Functional Fitness Test) evaluations.
 
-    Wraps `ServiceTest` for CRUD on `MfftEvalTest` rows and drives the
-    `MfftEvalCalculator` for per-event tiers and overall verdict.
+    This class provides methods to manage MFFT sessions, parse and validate related data,
+    and interact with the associated services to retrieve and process data for military personnel.
+    Use this controller to load, add, update, or delete evaluations, generate summaries, and ensure
+    data integrity when processing MFFT-related operations.
+
+    :ivar EVENT_LABELS: A tuple of event labels representing the key components of the MFFT evaluation.
+    :type EVENT_LABELS: tuple[str, ...]
+    :ivar be_mil_service: A service interface for interacting with military personnel data.
+    :type be_mil_service: MilitaryService
     """
 
     EVENT_LABELS: tuple[str, ...] = (
@@ -44,7 +52,24 @@ class MfftEvalController:
     # ----- Helpers -----
     @staticmethod
     def parse_time_to_seconds(val: str) -> tuple[bool, int | str]:
-        """Same shape as CombatController.parse_time_to_seconds (mm:ss or seconds)."""
+        """
+        Parses a time string and converts it into total seconds.
+
+        The method takes a time string in the "mm:ss" format or as a numeric value
+        represented as a string indicating total seconds. It validates the input,
+        checking for proper formatting, and returns the time in seconds if properly
+        formatted. Otherwise, it returns an error message detailing the issue.
+
+        :param val: The time input as a string, either in "mm:ss" format or numeric
+            seconds. The value should represent a positive time within an acceptable
+            maximum limit.
+        :type val: str
+        :return: A tuple where the first element is a boolean indicating whether the
+            parsing was successful, and the second element is either an error message
+            (in case of failed parsing) or the total number of seconds as an integer
+            (when parsing is successful).
+        :rtype: tuple[bool, int | str]
+        """
         txt = (val or "").strip()
         if not txt:
             return False, "Time value is required."
@@ -73,16 +98,27 @@ class MfftEvalController:
 
     @staticmethod
     def format_seconds(sec: float | int) -> str:
+        """
+        Formats a given time in seconds to a human-readable string in the format `MM:SS`.
+
+        :param sec: The time duration in seconds, which can be provided as a float or integer.
+        :return: A string representing the time duration in the format `MM:SS`.
+        """
         m = int(sec) // 60
         s = int(sec) % 60
         return f"{int(m)}:{int(s):02d}"
 
     @staticmethod
     def _parse_int(val: str | int | None, *, field: str) -> tuple[bool, int | str]:
-        """Strict positive-integer parse.
+        """
+        Parses a value to determine if it can be converted to a positive integer. If the parsing
+        fails or the value is invalid, appropriate error messages are returned.
 
-        Accepts an int or a numeric string. Rejects empty, non-numeric, and 0.
-        Returns ``(True, n)`` on success or ``(False, error_message)`` otherwise.
+        :param val: The input value to be parsed, which could be of type str, int, or None.
+        :param field: The name of the field associated with the value for error messaging.
+        :return: A tuple where the first element is a boolean indicating success (True if the
+                 value is a valid positive integer, False otherwise), and the second element
+                 is either the parsed integer on success or an error message string on failure.
         """
         if val is None or (isinstance(val, str) and not val.strip()):
             return False, f"{field} is required."
@@ -95,18 +131,50 @@ class MfftEvalController:
         return True, n
 
     async def load_sessions(self):
+        """
+        Loads all test sessions of type "MFFT_EVAL" from the service.
+
+        The method asynchronously retrieves and returns test sessions of a specific type.
+        It employs the service's `get_all_test_sessions_type_fitness_test` method to perform
+        the operation.
+
+        :return: A list of test sessions retrieved from the service.
+        :rtype: list
+        """
         return await self._service.get_all_test_sessions_type_fitness_test(
             TypeFitnessTest.MFFT_EVAL
         )
 
     async def search_military(self, serial_nr: str) -> ServiceMen | None:
+        """
+        Searches for a serviceman in the military database by the provided serial number.
+
+        This method performs a lookup in the military service for a serviceman whose serial
+        number matches the provided one. If no valid serial number is given, it returns None.
+
+        :param serial_nr: The unique serial number of the serviceman to search.
+        :type serial_nr: str
+        :return: The serviceman object if found, otherwise None.
+        :rtype: ServiceMen | None
+        """
         serial = (serial_nr or "").strip()
         if not serial:
             return None
         return await self.be_mil_service.get_servicemen_by_serial(serial)
 
     async def list_mfft_tests_df(self, session_id: int) -> pd.DataFrame:
-        """Build a DataFrame summarising MFFT Eval results for one session."""
+        """
+        Asynchronously retrieves a DataFrame containing detailed MFFT (Military Functional Fitness Test)
+        evaluation results for a specified session ID. The results include information about individual
+        tests, performed calculations, and servicemen details.
+
+        :param session_id: The unique identifier of the session whose MFFT test results are to be
+            retrieved.
+        :type session_id: int
+        :return: A pandas DataFrame containing the aggregated MFFT test data, including calculations
+            and evaluations, or an empty DataFrame if an error occurs.
+        :rtype: pd.DataFrame
+        """
         try:
             tests = await self._service.get_all_mfft_eval(int(session_id))
             data = []
@@ -168,6 +236,24 @@ class MfftEvalController:
         session: TestSession,
         military: ServiceMen,
     ) -> MfftEvalTest | None:
+        """
+        Adds an MFFT (Military Functional Fitness Test) evaluation record to a test session.
+
+        This method accepts data related to an MFFT and associates it with a specific
+        test session and serviceman. After constructing the MFFT evaluation record from
+        provided data, it invokes a service method to store the data.
+
+        :param session_id: ID of the test session where the MFFT should be added.
+        :type session_id: int
+        :param payload: Dictionary containing performance metrics for the MFFT evaluation.
+        :type payload: dict[str, Any]
+        :param session: The current test session being processed.
+        :type session: TestSession
+        :param military: An object representing the serviceman associated with the test.
+        :type military: ServiceMen
+        :return: An instance of `MfftEvalTest` if successfully added, or `None` otherwise.
+        :rtype: MfftEvalTest | None
+        """
         test = MfftEvalTest()
         test.test_session_id = int(session_id)  # type: ignore[attr-defined]
         test.serial_number = payload["serialnr"]
@@ -186,6 +272,32 @@ class MfftEvalController:
     async def update_mfft(
         self, mfft_id: int, payload: dict[str, Any]
     ) -> MfftEvalTest | None:
+        """
+        Asynchronously updates an MFFT (Military Functional Fitness Test) record with the provided
+        data and returns the updated test entity if successful.
+
+        The function accepts an MFFT ID and a payload containing the relevant fitness metrics
+        to update. The payload is expected to include specific fields with integer values.
+
+        :param mfft_id: The unique identifier for the MFFT test to be updated.
+        :type mfft_id: int
+        :param payload: A dictionary containing the fitness metrics to update. Required keys
+            in the payload include:
+            - session_id: The identification number of the test session.
+            - serialnr: Serial number associated with the test.
+            - pull_ups: Number of pull-ups performed.
+            - burpees: Number of burpees completed.
+            - farmer_m: Distance covered (in meters) during the farmer walk.
+            - push_ups: Number of push-ups (with release) completed.
+            - drag_m: Distance covered (in meters) during the casualty drag.
+            - sandbag_m: Distance covered (in meters) during the sandbag carry.
+            - run_seconds: Time taken (in seconds) to complete a combat run.
+            - swim_seconds: Time taken (in seconds) to complete a combat swim.
+        :type payload: dict[str, Any]
+        :return: An updated `MfftEvalTest` object representing the fitness test record
+            if the update is successful, or `None` if the update fails.
+        :rtype: MfftEvalTest | None
+        """
         test = MfftEvalTest()
         test.id = mfft_id
         test.test_session_id = int(payload["session_id"])  # type: ignore[attr-defined]
@@ -201,19 +313,51 @@ class MfftEvalController:
         return await self._service.update_fitness_test(int(mfft_id), test)
 
     async def delete_mfft(self, session_id: int, mfft_id: int) -> bool:
+        """
+        Deletes a fitness test from a test session.
+
+        This method interacts with the underlying service layer to remove a fitness
+        test associated with a specific session and test ID. It returns a boolean
+        value indicating if the deletion was successful.
+
+        :param session_id: The unique identifier for the test session.
+        :param mfft_id: The unique identifier for the fitness test to be deleted.
+        :return: A boolean indicating whether the fitness test was successfully
+            deleted.
+        """
         return await self._service.delete_fitness_test_from_test_session(
             int(session_id), int(mfft_id)
         )
 
     async def get_test_session_by_id(self, param):
+        """
+        Asynchronously retrieves a test session by its identifier.
+
+        This method interacts with the underlying service layer to fetch details
+        associated with the given test session identifier.
+
+        :param param: The unique identifier of the test session to be retrieved.
+        :return: The details of the test session as returned by the service.
+        :rtype: Any
+        """
         return await self._service.get_test_session_by_id(param)
 
     def validate_form(
         self, data: dict[str, Any]
     ) -> tuple[bool, dict[str, Any] | str]:
-        """Normalize the 8-event form.
+        """
+        Validate a form by ensuring required fields are present and correctly formatted,
+        normalizing the data, and returning the validation results.
 
-        Returns ``(True, normalized)`` on success or ``(False, error)`` otherwise.
+        :param data: A dictionary containing the form data to validate. Expected keys include
+            "serialnr", "pull_ups", "burpees", "farmer_m", "push_ups", "drag_m", "sandbag_m",
+            "combat_run", and "combat_swim". Missing or improperly formatted keys will result
+            in validation failure.
+        :type data: dict[str, Any]
+
+        :return: A tuple indicating whether the form is valid (True or False), and either a
+            dictionary of normalized and validated data or an error message string.
+        :rtype: tuple[bool, dict[str, Any] | str]
         """
         serial = (data.get("serialnr") or "").strip()
         if not serial:
@@ -248,10 +392,26 @@ class MfftEvalController:
     def evaluate_payload(
         self, payload: dict[str, Any], cluster: Cluster, age: int, gender: Any
     ):
-        """Run the calculator on already-validated form values.
+        """
+        Evaluates the physical performance data encapsulated in the payload and calculates
+        results using the provided cluster, age, and gender inputs.
 
-        Returns the `MfftResult`. The caller is expected to render
-        per-event tiers and the overall verdict.
+        The function processes performance metrics such as pull-ups, burpees, farmer walk
+        distance, push-ups, casualty drag distance, sandbag carry distance, combat run time,
+        and combat swim time. These values are used to perform an evaluation through the
+        `MfftEvalCalculator` utility.
+
+        :param payload: A dictionary containing performance metric values for evaluation.
+                        It is expected to have keys: "pull_ups", "burpees", "farmer_m",
+                        "push_ups", "drag_m", "sandbag_m", "run_seconds", and
+                        "swim_seconds".
+        :type payload: dict[str, Any]
+        :param cluster: The cluster identifier used for contextual grouping during evaluation.
+        :type cluster: Cluster
+        :param age: The age of the individual whose performance is being evaluated.
+        :type age: int
+        :param gender: The gender of the individual whose performance is being evaluated.
+        :return: Evaluation results after processing the provided data.
         """
         test = MfftEvalTest()
         test.pull_ups = int(payload["pull_ups"])

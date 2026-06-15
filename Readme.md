@@ -357,13 +357,13 @@ The project documentation is structured in different documents:
 11. * [Reservation Rooms](documentation/reservation_rooms.md) (out of scope, In Development)
 12. * [HRM SIMULATOR](https://github.com/BenoitGoethals/HRM_API_REST) (Done)
 13. * [Testing](documentation/testcases.md) (In Development)
-14. * [Cross App](documentation/crsossapp.md) (out of scope, In Development)
+14. ~~* [Cross App](documentation/crsossapp.md) (out of scope, In Development)~~
 15. * [Server architecture](documentation/server.md) (Done)
 16. * [DI Usage Guide](documentation/DI_USAGE_GUIDE.md) (Done)
 17. * [Changelog](CHANGELOG.md)
 18. * [Security](SECURITY.md) (Done)
 19. * [User Manual](documentation/USER_MANUAL.md) (Done)
-20. * [MkDocs] (https://warriorfit.readthedocs.io/en/latest/) (In Development)
+20. * ~~[MkDocs] (https://warriorfit.readthedocs.io/en/latest/) (In Development)~~
 21. * **Compliance / GDPR**:
     * [Privacy Policy](documentation/compliance/PRIVACY_POLICY.md) (Done)
     * [Data Protection Impact Assessment (DPIA)](documentation/compliance/DPIA.md) (Done)

@@ -2,11 +2,22 @@ from enum import Enum
 
 
 class MfftLevel(Enum):
-    """Achievement tier on an MFFT Eval event or overall evaluation.
+    """
+    Enumeration representing different levels of MFFT (Modified Functional Fitness Test).
 
-    Ordering (high -> low): GOLD > SILVER > BRONZE > FIT > UNFIT.
-    FIT is the lowest COMBAT-passing threshold; UNFIT means the value did
-    not even reach the FIT threshold.
+    This enumeration defines the levels of MFFT and their relationships, enabling comparison
+    of tiers using relational operators. Each level corresponds to a hierarchical fitness rating.
+
+    :ivar GOLD: Represents the highest tier of MFFT level.
+    :type GOLD: MfftLevel
+    :ivar SILVER: Represents the second highest tier of MFFT level.
+    :type SILVER: MfftLevel
+    :ivar BRONZE: Represents the third highest tier of MFFT level.
+    :type BRONZE: MfftLevel
+    :ivar FIT: Represents a moderate tier of MFFT level, indicating general readiness.
+    :type FIT: MfftLevel
+    :ivar UNFIT: Represents the lowest tier of MFFT level, indicating lack of fitness.
+    :type UNFIT: MfftLevel
     """
 
     GOLD = "GOLD"
