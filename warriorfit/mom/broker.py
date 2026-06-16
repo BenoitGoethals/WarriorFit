@@ -3,6 +3,8 @@ import json
 import logging
 from datetime import datetime
 
+import httpx
+
 from warriorfit.config.application_config import ApplicationConfig
 from warriorfit.data.model.db_model import (
     CombatSwimmingTest,
@@ -302,6 +304,41 @@ class Broker:
             return result, None
         except asyncio.CancelledError:
             raise
+        except httpx.HTTPStatusError as e:
+            # The REST service actively rejected the message (non-2xx response),
+            # as opposed to a network/timeout failure. Log it explicitly with the
+            # status code and response body so rejections are easy to spot, and
+            # surface the same detail as last_error on the outbox row.
+            status_code = e.response.status_code
+            body = (e.response.text or "")[:500]
+            self._logger.warning(
+                "HR REST service REJECTED message (HTTP %s): %s",
+                status_code,
+                body,
+                extra={
+                    "message_id": getattr(message_hr, "id", None),
+                    "status_code": status_code,
+                    "response_body": body,
+                    "hr_url": self._config.hr_url,
+                },
+            )
+            return None, f"HR rejected message (HTTP {status_code}): {body}"
+        except httpx.RequestError as e:
+            # The HR service could not be reached (connection refused, DNS
+            # failure, timeout, etc.). This is a transient/operational problem,
+            # not a bug, so log a concise WARNING without a stack trace and let
+            # the retry/back-off mechanism handle it.
+            self._logger.warning(
+                "HR service unreachable (%s): %s",
+                type(e).__name__,
+                e,
+                extra={
+                    "message_id": getattr(message_hr, "id", None),
+                    "error_type": type(e).__name__,
+                    "hr_url": self._config.hr_url,
+                },
+            )
+            return None, f"HR unreachable ({type(e).__name__}): {e}"
         except Exception as e:
             self._logger.error(
                 "Unexpected exception during HR send",
@@ -333,7 +370,11 @@ class Broker:
         message_id = getattr(message_hr, "id", None)
         try:
             raw = message_hr.message
-            content = json.loads(raw) if isinstance(raw, str) else raw
+            # The HR endpoint's HrMessage.message field is a string, so keep the
+            # payload's `message` as the JSON string (exactly as stored in the
+            # outbox). Re-wrapping a parsed dict would send `message` as a nested
+            # object and the receiver would reject it with HTTP 422.
+            content = raw if isinstance(raw, str) else json.dumps(raw)
             message = Message(content=content)
             self._logger.debug(
                 "Sending message to HR service",

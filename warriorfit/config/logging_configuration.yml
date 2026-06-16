@@ -20,6 +20,21 @@ handlers:
     filename: logs/application.log
     mode: a
 
+  broker_file:
+    class: logging.FileHandler
+    level: INFO
+    formatter: default
+    filename: logs/broker.log
+    mode: a
+
+loggers:
+  # Message broker / HR-outbox logs (warriorfit.mom.broker) go to their own
+  # file. propagate: false keeps them out of logs/application.log.
+  warriorfit.mom:
+    level: INFO
+    handlers: [console, broker_file]
+    propagate: false
+
 root:
   level: INFO
   handlers: [console, file]
