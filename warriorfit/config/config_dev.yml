@@ -7,8 +7,8 @@ db:
   ssl: prefer
   ssl_root_cert: ""
 hr:
-  #url: http://192.168.0.30:8400
-  url: http://localhost:8400
+  url: http://192.168.0.30:8400
+  #url: http://localhost:8400
   api_key: warrior_secret
 mail:
   host: 192.168.0.30

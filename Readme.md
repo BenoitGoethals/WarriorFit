@@ -113,6 +113,10 @@ Final view of the Architecture -> [Architectural Structure](documentation/ARCHIT
 * 2026-06-15 : SQL bootstrap scripts — `create_warriorfit_db.sql` builds the full schema and seeds admin users;
   `scripts/service_men_202606151518.sql`, `units_202606151523.sql`, `rooms_202606151539.sql` provide a ready-to-load
   seed dataset for local / staging setups
+* 2026-06-17 : broker start-up race fix — `Broker.start()` is now self-healing (no more sticky `running=True`
+  when called before the asyncio loop exists) and `Broker.send_message()` lazy-starts the worker the first time
+  it's used. Symptom of the original bug: `_msg_queue` kept growing because the eager `broker.start()` at
+  `app.py:48` ran at module-import time (no loop yet), got stuck, and silently dropped every later start attempt
 
 
 

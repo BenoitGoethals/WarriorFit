@@ -85,9 +85,9 @@ All values are read from `ApplicationConfig` at startup with safe defaults:
 
 | Method | Description |
 |---|---|
-| `start()` | Creates the background asyncio task on the running event loop |
+| `start() -> bool` | Creates the background asyncio task on the running event loop. **Self-healing**: if no loop is running yet (eager call at module-import time) it returns `False` without setting `running=True`, so a later call can succeed. Idempotent: re-calling when the worker is already alive is a no-op (warning logged). |
 | `stop()` | Sets `running = False` and cancels the worker task |
-| `send_message(test)` | Converts a `FitnessTest` to a DTO, wraps it in an `HrMessage`, puts it on the queue |
+| `send_message(test)` | Converts a `FitnessTest` (or `March`) to a DTO, wraps it in an `HrMessage`, puts it on the queue. **Lazy-starts the worker** when `_worker_task` is `None`/done — so even if the eager `Broker.start()` in `app.py` ran before the asyncio loop existed, the first `send_message()` brings the worker up. |
 | `worker()` | Infinite loop: calls `_process_cycle()` every `poll_interval_s` seconds |
 | `_process_cycle()` | Drains in-memory queue to DB, then calls `check_and_send_messages()` |
 | `check_and_send_messages()` | Fetches a batch of due rows, sends to HR, deletes successes, records failures |
@@ -108,6 +108,30 @@ The alert is best-effort: a failure to send the email is logged but does not aff
 ## Why Two Stages?
 
 The in-memory `asyncio.Queue` makes `send_message()` non-blocking for the caller. The database write in step 1 provides durability: if the app crashes between enqueue and send, the row survives in `hr_messages` and will be picked up on the next startup.
+
+## Lifecycle (eager + lazy start)
+
+`app.py` calls `_container.broker().start()` immediately after wiring the DI container:
+
+```python
+_container = Container()
+...
+_container.broker().start()  # eager start (best-effort)
+```
+
+Depending on the launcher (`shiny run`, `uvicorn`, test harness) the asyncio
+event loop may or may not be running at that moment. The broker handles both
+cases:
+
+| Scenario | What `start()` does | What happens next |
+|---|---|---|
+| Loop already running | Creates `_worker_task` via `loop.create_task(self.worker())`, sets `running=True`, returns `True` | Worker runs every `poll_interval_s` |
+| **No loop yet** (module-import path) | Catches the `RuntimeError`, logs a `WARNING`, leaves `running=False` and `_worker_task=None`, returns `False` | The first `await broker.send_message(test)` calls `self.start()` again — succeeds inside the loop and the worker launches |
+| Already running | Logs a `WARNING` ("already running"), returns `True` | No-op |
+
+The lazy-start path means **no message is ever lost just because the eager start ran before the loop**.
+
+> Pre-2026-06-17 bug: the old `start()` set `running=True` *before* trying to grab the loop, so the `RuntimeError` short-circuit left the broker in a half-up state — `running=True` but `_worker_task=None` — and every later `start()` was rejected. Symptom: queue keeps growing, nothing ever reaches HR. Fix: `start()` no longer toggles `running` on failure, and `send_message()` calls `start()` lazily.
 
 ---
 ![img_seq_broker.png](img_seq_broker.png)

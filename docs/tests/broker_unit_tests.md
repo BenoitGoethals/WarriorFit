@@ -95,12 +95,14 @@ The broker runs as a background service within the application. These tests veri
 
 | Scenario | Expected behaviour |
 |---|---|
-| `start()` called | Background worker is launched; `running = True` |
-| `start()` called twice | Second call is ignored; a warning is logged |
+| `start()` called with a running loop | Background worker is launched; `running = True`; returns `True` |
+| `start()` called twice on a healthy worker | Second call is ignored; a warning is logged; returns `True` |
+| `start()` called with no running loop | Warning logged, `running` stays `False`, `_worker_task` stays `None`, returns `False` (so a later call can succeed) |
+| **First `send_message()` after a failed eager start** | Lazy-starts the worker via `self.start()` and then queues the message — no message is lost |
 | `stop()` called | Worker is cancelled; `running = False` |
 | `stop()` called when not running | Warning is logged; no error |
 
-**Why it matters:** Incorrect lifecycle management can leave orphaned background workers consuming resources, or cause the application to exit before all messages are flushed.
+**Why it matters:** Incorrect lifecycle management can leave orphaned background workers consuming resources, **or — as in the pre-2026-06-17 bug — leave the broker in a half-up state (`running=True` but `_worker_task=None`) where every later `start()` is rejected and the queue silently grows forever**. The self-healing `start()` + lazy-start in `send_message()` close that gap.
 
 ---
 

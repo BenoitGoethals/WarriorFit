@@ -5,6 +5,27 @@ All notable changes to the WarriorFit project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026-06-17] - Broker start-up race fix
+
+### Fixed
+- **`Broker.start()` no longer leaves the broker in a half-up state** when
+  called before the asyncio event loop is running (which is what `app.py`
+  did at module-import time under `shiny run`). The previous code set
+  `self.running = True` *before* trying `asyncio.get_running_loop()`; on
+  `RuntimeError` the worker task was never created, but every subsequent
+  `start()` call was rejected by the `if not self.running:` guard.
+  Symptom: messages enqueued via `Broker.send_message()` piled up in
+  `_msg_queue` and nothing ever reached HR.
+- **`Broker.start()` is now self-healing**: returns `bool`, leaves
+  `running=False` and `_worker_task=None` when no loop is available so a
+  later call can succeed.
+- **`Broker.send_message()` lazy-starts the worker**: if `_worker_task is
+  None or done()` it calls `self.start()` first. Since `send_message`
+  itself is `async`, the call always happens inside the running loop, so
+  the worker comes up reliably. No message is lost.
+- Documentation (`documentation/broker.md`, `docs/architecture/broker.md`,
+  `docs/tests/broker_unit_tests.md`) updated with the new lifecycle table.
+
 ## [2026-06-15] - MFFT Eval, Analytics page, derived cluster
 
 ### Added

@@ -221,6 +221,12 @@ class Broker:
         test_type = type(test).__name__
         dto = None
 
+        # Lazy start: if app.py's eager `broker.start()` ran before the
+        # asyncio loop existed (Shiny module-import path), the worker
+        # task is still None. We are now inside a running loop, so retry.
+        if self._worker_task is None or self._worker_task.done():
+            self.start()
+
         try:
             if isinstance(test, PhefTest):
                 dto = PhefTestDto(test)
@@ -533,28 +539,46 @@ class Broker:
                 extra={"error_type": type(e).__name__, "error_message": str(e)},
             )
 
-    def start(self):
-        """Start the service as a background asyncio task"""
+    def start(self) -> bool:
+        """Start the worker as a background asyncio task.
 
-        if not self.running:
-            self.running = True
-            try:
-                loop = asyncio.get_running_loop()
-                self._worker_task = loop.create_task(self.worker())  # type: ignore[assignment]
-                self._logger.info(
-                    "Broker worker task created successfully",
-                    extra={"task_id": id(self._worker_task)},
-                )
-            except RuntimeError as e:
-                error_msg = "Could not start Broker worker. No running event loop found."
-                print(f"⚠️ Warning: {error_msg}")
-                self._logger.error(
-                    error_msg,
-                    exc_info=True,
-                    extra={"error_type": "RuntimeError", "error_message": str(e)},
-                )
-        else:
+        Returns ``True`` if the worker is running (newly started or already
+        running), ``False`` if no event loop is available yet so the caller
+        can retry later.
+
+        Idempotent: re-calling once the worker is alive is a no-op.
+        Self-healing: a failed eager start (no running loop at module-import
+        time) leaves ``running`` False and ``_worker_task`` None so a later
+        call (e.g. lazy start from :meth:`send_message`) can succeed.
+        """
+        if self._worker_task is not None and not self._worker_task.done():
             self._logger.warning("Broker start() called but worker is already running")
+            return True
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError as e:
+            error_msg = (
+                "Broker.start(): no running event loop yet — worker will be "
+                "started lazily on the first send_message()."
+            )
+            print(f"⚠️ {error_msg}")
+            self._logger.warning(
+                error_msg,
+                extra={"error_type": "RuntimeError", "error_message": str(e)},
+            )
+            # IMPORTANT: keep self.running = False so the lazy start works.
+            self.running = False
+            self._worker_task = None
+            return False
+
+        self.running = True
+        self._worker_task = loop.create_task(self.worker())  # type: ignore[assignment]
+        self._logger.info(
+            "Broker worker task created successfully",
+            extra={"task_id": id(self._worker_task)},
+        )
+        return True
 
     async def _send_dead_letter_alert(
         self, message_id: int, attempts: int, last_error: str | None
