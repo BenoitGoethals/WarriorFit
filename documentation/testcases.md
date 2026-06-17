@@ -921,3 +921,142 @@ Test status: `[x]` = implemented/passing, `[ ]` = pending.
 - [x] Form pre-fill on row selection does not trigger Add/Update automatically
 - [x] Serial confirmation resets form state on each new serial lookup
 - [x] Report download button only appears when report_path is set
+
+---
+
+## Epic 21: MFFT Eval
+
+### Story 21.1: MFFT data model [5 points]
+
+- [x] `MfftEvalTest` polymorphic subtype on `FitnessTest`
+- [x] 8 result columns: `pull_ups`, `burpees_step_over`, `farmer_walk_m`,
+      `push_ups_release`, `casualty_drag_m`, `sandbag_carry_m`,
+      `combat_run_seconds`, `combat_swim_seconds`
+- [x] `TypeFitnessTest.MFFT_EVAL` enum member
+- [x] PG `typefitnesstest` enum extended via Alembic migration `f6a7b8c9d0e1`
+- [x] `FitnessTestRepository` polymorphic loads include `MfftEvalTest` (8 sites)
+- [x] `add_test_session(TypeFitnessTest.MFFT_EVAL)` smoke-inserts and cleans up
+
+### Story 21.2: MfftEvalCalculator [5 points]
+
+- [x] `MfftEvalCalculator.evaluate(test, cluster, age, gender)` returns
+      `MfftResult(per_event, overall, passed, tier_info)`
+- [x] COMBAT cluster: GOLD/SILVER/BRONZE/FIT validation against the threshold
+      matrix, 6-of-8 + no-UNFIT rule
+- [x] ENABLER cluster: age-bracketed single threshold (`<30 / 30-39 / 40-49 / 50+`)
+- [x] OPS_SP / TER_SP: age + sex bracketed single threshold
+- [x] NON_DEP: COMBAT-equivalent verdict (any UNFIT ⇒ not passed)
+- [x] `tier_info` reports the COMBAT-equivalent tier for every cluster
+- [x] Invariant test `passed ⇔ overall != UNFIT` for every cluster — green
+- [x] 30 unit tests, all green (`pytest tests/test_mfft_eval_calculator.py -v`)
+
+### Story 21.3: MFFT Eval test input page [5 points]
+
+- [x] Page registered under `Physical Tests → MFFT Eval` with allowed roles
+      `{ADMIN, PTI, APTI}`
+- [x] Compact left-side form (3 / 12), MFFT results grid right (9 / 12)
+- [x] Session selector populated from `MFFT_EVAL` type sessions
+- [x] Serial-number entry with 🔍 own-unit search + ✓ confirm-serial buttons
+- [x] 6 numeric inputs + 2 mm:ss time inputs, two events per row
+- [x] Each event input has a live status badge **next to** the input:
+  - [x] ⚠ red — invalid input with tooltip explaining why
+  - [x] ✓ green — valid value, no serial selected yet
+  - [x] ✓ GOLD / SILVER / BRONZE / FIT / ✗ UNFIT — tier achieved
+- [x] Tier-info + Overall summary line at the bottom
+- [x] Add / Update / Clear (↺) / Delete (🗑) action buttons
+- [x] Row selection populates the form for Update / Delete
+
+### Story 21.4: Derived cluster property [3 points]
+
+- [x] `ServiceMen.cluster` is a `@property` returning `Cluster.COMBAT` if
+      `self.para` else `Cluster.ENABLER`
+- [x] Stored `cluster` column dropped via Alembic migration `a7b8c9d0e1f2`
+- [x] PG enum `cluster` dropped together with the column
+- [x] End-to-end smoke: a PARA soldier resolves to COMBAT, a non-PARA to
+      ENABLER (verified against the dev DB)
+- [x] No call-site changes required (transparent attribute access)
+
+### Story 21.5: MFFT in Dashboard / Status Unit / Individual [3 points]
+
+- [x] Dashboard: MFFT stats card (count + pass rate)
+- [x] Dashboard: tier-distribution bar (COMBAT-equivalent scale, single bar
+      per tier)
+- [x] Dashboard pie / pass-fail bar include MFFT alongside the other 4 test
+      types
+- [x] Status Unit grid: `Cluster` and `MFFT status` columns
+- [x] MFFT uses strict semantics in Status Unit: any failed attempt on record
+      ⇒ Failed (regression-safe vs the optimistic "any pass = Passed" rule
+      used by the other tests)
+- [x] Individual / My Progress: MFFT rows appear in summary + detailed grids
+- [x] PDF Individual Report includes an MFFT Eval table
+
+### Story 21.6: CSV + landscape A4 PDF MFFT reports [3 points]
+
+- [x] CSV `generate_mfft_eval_report` produces failed / passed splits with
+      14 columns (Date, Serial, Cluster, 8 event values, Overall, Tier, Result)
+- [x] PDF `generate_mfft_eval_report` renders in landscape A4 with explicit
+      column widths so no column overflows another
+- [x] `_fmt_pass_fail` adds colored ✓ Passed / ✗ Failed badges in the Result
+      column
+- [x] Reports page test-type dropdown includes `MFFT_EVAL`
+- [x] "All" target list in `_resolve_targets` includes `ReportType.MFFT_EVAL`
+
+### Story 21.7: Broker DTO + HR-sync dispatch [2 points]
+
+- [x] `MfftEvalTestDto` defined in `warriorfit/mom/broker.py` with all 8
+      event values + `serial_number`
+- [x] `Broker.send_message` dispatch includes an `isinstance(test, MfftEvalTest)`
+      branch
+- [x] `MfftEvalTestDto.to_dict()` round-trip verified
+
+### Story 21.8: Status (Not done) test-type selector [2 points]
+
+- [x] Page selector switches between `PHEF` and `MFFT_EVAL`
+- [x] `DataCollector.collect_all_mil_from_own_unit_not_executed_mfft_eval`
+      added (returns Serial / Name / Gender / Age / Cluster)
+- [x] Controller `get_data(test_type)` dispatches to PHEF or MFFT helper
+
+### Story 21.9: Strict input validation [2 points]
+
+- [x] `_parse_int` rejects empty, non-numeric, negative, **and 0**
+- [x] `parse_time_to_seconds` rejects `0`, `0:00`, and malformed strings
+- [x] On invalid Add / Update, `ui.notification_show(..., type="error")`
+      shows the failing field message in red
+
+---
+
+## Epic 22: Test Analytics
+
+### Story 22.1: Coverage gauges per test type [2 points]
+
+- [x] Page registered under `Physical Tests → Analytics` (ADMIN / PTI / APTI)
+- [x] Section 1: five gauges side-by-side (PHEF / Combat / Functional /
+      Swimming / MFFT), each showing `done / total` of the unit
+- [x] Color scale: red 0–50%, amber 50–80%, green 80–100%
+- [x] Renders a "No data" placeholder when the unit is empty
+
+### Story 22.2: Pass rate per age bracket [2 points]
+
+- [x] Grouped bar chart, x-axis = `<30 / 30-39 / 40-49 / 50+`, one bar per
+      test type
+- [x] Y-axis = % of attempts that passed in that bracket
+- [x] Color-coded per test type (matches dashboard scheme)
+
+### Story 22.3: Monthly pass-rate trend [2 points]
+
+- [x] Line chart per test type, x-axis = months across the year
+- [x] Empty months skipped (no spurious zero markers)
+- [x] Hover tooltip groups all 5 test types per month
+
+### Story 22.4: MFFT bottleneck bar [3 points]
+
+- [x] For every failed MFFT attempt, the % that scored UNFIT on each of the 8 events
+- [x] Identifies the unit's single most common failure point
+- [x] Returns `None` when there are zero failed attempts (page shows placeholder)
+
+### Story 22.5: MFFT per-event histograms with tier thresholds [3 points]
+
+- [x] 8 subplots (2 × 4 grid), one per event
+- [x] Each histogram shows the raw distribution of values for that event
+- [x] Dashed vertical lines mark the GOLD / SILVER / BRONZE / FIT thresholds
+- [x] Tier line colors match the dashboard tier color scheme

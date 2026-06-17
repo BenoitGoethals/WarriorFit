@@ -372,10 +372,12 @@ Database settings are loaded from YAML config files, selected by `APP_ENV`:
 
 The `Broker` class provides an async message queue for forwarding fitness test results to an external HR system.
 
+**Lifecycle**: `Broker.start()` is **self-healing** and **idempotent**. `app.py` calls `_container.broker().start()` eagerly at module-import time, but the asyncio event loop may not exist yet (depending on the launcher). The broker handles both paths:
 
+- Loop running → `loop.create_task(self.worker())`, sets `running=True`, returns `True`.
+- No loop yet → catches `RuntimeError`, logs a warning, leaves `running=False` and `_worker_task=None`, returns `False`. The first `await broker.send_message(test)` calls `self.start()` again (a lazy start inside the running loop), so no message is lost.
 
-
-**DTOs**: `PhefTestDto`, `CombatTestDto`, `CombatSwimTestDto`, `MarchTestDto`, `FunctionalTestDto` - serialize test results to JSON for the HR API.
+**DTOs**: `PhefTestDto`, `CombatTestDto`, `CombatSwimTestDto`, `MarchTestDto`, `FunctionalTestDto`, `MfftEvalTestDto` - serialize test results to JSON for the HR API.
 
 ---
 

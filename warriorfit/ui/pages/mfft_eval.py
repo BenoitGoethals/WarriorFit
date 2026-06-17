@@ -627,6 +627,21 @@ class MfftEvalPage(BaseTestPage):
         # CRUD
         # ----------------------------
         def _validate(form: MfftFormData) -> tuple[bool, Any]:
+            """
+            Validates the given form using a controller method that checks the values of specific
+            fields within the supplied `MfftFormData`. If validation fails, an appropriate error
+            message will be returned.
+
+            :param form: An instance of `MfftFormData` containing the attributes required
+                for processing. Each attribute corresponds to an exercise or measure
+                in the form.
+            :type form: MfftFormData
+
+            :return: A tuple where the first element is a boolean indicating whether the
+                validation was successful, and the second element is either a result
+                object from the controller or an error message on failure.
+            :rtype: tuple[bool, Any]
+            """
             try:
                 return self.controller.validate_form(
                     {
@@ -647,6 +662,17 @@ class MfftEvalPage(BaseTestPage):
         @reactive.Effect
         @reactive.event(input.mfft_add_btn)
         async def _on_add() -> None:
+            """
+            Handles the addition of an MFFT evaluation process upon activation of the input button.
+
+            This function is reactive and listens for the click event of a designated button. It performs
+            input validation, processes the form data, interacts with a controller to execute the addition
+            operation, and provides feedback to the user via notifications. If the action is successful,
+            it triggers a refresh of the current session's data.
+
+            :param input.mfft_add_btn: The button event that triggers the function.
+            :return: None
+            """
             if not _require_session_selected() or not _require_military_selected():
                 return
             form = _read_form()
@@ -676,6 +702,17 @@ class MfftEvalPage(BaseTestPage):
         @reactive.Effect
         @reactive.event(input.mfft_update_btn)
         async def _on_update() -> None:
+            """
+            Triggered by the "update" button event, this function handles the update operation
+            for a selected MFFT entry. It carries out a sequence of operations, including
+            validations, payload preparation, interaction with the controller to perform the update,
+            and refreshes the UI upon success.
+
+            :raises KeyError: If entries expected in the form dictionary are not found during
+                payload preparation.
+            :raises TypeError: If the result of validation is not of the expected type.
+            :raises ValueError: If the raw MFFT ID cannot be cast to an integer.
+            """
             if not _require_session_selected() or not _require_military_selected():
                 return
             mfft_id_raw = (selected_mfft_id.get() or "").strip()
@@ -707,6 +744,18 @@ class MfftEvalPage(BaseTestPage):
         @reactive.Effect
         @reactive.event(input.mfft_delete_btn)
         async def _on_delete() -> None:
+            """
+            The `_on_delete` function handles the deletion of a selected MFFT session and record,
+            triggered by the delete button event. It validates the input session ID and MFFT record
+            ID, then performs the deletion through the controller. Depending on the result of the
+            deletion attempt, it updates the status message for the user and optionally refreshes
+            the UI. Notifications are displayed to inform the user of successful or unsuccessful
+            deletion. If successful, the form is cleared after the operation.
+
+            :param None: The function does not accept any parameters directly, but relies on attached
+                         reactive inputs.
+            :return: None
+            """
             sess_id_raw = (input.mfft_session_id() or "").strip()
             mfft_id_raw = (selected_mfft_id.get() or "").strip()
             if not sess_id_raw or not mfft_id_raw:
@@ -724,6 +773,14 @@ class MfftEvalPage(BaseTestPage):
         @reactive.Effect
         @reactive.event(input.mfft_refresh_btn)
         def _on_refresh() -> None:
+            """
+            This function is a reactive effect triggered by the `input.mfft_refresh_btn` event.
+            Upon activation, it increments the value of the `refresh_tick` property by 1.
+            This is used to notify any reactive expressions or computations dependent on
+            `refresh_tick` of a state change, ensuring proper updates.
+
+            :return: None
+            """
             self.refresh_tick.set(self.refresh_tick.get() + 1)
 
         @reactive.Effect
@@ -736,6 +793,18 @@ class MfftEvalPage(BaseTestPage):
         @reactive.Effect
         @reactive.event(input.mfft_serial_search_btn)
         async def _open_serial_search_modal() -> None:
+            """
+            Represents a reactive effect that listens to the event triggered by the
+            `mfft_serial_search_btn` input. When invoked, it displays a modal dialog
+            allowing selection of a serial number from a displayed data frame.
+
+            This function is expected to handle the event asynchronously, establishing
+            the modal content and invoking its display. The modal is built with a card
+            containing a header and a data frame output. The modal supports easy close
+            functionality and is not displayed in full-screen mode.
+
+            :return: None
+            """
             modal_content = ui.modal(
                 ui.card(
                     ui.card_header(t("common.select_serial_number")),
@@ -753,6 +822,16 @@ class MfftEvalPage(BaseTestPage):
 
         @render.data_frame
         async def mfft_serial_search_grid():
+            """
+            Initiates the rendering of a serial search grid for servicemen data in the form of a data grid.
+            The data grid allows row selection, filtering, and adjusts its width to 100%.
+
+            :raises Exception: If the operation to fetch the servicemen DataFrame fails.
+
+            :return: A rendered data grid populated with servicemen data, allowing rows to be
+                selected and filtered.
+            :rtype: render.DataGrid
+            """
             df = await get_all_servicemen_df()
             return render.DataGrid(df, selection_mode="rows", filters=True, width="100%")
 

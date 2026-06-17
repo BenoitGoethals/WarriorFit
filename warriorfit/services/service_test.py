@@ -69,48 +69,167 @@ class ServiceTest(Service):
             raise PermissionError("Current user is not authorized to modify fitness tests")
 
     async def get_all_combat_test(self, id):
+        """
+        Retrieves all combat test data associated with the given identifier.
+
+        This asynchronous method interacts with the test repository to fetch all the
+        combat test information corresponding to the provided ``id``.
+
+        :param id: The unique identifier for fetching combat test data.
+        :type id: Any
+        :return: A collection of combat test data corresponding to the given ``id``.
+        :rtype: Any
+        """
         return await self._test_repo.get_all_combat_test(id)
 
     async def get_all_mfft_eval(self, id):
         return await self._test_repo.get_all_mfft_eval(id)
 
     async def get_all_mfft_eval_mil(self, service_number) -> list[MfftEvalTest]:
+        """
+        Retrieve all MFFT evaluation tests for the given service number from the current year.
+
+        This method interacts with the test repository to fetch all Military Fitness Test
+        (MFFT) evaluations for the specified service number, filtered to include only those
+        from the current year.
+
+        :param service_number: The unique identifier representing the service member's record.
+        :type service_number: str
+        :return: A list of MfftEvalTest instances for the provided service number.
+        :rtype: list[MfftEvalTest]
+        """
         return await self._test_repo.get_all_mfft_eval_from_mil(
             service_number,
             current_year=True,
         )
 
     async def get_all_functional_test(self, id):
+        """
+        Fetches all functional tests associated with a specific identifier.
+
+        This asynchronous method interacts with the repository to retrieve
+        all relevant functional tests. It is used to access detailed
+        test information for a given ID.
+
+        :param id: The identifier for which to retrieve functional tests.
+        :type id: int
+        :return: A list of functional tests associated with the given ID.
+        :rtype: list
+        """
         return await self._test_repo.get_all_functional_test(id)
 
     async def get_all_phef(self, id):
+        """
+        Retrieves all PHEF records associated with the provided `id`.
+
+        This asynchronous method interacts with the underlying repository to
+        fetch data and returns the result of the query.
+
+        :param id: The unique identifier used to fetch the corresponding
+            PHEF records.
+        :type id: Any
+        :return: A coroutine that resolves to the list of PHEF records
+            associated with the provided `id`.
+        :rtype: Coroutine[Any, Any, List]
+        """
         return await self._test_repo.get_all_phef(
             id,
         )
 
     async def get_all_phef_mil(self, serial) -> list[PhefTest]:
+        """
+        Fetches all PHEF test records filtered by the given serial number and the
+        current year.
+
+        :param serial: The serial number used to retrieve PHEF test records.
+        :type serial: str
+        :return: A list of PhefTest instances matching the provided serial number
+                 and current year filter.
+        :rtype: list[PhefTest]
+        """
         return await self._test_repo.get_all_phef_from_mil(
             serial,
             current_year=True,
         )
 
     async def get_all_combat_swimming_test(self, id):
+        """
+        Fetches all combat swimming test data for a given identifier.
+
+        This method retrieves information about all combat swimming tests associated
+        with the specified identifier by utilizing the repository layer.
+
+        :param id: Unique identifier to query combat swimming test data.
+        :type id: int
+        :return: List of combat swimming test records associated with the given identifier.
+        :rtype: list
+        """
         return await self._test_repo.get_all_combat_swimming_test(id)
 
     async def get_all_test_sessions_type_fitness_test(self, type_test, this_year=True):
+        """
+        Retrieve all test sessions for a specific type of fitness test.
+
+        This asynchronous method interacts with the repository to fetch all test
+        sessions matching the provided test type. By default, it will only consider
+        test sessions from the current year unless specified otherwise.
+
+        :param type_test: The type of fitness test to filter the sessions.
+        :param this_year: Whether to restrict the sessions to the current year.
+            Defaults to True.
+        :type this_year: bool
+        :return: A list of test sessions matching the specified type, potentially
+            filtered by year.
+        :rtype: Any
+        """
         return await self._test_repo.get_all_test_sessions_type_fitness_test(type_test, this_year)
 
     async def get_all_test_sessions_type_fitness_test_for_service_men(
         self, serial: str, type_test, this_year=True
     ):
+        """
+        Fetches all test sessions of a specific fitness test type for service members.
+
+        This asynchronous method retrieves all test sessions of a specific type related
+        to fitness tests for a given service member identified by their serial number.
+        By default, it focuses on sessions occurring in the current year, unless
+        otherwise specified.
+
+        :param serial: A string representing the serial number of the service member.
+        :param type_test: The type of fitness test to filter the sessions by.
+        :param this_year: A boolean indicating whether to filter sessions only for the
+            current year. Defaults to True.
+        :return: A list of test sessions matching the specified criteria.
+        """
         return await self._test_repo.get_all_test_sessions_type_fitness_test_for_service_men(
             serial, type_test, this_year=this_year
         )
 
     async def get_all_test_sessions(self):
+        """
+        Retrieves all test sessions from the test repository.
+
+        This method asynchronously interacts with the test repository to fetch all
+        available test session data.
+
+        :return: A list containing all test sessions retrieved from the repository.
+        :rtype: list
+        """
         return await self._test_repo.get_all_test_sessions()
 
     async def get_all_test_sessions_for_pti(self, serial_number_pti: str):
+        """
+        Retrieve all test sessions associated with a given PTI (Product or Testing Identifier).
+
+        This asynchronous function interacts with a test repository to fetch all test sessions
+        linked to the provided PTI. It returns the results as retrieved from the repository.
+
+        :param serial_number_pti: The serial number or unique identifier for the specific PTI
+                                  whose test sessions are to be retrieved.
+        :type serial_number_pti: str
+        :return: A collection of test sessions associated with the specified PTI.
+        :rtype: Any
+        """
         return await self._test_repo.get_all_test_sessions_for_a_pti(serial_number_pti)
 
     async def add_fitness_test_to_testSession(
@@ -168,6 +287,16 @@ class ServiceTest(Service):
         return add_test
 
     async def delete_fitness_test_from_test_session(self, param, param1):
+        """
+        Deletes a fitness test from a specific test session. This operation removes the
+        fitness test association with the given test session and logs the action into
+        the audit log if the deletion is successful.
+
+        :param param: The identifier of the test session from which the fitness test
+                      should be deleted.
+        :param param1: The identifier of the fitness test to be deleted.
+        :return: A boolean indicating whether the deletion was successful.
+        """
         self._assert_can_modify_tests()
         deleted = await self._test_repo.delete_fitness_test_from_test_session(param, param1)
         if deleted:
@@ -178,6 +307,21 @@ class ServiceTest(Service):
         return deleted
 
     async def update_fitness_test(self, param, cp):
+        """
+        Updates a fitness test within the test repository and logs the update if
+        successful. This operation also sends a message to the broker when the
+        update is completed.
+
+        :param param: The identifier representing the test session during which
+            the fitness test is being updated.
+        :type param: Any
+        :param cp: The object containing the fitness test data to be updated,
+            including its serial number and type.
+        :type cp: Any
+        :return: A boolean indicating whether the fitness test update was
+            successful.
+        :rtype: bool
+        """
         updated = await self._test_repo.update_fitness_test(param, cp)
         from warriorfit.core.container import Container
 
@@ -190,9 +334,32 @@ class ServiceTest(Service):
         return updated
 
     async def get_test_session_by_id(self, param):
+        """
+        Asynchronously retrieves a test session by its unique identifier.
+
+        This method interacts with the repository layer to fetch a test session.
+        The test session is fetched based on the identifier provided as input.
+
+        :param param: Unique identifier of the test session.
+        :type param: Any
+        :return: The fetched test session corresponding to the provided identifier.
+        :rtype: Any
+        """
         return await self._test_repo.get_test_session_by_id(param)
 
     async def add_test_session(self, ts):
+        """
+        Adds a new test session and logs the action.
+
+        This method adds a test session to the repository and creates an
+        audit log entry specifying the details of the action. The added
+        test session is then returned.
+
+        :param ts: The test session to add.
+        :type ts: TestSession
+        :return: The added test session if successful.
+        :rtype: TestSession
+        """
         added_test: TestSession = await self._test_repo.add_test_session(ts)  # type: ignore[assignment]
         if added_test:
             await self.add_audit_log(
@@ -202,6 +369,15 @@ class ServiceTest(Service):
         return added_test
 
     async def update_test_session(self, data):
+        """
+        Updates a test session with the provided data and logs the operation in the audit log
+        if the update is successful.
+
+        :param data: The data object containing information about the test session to update.
+        :type data: Any
+        :return: Indicates whether the update operation was successful.
+        :rtype: bool
+        """
         updated = await self._test_repo.update_test_session(data)
         if updated:
             await self.add_audit_log(
@@ -210,16 +386,51 @@ class ServiceTest(Service):
         return updated
 
     async def delete_test_session(self, sel_id):
+        """
+        Deletes a test session with the specified identifier from the repository. If the session
+        is successfully deleted, an audit log entry is added to record the action.
+
+        :param sel_id: Identifier of the test session to delete.
+        :type sel_id: int
+        :return: A boolean value indicating whether the test session was successfully deleted.
+        :rtype: bool
+        """
         deleted = await self._test_repo.delete_test_session(sel_id)
         if deleted:
             await self.add_audit_log(details=f"Test session {sel_id} deleted", action="delete")
         return deleted
 
     async def get_all_pti(self):
+        """
+        Retrieve all PTI (Presumably Test Information) records asynchronously.
+
+        This method interacts with the test repository to fetch the complete list
+        of PTI records. It is designed to handle asynchronous operations and
+        returns the results as awaited.
+
+        :return: All PTI records retrieved from the repository.
+        :rtype: Any
+        """
         return await self._test_repo.get_all_pti()
 
     @staticmethod
     def format_seconds(sec: float | int) -> str:
+        """
+        Converts a time duration in seconds to a formatted string representation.
+
+        The method takes in a duration in seconds and converts it into a
+        formatted string in the format 'MM:SS'. This can be particularly
+        useful for representing durations in media playback or timers.
+
+        :param sec: A duration in seconds. Can be an integer or a floating-point
+            value.
+        :type sec: float | int
+        :return: A formatted string representing the duration in 'MM:SS'
+            format. Minutes and seconds are calculated from the given input,
+            and seconds are always represented as a zero-padded two-digit
+            number.
+        :rtype: str
+        """
         m = int(sec) // 60
         s = int(sec) % 60
         return f"{int(m)}:{int(s):02d}"
@@ -227,6 +438,21 @@ class ServiceTest(Service):
     def build_email_body_phef(
         self, sm: ServiceMen, session: TestSession, payload: PhefTest | FitnessTest
     ) -> str:
+        """
+        Builds the email body for a Physical Health Evaluation Framework (PHEF) test.
+        This method processes the test payload, calculates individual and total scores
+        based on the service member's age, gender, and test performance. It then returns
+        a formatted HTML string displaying the test results and service member details.
+
+        :param sm: Service member's information including rank, age, and personal details
+        :type sm: ServiceMen
+        :param session: Test session details including the test date and time
+        :type session: TestSession
+        :param payload: Test performance details specific to the PHEF test
+        :type payload: PhefTest | FitnessTest
+        :return: An HTML string representing the formatted email body with test results
+        :rtype: str
+        """
         assert isinstance(payload, PhefTest)
         age = (
             sm.age_from_birthdate()
@@ -291,6 +517,21 @@ class ServiceTest(Service):
     def build_email_body_swim(
         sm: ServiceMen, session: TestSession, payload: CombatSwimmingTest | FitnessTest
     ) -> str:
+        """
+        Builds the email body for a swimming test result. This method is specifically designed to process
+        instances of `CombatSwimmingTest` to determine the outcome of the test and generate an HTML email
+        body summarizing the result, the service member's details, and the key statistics of the test.
+
+        :param sm: The service member who participated in the test.
+        :type sm: ServiceMen
+        :param session: The session during which the swimming test was conducted.
+        :type session: TestSession
+        :param payload: The swimming test data containing the performance results. Must be an instance of
+            `CombatSwimmingTest`.
+        :type payload: CombatSwimmingTest | FitnessTest
+        :return: String formatted as an HTML table summarizing the swimming test results.
+        :rtype: str
+        """
         assert isinstance(payload, CombatSwimmingTest)
         passed = payload.swim_paased
         test_date = str(session.datetime_start)[:10]
@@ -323,6 +564,25 @@ class ServiceTest(Service):
     def build_email_body_functional(
         self, sm: ServiceMen, session: TestSession, test: FunctionalTest | FitnessTest
     ) -> str:
+        """
+        Builds an email body containing functional test results in an HTML format.
+
+        This method formats and summarizes the functional test performance of a service member
+        based on the number of repetitions completed in push-ups, sit-ups, and pull-ups. The
+        results are calculated using specific scoring logic for each exercise, normalized by
+        the service member's age and gender.
+
+        :param sm: The service member whose results will be summarized.
+        :type sm: ServiceMen
+        :param session: The test session information, including date and time.
+        :type session: TestSession
+        :param test: The functional or fitness test containing data on push-ups, sit-ups,
+            and pull-ups. Must be of type `FunctionalTest`.
+        :type test: FunctionalTest | FitnessTest
+        :return: A formatted HTML string containing the summarized test results, scores,
+            and overall performance percentage.
+        :rtype: str
+        """
         assert isinstance(test, FunctionalTest)
         test_date = str(session.datetime_start)[:10]
 
@@ -374,6 +634,20 @@ class ServiceTest(Service):
               """
 
     def build_email_body_combat(self, test: CombatTestParatrooper | FitnessTest) -> str:
+        """
+        Generates an HTML table representation of the combat test results for a candidate.
+
+        This function takes a test object which contains the results of various components
+        of a combat test and creates an HTML-formatted string. The table includes test
+        component descriptions, results, and pass/fail statuses for each component as well
+        as an overall outcome indicator.
+
+        :param test: The test object containing results for each component of the combat test.
+                     Must be an instance of `CombatTestParatrooper` or `FitnessTest`.
+        :type test: CombatTestParatrooper | FitnessTest
+        :return: An HTML string formatted as a table displaying test results and their statuses.
+        :rtype: str
+        """
         assert isinstance(test, CombatTestParatrooper)
         return f"""
            <table border="1" style="border-collapse: collapse; width: 100%;">
@@ -423,6 +697,21 @@ class ServiceTest(Service):
         session: TestSession,
         test: MfftEvalTest | FitnessTest,
     ) -> str:
+        """
+        Build an HTML-based email body for displaying the evaluation results of an MFFT evaluation test.
+
+        This function processes a fitness test result, calculates the performance metrics, determines the
+        pass/fail status based on predefined tiers, and generates a detailed HTML report summarizing the
+        test results.
+
+        :param sm: A `ServiceMen` object representing the service member who took the test.
+        :param session: A `TestSession` object indicating the test session details, including the test date.
+            If no session is provided, the test date will be replaced with a default placeholder.
+        :param test: An `MfftEvalTest` object (or `FitnessTest` inheriting from it) containing test input data,
+            such as performance in events like pull-ups, push-ups, and other exercises.
+        :return: A formatted HTML string summarizing the MFFT evaluation test results.
+        :rtype: str
+        """
         assert isinstance(test, MfftEvalTest)
         from warriorfit.logic.mfft_eval_calculator import MfftEvalCalculator
 
@@ -458,16 +747,60 @@ class ServiceTest(Service):
         """
 
     async def get_all_combat_test_mil(self, service_number):
+        """
+        Retrieve all combat test data for the specified military service number
+        from the current year.
+
+        This method interacts with the test repository to fetch data filtered by
+        the provided service number and restricts the results to the current year.
+
+        :param service_number: The unique identifier for a military service.
+        :type service_number: str
+        :return: A collection of combat test data associated with the given
+            service number for the current year.
+        :rtype: Any
+        """
         return await self._test_repo.get_all_combat_from_mil(
             service_number,
             current_year=True,
         )
 
     async def get_all_combat_test_swim(self, service_number):
+        """
+        Fetches all combat test swim records for a specific service number from the
+        current year.
+
+        This asynchronous method retrieves data related to all combat test swim
+        records associated with the provided service number. The data is fetched
+        from the repository that interfaces with the military records database.
+
+        :param service_number: The service number of the individual whose combat
+            test swim records are being requested.
+        :type service_number: str
+
+        :return: A list of combat test swim records for the specified service number
+            from the current year.
+        :rtype: list
+        """
         return await self._test_repo.get_all_swim_from_mil(
             service_number,
             current_year=True,
         )
 
     async def get_upcoming_session_for_pti(self, serial_number_pti):
+        """
+        Fetch the upcoming session details for a specified PTI.
+
+        This asynchronous method retrieves upcoming session details associated with
+        the provided PTI serial number. It interacts with the internal test repository
+        to perform this operation. The returned data contains relevant session
+        information associated with the specified PTI serial number.
+
+        :param serial_number_pti: Serial number of the PTI for which the upcoming
+            session details are to be fetched.
+        :type serial_number_pti: str
+        :return: A dictionary or data object containing details of the upcoming session
+            for the given PTI.
+        :rtype: Any
+        """
         return await self._test_repo.get_upcoming_session_for_pti(serial_number_pti)
