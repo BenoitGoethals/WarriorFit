@@ -250,7 +250,7 @@ class MfftEvalPage(BaseTestPage):
                     ui.output_data_frame("mfft_grid"),
                     full_screen=True,
                 ),
-                col_widths=(3, 9),
+                col_widths=(4, 8),
             ),
             value=self.TAB_NAME,
         )
