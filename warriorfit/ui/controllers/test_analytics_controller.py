@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from datetime import datetime
 from typing import Any
 
 import pandas as pd
@@ -497,7 +498,12 @@ class TestAnalyticsController:
         if not all_months:
             return None
 
-        df = pd.DataFrame({"Month": all_months})
+        # Human-friendly labels (e.g. "Jun 2026") for a discrete category axis.
+        # Without a category axis Plotly treats "YYYY-MM" as a continuous
+        # datetime; with a single month it zooms to a sub-second range and
+        # renders unreadable "23:59:59.999" style ticks.
+        month_labels = [datetime.strptime(m, "%Y-%m").strftime("%b %Y") for m in all_months]
+
         fig = go.Figure()
         for label, _ in type_tests:
             series = []
@@ -507,7 +513,7 @@ class TestAnalyticsController:
             fig.add_trace(
                 go.Scatter(
                     name=label,
-                    x=df["Month"],
+                    x=month_labels,
                     y=series,
                     mode="lines+markers",
                     line=dict(color=_TEST_COLORS[label], width=2),
@@ -519,6 +525,7 @@ class TestAnalyticsController:
             xaxis_title="Month",
             yaxis_title="Pass rate (%)",
             yaxis_range=[0, 105],
+            xaxis=dict(type="category", categoryorder="array", categoryarray=month_labels),
             margin=dict(t=30, b=40, l=50, r=20),
             legend_title_text="Test type",
             hovermode="x unified",
@@ -527,3 +534,4 @@ class TestAnalyticsController:
 
     # Unused import guard (keep imports stable while px/pd may be useful later)
     _unused_px = px  # noqa: RUF100
+    _unused_pd = pd  # noqa: RUF100
