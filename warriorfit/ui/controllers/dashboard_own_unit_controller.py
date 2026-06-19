@@ -566,9 +566,7 @@ class DashboardOwnUnitController:
         values = [counts[tier] for tier in tier_order]
         colors = [tier_colors[tier] for tier in tier_order]
 
-        fig = go.Figure(
-            data=[go.Bar(x=labels, y=values, marker_color=colors)]
-        )
+        fig = go.Figure(data=[go.Bar(x=labels, y=values, marker_color=colors)])
         fig.update_layout(
             margin=dict(t=20, b=40, l=40, r=20),
             xaxis_title="Tier",
@@ -601,4 +599,3 @@ class DashboardOwnUnitController:
         )
         fig.add_vline(x=50, line_dash="dash", line_color="red", annotation_text="Pass Threshold")
         return fig.to_html(include_plotlyjs="cdn", div_id="own_unit_phef_hist")
-

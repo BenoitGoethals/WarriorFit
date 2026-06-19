@@ -63,9 +63,7 @@ class FitnessTestRepository(ABCRepository):
                     await session.refresh(test)
                 return tests
         except SQLAlchemyError as e:
-            self._logger.error(
-                "Database error fetching %s tests: %s", test_type.__name__, str(e)
-            )
+            self._logger.error("Database error fetching %s tests: %s", test_type.__name__, str(e))
             return []
 
     async def _get_subtype_tests_from_mil(
@@ -321,9 +319,7 @@ class FitnessTestRepository(ABCRepository):
             .where(TestSession.type_test == typetest)
             .options(
                 # Load the collection via select-in and include subclass columns
-                selectinload(TestSession.fitness_tests).selectin_polymorphic(
-                    _FITNESS_TEST_SUBTYPES
-                )
+                selectinload(TestSession.fitness_tests).selectin_polymorphic(_FITNESS_TEST_SUBTYPES)
             )
         )
         if this_year:
@@ -665,9 +661,7 @@ class FitnessTestRepository(ABCRepository):
                 # ColumnCollection directly would yield Column objects instead.
                 for column in updated_fitness_test.__mapper__.columns:
                     if column.key != "id":
-                        setattr(
-                            fitness_test, column.key, getattr(updated_fitness_test, column.key)
-                        )
+                        setattr(fitness_test, column.key, getattr(updated_fitness_test, column.key))
 
                 await session.flush()
                 await session.refresh(fitness_test)
@@ -729,9 +723,7 @@ class FitnessTestRepository(ABCRepository):
         :rtype: list[FunctionalTest]
         :raises SQLAlchemyError: If a database error occurs while fetching the tests.
         """
-        return await self._get_subtype_tests_from_session(
-            FunctionalTest, session_id, current_year
-        )
+        return await self._get_subtype_tests_from_session(FunctionalTest, session_id, current_year)
 
     async def get_all_combat_swimming_test(
         self, session_id: int, current_year=True

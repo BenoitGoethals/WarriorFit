@@ -43,9 +43,7 @@ def upgrade() -> None:
             "user_id", "consent_type", "version", name="uq_user_consent_type_version"
         ),
     )
-    op.create_index(
-        "ix_user_consents_user_id", "user_consents", ["user_id"], unique=False
-    )
+    op.create_index("ix_user_consents_user_id", "user_consents", ["user_id"], unique=False)
 
 
 def downgrade() -> None:

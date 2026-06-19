@@ -167,17 +167,13 @@ class TestOpsSpClusterEvaluation(unittest.TestCase):
     def test_women_30_to_39_passes(self):
         # OPS_SP women 30-39 row: 2/6/30/14/15/30/49:00/7:00 — exact row passes.
         row = (2, 6, 30, 14, 15, 30, 49 * 60, 7 * 60)
-        res = MfftEvalCalculator.evaluate(
-            _make_test(row), Cluster.OPS_SP, age=35, gender=Gender.F
-        )
+        res = MfftEvalCalculator.evaluate(_make_test(row), Cluster.OPS_SP, age=35, gender=Gender.F)
         self.assertTrue(res.passed)
 
     def test_women_50_plus_fails_on_slow_swim(self):
         # OPS_SP women 50+ row swim threshold is 8:00; 9:00 fails.
         row = (1, 2, 10, 10, 5, 10, 59 * 60, 9 * 60)
-        res = MfftEvalCalculator.evaluate(
-            _make_test(row), Cluster.OPS_SP, age=55, gender=Gender.F
-        )
+        res = MfftEvalCalculator.evaluate(_make_test(row), Cluster.OPS_SP, age=55, gender=Gender.F)
         self.assertFalse(res.passed)
 
 
@@ -186,16 +182,12 @@ class TestTerSpClusterEvaluation(unittest.TestCase):
 
     def test_men_40_to_49_passes(self):
         row = (1, 4, 30, 14, 15, 30, 49 * 60, 7 * 60)
-        res = MfftEvalCalculator.evaluate(
-            _make_test(row), Cluster.TER_SP, age=45, gender=Gender.M
-        )
+        res = MfftEvalCalculator.evaluate(_make_test(row), Cluster.TER_SP, age=45, gender=Gender.M)
         self.assertTrue(res.passed)
 
     def test_women_under_30_fails_when_short(self):
         row = (1, 6, 40, 16, 20, 40, 44 * 60, 6 * 60)  # pull-ups 1 < threshold 2
-        res = MfftEvalCalculator.evaluate(
-            _make_test(row), Cluster.TER_SP, age=25, gender=Gender.F
-        )
+        res = MfftEvalCalculator.evaluate(_make_test(row), Cluster.TER_SP, age=25, gender=Gender.F)
         self.assertFalse(res.passed)
 
 

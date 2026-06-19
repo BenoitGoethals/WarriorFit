@@ -619,9 +619,7 @@ class MfftEvalPage(BaseTestPage):
                 self.selected_military = None
 
             await _toggle_inputs(disabled=(self.selected_military is None))
-            status.set(
-                f"Selected MFFT record for: {serial}" if serial else "Selected MFFT record."
-            )
+            status.set(f"Selected MFFT record for: {serial}" if serial else "Selected MFFT record.")
 
         # ----------------------------
         # CRUD
@@ -679,9 +677,7 @@ class MfftEvalPage(BaseTestPage):
             ok, res = _validate(form)
             if not ok or not isinstance(res, dict):
                 status.set(str(res))
-                ui.notification_show(
-                    f"Invalid input: {res}", type="error", duration=5
-                )
+                ui.notification_show(f"Invalid input: {res}", type="error", duration=5)
                 return
             added = await self.controller.add_mfft(
                 int(form.session_id),
@@ -723,9 +719,7 @@ class MfftEvalPage(BaseTestPage):
             ok, res = _validate(form)
             if not ok or not isinstance(res, dict):
                 status.set(str(res))
-                ui.notification_show(
-                    f"Invalid input: {res}", type="error", duration=5
-                )
+                ui.notification_show(f"Invalid input: {res}", type="error", duration=5)
                 return
             payload = {"session_id": form.session_id, **res}
             updated = await self.controller.update_mfft(int(mfft_id_raw), payload)

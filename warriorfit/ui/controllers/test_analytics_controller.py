@@ -175,9 +175,7 @@ class TestAnalyticsController:
     # -----------------------
     @staticmethod
     def _passed_combat(test: CombatTestParatrooper) -> bool:
-        return bool(
-            test.rope_passed and test.obstacle_passed and (test.running_time or 0) <= 7200
-        )
+        return bool(test.rope_passed and test.obstacle_passed and (test.running_time or 0) <= 7200)
 
     @staticmethod
     def _passed_functional(test: FunctionalTest) -> bool:
@@ -377,9 +375,7 @@ class TestAnalyticsController:
             rates = []
             for bracket in _AGE_BRACKETS:
                 total = total_counts[label][bracket]
-                rates.append(
-                    (passed_counts[label][bracket] / total * 100) if total > 0 else 0
-                )
+                rates.append((passed_counts[label][bracket] / total * 100) if total > 0 else 0)
             fig.add_trace(
                 go.Bar(
                     name=label,

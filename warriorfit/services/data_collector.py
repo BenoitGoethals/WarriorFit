@@ -520,10 +520,8 @@ class DataCollector:
             data_mars = await self._service_mars.get_march_from_service_men(
                 serial_number=m.service_number, this_year=False
             )
-            data_mfft = (
-                await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
-                    m.service_number, TypeFitnessTest.MFFT_EVAL
-                )
+            data_mfft = await self._service.get_all_test_sessions_type_fitness_test_for_service_men(
+                m.service_number, TypeFitnessTest.MFFT_EVAL
             )
 
             if data_phef and data_phef[0].fitness_tests:
@@ -570,12 +568,8 @@ class DataCollector:
                 mfft_test = data_mfft[0].fitness_tests[0]
                 if isinstance(mfft_test, MfftEvalTest):
                     try:
-                        age = m.age_from_birthdate_and_session_date(
-                            data_mfft[0].datetime_start
-                        )
-                        res = MfftEvalCalculator.evaluate(
-                            mfft_test, m.cluster, age, m.gender
-                        )
+                        age = m.age_from_birthdate_and_session_date(data_mfft[0].datetime_start)
+                        res = MfftEvalCalculator.evaluate(mfft_test, m.cluster, age, m.gender)
                         mfft_status = "Passed" if res.passed else "Failed"
                     except (AttributeError, TypeError, KeyError, ValueError):
                         mfft_status = "Not Done"

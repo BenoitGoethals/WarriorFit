@@ -171,23 +171,17 @@ class MfftEvalCalculator:
         return MfftLevel.UNFIT
 
     @staticmethod
-    def _single_threshold_row(
-        cluster: Cluster, age: int, gender: Gender
-    ) -> tuple[int, ...] | None:
+    def _single_threshold_row(cluster: Cluster, age: int, gender: Gender) -> tuple[int, ...] | None:
         bracket = _age_bracket(age)
         if cluster is Cluster.ENABLER:
             return ENABLER_THRESHOLDS[bracket]
         if cluster is Cluster.OPS_SP:
             return (
-                OPS_SP_THRESHOLDS_M[bracket]
-                if gender is Gender.M
-                else OPS_SP_THRESHOLDS_F[bracket]
+                OPS_SP_THRESHOLDS_M[bracket] if gender is Gender.M else OPS_SP_THRESHOLDS_F[bracket]
             )
         if cluster is Cluster.TER_SP:
             return (
-                TER_SP_THRESHOLDS_M[bracket]
-                if gender is Gender.M
-                else TER_SP_THRESHOLDS_F[bracket]
+                TER_SP_THRESHOLDS_M[bracket] if gender is Gender.M else TER_SP_THRESHOLDS_F[bracket]
             )
         return None
 
