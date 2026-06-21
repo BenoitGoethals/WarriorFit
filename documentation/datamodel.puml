@@ -1,0 +1,309 @@
+@startuml
+' ============================================================
+'  WarriorFit — SQLAlchemy ORM models (overview class diagram)
+'  Source: warriorfit/data/model/db_model.py
+'  This is the canonical PNG referenced from documentation/datamodel.md.
+'  Render:  plantuml -tpng documentation/datamodel.puml
+' ============================================================
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam roundCorner 6
+skinparam linetype ortho
+skinparam padding 4
+skinparam nodesep 55
+skinparam ranksep 70
+skinparam defaultFontName "Helvetica Neue"
+skinparam defaultFontSize 12
+
+skinparam class {
+    BackgroundColor #FAFAFA
+    BorderColor #555555
+    ArrowColor #444444
+    HeaderBackgroundColor #ECECEC
+    HeaderFontColor #222
+}
+
+' ============================================================
+' Root
+' ============================================================
+class Base <<SQLAlchemyDeclarativeBase>>
+
+' ============================================================
+' Personnel + auth
+' ============================================================
+class User {
+    +id : int
+    +username : str
+    +email : str
+    +password_hash : str
+    +created_at : timestamp
+    +role : Role
+    +is_active : bool
+    +serial_number : str?
+}
+
+class AuditLog {
+    +id : int
+    +user_id : int?
+    +action : str
+    +details : dict?
+    +ip_address : str?
+    +created_at : timestamp
+}
+
+class UserConsent {
+    +id : int
+    +service_number : str
+    +consent_type : str
+    +version : str
+    +consent_given_at : timestamp
+    +withdrawn_at : timestamp?
+    +ip_address : str?
+}
+
+class Unit {
+    +id : int
+    +name : str
+    +base_location : str
+}
+
+class ServiceMen {
+    +id : int
+    +first_name : str
+    +last_name : str
+    +mail : str
+    +rank : Rank
+    +service_number : str
+    +birthdate : date
+    +gender : Gender
+    +unit_id : int
+    +para : bool
+    +ops_test : bool
+    +user_id : int?
+    --
+    <<@property>> cluster : Cluster
+    ' COMBAT if para else ENABLER (geen kolom)
+}
+
+' ============================================================
+' Fitness tests (joined-table polymorphism)
+' ============================================================
+class FitnessTest {
+    +id : int
+    +serial_number : str?
+    +type : str?       ' discriminator
+}
+
+class PhefTest {
+    +id : int
+    +running_time : float
+    +sideBridge_r : float
+    +sideBridge_l : float
+}
+
+class FunctionalTest {
+    +id : int
+    +push_ups : int
+    +sit_ups : int
+    +pull_ups : int
+}
+
+class CombatTestParatrooper {
+    +id : int
+    +running_time : float
+    +obstacle_passed : bool
+    +rope_passed : bool
+}
+
+class CombatSwimmingTest {
+    +id : int
+    +swim_paased : bool
+}
+
+class MfftEvalTest <<NEW · 2026-06>> {
+    +id : int
+    +pull_ups : int
+    +burpees_step_over : int
+    +farmer_walk_m : int
+    +push_ups_release : int
+    +casualty_drag_m : int
+    +sandbag_carry_m : int
+    +combat_run_seconds : int
+    +combat_swim_seconds : int
+}
+
+class TestSession {
+    +id : int
+    +serial_number_pti : str?
+    +datetime_start : timestamp
+    +canceled : bool
+    +description : str?
+    +type_test : TypeFitnessTest
+}
+
+class SessionFitnessTests <<association>> {
+    +session_id : int
+    +fitness_test_id : int
+}
+
+' ============================================================
+' March
+' ============================================================
+class March {
+    +id : int
+    +service_number : str?
+    +distance : float?
+    +succeeded : bool
+    +datetime_executed : timestamp
+}
+
+' ============================================================
+' Cross
+' ============================================================
+class Cross {
+    +id : int
+    +datetime_start : timestamp
+    +distance : float
+    +executed : bool
+    +description : str?
+}
+
+class Runner {
+    +id : int
+    +serial_number : str?
+    +running_time : float
+}
+
+class CrossRunners <<association>> {
+    +cross_id : int
+    +runner_id : int
+}
+
+' ============================================================
+' Broker outbox
+' ============================================================
+class HrMessage <<broker outbox>> {
+    +id : int
+    +message : str
+    +datetime_created : timestamp
+    +attempt_count : int
+    +next_retry_at : timestamp?
+    +dead_letter : bool
+    +last_error : str?
+}
+
+' ============================================================
+' Reservations
+' ============================================================
+class Room {
+    +id : int
+    +name : str
+    +capacity : int
+    +location : str
+}
+
+class Reservation {
+    +id : int
+    +room_id : int
+    +date : datetime
+    +start_time : datetime
+    +end_time : datetime
+    +serial_number : str
+    +activity : str
+    +created_at : datetime
+}
+
+' ============================================================
+' Inheritance to Base (all models share DeclarativeBase)
+' ============================================================
+User                 -up-|> Base
+AuditLog             -up-|> Base
+UserConsent          -up-|> Base
+Unit                 -up-|> Base
+ServiceMen           -up-|> Base
+FitnessTest          -up-|> Base
+TestSession          -up-|> Base
+SessionFitnessTests  -up-|> Base
+March                -up-|> Base
+Cross                -up-|> Base
+Runner               -up-|> Base
+CrossRunners         -up-|> Base
+HrMessage            -up-|> Base
+Room                 -up-|> Base
+Reservation          -up-|> Base
+
+' Joined-table polymorphism for fitness tests
+PhefTest                -up-|> FitnessTest
+FunctionalTest          -up-|> FitnessTest
+CombatTestParatrooper   -up-|> FitnessTest
+CombatSwimmingTest      -up-|> FitnessTest
+MfftEvalTest            -up-|> FitnessTest
+
+' ============================================================
+' Associations (FK + multiplicities)
+' ============================================================
+
+' Auth / Audit / Consent
+User "1" <-- "0..*" AuditLog : user_id
+ServiceMen "1" <-- "0..*" UserConsent : service_number (join)
+
+' Personnel ↔ Unit / User
+Unit "1" <-- "0..*" ServiceMen : unit_id
+User "1" <-- "0..1" ServiceMen : user_id (CASCADE)
+
+' Personnel ↔ tests (FK on service_number string)
+ServiceMen "1" <-- "0..*" FitnessTest : service_number (join)
+ServiceMen "1" <-- "0..*" March        : service_number (join)
+
+' TestSession ↔ FitnessTest (M:N via assoc table)
+TestSession "0..*" -- "0..*" FitnessTest : via session_fitness_tests
+SessionFitnessTests ..> TestSession : session_id
+SessionFitnessTests ..> FitnessTest : fitness_test_id
+
+' Cross ↔ Runner (M:N via assoc table)
+Cross "0..*" -- "0..*" Runner : via cross_runners
+CrossRunners ..> Cross : cross_id
+CrossRunners ..> Runner : runner_id
+
+' Reservations
+Room "1" <-- "0..*" Reservation : room_id
+
+' ============================================================
+' Notes
+' ============================================================
+note bottom of FitnessTest
+  **Joined-table polymorphism**
+  Discriminator-kolom ""type"" (varchar).
+  Elke subtype heeft eigen tabel met FK→fitness_tests.id.
+  Repositories laden polymorf via
+  ""selectin_polymorphic(FitnessTest, [PhefTest, ..., MfftEvalTest])"".
+end note
+
+note right of MfftEvalTest
+  Toegevoegd 2026-06 (PR #227).
+  8 events · 3 blocks · 5 clusters × 4 tiers.
+  Scoring via ""MfftEvalCalculator""
+  (""warriorfit/logic/mfft_eval_calculator.py"").
+end note
+
+note left of ServiceMen
+  ""cluster"" is **geen kolom** maar een @property:
+  ""COMBAT if self.para else ENABLER"".
+  Migratie ""a7b8c9d0e1f2"" droppt de stored kolom.
+end note
+
+note right of HrMessage
+  Outbox-tabel voor de async broker
+  (""warriorfit/mom/broker.py"").
+  ""attempt_count / next_retry_at / dead_letter / last_error""
+  → exponential back-off + dead-letter + email alert.
+end note
+
+note bottom of UserConsent
+  GDPR Art. 7 — append-only.
+  Withdrawal zet ""withdrawn_at"" op het bestaande grant;
+  her-grant maakt een nieuwe rij met nieuwe ""version"".
+end note
+
+@enduml

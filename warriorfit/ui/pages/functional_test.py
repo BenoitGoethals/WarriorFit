@@ -96,27 +96,21 @@ class FunctionalPage(BaseTestPage):
                             ui.input_numeric(
                                 "functional_push_ups", t("functional.pushups"), value=0, min=0
                             ),
-                            ui.div(
-                                t(self._RESULT_KEY), ui.output_ui("functional_push_ups_score")
-                            ),
+                            ui.div(t(self._RESULT_KEY), ui.output_ui("functional_push_ups_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
                             ui.input_numeric(
                                 "functional_sit_ups", t("functional.situps"), value=0, min=0
                             ),
-                            ui.div(
-                                t(self._RESULT_KEY), ui.output_ui("functional_sit_ups_score")
-                            ),
+                            ui.div(t(self._RESULT_KEY), ui.output_ui("functional_sit_ups_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(
                             ui.input_numeric(
                                 "functional_pull_ups", t("functional.pullups"), value=0, min=0
                             ),
-                            ui.div(
-                                t(self._RESULT_KEY), ui.output_ui("functional_pull_ups_score")
-                            ),
+                            ui.div(t(self._RESULT_KEY), ui.output_ui("functional_pull_ups_score")),
                             col_widths=(8, 4),
                         ),
                         ui.layout_columns(

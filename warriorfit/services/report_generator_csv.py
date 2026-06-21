@@ -243,9 +243,7 @@ class ReportGeneratorCsv(GeneratorReport):
         passed_path = self._build_csv(passed, report_name, "swimming_passed", headers, row_builder)
         return {"failed": failed_path, "passed": passed_path}
 
-    async def generate_mfft_eval_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_mfft_eval_report(self, report_name: str, own_unit: bool, this_year: bool):
         """Generate CSV pass/fail reports for the MFFT Eval test."""
         failed, headers, passed = await self.calculate_mfft_eval_score(own_unit, this_year)
 
@@ -271,12 +269,8 @@ class ReportGeneratorCsv(GeneratorReport):
                 r["result"],
             ]
 
-        failed_path = self._build_csv(
-            failed, report_name, "mfft_eval_failed", headers, row_builder
-        )
-        passed_path = self._build_csv(
-            passed, report_name, "mfft_eval_passed", headers, row_builder
-        )
+        failed_path = self._build_csv(failed, report_name, "mfft_eval_failed", headers, row_builder)
+        passed_path = self._build_csv(passed, report_name, "mfft_eval_passed", headers, row_builder)
         return {"failed": failed_path, "passed": passed_path}
 
 

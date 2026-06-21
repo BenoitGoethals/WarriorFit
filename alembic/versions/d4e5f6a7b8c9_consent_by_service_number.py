@@ -24,9 +24,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.drop_constraint("uq_user_consent_type_version", "user_consents", type_="unique")
-    op.drop_constraint(
-        "user_consents_user_id_fkey", "user_consents", type_="foreignkey"
-    )
+    op.drop_constraint("user_consents_user_id_fkey", "user_consents", type_="foreignkey")
     op.drop_index("ix_user_consents_user_id", table_name="user_consents")
     op.drop_column("user_consents", "user_id")
 
@@ -34,9 +32,7 @@ def upgrade() -> None:
         "user_consents",
         sa.Column("service_number", sa.String(length=50), nullable=False),
     )
-    op.create_index(
-        "ix_user_consents_service_number", "user_consents", ["service_number"]
-    )
+    op.create_index("ix_user_consents_service_number", "user_consents", ["service_number"])
     op.create_unique_constraint(
         "uq_user_consent_type_version",
         "user_consents",

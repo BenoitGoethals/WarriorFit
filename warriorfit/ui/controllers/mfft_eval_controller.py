@@ -269,9 +269,7 @@ class MfftEvalController:
             int(session_id), test, session=session, military=military
         )
 
-    async def update_mfft(
-        self, mfft_id: int, payload: dict[str, Any]
-    ) -> MfftEvalTest | None:
+    async def update_mfft(self, mfft_id: int, payload: dict[str, Any]) -> bool:
         """
         Asynchronously updates an MFFT (Military Functional Fitness Test) record with the provided
         data and returns the updated test entity if successful.
@@ -342,9 +340,7 @@ class MfftEvalController:
         """
         return await self._service.get_test_session_by_id(param)
 
-    def validate_form(
-        self, data: dict[str, Any]
-    ) -> tuple[bool, dict[str, Any] | str]:
+    def validate_form(self, data: dict[str, Any]) -> tuple[bool, dict[str, Any] | str]:
         """
         Validate a form by ensuring required fields are present and correctly formatted,
         normalizing the data, and returning the validation results.
@@ -389,9 +385,7 @@ class MfftEvalController:
         normalized["swim_seconds"] = int(swim_val)
         return True, normalized
 
-    def evaluate_payload(
-        self, payload: dict[str, Any], cluster: Cluster, age: int, gender: Any
-    ):
+    def evaluate_payload(self, payload: dict[str, Any], cluster: Cluster, age: int, gender: Any):
         """
         Evaluates the physical performance data encapsulated in the payload and calculates
         results using the provided cluster, age, and gender inputs.

@@ -2,7 +2,7 @@
 
 User management page
 
-::: warriorfit.ui.pages.usermangement
+::: warriorfit.ui.pages.usermanagement
     options:
       members_order: source
       show_source: true

@@ -297,8 +297,7 @@ class ReportGeneratorPdf(GeneratorReport):
         # instead of overflowing into the next column.
         wide = col_widths is not None
         header_cells: list[Any] = [
-            deps["Paragraph"](f"<b>{h}</b>", styles["Normal"]) if wide else h
-            for h in headers
+            deps["Paragraph"](f"<b>{h}</b>", styles["Normal"]) if wide else h for h in headers
         ]
         data: list[list[Any]] = [header_cells]
         for r in rows:
@@ -433,17 +432,13 @@ class ReportGeneratorPdf(GeneratorReport):
             report_name, "Swimming", passed, failed, headers, row_builder
         )
 
-    async def generate_mfft_eval_report(
-        self, report_name: str, own_unit: bool, this_year: bool
-    ):
+    async def generate_mfft_eval_report(self, report_name: str, own_unit: bool, this_year: bool):
         """Generate MFFT Eval PDF reports for failed and passed tests.
 
         The MFFT table has 14 columns. We render in landscape A4 with
         explicit column widths so headers and values do not overlap.
         """
-        failed, _stock_headers, passed = await self.calculate_mfft_eval_score(
-            own_unit, this_year
-        )
+        failed, _stock_headers, passed = await self.calculate_mfft_eval_score(own_unit, this_year)
 
         # Shorter labels so each column fits in landscape A4.
         headers = [
