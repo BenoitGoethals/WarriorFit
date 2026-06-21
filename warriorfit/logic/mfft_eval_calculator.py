@@ -22,7 +22,7 @@ Tuple layout for every threshold row::
 Higher is better for indices 0..5; lower is better for 6..7 (timed).
 Thresholds are taken from the official scoring matrix.
 """
-
+#avoid some circular import problems
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -83,6 +83,29 @@ COMBAT_TIER_ORDER: tuple[MfftLevel, ...] = (
 
 @dataclass(frozen=True, slots=True)
 class MfftResult:
+    """Final MFFT Eval report.
+
+    Manager explanation:
+    This object is the calculator's final report card. It contains the score
+    per event, the final overall verdict, whether the soldier passed, and an
+    informational combat-equivalent tier.
+
+    `overall` is the cluster-aware verdict and is **UNFIT** whenever the
+    soldier did not pass — `passed` and `overall != UNFIT` are equivalent.
+
+    - COMBAT: highest tier validated (>= 6 events at tier, no UNFIT).
+    - ENABLER / OPS_SP / TER_SP: FIT when every event meets the single
+      age/sex threshold, UNFIT otherwise.
+    - NON_DEP: no official scale, so we use the COMBAT-equivalent tier
+      (`tier_info`) as the verdict. Any UNFIT event makes the row fail.
+
+    `tier_info` is the COMBAT-equivalent tier regardless of cluster.
+    """
+
+    per_event: list[MfftLevel]
+    overall: MfftLevel
+    passed: bool
+    tier_info: MfftLevel
     """Outcome of evaluating an `MfftEvalTest` for a given soldier.
 
     `overall` is the cluster-aware verdict and is **UNFIT** whenever the
@@ -104,13 +127,27 @@ class MfftResult:
 
 
 def _meets(event_idx: int, value: int, threshold: int) -> bool:
-    """A measurement meets the threshold (higher-is-better or timed)."""
+    """Check whether one event result meets the required standard.
+
+    Manager explanation:
+    Some events are better when the number is higher, for example pull-ups or
+    meters carried. Timed events are better when the number is lower, because
+    fewer seconds means faster. This function applies the correct rule for the
+    event and returns whether the result is good enough.
+    """
     if event_idx in HIGHER_IS_BETTER_EVENTS:
         return value >= threshold
     return value <= threshold
 
 
 def _age_bracket(age: int) -> str:
+    """Convert a soldier's age into the correct scoring age group.
+
+    Manager explanation:
+    The official scoring tables use age groups instead of exact ages. This
+    function places the soldier into the right group so the correct standards
+    can be selected.
+    """
     if age < 30:
         return "<30"
     if age < 40:
@@ -121,6 +158,14 @@ def _age_bracket(age: int) -> str:
 
 
 def _event_values(test: MfftEvalTest) -> tuple[int, ...]:
+    """Collect the 8 raw MFFT Eval measurements in the official scoring order.
+
+    Manager explanation:
+    This turns the stored test record into one standardized list of numbers:
+    pull-ups, burpees, farmer walk, push-ups, casualty drag, sandbag carry,
+    combat run time, and combat swim time. The calculator can then score each
+    event consistently.
+    """
     return (
         int(test.pull_ups),
         int(test.burpees_step_over),
@@ -134,6 +179,13 @@ def _event_values(test: MfftEvalTest) -> tuple[int, ...]:
 
 
 def _normalize_gender(gender: Gender | str) -> Gender:
+    """Standardize gender input for scoring.
+
+    Manager explanation:
+    The calculator may receive gender as an internal value or as text. This
+    function converts it into the internal format expected by the scoring
+    tables, so the rest of the calculator can work reliably.
+    """
     if isinstance(gender, Gender):
         return gender
     if isinstance(gender, str) and gender.lower().startswith("m"):
@@ -142,11 +194,17 @@ def _normalize_gender(gender: Gender | str) -> Gender:
 
 
 class MfftEvalCalculator:
-    """Stateless scoring for the MFFT Eval."""
 
     @staticmethod
     def event_tier_combat(event_idx: int, value: int) -> MfftLevel:
-        """Return the highest COMBAT tier `value` reaches for `event_idx`."""
+        """Grade one event using the COMBAT scale.
+
+        Manager explanation:
+        This method checks one event result against the COMBAT standards and
+        returns the best level achieved: GOLD, SILVER, BRONZE, FIT, or UNFIT.
+        For example, it can say that a pull-up result is SILVER or that a swim
+        time is UNFIT.
+        """
         if event_idx < 0 or event_idx >= EVENT_COUNT:
             raise ValueError(f"event_idx must be 0..{EVENT_COUNT - 1}, got {event_idx}")
         for tier in COMBAT_TIER_ORDER:
@@ -157,11 +215,36 @@ class MfftEvalCalculator:
 
     @staticmethod
     def per_event_combat_tiers(test: MfftEvalTest) -> list[MfftLevel]:
+        """
+        Computes the combat tiers for each event given a test scenario.
+
+        This static method evaluates the combat performance tiers for a given test by
+        analyzing event-specific values. It loops through each event's computed values
+        and determines the associated combat tier.
+
+        :param test: An instance of MfftEvalTest representing the test scenario used
+            to derive event-specific values.
+        :type test: MfftEvalTest
+        :return: A list of MfftLevel objects representing the combat tiers for each
+            event in the test scenario.
+        :rtype: list[MfftLevel]
+        """
         values = _event_values(test)
         return [MfftEvalCalculator.event_tier_combat(i, v) for i, v in enumerate(values)]
 
     @staticmethod
     def _combat_overall(per_event: list[MfftLevel]) -> MfftLevel:
+        """
+        Determine the overall combat level based on individual event levels. This method evaluates each event's level
+        and returns an overall level according to a predefined order and validation count. The method first checks if
+        any of the individual event levels are unfit, in which case it directly returns `MfftLevel.UNFIT`. Otherwise, it
+        iterates through the combat tier order, checking if the count of levels at or above the current tier reaches
+        the required validation count. If such a tier is found, it is returned as the overall level. If no tier meets
+        the criteria, it defaults to `MfftLevel.UNFIT`.
+
+        :param per_event: A list of `MfftLevel` objects representing the individual levels for each event.
+        :return: An `MfftLevel` object representing the overall combat level.
+        """
         if any(t is MfftLevel.UNFIT for t in per_event):
             return MfftLevel.UNFIT
         for tier in COMBAT_TIER_ORDER:
@@ -172,6 +255,25 @@ class MfftEvalCalculator:
 
     @staticmethod
     def _single_threshold_row(cluster: Cluster, age: int, gender: Gender) -> tuple[int, ...] | None:
+        """
+        Determines the threshold row for a given cluster, age, and gender.
+
+        This static method computes the threshold row by identifying the appropriate
+        age bracket and using the corresponding threshold based on the given cluster
+        and gender. If the input cluster does not match any predefined categories,
+        it returns None.
+
+        :param cluster: The cluster classification to determine the threshold.
+        :type cluster: Cluster
+        :param age: The age of the individual whose threshold is being calculated.
+        :type age: int
+        :param gender: The gender of the individual. It is used to identify
+            gender-specific thresholds when applicable.
+        :type gender: Gender
+        :return: A tuple representing the threshold row if the cluster is valid;
+            otherwise None.
+        :rtype: tuple[int, ...] | None
+        """
         bracket = _age_bracket(age)
         if cluster is Cluster.ENABLER:
             return ENABLER_THRESHOLDS[bracket]
