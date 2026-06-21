@@ -233,10 +233,6 @@ flowchart TB
     class P1DB,P2DB,P3DB,P6DB db
 ```
 
-> Phase 3 & 4 also bring: **DI Container · CI/CD pipeline · Docker · MkDocs**.
-> Phase 5 adds: **OWASP hardening · GDPR compliance · NIST CSF 2.0 · PostgreSQL TLS · military UI theme · EN/NL/FR i18n**.
-> Phase 6 adds: **MFFT Eval (5th test type, 8 events, 5 clusters) · Analytics page · derived-cluster `@property` · landscape PDF reports**.
-
 ### Phase 1: Prototype (Sep–Oct 2025) — commits 1–~50
 
 **Complexity: low | Architecture: monolithic**
