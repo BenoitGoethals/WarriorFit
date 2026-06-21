@@ -269,7 +269,7 @@ class MfftEvalController:
             int(session_id), test, session=session, military=military
         )
 
-    async def update_mfft(self, mfft_id: int, payload: dict[str, Any]) -> MfftEvalTest | None:
+    async def update_mfft(self, mfft_id: int, payload: dict[str, Any]) -> bool:
         """
         Asynchronously updates an MFFT (Military Functional Fitness Test) record with the provided
         data and returns the updated test entity if successful.

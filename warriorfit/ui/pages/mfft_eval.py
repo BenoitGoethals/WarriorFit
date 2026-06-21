@@ -63,12 +63,11 @@ class MfftEvalPage(BaseTestPage):
         left: tuple[str, str, str],
         right: tuple[str, str, str],
     ) -> Any:
-        """Two events on one row, each with the status badge **next to** the input.
+        """Two events on one row, each with the status badge **below** the input.
 
-        Each event renders as a flexbox: label sits above the input (Shiny
-        default), and the status badge is positioned to the right of the
-        input, vertically aligned with the input's bottom edge. The two
-        events share the row 6 / 6.
+        Each event stacks vertically: label and input on top (Shiny default),
+        with the validation status badge rendered directly underneath the
+        input. The two events share the row 6 / 6.
 
         ``left`` and ``right`` are ``(input_id, label, kind)`` where ``kind``
         is ``"n"`` for numeric or ``"t"`` for text (mm:ss).
@@ -80,8 +79,9 @@ class MfftEvalPage(BaseTestPage):
                 if kind == "n"
                 else ui.input_text(input_id, label, placeholder="mm:ss")
             )
+            kind_class = "event-num" if kind == "n" else "event-time"
             return ui.div(
-                ui.div(field, class_="event-field"),
+                ui.div(field, class_=f"event-field {kind_class}"),
                 ui.div(
                     ui.output_ui(f"{input_id}_status"),
                     class_="event-status",
@@ -142,17 +142,19 @@ class MfftEvalPage(BaseTestPage):
                 }
                 .mfft-form .event-row {
                     display: flex;
-                    align-items: flex-end;
-                    gap: .3rem;
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 2px;
                 }
-                .mfft-form .event-field { flex: 1; min-width: 0; }
+                .mfft-form .event-field { min-width: 0; }
                 .mfft-form .event-field .shiny-input-container { width: 100%; margin-bottom: 0; }
+                .mfft-form .event-num .form-control { width: 7ch; padding-right: .2rem; }
+                .mfft-form .event-time .form-control { width: 8ch; }
                 .mfft-form .event-status {
                     font-size: .7rem;
                     line-height: 1.15;
-                    padding-bottom: 6px;
-                    min-width: 60px;
-                    text-align: right;
+                    min-height: 1em;
+                    text-align: left;
                     white-space: nowrap;
                 }
                 .mfft-form .mfft-result {
@@ -179,12 +181,12 @@ class MfftEvalPage(BaseTestPage):
                     ui.layout_columns(
                         ui.input_action_button(
                             "mfft_serial_search_btn",
-                            "🔍",
+                            "🔍 SEARCH OWN UNIT",
                             class_="btn-info w-100",
                         ),
                         ui.input_action_button(
                             "mfft_search",
-                            "✓",
+                            "✓ CONFIRM SERIAL",
                             class_="btn-primary w-100",
                         ),
                         col_widths=(6, 6),
@@ -218,24 +220,26 @@ class MfftEvalPage(BaseTestPage):
                     ui.layout_columns(
                         ui.input_action_button(
                             "mfft_add_btn",
-                            t("common.add"),
+                            "➕ADD",
                             disabled=True,
                             class_="btn-primary w-100",
+                            title=t("common.add"),
                         ),
                         ui.input_action_button(
                             "mfft_update_btn",
-                            t("common.update"),
+                            "✎ UPDATE",
                             disabled=True,
                             class_="btn-warning w-100",
+                            title=t("common.update"),
                         ),
                         ui.input_action_button(
                             "mfft_clear_btn",
-                            "↺",
+                            "↺ CLEAR FORM",
                             class_="btn-secondary w-100",
                         ),
                         ui.input_action_button(
                             "mfft_delete_btn",
-                            "🗑",
+                            "🗑DELETE",
                             class_="btn-danger w-100",
                         ),
                         col_widths=(3, 3, 3, 3),
@@ -250,7 +254,7 @@ class MfftEvalPage(BaseTestPage):
                     ui.output_data_frame("mfft_grid"),
                     full_screen=True,
                 ),
-                col_widths=(4, 8),
+                col_widths=(3, 9),
             ),
             value=self.TAB_NAME,
         )
@@ -565,8 +569,7 @@ class MfftEvalPage(BaseTestPage):
                 return pd.DataFrame()
             try:
                 df = self.controller.decorate_grid(df)
-                df = df.drop(columns=["ID"], errors="ignore")
-                return df.sort_values(by=["Serial"])
+                return df.sort_values(by=["Serial"]).reset_index(drop=True)
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
@@ -574,6 +577,8 @@ class MfftEvalPage(BaseTestPage):
         @render.data_frame
         async def mfft_grid():
             df = await mfft_df()
+            if isinstance(df, pd.DataFrame) and "ID" in df.columns:
+                df = df.drop(columns=["ID"])
             return render.DataGrid(df, filters=False, selection_mode="rows", width="100%")
 
         # ----------------------------
