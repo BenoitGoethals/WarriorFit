@@ -14,11 +14,12 @@
 
 **Project Language:** Python
 
-**Project development methodology:** Agile
+**Project development methodology:** /
 
-**Project Development server:** https://test.warriorfit.bensoft.be/
-username: tester
-password: Tester@1401!
+
+
+
+
 
 **Test mailserver view : https://mailstub.bensoft.be/
 **Test HR Simulator view : https://api.bensoft.be/
