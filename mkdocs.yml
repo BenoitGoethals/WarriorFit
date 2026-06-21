@@ -86,6 +86,7 @@ nav:
       - Cross / Running Events: architecture/crossapp.md
       - MOM Broker: architecture/broker.md
       - Data Model: architecture/datamodel.md
+      - Internationalization (i18n): i18n.md
   - Business:
       - Scoring & Business Logic: business/business-logic.md
       - Room Reservation: business/reservations.md
@@ -94,6 +95,7 @@ nav:
       - Changelog: project/changelog.md
       - User Stories: project/stories.md
       - Test Cases: project/testcases.md
+      - Broker Unit Tests: tests/broker_unit_tests.md
       - Retrospective: project/retrospective.md
       - Project Proposal: project/proposal.md
   - API Reference:
@@ -108,11 +110,17 @@ nav:
           - Rank: api/core/rank.md
           - Role: api/core/role.md
           - Fitness Test Types: api/core/type_fitness_test.md
+          - Cluster: api/core/cluster.md
+          - MFFT Level: api/core/mfft_level.md
+      - Internationalization:
+          - Translator: api/i18n/translator.md
+          - Language Store: api/i18n/language_store.md
       - Data Models:
           - DB Model: api/models/db_model.md
           - Enum Mapped User Model: api/models/enum_mapped_user_model.md
       - Repositories:
           - Base Repository: api/repositories/abc_repository.md
+          - Consent Repository: api/repositories/consent_repository.md
           - Cross Repository: api/repositories/cross_repository.md
           - Fitness Test Repository: api/repositories/fitness_test_repository.md
           - March Repository: api/repositories/march_repository.md
@@ -123,13 +131,17 @@ nav:
       - Services:
           - Base Service: api/services/service.md
           - BeMil Service: api/services/be_mil_service.md
+          - Consent Service: api/services/service_consent.md
           - Data Collector: api/services/data_collector.md
+          - GDPR Service: api/services/service_gdpr.md
           - Generator: api/services/generator.md
           - Mail Service: api/services/mail_service.md
           - Military Service: api/services/military_service.md
+          - Notification Mail: api/services/notify_mail.md
           - Report CSV: api/services/report_generator_csv.md
           - Report PDF: api/services/report_generator_pdf.md
           - Report Type: api/services/report_type.md
+          - Retention Service: api/services/service_retention.md
           - Room Reservation Service: api/services/reserve_fitness_room_service.md
           - Cross Service: api/services/service_cross.md
           - March Service: api/services/service_march.md
@@ -142,6 +154,7 @@ nav:
       - Calculators:
           - PHEF Calculator: api/logic/phef_calculator.md
           - Functional Calculator: api/logic/functional_calculator.md
+          - MFFT Eval Calculator: api/logic/mfft_eval_calculator.md
           - Singleton: api/logic/singleton.md
       - Security:
           - Auth Service: api/security/auth_service.md
@@ -160,17 +173,21 @@ nav:
           - Functional Test: api/pages/functional_test.md
           - Individual Test: api/pages/ind_test_show.md
           - March: api/pages/march.md
-          - Notify Mail: api/pages/notify_mail.md
+          - MFFT Eval: api/pages/mfft_eval.md
+          - My Progress: api/pages/my_progress.md
           - Own Unit: api/pages/own_unit.md
           - PHEF: api/pages/phef.md
+          - Privacy: api/pages/privacy.md
           - Reports: api/pages/reports.md
           - Room Reservation: api/pages/reserve_fitness_room.md
+          - Servicemen Overview: api/pages/servicemen_overview.md
           - Sessions: api/pages/sessions.md
           - Settings: api/pages/settings.md
           - Status Application: api/pages/status_application.md
           - Status Login User: api/pages/status_login_user.md
           - Status Tests: api/pages/status_tests.md
           - Swimming Test: api/pages/swim_test.md
+          - Test Analytics: api/pages/test_analytics.md
           - User Store: api/pages/user_store.md
           - User Management: api/pages/usermanagement.md
       - UI Controllers:
@@ -184,17 +201,25 @@ nav:
           - Functional: api/controllers/functional_controller.md
           - Individual Test: api/controllers/ind_test_show_controller.md
           - March: api/controllers/march_controller.md
+          - MFFT Eval: api/controllers/mfft_eval_controller.md
+          - My Progress: api/controllers/my_progress_controller.md
           - Own Unit: api/controllers/own_unit_controller.md
           - PHEF: api/controllers/phef_controller.md
+          - Privacy: api/controllers/privacy_controller.md
           - Reports: api/controllers/reports_controller.md
           - Room Reservation: api/controllers/reserve_fitness_room_controller.md
+          - Servicemen Overview: api/controllers/servicemen_overview_controller.md
           - Sessions: api/controllers/session_controller.md
           - Settings: api/controllers/setting_controller.md
           - Status Application: api/controllers/status_application_controller.md
           - Status Log User: api/controllers/status_log_user_controller.md
           - Status Tests: api/controllers/status_tests_controller.md
           - Swimming: api/controllers/swimming_controller.md
+          - Test Analytics: api/controllers/test_analytics_controller.md
           - User Management: api/controllers/usermanagement_controller.md
+      - UI Infrastructure:
+          - App Server: api/ui/app_server.md
+          - Page Registry: api/ui/page_registry.md
       - Utilities:
           - Benchmark: api/utils/benchmark.md
           - Formatters: api/utils/formaters.md

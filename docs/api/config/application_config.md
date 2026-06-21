@@ -8,7 +8,7 @@ Singleton configuration manager that loads from YAML (`config_dev.yml` or `/etc/
 - Setup SQLAlchemy async database connection
 - Provide access to settings (DB, mail, HR, PDF paths)
 
-::: warriorfit.config.appliccation_config
+::: warriorfit.config.application_config
     options:
       members_order: source
       show_source: true
