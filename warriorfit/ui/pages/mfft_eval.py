@@ -181,12 +181,12 @@ class MfftEvalPage(BaseTestPage):
                     ui.layout_columns(
                         ui.input_action_button(
                             "mfft_serial_search_btn",
-                            "🔍",
+                            "🔍 SEARCH OWN UNIT",
                             class_="btn-info w-100",
                         ),
                         ui.input_action_button(
                             "mfft_search",
-                            "✓",
+                            "✓ CONFIRM SERIAL",
                             class_="btn-primary w-100",
                         ),
                         col_widths=(6, 6),
@@ -220,26 +220,26 @@ class MfftEvalPage(BaseTestPage):
                     ui.layout_columns(
                         ui.input_action_button(
                             "mfft_add_btn",
-                            "➕",
+                            "➕ADD",
                             disabled=True,
                             class_="btn-primary w-100",
                             title=t("common.add"),
                         ),
                         ui.input_action_button(
                             "mfft_update_btn",
-                            "✎",
+                            "✎ UPDATE",
                             disabled=True,
                             class_="btn-warning w-100",
                             title=t("common.update"),
                         ),
                         ui.input_action_button(
                             "mfft_clear_btn",
-                            "↺",
+                            "↺ CLEAR FORM",
                             class_="btn-secondary w-100",
                         ),
                         ui.input_action_button(
                             "mfft_delete_btn",
-                            "🗑",
+                            "🗑DELETE",
                             class_="btn-danger w-100",
                         ),
                         col_widths=(3, 3, 3, 3),
@@ -569,8 +569,7 @@ class MfftEvalPage(BaseTestPage):
                 return pd.DataFrame()
             try:
                 df = self.controller.decorate_grid(df)
-                df = df.drop(columns=["ID"], errors="ignore")
-                return df.sort_values(by=["Serial"])
+                return df.sort_values(by=["Serial"]).reset_index(drop=True)
             except Exception:
                 return df if isinstance(df, pd.DataFrame) else pd.DataFrame()
 
@@ -578,6 +577,8 @@ class MfftEvalPage(BaseTestPage):
         @render.data_frame
         async def mfft_grid():
             df = await mfft_df()
+            if isinstance(df, pd.DataFrame) and "ID" in df.columns:
+                df = df.drop(columns=["ID"])
             return render.DataGrid(df, filters=False, selection_mode="rows", width="100%")
 
         # ----------------------------
