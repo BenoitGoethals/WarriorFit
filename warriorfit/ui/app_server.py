@@ -57,6 +57,18 @@ def _register_pages_server(
     output: Any,
     session: Any,
 ) -> None:
+    """
+    Registers page-specific server logic for the given list of pages and sets up
+    reactive effects for mounting server components upon navigation activation.
+    This function dynamically associates server factories with their corresponding
+    page tabs and ensures that each server is mounted only once during its
+    lifecycle.
+
+    :param input: The input object holding Shiny reactive inputs.
+    :param output: The output object to manage Shiny reactive outputs.
+    :param session: The session object representing the current Shiny session.
+    :return: None
+    """
     from shiny import reactive
 
     from warriorfit.ui.pages import calendar_events
@@ -70,6 +82,17 @@ def _register_pages_server(
 
     @reactive.Effect
     def _mount_on_nav_activation():
+        """
+        Reactive effect function that handles the activation of navigation tabs and their corresponding
+        server-side logic. When a navigation tab is activated, this function ensures the relevant server
+        logic is mounted and executed if not already active. Additionally, it ensures that the
+        "CalendarEvents" tab logic is mounted if not already present.
+
+        :param input: An object providing reactive observation of user input or state changes.
+        :param output: An object responsible for handling output and reactive state updates.
+        :param session: An object managing the current application session context.
+        :return: None
+        """
         try:
             active = input.main_nav()
         except (AttributeError, KeyError):
@@ -119,8 +142,41 @@ def make_server(
     servicemen_repository: ServicemenRepository = Provide[Container.servicemen_repository],
     config: ApplicationConfig = Provide[Container.config],
 ) -> Callable[[Any, Any, Any], None]:
+    """
+    Provides a mechanism to create and initialize the server logic of a reactive application.
 
+    This function wires up components for user interaction, event handling, and dynamic updates to UI
+    elements. It integrates a user service, repository, and application configuration, ensuring that
+    session-specific behavior is properly handled, and components like language switchers and calendars
+    respond to user events smoothly.
+
+    :param user_service: The user service used for managing user-related operations.
+    :type user_service: UserService
+    :param servicemen_repository: The servicemen repository used for data access related to servicemen.
+    :type servicemen_repository: ServicemenRepository
+    :param config: The application-level configuration settings.
+    :type config: ApplicationConfig
+    :return: A callable function that represents the reactive server logic for the application.
+    :rtype: Callable[[Any, Any, Any], None]
+    """
     def server(input: Any, output: Any, session: Any) -> None:
+        """
+        Initializes the server-side reactive logic and event handling for the application.
+
+        This function sets up language switchers, calendar modals, and navigation menus. It
+        uses reactive programming principles to handle events and update the UI and
+        backend data accordingly. The server function is the core logic for managing
+        session interactions, user-specific configurations, and dynamic updates to the
+        application interface.
+
+        :param input: The reactive input signals used to trigger events in the server.
+        :type input: Any
+        :param output: The reactive output signals used to bind with UI updates.
+        :type output: Any
+        :param session: The session object containing user metadata and session-specific configurations.
+        :type session: Any
+        :return: None
+        """
         from shiny import reactive
 
         from warriorfit.ui.pages import calendar_events
@@ -173,6 +229,15 @@ def make_server(
         @reactive.Effect
         @reactive.event(input.lang_fr)
         def _set_lang_fr() -> None:
+            """
+            Sets the application's language to French.
+
+            This function is invoked when the `lang_fr` event is triggered. It modifies
+            the language setting by calling the `_change_lang` function with the language
+            code "fr".
+
+            :return: None
+            """
             _change_lang("fr")
 
         # ── Calendar panel ───────────────────────────────────────────────────
@@ -183,6 +248,16 @@ def make_server(
         @reactive.Effect
         @reactive.event(input.open_calendar_modal_global)
         def _toggle_calendar() -> None:
+            """
+            Toggle the global calendar visibility and refresh calendar events.
+
+            This reactive effect is triggered by the event linked to the
+            `input.open_calendar_modal_global`. It updates the visibility of the
+            global calendar, refreshing its events and ensuring that the
+            personal calendar is hidden when the global calendar is displayed.
+
+            :return: None
+            """
             calendar_events.refresh()
             show_calendar.set(not show_calendar.get())
             if show_calendar.get():
@@ -191,11 +266,34 @@ def make_server(
         @reactive.Effect
         @reactive.event(input.close_calendar)
         def _close_calendar() -> None:
+            """
+            Closes the calendar by setting the show_calendar state to False when the
+            close_calendar event is triggered.
+
+            This reactive effect listens to the close_calendar event and modifies the
+            show_calendar state to hide the calendar.
+
+            :param: None
+            :return: None
+            """
             show_calendar.set(False)
 
         @reactive.Effect
         @reactive.event(input.open_personal_calendar_modal_global)
         def _toggle_personal_calendar() -> None:
+            """
+            Toggle the visibility of the personal calendar modal and refresh calendar events.
+
+            This reactive effect monitors the global signal to open the personal calendar modal
+            and toggles its visibility state. When the personal calendar modal is shown, it ensures
+            that the regular calendar modal is hidden.
+
+            :param input.open_personal_calendar_modal_global: Signal that triggers the state toggle
+                for the personal calendar modal.
+            :type input.open_personal_calendar_modal_global: reactive.Signal
+
+            :return: None
+            """
             calendar_events.refresh()
             show_personal_calendar.set(not show_personal_calendar.get())
             if show_personal_calendar.get():
@@ -204,6 +302,15 @@ def make_server(
         @reactive.Effect
         @reactive.event(input.close_personal_calendar)
         def _close_personal_calendar() -> None:
+            """
+            Closes the personal calendar by setting the visibility state to ``False``.
+
+            This effect reacts to the event triggered by the user interaction with the
+            `close_personal_calendar` input. When activated, it modifies the state of
+            `show_personal_calendar` to ensure that the calendar is hidden.
+
+            :return: None
+            """
             show_personal_calendar.set(False)
 
         # ── Navbar builder ───────────────────────────────────────────────────
@@ -216,15 +323,49 @@ def make_server(
         }
 
         def _safe_panel(panel: Any | None) -> ui.Tag | None:
+            """
+            Determines whether a panel value is safe to return or falls back to None if
+            the input is None.
+
+            :param panel: The input value to check. It can be of any type or None.
+            :type panel: Any | None
+            :return: Returns the provided panel if it is not None, otherwise returns None.
+            :rtype: ui.Tag | None
+            """
             return panel if panel is not None else None
 
         def _build_menu(group: str, role_pages: list[PageSpec]) -> ui.Tag | None:
+            """
+            Builds a navigation menu based on the specified group and role pages. This function filters the
+            provided role pages by their group, generates UI panels for the filtered pages, and constructs
+            a navigation menu if there are valid child elements. If no valid children are found,
+            the function returns None.
+
+            :param group: The group name used to filter the role pages.
+            :type group: str
+            :param role_pages: A list of PageSpec objects representing the role pages to be processed.
+            :type role_pages: list[PageSpec]
+            :return: A UI navigation menu as a `ui.Tag` instance if valid child elements exist; otherwise, None.
+            :rtype: ui.Tag | None
+            """
             children = [_safe_panel(p.ui_factory()) for p in role_pages if p.group == group]
             children = [c for c in children if c is not None]
             label = t(_GROUP_LABELS.get(group, group))
             return ui.nav_menu(label, *children) if children else None  # type: ignore[arg-type, return-value]
 
         def _build_navbar() -> Any:
+            """
+            Constructs and returns the main navigation bar for the application.
+
+            This function dynamically builds the navigation bar based on the user's role,
+            login mode, and available pages for the role. It ensures that only relevant
+            navigation items are shown to the user. The navigation bar may include menus,
+            tabs, widgets, and actions such as sign-out, calendar access, and language
+            switching.
+
+            :returns: The main navigation bar UI component.
+            :rtype: Any
+            """
             user = _get_session_user()
             role = getattr(user, "role", None)
             mode = getattr(session, "login_mode", "application")
@@ -390,6 +531,22 @@ def make_server(
 
         @reactive.Effect
         async def login_dialog() -> None:
+            """
+            An effect function that handles the display and functionality of the login dialog.
+            This function dynamically constructs the login modal based on the current application
+            state and environment, including support for multiple languages and modes (application
+            and serviceman modes). It also handles developer environment login bypass for ease
+            of testing during development.
+
+            :param None:
+                This function does not take any parameters.
+
+            :raises:
+                This function does not explicitly raise any exceptions.
+
+            :return:
+                None
+            """
             _ = lang_version.get()  # rebuild on language change
 
             app_env = os.getenv("APP_ENV", "")
@@ -501,6 +658,32 @@ def make_server(
         @reactive.Effect
         @reactive.event(input.handle_login)
         async def handle_login() -> None:
+            """
+            Handles the login process for users and servicemen, ensuring validation, session setup,
+            and auditing of login events. The function enforces rate limiting to prevent brute-force
+            attacks and provides detailed auditing for login attempts.
+
+            :raises ValueError: If an unexpected value is encountered during processing.
+            :raises TypeError: If a type mismatch occurs during execution.
+            :raises AttributeError: If an access to an attribute of None or an invalid object occurs.
+
+            :param input.handle_login: A trigger for the login event.
+            :param input.username_login: The username entered by the user, converted to lowercase.
+            :param input.password_login: The password entered by the user.
+            :param input.login_mode: Optional mode of login, either "application" or "serviceman".
+            :param status_text: An observable object used to update status messages for the user.
+            :param session.http_conn: HTTP connection details, including headers and client information.
+            :param nav_version: Session-specific version management observable.
+            :param ui.modal_remove: Removes the modal dialog upon successful login.
+            :param user_service: Service managing user-related operations.
+            :param servicemen_repository: Repository for fetching servicemen-related data.
+            :param login_rate_limiter: Manages and enforces rate-limiting for login attempts.
+            :param UserStore: Facilitates user session persistence and management.
+            :param t: Translator function for internationalized message retrieval.
+            :param logger: Logger object for activity logging.
+
+            :return: None
+            """
             logger = logging.getLogger(__name__)
             username_login = (input.username_login() or "").lower()
             password_login = input.password_login()
@@ -593,6 +776,19 @@ def make_server(
 
         @reactive.Effect
         async def _on_logout_button_click() -> None:
+            """
+            Handles the logout button click event, logging user activity, updating the user
+            interface, and clearing session data.
+
+            This reactive effect is triggered when the logout button is clicked. It verifies
+            if the button was clicked, retrieves the current session user, logs the logout event
+            if applicable, clears user session information, updates the navigation menu, shows
+            a logout notification, and reloads the page content.
+
+            :raises AttributeError: When the `logout_btn` method is not available in the input object.
+            :raises KeyError: When the `logout_btn` method does not return a valid value.
+            :return: None
+            """
             try:
                 clicks = input.logout_btn()
             except (AttributeError, KeyError):
@@ -620,6 +816,17 @@ def make_server(
         @output
         @render.ui
         def _activity_probe() -> Any:
+            """
+            Generates a UI script element for tracking user activity and reporting it to the backend.
+            The script listens for various user interactions such as mouse movement, clicks,
+            scrolling, key presses, and touch events. It also periodically sends activity pings
+            to the backend every 30 seconds to indicate user activity. Additionally, it reacts
+            to visibility changes of the page for reporting purposes.
+
+            :return: A UI script element that includes the JavaScript function for monitoring
+                and reporting user activity.
+            :rtype: Any
+            """
             return ui.tags.script(
                 """
                 (function(){
@@ -634,6 +841,21 @@ def make_server(
 
         @reactive.Effect
         def _record_activity() -> None:
+            """
+            Tracks user activity and updates the last recorded activity time.
+
+            This function monitors activity by invoking the `activity_ping` method
+            from the input source. If the method call is successful, it sets the
+            current timestamp as the last recorded activity. If an `AttributeError`
+            or `KeyError` is encountered during the invocation, the function handles
+            these exceptions gracefully without raising errors.
+
+            :raises AttributeError: If the `activity_ping` method is not available on
+                the input object.
+            :raises KeyError: If there is an issue accessing the required attribute from
+                the input source.
+            :return: None
+            """
             try:
                 _ = input.activity_ping()
             except (AttributeError, KeyError):
@@ -642,6 +864,20 @@ def make_server(
 
         @reactive.Effect
         def _reset_on_nav_or_login() -> None:
+            """
+            Defines a reactive effect to reset state upon navigation or login.
+
+            This effect listens for navigation or login events and responds by resetting
+            the last activity timestamp and checking for main navigation state. It also
+            attempts to access versioning information to ensure the application's state
+            is synchronized.
+
+            :raises AttributeError: Suppressed if accessing an attribute fails during
+                execution.
+            :raises KeyError: Suppressed when attempting to access a missing key.
+
+            :return: None
+            """
             with contextlib.suppress(AttributeError, KeyError):
                 _ = input.main_nav()
             _ = nav_version.get()
@@ -649,6 +885,14 @@ def make_server(
 
         @reactive.Effect
         async def _auto_logout_timer() -> None:
+            """
+            An asynchronous effect function that tracks user inactivity and automatically logs out
+            the user after a period of inactivity. The function checks the user's last activity timestamp
+            and performs necessary operations to manage expiration of the user's session.
+
+            :raises Exception: if an error occurs while adding an audit log for the user's logout event.
+            :rtype: None
+            """
             reactive.invalidate_later(5)
             user = _get_session_user()
             if not user:

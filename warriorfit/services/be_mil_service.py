@@ -39,6 +39,14 @@ class BEMILService:
         self.API_KEY = config.hr_api_key
 
     def _build_serviceman(self, data: dict) -> ServiceMen:
+        """
+        Builds and returns a ServiceMen object after validating and processing the provided data.
+
+        :param data: A dictionary containing serviceman information to be validated and processed.
+        :type data: dict
+        :return: A ServiceMen instance constructed from the validated and processed data.
+        :rtype: ServiceMen
+        """
         # Validate with Pydantic schema first
         schema = ServiceMenSchema(**data)
 
@@ -70,7 +78,17 @@ class BEMILService:
         return ServiceMen(**filtered_data)
 
     async def get_be_mil_by_id(self, be_mil_serial_number: str) -> ServiceMen | None:
-        """Retrieve a specific ServiceMen by its service number."""
+        """
+        Retrieves a serviceman's details by their serial number. This method sends an
+        asynchronous HTTP GET request to the specified endpoint, fetches the data,
+        and constructs a ServiceMen object if the data is present.
+
+        :param be_mil_serial_number: The serial number of the serviceman to retrieve.
+        :type be_mil_serial_number: str
+        :return: An instance of ServiceMen if a serviceman with the specified serial
+            number is found, otherwise None.
+        :rtype: ServiceMen | None
+        """
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(

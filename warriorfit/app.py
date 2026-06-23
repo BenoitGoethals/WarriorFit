@@ -3,7 +3,8 @@ import logging.config
 from pathlib import Path
 
 from dotenv import load_dotenv
-
+#When called with no arguments, it looks for a `.env` file in the current
+# directory or nearby parent directories and loads values like:
 load_dotenv()
 
 from shiny import App
@@ -20,6 +21,22 @@ from warriorfit.ui.app_server import build_app_ui, make_server
 
 # ── 3. Logging setup ──────────────────────────────────────────────────────────
 def _setup_logger() -> None:
+    """
+    Initializes logging configuration for the application using a YAML-based configuration file.
+
+    This function sets up the logger for the application by loading a logging configuration
+    file if it exists in the designated location. If the configuration file is missing
+    or invalid, it falls back to a default logging configuration with INFO level.
+
+    It ensures that a log directory is created if it doesn't already exist in the project
+    root folder.
+
+    :raises yaml.YAMLError: If there is an error in parsing the YAML configuration file.
+    :raises KeyError: If a necessary configuration key is missing from the YAML file.
+    :raises ValueError: If an invalid value is detected in the logging configuration.
+
+    :return: None
+    """
     import yaml
 
     project_root = Os.get_project_root()

@@ -50,7 +50,19 @@ class DataCollector:
         self, serial: str, current_year: bool = True
     ) -> pd.DataFrame:
         """
-        Detailed grid: PHEF shows separate columns (Run/SBR/SBL + points), etc.
+        Asynchronously collects fitness test data for a given serial number and compiles it into a
+        pandas DataFrame. The function retrieves detailed records of multiple types of fitness tests
+        such as PHEF, Functional, Combat, Swimming, Mars, and MFFT Evaluations from different
+        services and processes them to calculate performance metrics and test results.
+
+        :param serial: Unique identifier of the service member for which fitness data is to be collected.
+        :type serial: str
+        :param current_year: A flag indicating whether to only collect test data from the current year.
+            Defaults to True.
+        :type current_year: bool
+        :return: A DataFrame containing fitness test records compiled and formatted for the specified
+            serial number. If no records are available, an empty DataFrame with predefined columns is returned.
+        :rtype: pandas.DataFrame
         """
         frames: list[pd.DataFrame] = []
 
@@ -251,7 +263,23 @@ class DataCollector:
         self, serial: str, current_year: bool = True
     ) -> pd.DataFrame:
         """
-        Summary grid: each row has Details/Scores/Total/Result.
+        Collects fitness test data for a specified serial number from various test types
+        including Physical Fitness Efficiency Test (PHEF), Functional tests, Combat
+        tests, Swimming, Mars marches, and Military Functional Fitness Test Evaluation
+        (MFFT Eval). Aggregates and summarizes the data in tabular format.
+
+        :param serial: The unique identifier representing the individual for whom
+                       fitness test data is collected.
+        :type serial: str
+        :param current_year: A boolean flag indicating whether the data should be
+                             limited to the tests conducted in the current year.
+                             Defaults to True.
+        :type current_year: bool
+        :return: A pandas DataFrame summarizing all relevant fitness test sessions for
+                 the specified serial number, including details, scores, total scores,
+                 and pass/fail results for each test category. Returns an empty
+                 DataFrame if no data is available.
+        :rtype: pd.DataFrame
         """
         frames: list[pd.DataFrame] = []
 
@@ -433,6 +461,19 @@ class DataCollector:
         return df
 
     async def collect_all_mil_from_own_unit_not_executed_phefs(self) -> pd.DataFrame:
+        """
+        Collects all military personnel from the user's own unit for whom no PHEF tests
+        have been executed and returns the data in a pandas DataFrame.
+
+        This asynchronous method retrieves all personnel data for the specified unit,
+        and filters out those with no associated PHEF tests. The resulting data is
+        formatted into a DataFrame.
+
+        :return: A pandas DataFrame containing the following columns:
+                 "Serial", "Name", "Gender", "Age", "Para". If no personnel meet
+                 the criteria, an empty DataFrame with the specified columns is returned.
+        :rtype: pd.DataFrame
+        """
         mil_series = await self.be_mil.get_all_be_mil_from_unit(self._config.own_unit)
         rows: list[dict] = []
         for m in mil_series:
@@ -456,6 +497,21 @@ class DataCollector:
         )
 
     async def collect_all_mil_from_own_unit_failed_phefs(self) -> pd.DataFrame:
+        """
+        Asynchronously collects and processes data to retrieve details of individuals
+        from the specified unit whose PHEF (Physical Health Evaluation Framework) metrics
+        indicate failed tests based on calculated scores. The results are returned as a
+        pandas DataFrame, sorted and indexed.
+
+        :param self:
+            Instance of the class implementing this coroutine.
+        :return:
+            A pandas DataFrame with columns "Serial", "Name", "Gender", "Age", and "Para",
+            containing details of individuals with failed PHEF scores. If no data is
+            present, an empty DataFrame with the specified columns is returned.
+        :rtype:
+            pd.DataFrame
+        """
         mil_series = await self.be_mil.get_all_be_mil_from_unit(self._config.own_unit)
         rows: list[dict] = []
         for m in mil_series:
@@ -495,6 +551,25 @@ class DataCollector:
         )
 
     async def collect_tests_data_for_own_unit(self) -> pd.DataFrame:
+        """
+        Asynchronously collects and aggregates fitness test data for service members in the current unit and
+        returns the data as a pandas DataFrame. The fitness test data includes various test types such as
+        PHEF, functional, combat, swimming, march, and MFFT evaluations. Each service member's results
+        are summarized in a structured format.
+
+        :rtype: pd.DataFrame
+        :return: A pandas DataFrame containing aggregated fitness test results for service members
+            in the current unit. The results include the following columns:
+            - "Rank": The rank of the service member.
+            - "Serial": The service number of the service member.
+            - "Name": The full name of the service member (formatted as "FirstName LastName").
+            - "Phef": The status of the PHEF test ("Passed", "Failed", or "Not Done").
+            - "Combat": The status of the combat test ("Passed", "Failed", or "Not Done").
+            - "Swimming": The status of the swimming test ("Passed", "Failed", or "Not Done").
+            - "Functional": The status of the functional fitness test ("Passed", "Failed", or "Not Done").
+            - "March": The status of the march test ("Passed", "Failed", or "Not Done").
+            - "MFFT": The status of the MFFT evaluation ("Passed", "Failed", or "Not Done").
+        """
         own_unit = await self.be_mil.get_all_be_mil_from_unit(self._config.own_unit)
         rows: list[dict] = []
 
@@ -606,7 +681,17 @@ class DataCollector:
         return pd.DataFrame.from_records(rows)
 
     async def collect_all_mil_from_own_unit_not_executed_mfft_eval(self) -> pd.DataFrame:
-        """List unit members who have no MFFT Eval result on record."""
+        """
+        Collects all military personnel from the unit who have not executed their MFFT
+        evaluations and returns their details in the form of a DataFrame. The dataset
+        includes information such as serial number, name, gender, age, and cluster of
+        each non-evaluated individual.
+
+        :return: A pandas DataFrame containing columns: "Serial", "Name", "Gender",
+            "Age", and "Cluster". If no eligible records are found, returns an empty
+            DataFrame with these columns.
+        :rtype: pd.DataFrame
+        """
         mil_series = await self.be_mil.get_all_be_mil_from_unit(self._config.own_unit)
         rows: list[dict] = []
         for m in mil_series:

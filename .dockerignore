@@ -8,3 +8,10 @@ htmlcov
 warriorfit/logs
 tests
 .env
+/warriorfit/config/config_backup.yml
+
+/warriorfit/config/config_dev.yml
+
+/warriorfit/config/config_prod.yml
+
+/warriorfit/config/config_test.yml
