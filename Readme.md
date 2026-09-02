@@ -18,12 +18,6 @@
 
 
 
-
-
-
-**Test mailserver view : https://mailstub.bensoft.be/
-**Test HR Simulator view : https://api.bensoft.be/
-
 Final view of the Architecture -> [Architectural Structure](documentation/ARCHITECTURE.md)
 
 
