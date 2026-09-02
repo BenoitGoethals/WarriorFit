@@ -1,0 +1,7990 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Digitization of Physical Military Tests at SOR-Unit Level">
+      
+      
+        <meta name="author" content="Benoit Goethals">
+      
+      
+      
+        <link rel="prev" href="../../tests/broker_unit_tests/">
+      
+      
+        <link rel="next" href="../proposal/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Retrospective - WarriorFit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#project-retrospectives-warriorfit" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="WarriorFit" class="md-header__button md-logo" aria-label="WarriorFit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            WarriorFit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Retrospective
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/overview/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/di-guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../business/business-logic/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Business
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../security/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/app/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authors/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Author
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="WarriorFit" class="md-nav__button md-logo" aria-label="WarriorFit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    WarriorFit
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation & Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/module-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/di-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/crossapp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross / Running Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/broker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOM Broker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/datamodel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization (i18n)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Business
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../business/business-logic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoring & Business Logic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../business/reservations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Stories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testcases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tests/broker_unit_tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Broker Unit Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retrospective
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retrospective
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-initiation-project-charter-nov-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 - Initiation &amp; Project Charter (Nov 2025) ✅
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1 - Initiation &amp; Project Charter (Nov 2025) ✅">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements-for-next-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements for Next Phase 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-architecture-structure-dec-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 - Architecture &amp; Structure (Dec 2025) ✅
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2 - Architecture &amp; Structure (Dec 2025) ✅">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sprint-1-dec-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 1 - [DEC 2025]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 1 - [DEC 2025]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2 Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overall-achievements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overall Achievements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-learnings-from-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Learnings from Phase 2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-to-carry-forward-to-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What to Carry Forward to Phase 3
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-development-iterations-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 - Development &amp; Iterations (Jan 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3 - Development &amp; Iterations (Jan 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sprint-1-core-features-early-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 1 - Core Features [Early Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 1 - Core Features [Early Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-2-monitoring-communication-mid-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 2 - Monitoring &amp; Communication [Mid Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 2 - Monitoring &amp; Communication [Mid Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-3-testing-bug-fixes-late-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 3 - Testing &amp; Bug Fixes [Late Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 3 - Testing &amp; Bug Fixes [Late Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-4-deployment-documentation-latest-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 4 - Deployment &amp; Documentation [Latest Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 4 - Deployment &amp; Documentation [Latest Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-4-testing-validation-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 - Testing &amp; Validation (Jan 2026) ✅
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 4 - Testing &amp; Validation (Jan 2026) ✅">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing-sprint-alpha-testing-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Sprint - Alpha Testing [Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Sprint - Alpha Testing [Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing-completed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Completed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bugs-found-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bugs Found &amp; Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-5-polish-current-state-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 - Polish &amp; Current State (Jan 2026) 🚀
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 5 - Polish &amp; Current State (Jan 2026) 🚀">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-release-11-rc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Release: 1.1 RC
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Release: 1.1 RC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delivered-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delivered Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#demo-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo Materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-status-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Status &amp; Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-wide-retrospective-current-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project-Wide Retrospective (Current - Jan 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Project-Wide Retrospective (Current - Jan 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overall-success-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overall Success Factors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#major-challenges-overcome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Major Challenges Overcome
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-debt-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Debt Created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-would-do-differently-next-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Would Do Differently Next Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skills-developed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skills Developed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#favorite-wins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Favorite Wins 🎉
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proposal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Proposal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_2" id="__nav_8_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/application_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/settings_data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/smtp_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SMTP Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_3" id="__nav_8_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core / Domain
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core / Domain
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/gender/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gender
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/rank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/role/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/type_fitness_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fitness Test Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/cluster/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/mfft_level/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Level
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_4" id="__nav_8_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Internationalization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/i18n/translator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/i18n/language_store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_5" id="__nav_8_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data Models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/models/db_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DB Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/models/enum_mapped_user_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Enum Mapped User Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_6" id="__nav_8_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repositories
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Repositories
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/abc_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/consent_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Consent Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/cross_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/fitness_test_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fitness Test Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/march_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/mom_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOM Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/reservation_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reservation Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/servicemen_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servicemen Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/user_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_7" id="__nav_8_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Services
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/be_mil_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BeMil Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_consent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Consent Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/data_collector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_gdpr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GDPR Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/generator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/mail_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mail Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/military_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Military Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/notify_mail/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Mail
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/report_generator_csv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report CSV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/report_generator_pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report PDF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/report_type/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report Type
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retention Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/reserve_fitness_room_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_cross/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_march/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_8" id="__nav_8_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOM / Broker
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MOM / Broker
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mom/broker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Broker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mom/hr_fatapi_dummy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HR API Dummy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mom/message/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Message
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_9" id="__nav_8_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calculators
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Calculators
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/phef_calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PHEF Calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/functional_calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functional Calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/mfft_eval_calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Eval Calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/singleton/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Singleton
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_10" id="__nav_8_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/security/auth_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/security/rate_limiter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_11" id="__nav_8_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Pages
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    UI Pages
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Page
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/base_test_page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Test Page
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/auditlog_events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Log Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/calendar_events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calendar Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/combat_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/cross/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/cross_planning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Planning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/cross_statics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Statistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/dashboard_own_unit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/functional_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functional Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/ind_test_show/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Individual Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/march/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/mfft_eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/my_progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    My Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/own_unit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/phef/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PHEF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/reports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/reserve_fitness_room/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/servicemen_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servicemen Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/status_application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/status_login_user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Login User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/status_tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/swim_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swimming Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/test_analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Analytics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/user_store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/usermanagement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_12" id="__nav_8_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Controllers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    UI Controllers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/auditlog_events_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Log Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/calendar_events_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calendar Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/combat_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/cross_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/cross_planning_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Planning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/cross_statistics_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Statistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/dashboard_own_unit_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/functional_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/ind_test_show_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Individual Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/march_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/mfft_eval_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/my_progress_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    My Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/own_unit_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/phef_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PHEF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/privacy_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/reports_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/reserve_fitness_room_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/servicemen_overview_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servicemen Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/session_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/setting_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/status_application_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/status_log_user_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Log User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/status_tests_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/swimming_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swimming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/test_analytics_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Analytics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/usermanagement_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_13" id="__nav_8_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    UI Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/ui/app_server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/ui/page_registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Page Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_14" id="__nav_8_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Utilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/formaters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formatters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/os/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OS Utilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Author
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-initiation-project-charter-nov-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 - Initiation &amp; Project Charter (Nov 2025) ✅
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1 - Initiation &amp; Project Charter (Nov 2025) ✅">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#improvements-for-next-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Improvements for Next Phase 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-architecture-structure-dec-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 - Architecture &amp; Structure (Dec 2025) ✅
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2 - Architecture &amp; Structure (Dec 2025) ✅">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sprint-1-dec-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 1 - [DEC 2025]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 1 - [DEC 2025]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 Summary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2 Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overall-achievements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overall Achievements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-learnings-from-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Learnings from Phase 2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-to-carry-forward-to-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What to Carry Forward to Phase 3
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-development-iterations-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 - Development &amp; Iterations (Jan 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3 - Development &amp; Iterations (Jan 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sprint-1-core-features-early-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 1 - Core Features [Early Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 1 - Core Features [Early Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-2-monitoring-communication-mid-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 2 - Monitoring &amp; Communication [Mid Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 2 - Monitoring &amp; Communication [Mid Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-3-testing-bug-fixes-late-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 3 - Testing &amp; Bug Fixes [Late Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 3 - Testing &amp; Bug Fixes [Late Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-4-deployment-documentation-latest-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint 4 - Deployment &amp; Documentation [Latest Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sprint 4 - Deployment &amp; Documentation [Latest Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#completed-this-sprint_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Completed This Sprint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-items-for-next-sprint_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Items for Next Sprint 🎯
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sprint-metrics_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprint Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-4-testing-validation-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 - Testing &amp; Validation (Jan 2026) ✅
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 4 - Testing &amp; Validation (Jan 2026) ✅">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing-sprint-alpha-testing-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Sprint - Alpha Testing [Jan 2026]
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing Sprint - Alpha Testing [Jan 2026]">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing-completed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Completed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bugs-found-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bugs Found &amp; Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-went-well_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Went Well ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-didnt-go-well_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Didn't Go Well ❌
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-learned_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Learned 💡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-5-polish-current-state-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 - Polish &amp; Current State (Jan 2026) 🚀
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 5 - Polish &amp; Current State (Jan 2026) 🚀">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-release-11-rc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Release: 1.1 RC
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Current Release: 1.1 RC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delivered-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delivered Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#demo-materials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Demo Materials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#current-status-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Status &amp; Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-wide-retrospective-current-jan-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project-Wide Retrospective (Current - Jan 2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Project-Wide Retrospective (Current - Jan 2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overall-success-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overall Success Factors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#major-challenges-overcome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Major Challenges Overcome
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-debt-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical Debt Created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-i-would-do-differently-next-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What I Would Do Differently Next Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skills-developed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skills Developed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#favorite-wins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Favorite Wins 🎉
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="project-retrospectives-warriorfit">Project Retrospectives - WarriorFit<a class="headerlink" href="#project-retrospectives-warriorfit" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="phase-1-initiation-project-charter-nov-2025">Phase 1 - Initiation &amp; Project Charter (Nov 2025) ✅<a class="headerlink" href="#phase-1-initiation-project-charter-nov-2025" title="Permanent link">&para;</a></h2>
+<h3 id="completed">Completed<a class="headerlink" href="#completed" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Project scope and vision defined</li>
+<li>Backlog initialized</li>
+<li>Repository set up</li>
+</ul>
+<h3 id="what-went-well">What Went Well ✅<a class="headerlink" href="#what-went-well" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Define user stories and acceptance criteria</li>
+<li>Technogical chosens and tools selected</li>
+<li>scoped out project timeline</li>
+</ul>
+<h3 id="what-didnt-go-well">What Didn't Go Well ❌<a class="headerlink" href="#what-didnt-go-well" title="Permanent link">&para;</a></h3>
+<ul>
+<li>javascript prototype vue.js :  overhead of learning</li>
+<li>use cases: switch to userstories, more agile, freedom of choice</li>
+</ul>
+<h3 id="what-i-learned">What I Learned 💡<a class="headerlink" href="#what-i-learned" title="Permanent link">&para;</a></h3>
+<ul>
+<li>setup UI with shiny UI kit : mvc framework </li>
+<li>sqlqchemy : ORM mapped object relational database</li>
+<li>docker deployment :  containerization</li>
+</ul>
+<h3 id="improvements-for-next-phase">Improvements for Next Phase 🎯<a class="headerlink" href="#improvements-for-next-phase" title="Permanent link">&para;</a></h3>
+<ul>
+<li>take more time to understand the project scope</li>
+<li>take more think how to implement the userstorors</li>
+</ul>
+<h3 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h3>
+<p>ult</p>
+<h2 id="phase-2-architecture-structure-dec-2025">Phase 2 - Architecture &amp; Structure (Dec 2025) ✅<a class="headerlink" href="#phase-2-architecture-structure-dec-2025" title="Permanent link">&para;</a></h2>
+<hr />
+<h3 id="sprint-1-dec-2025">Sprint 1 - [DEC 2025]<a class="headerlink" href="#sprint-1-dec-2025" title="Permanent link">&para;</a></h3>
+<h4 id="completed-this-sprint">Completed This Sprint<a class="headerlink" href="#completed-this-sprint" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Set up database schema and models with comprehensive relationships</li>
+<li>Created ER diagrams and UML documentation</li>
+<li>Established repository pattern with SQLAlchemy ORM</li>
+<li>Implemented thread-safe singleton pattern for service layer</li>
+<li>Built initial page structure with role-based access control</li>
+<li>Added comprehensive docstrings across codebase</li>
+</ul>
+<h4 id="what-went-well_1">What Went Well ✅<a class="headerlink" href="#what-went-well_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Clean separation of concerns (repository, service, controller, UI layers)</li>
+<li>Strong type hints and model relationships</li>
+<li>Documentation-first approach with detailed schema definitions</li>
+<li>Thread-safe singleton implementation for better concurrency</li>
+</ul>
+<h4 id="what-didnt-go-well_1">What Didn't Go Well ❌<a class="headerlink" href="#what-didnt-go-well_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Some refactoring needed for async handling</li>
+<li>Initial database dialect configuration issues</li>
+<li>Multiple iterations needed on model relationships</li>
+</ul>
+<h4 id="what-i-learned_1">What I Learned 💡<a class="headerlink" href="#what-i-learned_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>SQLAlchemy relationship management and type annotations</li>
+<li>Thread-safe singleton patterns with <code>ABCMeta</code></li>
+<li>Importance of comprehensive database schema documentation</li>
+<li>Role-based access control implementation in Shiny framework</li>
+</ul>
+<h4 id="action-items-for-next-sprint">Action Items for Next Sprint 🎯<a class="headerlink" href="#action-items-for-next-sprint" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Optimize async operations across controllers</li>
+<li>[x] Enhance DataFrame handling for UI components</li>
+<li>[x] Improve error handling and logging</li>
+</ul>
+<h4 id="notes_1">Notes<a class="headerlink" href="#notes_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Version bumped to 0.5.0 marking completion of architecture phase</li>
+<li>Test database environment configured (<code>warriorfit_test</code>)</li>
+</ul>
+<h3 id="phase-2-summary">Phase 2 Summary<a class="headerlink" href="#phase-2-summary" title="Permanent link">&para;</a></h3>
+<h4 id="overall-achievements">Overall Achievements<a class="headerlink" href="#overall-achievements" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Technical foundation: Complete layered architecture (Repository → Service → Controller → UI)</li>
+<li>Database structure: Comprehensive schema with proper relationships and foreign keys</li>
+<li>UML diagrams: Entity-relationship diagrams and architecture documentation</li>
+<li>Working skeleton: Base application with authentication and role-based navigation</li>
+</ul>
+<h4 id="key-learnings-from-phase-2">Key Learnings from Phase 2<a class="headerlink" href="#key-learnings-from-phase-2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Proper async/await patterns in Python web applications</li>
+<li>SQLAlchemy's <code>Mapped</code> type annotations for better type safety</li>
+<li>Thread-safe design patterns for service layer</li>
+<li>Importance of test data and separate test environments</li>
+</ul>
+<h4 id="what-to-carry-forward-to-phase-3">What to Carry Forward to Phase 3<a class="headerlink" href="#what-to-carry-forward-to-phase-3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Continue comprehensive docstring practice</li>
+<li>Maintain strict type hints and annotations</li>
+<li>Keep test environment aligned with development changes</li>
+<li>Document architectural decisions as they're made</li>
+</ul>
+<hr />
+<h2 id="phase-3-development-iterations-jan-2026">Phase 3 - Development &amp; Iterations (Jan 2026)<a class="headerlink" href="#phase-3-development-iterations-jan-2026" title="Permanent link">&para;</a></h2>
+<h3 id="sprint-1-core-features-early-jan-2026">Sprint 1 - Core Features [Early Jan 2026]<a class="headerlink" href="#sprint-1-core-features-early-jan-2026" title="Permanent link">&para;</a></h3>
+<h4 id="completed-this-sprint_1">Completed This Sprint<a class="headerlink" href="#completed-this-sprint_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Implemented fitness test pages (PHEF, Swim, March tests)</li>
+<li>Built Cross statistics controller with async data collection</li>
+<li>Added DataGrid components with sorting and filtering</li>
+<li>Created dashboard for own unit view</li>
+<li>Implemented time parsing utilities for various formats</li>
+<li>Enhanced service cross relationship handling</li>
+</ul>
+<h4 id="what-went-well_2">What Went Well ✅<a class="headerlink" href="#what-went-well_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Consistent DataFrame-based approach across all pages</li>
+<li>Improved UI/UX with DataGrid configurations</li>
+<li>Better async handling in controllers</li>
+<li>Time format parsing supports multiple formats (hh<img alt="🇲🇲" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f1f2-1f1f2.svg" title=":mm:" />ss with milliseconds)</li>
+</ul>
+<h4 id="what-didnt-go-well_2">What Didn't Go Well ❌<a class="headerlink" href="#what-didnt-go-well_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Multiple iterations needed for DataGrid rendering with None values</li>
+<li>Some runtime errors with missing attributes in service_cross</li>
+<li>Inconsistent datetime formatting in dropdowns</li>
+</ul>
+<h4 id="what-i-learned_2">What I Learned 💡<a class="headerlink" href="#what-i-learned_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>DataGrid best practices for null-safe rendering</li>
+<li>Reactive programming patterns in Shiny</li>
+<li>Importance of defensive programming (checking None values)</li>
+<li>Time format standardization challenges</li>
+</ul>
+<h4 id="action-items-for-next-sprint_1">Action Items for Next Sprint 🎯<a class="headerlink" href="#action-items-for-next-sprint_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Add status monitoring page</li>
+<li>[x] Implement broker messaging system</li>
+<li>[x] Enhance search functionality</li>
+</ul>
+<h4 id="sprint-metrics">Sprint Metrics<a class="headerlink" href="#sprint-metrics" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Version: 0.5.0 → pre-alpha 1.0</li>
+<li>Major features: 5+ test types implemented</li>
+<li>UI pages: 10+ pages created</li>
+</ul>
+<hr />
+<h3 id="sprint-2-monitoring-communication-mid-jan-2026">Sprint 2 - Monitoring &amp; Communication [Mid Jan 2026]<a class="headerlink" href="#sprint-2-monitoring-communication-mid-jan-2026" title="Permanent link">&para;</a></h3>
+<h4 id="completed-this-sprint_2">Completed This Sprint<a class="headerlink" href="#completed-this-sprint_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Added Status Application page with server monitoring</li>
+<li>Implemented Broker messaging system with SMTP integration</li>
+<li>Enhanced log monitoring with filtering (last 300 lines, info-level filtering)</li>
+<li>Added mail server health checks</li>
+<li>Integrated PTI selection in fitness room reservations</li>
+<li>Improved error handling for socket and runtime errors</li>
+</ul>
+<h4 id="what-went-well_3">What Went Well ✅<a class="headerlink" href="#what-went-well_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Comprehensive status monitoring gives real-time system health</li>
+<li>Broker messaging provides reliable notification system</li>
+<li>Log filtering helps focus on relevant information</li>
+<li>SMTP authentication with logging fallback</li>
+</ul>
+<h4 id="what-didnt-go-well_3">What Didn't Go Well ❌<a class="headerlink" href="#what-didnt-go-well_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Socket connection errors required explicit error handling</li>
+<li>Mail server configuration needed multiple iterations</li>
+<li>Log file reading initially only 100 lines (extended to 300)</li>
+</ul>
+<h4 id="what-i-learned_3">What I Learned 💡<a class="headerlink" href="#what-i-learned_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>System monitoring best practices</li>
+<li>SMTP authentication patterns</li>
+<li>Socket error handling (<code>gaierror</code>, <code>RuntimeError</code>)</li>
+<li>Log file parsing and filtering techniques</li>
+</ul>
+<h4 id="action-items-for-next-sprint_2">Action Items for Next Sprint 🎯<a class="headerlink" href="#action-items-for-next-sprint_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Complete alpha testing</li>
+<li>[x] Add search functionality</li>
+<li>[x] Refactor refresh logic</li>
+</ul>
+<h4 id="sprint-metrics_1">Sprint Metrics<a class="headerlink" href="#sprint-metrics_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Version: pre-alpha 1.0 → alpha 1.0 RC</li>
+<li>New features: Status monitoring, Broker messaging</li>
+<li>Bug fixes: 5+ error handling improvements</li>
+</ul>
+<hr />
+<h3 id="sprint-3-testing-bug-fixes-late-jan-2026">Sprint 3 - Testing &amp; Bug Fixes [Late Jan 2026]<a class="headerlink" href="#sprint-3-testing-bug-fixes-late-jan-2026" title="Permanent link">&para;</a></h3>
+<h4 id="completed-this-sprint_3">Completed This Sprint<a class="headerlink" href="#completed-this-sprint_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Completed all test cases in test plan</li>
+<li>Added searchable serial number modal across test pages</li>
+<li>Implemented unique march validation</li>
+<li>Fixed refresh logic bugs (refresh_tick updates)</li>
+<li>Refactored Page base class with centralized refresh_tick</li>
+<li>Enhanced username validation with regex and length checks</li>
+<li>Fixed PHEF scoring logic with combined score thresholds</li>
+</ul>
+<h4 id="what-went-well_4">What Went Well ✅<a class="headerlink" href="#what-went-well_4" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Systematic bug fixing across multiple components</li>
+<li>Consistent search modal implementation</li>
+<li>Better validation at repository and service layers</li>
+<li>Centralized refresh logic in base Page class</li>
+</ul>
+<h4 id="what-didnt-go-well_4">What Didn't Go Well ❌<a class="headerlink" href="#what-didnt-go-well_4" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Refresh bugs affected multiple pages (required widespread fixes)</li>
+<li>Initial validation was too permissive</li>
+<li>PHEF scoring needed refactoring for accuracy</li>
+</ul>
+<h4 id="what-i-learned_4">What I Learned 💡<a class="headerlink" href="#what-i-learned_4" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Importance of centralized base class logic</li>
+<li>Multi-layer validation (repository, service, controller)</li>
+<li>Testing reveals edge cases not caught in development</li>
+<li>Refresh state management in reactive frameworks</li>
+</ul>
+<h4 id="action-items-for-next-sprint_3">Action Items for Next Sprint 🎯<a class="headerlink" href="#action-items-for-next-sprint_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Deploy and document deployment process</li>
+<li>[x] Add final documentation</li>
+<li>[x] Prepare for RC release</li>
+</ul>
+<h4 id="sprint-metrics_2">Sprint Metrics<a class="headerlink" href="#sprint-metrics_2" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Version: alpha 1.0 RC → 1.1 RC</li>
+<li>Test cases completed: All test cases marked complete</li>
+<li>Bug fixes: 10+ refresh, validation, and logic fixes</li>
+</ul>
+<hr />
+<h3 id="sprint-4-deployment-documentation-latest-jan-2026">Sprint 4 - Deployment &amp; Documentation [Latest Jan 2026]<a class="headerlink" href="#sprint-4-deployment-documentation-latest-jan-2026" title="Permanent link">&para;</a></h3>
+<h4 id="completed-this-sprint_4">Completed This Sprint<a class="headerlink" href="#completed-this-sprint_4" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Revamped deployment script with detailed logging and error handling</li>
+<li>Updated installation documentation</li>
+<li>Enhanced README with test URLs and Git repository links</li>
+<li>Added screenshots to cross app documentation</li>
+<li>Improved UI consistency (placeholders, button labels, widths)</li>
+<li>Centralized JavaScript handlers in Page base class</li>
+<li>Fixed multiple data bugs (march sorting, serial number handling)</li>
+</ul>
+<h4 id="what-went-well_5">What Went Well ✅<a class="headerlink" href="#what-went-well_5" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Deployment script much more robust with conditional container management</li>
+<li>Comprehensive documentation updates</li>
+<li>UI polish improved user experience</li>
+<li>Centralized patterns reduce code duplication</li>
+</ul>
+<h4 id="what-didnt-go-well_5">What Didn't Go Well ❌<a class="headerlink" href="#what-didnt-go-well_5" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Minor typos in documentation needed fixes</li>
+<li>Some data sorting issues discovered late</li>
+<li>Missing serial_number cases required defensive coding</li>
+</ul>
+<h4 id="what-i-learned_5">What I Learned 💡<a class="headerlink" href="#what-i-learned_5" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Deployment automation and error handling best practices</li>
+<li>Documentation is critical for handoff/demo</li>
+<li>UI consistency matters for professional appearance</li>
+<li>Always check for None/missing data in production logic</li>
+</ul>
+<h4 id="action-items-for-next-sprint_4">Action Items for Next Sprint 🎯<a class="headerlink" href="#action-items-for-next-sprint_4" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Final UI enhancements</li>
+<li>[x] Complete documentation review</li>
+<li>[x] Prepare demo materials</li>
+</ul>
+<h4 id="sprint-metrics_3">Sprint Metrics<a class="headerlink" href="#sprint-metrics_3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Version: 1.1 RC (current)</li>
+<li>Documentation: Multiple comprehensive docs added</li>
+<li>Deployment: Fully automated with error handling </li>
+</ul>
+<hr />
+<h2 id="phase-4-testing-validation-jan-2026">Phase 4 - Testing &amp; Validation (Jan 2026) ✅<a class="headerlink" href="#phase-4-testing-validation-jan-2026" title="Permanent link">&para;</a></h2>
+<h3 id="testing-sprint-alpha-testing-jan-2026">Testing Sprint - Alpha Testing [Jan 2026]<a class="headerlink" href="#testing-sprint-alpha-testing-jan-2026" title="Permanent link">&para;</a></h3>
+<h4 id="testing-completed">Testing Completed<a class="headerlink" href="#testing-completed" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Comprehensive test plan with all test cases marked complete</li>
+<li>Integration testing across all fitness test types</li>
+<li>User interface testing on all pages</li>
+<li>Database relationship validation</li>
+<li>Error handling verification (None checks, missing data)</li>
+<li>Notification system testing (email, Broker)</li>
+</ul>
+<h4 id="bugs-found-fixed">Bugs Found &amp; Fixed<a class="headerlink" href="#bugs-found-fixed" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Refresh Logic</strong>: Multiple pages had inconsistent refresh_tick handling</li>
+<li><strong>Data Validation</strong>: March uniqueness not enforced across layers</li>
+<li><strong>Scoring Logic</strong>: PHEF combined score thresholds needed refactoring</li>
+<li><strong>UI Issues</strong>: DataGrid rendering with None values caused errors</li>
+<li><strong>Search Functionality</strong>: Serial number search needed enhancement</li>
+<li><strong>Sorting</strong>: March data required sorting by service_number</li>
+<li><strong>Error Handling</strong>: ServiceMen None checks to prevent runtime errors</li>
+<li><strong>Username Validation</strong>: Regex and length validation too permissive</li>
+</ul>
+<h4 id="what-went-well_6">What Went Well ✅<a class="headerlink" href="#what-went-well_6" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Systematic bug tracking through GitHub issues and PRs</li>
+<li>Quick iteration cycle for fixes</li>
+<li>Comprehensive test coverage revealed edge cases</li>
+<li>Defensive programming practices caught production issues early</li>
+</ul>
+<h4 id="what-didnt-go-well_6">What Didn't Go Well ❌<a class="headerlink" href="#what-didnt-go-well_6" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Some architectural issues (refresh logic) required widespread refactoring</li>
+<li>Testing phase revealed bugs that should have been caught earlier</li>
+<li>Multiple iterations needed for validation logic</li>
+</ul>
+<h4 id="what-i-learned_6">What I Learned 💡<a class="headerlink" href="#what-i-learned_6" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Importance of early and continuous testing</li>
+<li>Centralized patterns prevent widespread bugs</li>
+<li>Edge case testing is critical (empty lists, None values, missing attributes)</li>
+<li>User testing reveals UX issues not apparent to developers</li>
+</ul>
+<hr />
+<h2 id="phase-5-polish-current-state-jan-2026">Phase 5 - Polish &amp; Current State (Jan 2026) 🚀<a class="headerlink" href="#phase-5-polish-current-state-jan-2026" title="Permanent link">&para;</a></h2>
+<h3 id="current-release-11-rc">Current Release: 1.1 RC<a class="headerlink" href="#current-release-11-rc" title="Permanent link">&para;</a></h3>
+<h4 id="delivered-features">Delivered Features<a class="headerlink" href="#delivered-features" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>Core Fitness Tests</strong>: PHEF, Swim, March, Cross statistics</li>
+<li><strong>Session Management</strong>: Create, view, manage test sessions</li>
+<li><strong>Reservation System</strong>: Fitness room reservations with PTI selection</li>
+<li><strong>User Management</strong>: Authentication, role-based access, user CRUD</li>
+<li><strong>Dashboard</strong>: Unit-specific dashboards with real-time data</li>
+<li><strong>Status Monitoring</strong>: Application health monitoring with log viewing</li>
+<li><strong>Notification System</strong>: Email notifications via Broker/SMTP</li>
+<li><strong>Search Functionality</strong>: Serial number search with modal interface</li>
+<li><strong>Reports</strong>: Test result reporting across all fitness types</li>
+</ul>
+<h4 id="demo-materials">Demo Materials<a class="headerlink" href="#demo-materials" title="Permanent link">&para;</a></h4>
+<ul>
+<li>README with comprehensive project documentation</li>
+<li>Screenshots in crossapp.md documentation</li>
+<li>Video demo link added to documentation</li>
+<li>Installation guide with deploy.sh automation</li>
+<li>Test URLs for mailserver and HR simulator</li>
+</ul>
+<h4 id="current-status-next-steps">Current Status &amp; Next Steps<a class="headerlink" href="#current-status-next-steps" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Version: 1.1 RC (Release Candidate)</li>
+<li>Status: Feature complete, polish phase</li>
+<li>Recent focus: UI consistency, documentation, deployment automation</li>
+<li>Outstanding: Final demo preparation, potential production deployment</li>
+</ul>
+<hr />
+<h2 id="project-wide-retrospective-current-jan-2026">Project-Wide Retrospective (Current - Jan 2026)<a class="headerlink" href="#project-wide-retrospective-current-jan-2026" title="Permanent link">&para;</a></h2>
+<h3 id="overall-success-factors">Overall Success Factors<a class="headerlink" href="#overall-success-factors" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Clean Architecture</strong>: Layered design (Repository → Service → Controller → UI) made code maintainable</li>
+<li><strong>Type Safety</strong>: Comprehensive type hints caught errors early</li>
+<li><strong>Documentation</strong>: Docstrings and external docs improved clarity</li>
+<li><strong>Incremental Development</strong>: Sprint-based approach allowed steady progress</li>
+<li><strong>Version Control</strong>: Git workflow with feature branches and PRs kept changes organized</li>
+</ul>
+<h3 id="major-challenges-overcome">Major Challenges Overcome<a class="headerlink" href="#major-challenges-overcome" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Async Programming</strong>: Mastered async/await patterns in Python web framework</li>
+<li><strong>Database Relationships</strong>: Complex foreign key relationships with SQLAlchemy</li>
+<li><strong>Reactive UI</strong>: Learning Shiny's reactive programming model</li>
+<li><strong>Data Handling</strong>: DataFrame-based UI with null-safe rendering</li>
+<li><strong>Error Resilience</strong>: Comprehensive error handling across all layers</li>
+<li><strong>Deployment Automation</strong>: Robust deployment with container management</li>
+</ul>
+<h3 id="technical-debt-created">Technical Debt Created<a class="headerlink" href="#technical-debt-created" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Some code duplication in test pages (could be further abstracted)</li>
+<li>Async handling could be more consistent across controllers</li>
+<li>Test coverage could be more comprehensive (unit tests vs integration tests)</li>
+<li>Some legacy code patterns remain from early development</li>
+</ul>
+<h3 id="what-i-would-do-differently-next-time">What I Would Do Differently Next Time<a class="headerlink" href="#what-i-would-do-differently-next-time" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Start with comprehensive test suite from day one (TDD approach)</li>
+<li>Design centralized patterns earlier (like base Page class)</li>
+<li>More prototyping of UI/UX before full implementation</li>
+<li>Earlier focus on deployment automation</li>
+<li>More frequent code reviews and refactoring sessions</li>
+</ul>
+<h3 id="skills-developed">Skills Developed<a class="headerlink" href="#skills-developed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Python Web Frameworks</strong>: Shiny for Python, FastAPI patterns</li>
+<li><strong>SQLAlchemy ORM</strong>: Advanced relationships, type annotations, async queries</li>
+<li><strong>Reactive Programming</strong>: Understanding reactive patterns and state management</li>
+<li><strong>Docker &amp; Deployment</strong>: Container orchestration and automation</li>
+<li><strong>Database Design</strong>: ER modeling, schema design, relationship management</li>
+<li><strong>Documentation</strong>: Technical writing, architectural documentation</li>
+<li><strong>Git Workflow</strong>: Feature branches, PRs, semantic versioning</li>
+</ul>
+<h3 id="favorite-wins">Favorite Wins 🎉<a class="headerlink" href="#favorite-wins" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Clean layered architecture that made changes easy</li>
+<li>Comprehensive status monitoring page showing real-time system health</li>
+<li>Smooth DataGrid UI with sorting and searching</li>
+<li>Automated deployment script saving hours of manual work</li>
+<li>All test cases completed and passing</li>
+<li>Professional documentation that tells the project story</li>
+</ul>
+<h3 id="project-metrics">Project Metrics<a class="headerlink" href="#project-metrics" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Total duration</strong>: ~3 months (Nov 2025 - Jan 2026)</li>
+<li><strong>Total sprints</strong>: 6 sprints across 3 phases</li>
+<li><strong>Total features delivered</strong>: 15+ major features</li>
+<li><strong>Current version</strong>: 1.1 RC</li>
+<li><strong>Git commits</strong>: 100+ commits</li>
+<li><strong>Pull requests</strong>: 20+ PRs with code review</li>
+<li><strong>Test pages</strong>: 10+ interactive pages</li>
+<li><strong>Documentation files</strong>: 5+ comprehensive docs</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,8373 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Digitization of Physical Military Tests at SOR-Unit Level">
+      
+      
+        <meta name="author" content="Benoit Goethals">
+      
+      
+      
+        <link rel="prev" href="../stories/">
+      
+      
+        <link rel="next" href="../../tests/broker_unit_tests/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Test Cases - WarriorFit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#complete-test-plan-warriorfit-system" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="WarriorFit" class="md-header__button md-logo" aria-label="WarriorFit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            WarriorFit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Test Cases
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/overview/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/di-guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../business/business-logic/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Business
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../security/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/app/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  About
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../authors/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Author
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="WarriorFit" class="md-nav__button md-logo" aria-label="WarriorFit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    WarriorFit
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation & Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/user-manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/module-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/di-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dependency Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/crossapp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross / Running Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/broker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOM Broker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/datamodel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization (i18n)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Business
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../business/business-logic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scoring & Business Logic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../business/reservations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Stories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Cases
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#epic-1-user-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 1: User Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 1: User Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-11-create-new-user-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.1: Create New User [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-12-error-handling-for-user-creation-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.2: Error Handling for User Creation [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-13-edit-user-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.3: Edit User [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-14-password-reset-by-admin-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.4: Password Reset by Admin [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-15-user-list-with-search-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.5: User List with Search [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-16-delete-user-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.6: Delete User [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-2-test-session-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 2: Test Session Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 2: Test Session Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-21-create-new-test-session-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.1: Create New Test Session [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-22-update-session-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.2: Update Session [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-23-delete-session-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.3: Delete Session [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-24-view-session-list-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.4: View Session List [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-25-upcoming-sessions-on-welcome-page-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.5: Upcoming Sessions on Welcome Page [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-3-phef-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 3: PHEF Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 3: PHEF Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-31-select-phef-session-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.1: Select PHEF Session [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-32-lookup-serviceman-via-bemil-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.2: Lookup Serviceman via BEMIL [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-33-enter-phef-measurements-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.3: Enter PHEF Measurements [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-34-add-phef-result-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.4: Add PHEF Result [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-35-updatedelete-phef-result-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.5: Update/Delete PHEF Result [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-36-phef-result-grid-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.6: PHEF Result Grid [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-4-combat-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 4: Combat Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 4: Combat Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-41-enter-combat-test-results-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 4.1: Enter Combat Test Results [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-42-addupdatedelete-combat-result-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 4.2: Add/Update/Delete Combat Result [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-43-combat-result-grid-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 4.3: Combat Result Grid [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-5-swimming-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 5: Swimming Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 5: Swimming Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-51-enter-swimming-test-result-4-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 5.1: Enter Swimming Test Result [4 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-52-addupdatedelete-swim-result-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 5.2: Add/Update/Delete Swim Result [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-53-swimming-result-grid-1-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 5.3: Swimming Result Grid [1 point]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-6-functional-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 6: Functional Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 6: Functional Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-61-enter-functional-test-measurements-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.1: Enter Functional Test Measurements [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-62-determine-gono-go-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.2: Determine GO/NO-GO [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-63-addupdatedelete-functional-result-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.3: Add/Update/Delete Functional Result [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-64-functional-result-grid-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.4: Functional Result Grid [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-7-march-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 7: March Registration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 7: March Registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-71-enter-march-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.1: Enter March [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-72-update-march-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.2: Update March [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-73-delete-march-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.3: Delete March [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-74-march-list-view-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.4: March List View [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-8-cross-session-runner-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 8: Cross Session &amp; Runner Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 8: Cross Session &amp; Runner Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-81-createeditdelete-cross-session-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.1: Create/Edit/Delete Cross Session [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-82-enter-cross-runner-results-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.2: Enter Cross Runner Results [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-83-updatedelete-cross-runner-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.3: Update/Delete Cross Runner [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-84-cross-planning-list-view-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.4: Cross Planning List View [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-85-cross-statistics-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.5: Cross Statistics [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-86-import-chronos-xml-race-result-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.6: Import Chronos XML Race Result [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-87-extended-cross-statistics-redesigned-ux-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.7: Extended Cross Statistics &amp; Redesigned UX [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-9-bemil-personnel-lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 9: BEMIL Personnel Lookup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 9: BEMIL Personnel Lookup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-91-lookup-serviceman-by-serial-number-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 9.1: Lookup Serviceman by Serial Number [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-92-browse-all-servicemen-via-modal-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 9.2: Browse All Servicemen via Modal [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-10-individual-test-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 10: Individual Test History
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 10: Individual Test History">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-101-search-individual-by-serial-number-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.1: Search Individual by Serial Number [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-102-display-complete-test-history-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.2: Display Complete Test History [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-103-generate-individual-pdf-report-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.3: Generate Individual PDF Report [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-104-download-pdf-report-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.4: Download PDF Report [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-11-unit-status-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 11: Unit Status &amp; Dashboard
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 11: Unit Status &amp; Dashboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-111-view-unit-status-grid-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.1: View Unit Status Grid [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-112-view-individual-history-via-modal-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.2: View Individual History via Modal [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-113-unit-dashboard-with-statistics-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.3: Unit Dashboard with Statistics [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-114-phef-not-done-list-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.4: PHEF Not-Done List [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-12-calendar-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 12: Calendar Events
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 12: Calendar Events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-121-view-personal-test-calendar-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 12.1: View Personal Test Calendar [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-122-view-all-test-sessions-calendar-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 12.2: View All Test Sessions Calendar [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-13-fitness-room-reservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 13: Fitness Room Reservation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 13: Fitness Room Reservation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-131-create-room-reservation-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 13.1: Create Room Reservation [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-132-view-reservations-weeklymonthlylist-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 13.2: View Reservations (Weekly/Monthly/List) [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-133-delete-reservation-1-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 13.3: Delete Reservation [1 point]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-14-audit-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 14: Audit Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 14: Audit Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-141-view-audit-log-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 14.1: View Audit Log [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-142-filter-audit-log-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 14.2: Filter Audit Log [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-15-welcome-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 15: Welcome Dashboard
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 15: Welcome Dashboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-151-welcome-page-with-role-specific-info-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 15.1: Welcome Page with Role-Specific Info [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-152-upcoming-sessions-for-ptiapti-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 15.2: Upcoming Sessions for PTI/APTI [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-cutting-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Cutting Test Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cross-Cutting Test Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uiux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI/UX
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reactive-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reactive State
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tests/broker_unit_tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Broker Unit Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../retrospective/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retrospective
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../proposal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Proposal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_2" id="__nav_8_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Configuration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/application_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/settings_data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/config/smtp_config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SMTP Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_3" id="__nav_8_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core / Domain
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core / Domain
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/gender/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gender
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/rank/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/role/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Role
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/type_fitness_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fitness Test Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/cluster/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/core/mfft_level/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Level
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_4" id="__nav_8_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Internationalization
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/i18n/translator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/i18n/language_store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_5" id="__nav_8_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data Models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/models/db_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DB Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/models/enum_mapped_user_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Enum Mapped User Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_6" id="__nav_8_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repositories
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Repositories
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/abc_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/consent_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Consent Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/cross_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/fitness_test_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fitness Test Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/march_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/mom_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOM Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/reservation_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reservation Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/servicemen_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servicemen Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/repositories/user_repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_7" id="__nav_8_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Services
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/be_mil_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BeMil Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_consent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Consent Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/data_collector/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Collector
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_gdpr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GDPR Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/generator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/mail_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mail Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/military_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Military Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/notify_mail/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Mail
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/report_generator_csv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report CSV
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/report_generator_pdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report PDF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/report_type/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report Type
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retention Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/reserve_fitness_room_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_cross/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_march/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/services/service_user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_8" id="__nav_8_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MOM / Broker
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    MOM / Broker
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mom/broker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Broker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mom/hr_fatapi_dummy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HR API Dummy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/mom/message/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Message
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_9" id="__nav_8_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calculators
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Calculators
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/phef_calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PHEF Calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/functional_calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functional Calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/mfft_eval_calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Eval Calculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logic/singleton/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Singleton
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_10" id="__nav_8_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/security/auth_service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/security/rate_limiter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rate Limiter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_11" id="__nav_8_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Pages
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    UI Pages
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Page
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/base_test_page/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base Test Page
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/auditlog_events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Log Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/calendar_events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calendar Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/combat_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/cross/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/cross_planning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Planning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/cross_statics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Statistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/dashboard_own_unit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/functional_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functional Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/ind_test_show/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Individual Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/march/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/mfft_eval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/my_progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    My Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/own_unit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/phef/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PHEF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/privacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/reports/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/reserve_fitness_room/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/servicemen_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servicemen Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/settings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/status_application/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/status_login_user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Login User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/status_tests/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/swim_test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swimming Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/test_analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Analytics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/user_store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/pages/usermanagement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_12" id="__nav_8_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Controllers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    UI Controllers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/auditlog_events_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Log Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/calendar_events_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calendar Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/combat_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Combat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/cross_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/cross_planning_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Planning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/cross_statistics_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross Statistics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/dashboard_own_unit_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/functional_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functional
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/ind_test_show_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Individual Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/march_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    March
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/mfft_eval_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFFT Eval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/my_progress_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    My Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/own_unit_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Own Unit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/phef_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PHEF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/privacy_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Privacy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/reports_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/reserve_fitness_room_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Room Reservation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/servicemen_overview_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Servicemen Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/session_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/setting_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/status_application_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/status_log_user_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Log User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/status_tests_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Status Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/swimming_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swimming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/test_analytics_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Analytics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/controllers/usermanagement_controller/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_13" id="__nav_8_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI Infrastructure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    UI Infrastructure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/ui/app_server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    App Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/ui/page_registry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Page Registry
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_8_14" id="__nav_8_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Utilities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/formaters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Formatters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/utils/os/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OS Utilities
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    About
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../authors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Author
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#epic-1-user-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 1: User Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 1: User Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-11-create-new-user-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.1: Create New User [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-12-error-handling-for-user-creation-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.2: Error Handling for User Creation [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-13-edit-user-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.3: Edit User [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-14-password-reset-by-admin-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.4: Password Reset by Admin [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-15-user-list-with-search-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.5: User List with Search [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-16-delete-user-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 1.6: Delete User [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-2-test-session-planning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 2: Test Session Planning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 2: Test Session Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-21-create-new-test-session-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.1: Create New Test Session [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-22-update-session-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.2: Update Session [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-23-delete-session-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.3: Delete Session [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-24-view-session-list-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.4: View Session List [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-25-upcoming-sessions-on-welcome-page-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 2.5: Upcoming Sessions on Welcome Page [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-3-phef-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 3: PHEF Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 3: PHEF Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-31-select-phef-session-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.1: Select PHEF Session [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-32-lookup-serviceman-via-bemil-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.2: Lookup Serviceman via BEMIL [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-33-enter-phef-measurements-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.3: Enter PHEF Measurements [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-34-add-phef-result-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.4: Add PHEF Result [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-35-updatedelete-phef-result-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.5: Update/Delete PHEF Result [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-36-phef-result-grid-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 3.6: PHEF Result Grid [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-4-combat-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 4: Combat Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 4: Combat Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-41-enter-combat-test-results-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 4.1: Enter Combat Test Results [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-42-addupdatedelete-combat-result-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 4.2: Add/Update/Delete Combat Result [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-43-combat-result-grid-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 4.3: Combat Result Grid [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-5-swimming-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 5: Swimming Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 5: Swimming Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-51-enter-swimming-test-result-4-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 5.1: Enter Swimming Test Result [4 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-52-addupdatedelete-swim-result-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 5.2: Add/Update/Delete Swim Result [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-53-swimming-result-grid-1-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 5.3: Swimming Result Grid [1 point]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-6-functional-test-input" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 6: Functional Test Input
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 6: Functional Test Input">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-61-enter-functional-test-measurements-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.1: Enter Functional Test Measurements [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-62-determine-gono-go-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.2: Determine GO/NO-GO [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-63-addupdatedelete-functional-result-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.3: Add/Update/Delete Functional Result [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-64-functional-result-grid-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 6.4: Functional Result Grid [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-7-march-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 7: March Registration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 7: March Registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-71-enter-march-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.1: Enter March [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-72-update-march-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.2: Update March [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-73-delete-march-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.3: Delete March [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-74-march-list-view-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 7.4: March List View [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-8-cross-session-runner-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 8: Cross Session &amp; Runner Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 8: Cross Session &amp; Runner Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-81-createeditdelete-cross-session-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.1: Create/Edit/Delete Cross Session [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-82-enter-cross-runner-results-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.2: Enter Cross Runner Results [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-83-updatedelete-cross-runner-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.3: Update/Delete Cross Runner [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-84-cross-planning-list-view-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.4: Cross Planning List View [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-85-cross-statistics-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.5: Cross Statistics [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-86-import-chronos-xml-race-result-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.6: Import Chronos XML Race Result [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-87-extended-cross-statistics-redesigned-ux-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 8.7: Extended Cross Statistics &amp; Redesigned UX [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-9-bemil-personnel-lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 9: BEMIL Personnel Lookup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 9: BEMIL Personnel Lookup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-91-lookup-serviceman-by-serial-number-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 9.1: Lookup Serviceman by Serial Number [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-92-browse-all-servicemen-via-modal-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 9.2: Browse All Servicemen via Modal [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-10-individual-test-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 10: Individual Test History
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 10: Individual Test History">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-101-search-individual-by-serial-number-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.1: Search Individual by Serial Number [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-102-display-complete-test-history-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.2: Display Complete Test History [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-103-generate-individual-pdf-report-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.3: Generate Individual PDF Report [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-104-download-pdf-report-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 10.4: Download PDF Report [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-11-unit-status-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 11: Unit Status &amp; Dashboard
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 11: Unit Status &amp; Dashboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-111-view-unit-status-grid-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.1: View Unit Status Grid [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-112-view-individual-history-via-modal-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.2: View Individual History via Modal [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-113-unit-dashboard-with-statistics-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.3: Unit Dashboard with Statistics [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-114-phef-not-done-list-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 11.4: PHEF Not-Done List [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-12-calendar-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 12: Calendar Events
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 12: Calendar Events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-121-view-personal-test-calendar-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 12.1: View Personal Test Calendar [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-122-view-all-test-sessions-calendar-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 12.2: View All Test Sessions Calendar [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-13-fitness-room-reservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 13: Fitness Room Reservation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 13: Fitness Room Reservation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-131-create-room-reservation-5-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 13.1: Create Room Reservation [5 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-132-view-reservations-weeklymonthlylist-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 13.2: View Reservations (Weekly/Monthly/List) [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-133-delete-reservation-1-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 13.3: Delete Reservation [1 point]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-14-audit-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 14: Audit Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 14: Audit Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-141-view-audit-log-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 14.1: View Audit Log [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-142-filter-audit-log-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 14.2: Filter Audit Log [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#epic-15-welcome-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Epic 15: Welcome Dashboard
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Epic 15: Welcome Dashboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#story-151-welcome-page-with-role-specific-info-3-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 15.1: Welcome Page with Role-Specific Info [3 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#story-152-upcoming-sessions-for-ptiapti-2-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story 15.2: Upcoming Sessions for PTI/APTI [2 points]
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-cutting-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-Cutting Test Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cross-Cutting Test Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uiux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI/UX
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reactive-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reactive State
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="complete-test-plan-warriorfit-system">Complete Test Plan – WarriorFit System<a class="headerlink" href="#complete-test-plan-warriorfit-system" title="Permanent link">&para;</a></h1>
+<p>WarriorFit is a Python Shiny for Python desktop web application.
+Test cases validate UI behaviour, reactive state, business logic, and data persistence.
+Test status: <code>[x]</code> = implemented/passing, <code>[ ]</code> = pending.</p>
+<hr />
+<h2 id="epic-1-user-management">Epic 1: User Management<a class="headerlink" href="#epic-1-user-management" title="Permanent link">&para;</a></h2>
+<h3 id="story-11-create-new-user-5-points">Story 1.1: Create New User [5 points]<a class="headerlink" href="#story-11-create-new-user-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Verify form displays all required fields (username, email, password with toggle, role dropdown, serial_number)
+- [x] Test username validation (3–30 characters, allowed: a-z, 0–9, ., _, -)
+- [x] Test username uniqueness check — duplicate shows error in status output
+- [x] Test email format validation
+- [x] Test email uniqueness check — duplicate shows error in status output
+- [x] Test password complexity requirements (minimum 12 characters)
+- [x] Test serial_number uniqueness
+- [x] Verify role dropdown displays: admin, PTI, APTI
+- [x] Verify serial_number must exist in BEMIL
+- [x] Test successful user creation — "User created" notification shown
+- [x] Verify audit log entry created after user creation
+- [x] Test form clears after successful creation</p>
+<p><strong>Security Tests:</strong>
+- [x] Verify password is hashed before storing in database
+- [x] Verify password is not visible in plain text in the DataGrid
+- [x] Verify only admin role can access User Management tab</p>
+<p><strong>UI Tests:</strong>
+- [x] Password field shows masked characters by default
+- [x] Password toggle button switches between masked and plain text</p>
+<hr />
+<h3 id="story-12-error-handling-for-user-creation-2-points">Story 1.2: Error Handling for User Creation [2 points]<a class="headerlink" href="#story-12-error-handling-for-user-creation-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Test duplicate username — error message in status output field
+- [x] Test duplicate email — error message in status output field
+- [x] Test duplicate serial_number — error message in status output field
+- [x] Test weak password — specific feedback about requirements
+- [x] Verify error messages are clear and appear in the status text output</p>
+<p><strong>UI Tests:</strong>
+- [x] Status output text is visible and styled after error</p>
+<hr />
+<h3 id="story-13-edit-user-5-points">Story 1.3: Edit User [5 points]<a class="headerlink" href="#story-13-edit-user-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Test user row selection from DataGrid — form pre-fills with current values
+- [x] Test editing email (with uniqueness validation)
+- [x] Test editing role (dropdown updates)
+- [x] Test editing serial_number (with uniqueness validation)
+- [x] Test toggling active status checkbox
+- [x] Test "Update" button saves changes
+- [x] Verify audit log records changes
+- [x] Verify success notification or status message shown</p>
+<p><strong>Edge Cases:</strong>
+- [x] Test editing with no row selected — Update button should show error
+- [x] Test changing email to one that is already used by another user</p>
+<hr />
+<h3 id="story-14-password-reset-by-admin-2-points">Story 1.4: Password Reset by Admin [2 points]<a class="headerlink" href="#story-14-password-reset-by-admin-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Test entering new password in edit form resets user password
+- [x] Verify audit log records password reset action
+- [x] Test leaving password field blank on update does NOT change password
+- [x] Verify new password is hashed before storing</p>
+<hr />
+<h3 id="story-15-user-list-with-search-2-points">Story 1.5: User List with Search [2 points]<a class="headerlink" href="#story-15-user-list-with-search-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Verify DataGrid displays columns: username, email, role, serial_number, active
+- [x] Test column filter on username
+- [x] Test column filter on role
+- [x] Test column filter on active status
+- [x] Test Refresh button reloads data
+- [x] Test clicking a row loads user into edit form</p>
+<p><strong>Performance Tests:</strong>
+- [x] Verify grid loads within 3 seconds</p>
+<hr />
+<h3 id="story-16-delete-user-2-points">Story 1.6: Delete User [2 points]<a class="headerlink" href="#story-16-delete-user-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Select user row and click "Delete Selected" — user is removed
+- [x] Verify DataGrid updates after deletion
+- [x] Verify audit log records deletion
+- [x] Test delete with no row selected — shows appropriate error</p>
+<hr />
+<h2 id="epic-2-test-session-planning">Epic 2: Test Session Planning<a class="headerlink" href="#epic-2-test-session-planning" title="Permanent link">&para;</a></h2>
+<h3 id="story-21-create-new-test-session-5-points">Story 2.1: Create New Test Session [5 points]<a class="headerlink" href="#story-21-create-new-test-session-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Verify form displays all fields (PTI dropdown, date, time, type, description, canceled)
+- [x] Test type dropdown shows: PHEF, Combat, Functional, Swimming
+- [x] Test PTI dropdown loads from BEMIL service
+- [x] Test validation: date required
+- [x] Test validation: type required and must be valid
+- [x] Test time format validation (HH:MM)
+- [x] Test "Add" creates session and grid updates
+- [x] Verify form clears after successful add
+- [x] Verify status message: "Session added successfully"</p>
+<p><strong>Edge Cases:</strong>
+- [x] Test add with no PTI selected
+- [x] Test add with invalid time format</p>
+<hr />
+<h3 id="story-22-update-session-3-points">Story 2.2: Update Session [3 points]<a class="headerlink" href="#story-22-update-session-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Click row in DataGrid — form pre-fills with session values
+- [x] Modify type and date, click "Update" — grid updates
+- [x] Test canceled checkbox toggle saves correctly
+- [x] Verify status message after update</p>
+<hr />
+<h3 id="story-23-delete-session-2-points">Story 2.3: Delete Session [2 points]<a class="headerlink" href="#story-23-delete-session-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Select session row and click "Delete Selected" — session removed
+- [x] Verify DataGrid updates after deletion
+- [x] Test delete with no row selected — error shown</p>
+<hr />
+<h3 id="story-24-view-session-list-3-points">Story 2.4: View Session List [3 points]<a class="headerlink" href="#story-24-view-session-list-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Verify DataGrid shows columns: Start, Type, Serial PTI, Canceled, Description
+- [x] Test column filters work
+- [x] Verify sessions sorted by Start date ascending
+- [x] Test Refresh button reloads grid</p>
+<hr />
+<h3 id="story-25-upcoming-sessions-on-welcome-page-2-points">Story 2.5: Upcoming Sessions on Welcome Page [2 points]<a class="headerlink" href="#story-25-upcoming-sessions-on-welcome-page-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Verify PTI/APTI role sees upcoming sessions DataGrid on Welcome tab
+- [x] Verify admin does NOT see the sessions DataGrid section
+- [x] Test DataGrid shows only sessions for logged-in user's serial
+- [x] Verify Refresh button on welcome page reloads sessions</p>
+<hr />
+<h2 id="epic-3-phef-test-input">Epic 3: PHEF Test Input<a class="headerlink" href="#epic-3-phef-test-input" title="Permanent link">&para;</a></h2>
+<h3 id="story-31-select-phef-session-2-points">Story 3.1: Select PHEF Session [2 points]<a class="headerlink" href="#story-31-select-phef-session-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] PHEF session dropdown shows only sessions of type PHEF
+- [x] Selecting session updates the result grid for that session
+- [x] Session stays selected across multiple serial lookups</p>
+<hr />
+<h3 id="story-32-lookup-serviceman-via-bemil-2-points">Story 3.2: Lookup Serviceman via BEMIL [2 points]<a class="headerlink" href="#story-32-lookup-serviceman-via-bemil-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Enter valid serial number and click "Confirm Serial" — serviceman info displayed
+- [x] Display format: "Rank Serial FirstName LastName Gender Age years old"
+- [x] Enter invalid serial — "Not found" message; measurement inputs stay disabled
+- [x] Click "Search own Unit" — modal opens with servicemen DataGrid
+- [x] Modal DataGrid is filterable
+- [x] Select row in modal — serial fills into main field; modal closes</p>
+<hr />
+<h3 id="story-33-enter-phef-measurements-5-points">Story 3.3: Enter PHEF Measurements [5 points]<a class="headerlink" href="#story-33-enter-phef-measurements-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Side-bridge Right input (mm:ss) — live score updates next to field
+- [x] Side-bridge Left input (mm:ss) — live score updates next to field
+- [x] 2400m run input (mm:ss) — live score updates next to field
+- [x] Score ≥ 10 shown in green; score &lt; 10 shown in red
+- [x] Total score shows PASSED when side total ≥ 20 AND run ≥ 10
+- [x] Total score shows FAILED and is red when criteria not met
+- [x] Measurement inputs are disabled before serial confirmation
+- [x] After serial confirmation: inputs become enabled</p>
+<p><strong>Edge Cases:</strong>
+- [x] Empty measurement fields → scores show blank
+- [x] Invalid time format (e.g., "abc") → score shows blank, no crash</p>
+<hr />
+<h3 id="story-34-add-phef-result-5-points">Story 3.4: Add PHEF Result [5 points]<a class="headerlink" href="#story-34-add-phef-result-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Add" button disabled until session selected AND serial confirmed
+- [x] Click "Add" — result saved to database
+- [x] Grid updates to show new entry
+- [x] Form clears after successful add
+- [x] Status message: "Added PHEF test for [serial] in session [id]"
+- [x] Verify audit log entry created</p>
+<p><strong>Error Cases:</strong>
+- [x] Add with no session selected — error in status
+- [x] Add with no serial confirmed — error in status</p>
+<hr />
+<h3 id="story-35-updatedelete-phef-result-2-points">Story 3.5: Update/Delete PHEF Result [2 points]<a class="headerlink" href="#story-35-updatedelete-phef-result-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Click result row — form fills; Add disabled, Update enabled
+- [x] Modify time values, click Update — record changes in grid
+- [x] Click "Delete Selected" with row selected — record removed from grid
+- [x] Verify status message after update/delete</p>
+<hr />
+<h3 id="story-36-phef-result-grid-2-points">Story 3.6: PHEF Result Grid [2 points]<a class="headerlink" href="#story-36-phef-result-grid-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Grid shows records only for selected session
+- [x] Columns include: Serial, Sidebridge R, Sidebridge L, Run time, Scores, Pass/Fail
+- [x] Grid sorts by serial number
+- [x] Refresh button reloads grid data</p>
+<hr />
+<h2 id="epic-4-combat-test-input">Epic 4: Combat Test Input<a class="headerlink" href="#epic-4-combat-test-input" title="Permanent link">&para;</a></h2>
+<h3 id="story-41-enter-combat-test-results-5-points">Story 4.1: Enter Combat Test Results [5 points]<a class="headerlink" href="#story-41-enter-combat-test-results-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Combat session dropdown shows only Combat-type sessions
+- [x] BEMIL serial lookup works same as PHEF
+- [x] Three GO/NO-GO inputs: Speed March, Obstacle Course, Rope Course
+- [x] Final result = GO only when all 3 are GO
+- [x] Final result = NO-GO if any component is NO-GO
+- [x] Visual indicator shows GO (green) or FAIL (red)</p>
+<hr />
+<h3 id="story-42-addupdatedelete-combat-result-3-points">Story 4.2: Add/Update/Delete Combat Result [3 points]<a class="headerlink" href="#story-42-addupdatedelete-combat-result-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Add" saves new result — grid updates
+- [x] Row selection fills form for update
+- [x] "Update" saves changes — grid updates
+- [x] "Delete Selected" removes entry — grid updates
+- [x] Status messages confirm each action</p>
+<hr />
+<h3 id="story-43-combat-result-grid-2-points">Story 4.3: Combat Result Grid [2 points]<a class="headerlink" href="#story-43-combat-result-grid-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Grid shows results for selected session only
+- [x] Columns: serial, speed march result, obstacle result, rope result, final result
+- [x] Refresh button reloads data</p>
+<hr />
+<h2 id="epic-5-swimming-test-input">Epic 5: Swimming Test Input<a class="headerlink" href="#epic-5-swimming-test-input" title="Permanent link">&para;</a></h2>
+<h3 id="story-51-enter-swimming-test-result-4-points">Story 5.1: Enter Swimming Test Result [4 points]<a class="headerlink" href="#story-51-enter-swimming-test-result-4-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Swimming session dropdown shows only Swimming sessions
+- [x] BEMIL serial lookup works
+- [x] GO/NO-GO selection available
+- [x] Optional remarks field
+- [x] Form clears after save</p>
+<hr />
+<h3 id="story-52-addupdatedelete-swim-result-2-points">Story 5.2: Add/Update/Delete Swim Result [2 points]<a class="headerlink" href="#story-52-addupdatedelete-swim-result-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Add" creates result; grid updates
+- [x] Row selection fills form for update
+- [x] "Update" and "Delete" work correctly
+- [x] Status messages after each action</p>
+<hr />
+<h3 id="story-53-swimming-result-grid-1-point">Story 5.3: Swimming Result Grid [1 point]<a class="headerlink" href="#story-53-swimming-result-grid-1-point" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Grid filtered by selected session
+- [x] Columns: serial, result, remarks</p>
+<hr />
+<h2 id="epic-6-functional-test-input">Epic 6: Functional Test Input<a class="headerlink" href="#epic-6-functional-test-input" title="Permanent link">&para;</a></h2>
+<h3 id="story-61-enter-functional-test-measurements-5-points">Story 6.1: Enter Functional Test Measurements [5 points]<a class="headerlink" href="#story-61-enter-functional-test-measurements-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Functional session dropdown shows only Functional sessions
+- [x] BEMIL serial lookup works
+- [x] Pull-ups input: integer, 0–100
+- [x] Push-ups (2min) input: integer, 0–200
+- [x] Sit-ups (2min) input: integer, 0–200
+- [x] Points per component calculated in real time (age/gender corrected)
+- [x] Percentage of maximum shown per component</p>
+<hr />
+<h3 id="story-62-determine-gono-go-2-points">Story 6.2: Determine GO/NO-GO [2 points]<a class="headerlink" href="#story-62-determine-gono-go-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Component ≥ 50% → GO (shown in green)
+- [x] Component &lt; 50% → NO-GO (shown in red)
+- [x] Final GO only when all 3 components are GO
+- [x] Final result badge updates reactively as values change</p>
+<p><strong>Edge Cases:</strong>
+- [x] Exactly 50% on one component → GO (boundary check)
+- [x] 49% on one component → NO-GO</p>
+<hr />
+<h3 id="story-63-addupdatedelete-functional-result-3-points">Story 6.3: Add/Update/Delete Functional Result [3 points]<a class="headerlink" href="#story-63-addupdatedelete-functional-result-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Add" saves counts, percentages, component and final GO/NO-GO
+- [x] Row selection fills form for update
+- [x] "Update" and "Delete" work correctly
+- [x] Status messages after each action</p>
+<hr />
+<h3 id="story-64-functional-result-grid-2-points">Story 6.4: Functional Result Grid [2 points]<a class="headerlink" href="#story-64-functional-result-grid-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Grid filtered by selected session
+- [x] Columns: serial, pull-ups, push-ups, sit-ups, total score, final result</p>
+<hr />
+<h2 id="epic-7-march-registration">Epic 7: March Registration<a class="headerlink" href="#epic-7-march-registration" title="Permanent link">&para;</a></h2>
+<h3 id="story-71-enter-march-5-points">Story 7.1: Enter March [5 points]<a class="headerlink" href="#story-71-enter-march-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Serial number input + "Confirm Serial" validates via BEMIL
+- [x] "Search own Unit" modal opens; row selection fills serial and closes modal
+- [x] After confirmation: rank, name, gender, age shown read-only
+- [x] Date picker shows today by default
+- [x] Distance numeric field (default 30, min 0)
+- [x] Succeeded checkbox (default unchecked)
+- [x] "Add" creates record — grid updates
+- [x] Uniqueness check: same serial + distance + date → error, no save
+- [x] Form clears after successful add</p>
+<p><strong>Error Cases:</strong>
+- [x] Add with unconfirmed serial — error shown
+- [x] Add duplicate march — error in status</p>
+<hr />
+<h3 id="story-72-update-march-3-points">Story 7.2: Update March [3 points]<a class="headerlink" href="#story-72-update-march-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Click row — form pre-fills with date, distance, succeeded
+- [x] Modify values and click "Update" — grid updates
+- [x] Status confirms update</p>
+<hr />
+<h3 id="story-73-delete-march-2-points">Story 7.3: Delete March [2 points]<a class="headerlink" href="#story-73-delete-march-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Select row and click "Delete" — record removed
+- [x] Grid refreshes after deletion</p>
+<hr />
+<h3 id="story-74-march-list-view-3-points">Story 7.4: March List View [3 points]<a class="headerlink" href="#story-74-march-list-view-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] DataGrid shows columns: service_number, distance, Succeeded (✓/✗), Date
+- [x] Sorted by service_number
+- [x] Refresh button reloads data
+- [x] ID column is hidden from display</p>
+<hr />
+<h2 id="epic-8-cross-session-runner-management">Epic 8: Cross Session &amp; Runner Management<a class="headerlink" href="#epic-8-cross-session-runner-management" title="Permanent link">&para;</a></h2>
+<h3 id="story-81-createeditdelete-cross-session-5-points">Story 8.1: Create/Edit/Delete Cross Session [5 points]<a class="headerlink" href="#story-81-createeditdelete-cross-session-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Form fields: date, time (HH:MM), distance (km), executed checkbox, description
+- [x] "Add" creates cross session; grid updates
+- [x] Click row → form pre-fills for edit
+- [x] "Update" saves changes; grid updates
+- [x] "Delete" removes selected session; grid updates
+- [x] "Clear" resets all form fields
+- [x] Grid columns: ID, Start, Executed, Distance, Description</p>
+<hr />
+<h3 id="story-82-enter-cross-runner-results-5-points">Story 8.2: Enter Cross Runner Results [5 points]<a class="headerlink" href="#story-82-enter-cross-runner-results-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Cross session dropdown populates available sessions
+- [x] Serial input + "Confirm Serial" validates via BEMIL
+- [x] "Search own Unit" modal available
+- [x] Running time input (hh<img alt="🇲🇲" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f1f2-1f1f2.svg" title=":mm:" />ss)
+- [x] Running seconds calculated and shown in grid
+- [x] "Add" creates runner entry; grid updates
+- [x] Order assigned sequentially
+- [x] Duplicate serial per cross is rejected with error
+- [x] Form stays ready for next runner after add</p>
+<hr />
+<h3 id="story-83-updatedelete-cross-runner-3-points">Story 8.3: Update/Delete Cross Runner [3 points]<a class="headerlink" href="#story-83-updatedelete-cross-runner-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Click row in runners grid — form pre-fills
+- [x] Modify running time and click "Update" — grid updates
+- [x] "Delete" removes runner entry — grid updates</p>
+<hr />
+<h3 id="story-84-cross-planning-list-view-2-points">Story 8.4: Cross Planning List View [2 points]<a class="headerlink" href="#story-84-cross-planning-list-view-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] DataGrid shows all cross sessions
+- [x] Filterable columns
+- [x] Refresh button works</p>
+<hr />
+<h3 id="story-85-cross-statistics-3-points">Story 8.5: Cross Statistics [3 points]<a class="headerlink" href="#story-85-cross-statistics-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Two DataGrids displayed: Top 10 (5km) and Top 10 (10km)
+- [x] Rankings show fastest times
+- [x] Refresh button reloads both grids
+- [x] Same serviceman never appears twice in a Top-10 grid (best time kept across multiple crosses of same distance)
+- [x] Age-group counts each person once even if they ran multiple crosses</p>
+<hr />
+<h3 id="story-86-import-chronos-xml-race-result-5-points">Story 8.6: Import Chronos XML Race Result [5 points]<a class="headerlink" href="#story-86-import-chronos-xml-race-result-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [ ] Upload button hidden when no cross session selected
+- [ ] Upload button hidden when cross selected but no runners registered
+- [ ] Upload button visible when cross selected and runners exist
+- [ ] Upload valid XML file — runners grid refreshes, success notification shown
+- [ ] Upload invalid XML (does not match XSD) — error notification shown, no data saved
+- [ ] Upload XML with bib matching service_number — runner time updated in DB
+- [ ] Upload XML with bib not in service_men — skipped silently, other runners still saved
+- [ ] <code>Cross.executed</code> flag set to <code>True</code> after successful import
+- [ ] Upload same file a second time in same session — not processed again (dedup guard)
+- [ ] <code>&lt;net&gt;</code> time "00:35:12" correctly parsed to 2112.0 seconds</p>
+<p><strong>UI Tests:</strong>
+- [ ] Download/Generate Report buttons hidden when no cross selected or no runners
+- [ ] Download/Generate Report buttons visible after runners registered
+- [ ] Runners grid auto-refreshes after import without page reload
+- [ ] Upload input accepts only <code>.xml</code> files</p>
+<hr />
+<h3 id="story-87-extended-cross-statistics-redesigned-ux-5-points">Story 8.7: Extended Cross Statistics &amp; Redesigned UX [5 points]<a class="headerlink" href="#story-87-extended-cross-statistics-redesigned-ux-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests — KPI strip &amp; Overview:</strong>
+- [ ] KPI strip shows three value boxes: Crosses, Finishers, Unique runners
+- [ ] No global Best/Avg/Median value box (those are per-distance only)
+- [ ] Overview "Best / Avg / Median per distance" grid: one row per distance with Finishers, Runners, Best, Avg, Median, Std (s), Gap
+- [ ] Gender averages card shows female-avg + male-avg formatted as <code>HH:MM:SS</code>
+- [ ] Age groups card lists each age bucket with unique-person count</p>
+<p><strong>Functional Tests — Per cross / Best 10 / Demographics / Runners / Trends / Podium / Data quality tabs:</strong>
+- [ ] Per cross: one row per cross event with avg/median/std/best/worst/gap/pace; sorted most-recent first; filterable
+- [ ] Best 10: separate 5 km and 10 km grids; rank column; each serviceman appears at most once per distance
+- [ ] Demographics: best &amp; avg per (age-group × distance), gender × distance grid (avg + finisher count); gender column displayed as readable string
+- [ ] Runners: per-serviceman aggregates (Races, PB, Avg, Pace, Δ avg); filterable
+- [ ] Trends: chronological rows of (date, distance, avg)
+- [ ] Podium: per-serviceman gold/silver/bronze counts; sorted by gold/silver/bronze desc
+- [ ] Data quality: counts + lists for unmatched serials, never-raced, rows missing time; ✅ shown when empty</p>
+<p><strong>Edge Cases &amp; Robustness:</strong>
+- [ ] Empty database (no crosses) → all KPIs show <code>0</code>, all grids empty, no exception
+- [ ] Crosses without runners → handled gracefully
+- [ ] Runner with <code>running_time = NULL</code> → counted in "Rows missing time", excluded from averages
+- [ ] Cross with <code>datetime_start = NULL</code> → excluded from Trends only
+- [ ] Refresh button reloads all metrics in one pass</p>
+<hr />
+<h2 id="epic-9-bemil-personnel-lookup">Epic 9: BEMIL Personnel Lookup<a class="headerlink" href="#epic-9-bemil-personnel-lookup" title="Permanent link">&para;</a></h2>
+<h3 id="story-91-lookup-serviceman-by-serial-number-3-points">Story 9.1: Lookup Serviceman by Serial Number [3 points]<a class="headerlink" href="#story-91-lookup-serviceman-by-serial-number-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Valid serial → returns rank, name, gender, age, unit
+- [x] Invalid serial → "Not found" / "Not found" message shown
+- [x] Display format consistent: "Rank Serial FirstName LastName Gender Age years old"
+- [x] Confirmed on all test entry pages: PHEF, Combat, Swimming, Functional, March, Cross</p>
+<hr />
+<h3 id="story-92-browse-all-servicemen-via-modal-2-points">Story 9.2: Browse All Servicemen via Modal [2 points]<a class="headerlink" href="#story-92-browse-all-servicemen-via-modal-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Search own Unit" button (🔍) opens modal on each test page
+- [x] Modal DataGrid shows columns: service_number, first_name, last_name, gender
+- [x] Column filters in modal DataGrid work
+- [x] Click row → serial fills into main serial field
+- [x] Modal closes automatically after selection
+- [x] Available on: PHEF, Combat, Swimming, Functional, March, Cross, Individual Test History</p>
+<hr />
+<h2 id="epic-10-individual-test-history">Epic 10: Individual Test History<a class="headerlink" href="#epic-10-individual-test-history" title="Permanent link">&para;</a></h2>
+<h3 id="story-101-search-individual-by-serial-number-3-points">Story 10.1: Search Individual by Serial Number [3 points]<a class="headerlink" href="#story-101-search-individual-by-serial-number-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Serial input + "Confirm Servicemen" button triggers BEMIL lookup
+- [x] "Search own Unit" modal available
+- [x] Found: serviceman info displayed (rank, name, service_number, unit)
+- [x] Not found: "Not found" message; test grid remains empty
+- [x] Status shows "Loaded N records" after successful search
+- [x] "Refresh" button reloads test data for current serial</p>
+<hr />
+<h3 id="story-102-display-complete-test-history-5-points">Story 10.2: Display Complete Test History [5 points]<a class="headerlink" href="#story-102-display-complete-test-history-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] DataGrid shows all test types: PHEF, Combat, Swimming, Functional, March
+- [x] Columns present: Date, Type, Details, Scores, Total, Result
+- [x] Tests sorted by date (newest first)
+- [x] Record count shown: "Loaded N records" or "No tests found"
+- [x] Empty DataFrame shown when no results</p>
+<p><strong>Edge Cases:</strong>
+- [x] Serviceman with only one test type — other columns show appropriate empty/null values
+- [x] Serviceman with no tests at all — grid shows empty state</p>
+<hr />
+<h3 id="story-103-generate-individual-pdf-report-5-points">Story 10.3: Generate Individual PDF Report [5 points]<a class="headerlink" href="#story-103-generate-individual-pdf-report-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Generate Full Report" button triggers async PDF generation
+- [x] Notification shown: "Report generated" on success
+- [x] Status message: "Full report for [serial] generated"
+- [x] Error case: no serial entered — status: "No serviceman selected"
+- [x] Error case: PDF generation fails — status: "Failed to generate report"
+- [x] Download button appears after successful generation</p>
+<hr />
+<h3 id="story-104-download-pdf-report-2-points">Story 10.4: Download PDF Report [2 points]<a class="headerlink" href="#story-104-download-pdf-report-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Download PDF" button appears only when report_path is set
+- [x] Download button triggers file download
+- [x] Filename format: "Report_{serial_number}.pdf"
+- [x] Button is hidden when no report has been generated</p>
+<hr />
+<h2 id="epic-11-unit-status-dashboard">Epic 11: Unit Status &amp; Dashboard<a class="headerlink" href="#epic-11-unit-status-dashboard" title="Permanent link">&para;</a></h2>
+<h3 id="story-111-view-unit-status-grid-5-points">Story 11.1: View Unit Status Grid [5 points]<a class="headerlink" href="#story-111-view-unit-status-grid-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Status Unit" tab shows all servicemen in own unit
+- [x] DataGrid columns include: Service #, Rank, Name, Gender, Birthdate, test statuses
+- [x] PHEF, Combat, Swimming status shown per serviceman
+- [x] Filterable columns
+- [x] Refresh button reloads data
+- [x] "Pdf Status Unit" button generates unit PDF
+- [x] Download button appears after PDF generation
+- [x] Filename: "Report_{unit_name}.pdf"</p>
+<hr />
+<h3 id="story-112-view-individual-history-via-modal-2-points">Story 11.2: View Individual History via Modal [2 points]<a class="headerlink" href="#story-112-view-individual-history-via-modal-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Click row in unit status grid → modal opens
+- [x] Modal shows DataGrid of tests for selected serviceman
+- [x] Columns: Test Type, Session, Status
+- [x] "Close" button dismisses modal
+- [x] Click outside modal (easy_close=True) also dismisses it</p>
+<hr />
+<h3 id="story-113-unit-dashboard-with-statistics-3-points">Story 11.3: Unit Dashboard with Statistics [3 points]<a class="headerlink" href="#story-113-unit-dashboard-with-statistics-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Dashboard tab shows summary cards per test type
+- [x] Each card: total tested count, GO count, NO-GO count, pass rate %
+- [x] Plotly charts shown for pass rates (bar or pie)
+- [x] Refresh button reloads all dashboard data
+- [x] Data scoped to current calendar year</p>
+<hr />
+<h3 id="story-114-phef-not-done-list-2-points">Story 11.4: PHEF Not-Done List [2 points]<a class="headerlink" href="#story-114-phef-not-done-list-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "PHEF Not done" tab shows servicemen who lack PHEF result for current year
+- [x] Header shows current year and unit name
+- [x] DataGrid is filterable
+- [x] Refresh button reloads data</p>
+<hr />
+<h2 id="epic-12-calendar-events">Epic 12: Calendar Events<a class="headerlink" href="#epic-12-calendar-events" title="Permanent link">&para;</a></h2>
+<h3 id="story-121-view-personal-test-calendar-3-points">Story 12.1: View Personal Test Calendar [3 points]<a class="headerlink" href="#story-121-view-personal-test-calendar-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Calendar tab shows FullCalendar weekly time-grid view
+- [x] Events shown for sessions where PTI serial = logged-in user's serial
+- [x] Events are color-coded by test type
+- [x] Click on event → event color turns red (highlight)
+- [x] Calendar is read-only (no drag-and-drop creation)</p>
+<hr />
+<h3 id="story-122-view-all-test-sessions-calendar-2-points">Story 12.2: View All Test Sessions Calendar [2 points]<a class="headerlink" href="#story-122-view-all-test-sessions-calendar-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Toggle between personal and all-sessions view
+- [x] All-sessions view shows test sessions across all PTIs
+- [x] Same FullCalendar UI is used for both views</p>
+<hr />
+<h2 id="epic-13-fitness-room-reservation">Epic 13: Fitness Room Reservation<a class="headerlink" href="#epic-13-fitness-room-reservation" title="Permanent link">&para;</a></h2>
+<h3 id="story-131-create-room-reservation-5-points">Story 13.1: Create Room Reservation [5 points]<a class="headerlink" href="#story-131-create-room-reservation-5-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Room dropdown shows available rooms with name, color indicator, capacity, location
+- [x] PTI serial field (identifies who is booking)
+- [x] Activity description text field
+- [x] Date picker
+- [x] Start time and end time pickers
+- [x] "Reserve" button creates reservation; appears in list/calendar view
+- [x] Overlap validation: booking same room at overlapping time → error shown
+- [x] No overlap: reservation created successfully</p>
+<p><strong>Error Cases:</strong>
+- [x] Reserve with missing required fields → error in status
+- [x] Reserve overlapping slot → conflict error message shown</p>
+<hr />
+<h3 id="story-132-view-reservations-weeklymonthlylist-2-points">Story 13.2: View Reservations (Weekly/Monthly/List) [2 points]<a class="headerlink" href="#story-132-view-reservations-weeklymonthlylist-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Three view tabs: Weekly, Monthly, List
+- [x] Weekly view shows time-grid with reservations per room (color-coded)
+- [x] Monthly view shows day-level reservation events
+- [x] List view shows DataGrid with all reservations; filterable
+- [x] All views display: room, PTI, activity, date/time</p>
+<hr />
+<h3 id="story-133-delete-reservation-1-point">Story 13.3: Delete Reservation [1 point]<a class="headerlink" href="#story-133-delete-reservation-1-point" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Delete button available per reservation in list view
+- [x] After deletion, reservation disappears from all views
+- [x] No confirmation dialog required (immediate delete)</p>
+<hr />
+<h2 id="epic-14-audit-logs">Epic 14: Audit Logs<a class="headerlink" href="#epic-14-audit-logs" title="Permanent link">&para;</a></h2>
+<h3 id="story-141-view-audit-log-3-points">Story 14.1: View Audit Log [3 points]<a class="headerlink" href="#story-141-view-audit-log-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] "Audit Logs" tab visible to admin role only
+- [x] DataGrid shows all audit events
+- [x] Columns: timestamp, event_type, actor, target, details
+- [x] DataGrid is read-only (no edit buttons)
+- [x] Refresh button reloads data</p>
+<p><strong>Security Tests:</strong>
+- [x] Non-admin users cannot access "Audit Logs" tab
+- [x] Log entries cannot be deleted or modified from UI</p>
+<hr />
+<h3 id="story-142-filter-audit-log-2-points">Story 14.2: Filter Audit Log [2 points]<a class="headerlink" href="#story-142-filter-audit-log-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Built-in DataGrid column filters work (filters=True)
+- [x] Can filter by event type column
+- [x] Can filter by actor column
+- [x] Can filter by date/timestamp column</p>
+<hr />
+<h2 id="epic-15-welcome-dashboard">Epic 15: Welcome Dashboard<a class="headerlink" href="#epic-15-welcome-dashboard" title="Permanent link">&para;</a></h2>
+<h3 id="story-151-welcome-page-with-role-specific-info-3-points">Story 15.1: Welcome Page with Role-Specific Info [3 points]<a class="headerlink" href="#story-151-welcome-page-with-role-specific-info-3-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] Welcome tab shows: "Welcome back, {username}!"
+- [x] Role and email displayed: "Logged in as {role} | {email}"
+- [x] Application version shown
+- [x] WarriorFit logo image displayed
+- [x] Refresh button (🔄) reloads page content
+- [x] Unauthenticated view shows generic welcome text</p>
+<hr />
+<h3 id="story-152-upcoming-sessions-for-ptiapti-2-points">Story 15.2: Upcoming Sessions for PTI/APTI [2 points]<a class="headerlink" href="#story-152-upcoming-sessions-for-ptiapti-2-points" title="Permanent link">&para;</a></h3>
+<p><strong>Functional Tests:</strong>
+- [x] PTI/APTI sees "Upcoming Test Sessions" DataGrid section on Welcome tab
+- [x] admin does NOT see this section
+- [x] DataGrid shows only sessions for logged-in user's serial number
+- [x] Refresh button updates the sessions DataGrid
+- [x] Empty grid shown if no upcoming sessions</p>
+<hr />
+<h2 id="cross-cutting-test-cases">Cross-Cutting Test Cases<a class="headerlink" href="#cross-cutting-test-cases" title="Permanent link">&para;</a></h2>
+<h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Role-based tab visibility: admin-only tabs hidden from PTI/APTI</li>
+<li>[x] PTI/APTI see only their own unit data where applicable</li>
+<li>[x] Passwords are hashed and not exposed in DataGrids</li>
+<li>[x] Password field uses toggle (masked by default)</li>
+<li>[x] All user inputs are validated before database writes</li>
+</ul>
+<h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] DataGrids load within 3 seconds for typical unit sizes (&lt; 500 records)</li>
+<li>[x] PDF generation completes within 10 seconds</li>
+<li>[x] BEMIL lookup responds within 3 seconds</li>
+</ul>
+<h3 id="uiux">UI/UX<a class="headerlink" href="#uiux" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Refresh buttons (🔄) present on all pages with grids</li>
+<li>[x] Refresh buttons use consistent style: btn-outline-secondary btn-sm my-2</li>
+<li>[x] Status text outputs show meaningful messages after every action</li>
+<li>[x] DataGrids use consistent column filtering where appropriate</li>
+<li>[x] Modals close automatically after row selection (easy_close=True or explicit close)</li>
+</ul>
+<h3 id="reactive-state">Reactive State<a class="headerlink" href="#reactive-state" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] DataGrids re-render when refresh_tick is incremented</li>
+<li>[x] Form pre-fill on row selection does not trigger Add/Update automatically</li>
+<li>[x] Serial confirmation resets form state on each new serial lookup</li>
+<li>[x] Report download button only appears when report_path is set</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
